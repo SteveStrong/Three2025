@@ -1,0 +1,319 @@
+{
+  "source": "World",
+  "info": {
+    "title": "3D WRLD TRISoC TRISoC-v1",
+    "version": "0001",
+    "status": "DEVELOP",
+    "author": "Steve Strong",
+    "knowledgecenter": "trisoc",
+    "versionInfo": "",
+    "filename": "WRLD_TRISoC-TRISoC-v1_0001.json",
+    "worldGuid": "edca9ba8-b819-4f3a-a427-47d1995bcc7f",
+    "stepCount": 0,
+    "documentCount": 1,
+    "commentCount": 0,
+    "guid": "133df117-aa86-4a17-b34a-43805a127243",
+    "name": "WRLD_TRISoC TRISoC-v1",
+    "type": "VersionInfo",
+    "timeStamp": "2024-07-27T18:27:20.169Z"
+  },
+  "assetFiles": [
+    {
+      "filename": "TRISOC.glb",
+      "source": "WRLD_TRISoC",
+      "IsExpanded": true,
+      "title": "TRISOC.glb",
+      "guid": "71dd6182-ac27-41fd-891b-5172eec49453",
+      "type": "glb",
+      "url": "file:///S:/SAIC/Git_projects/mk710/Three2025storage/StaticFiles/TRISOC.glb",
+      "timeStamp": "2024-07-27T18:27:20.167Z"
+    }
+  ],
+  "world": {
+    "lengthUnits": "m",
+    "angleUnits": "r",
+    "platforms": [],
+    "bodies": [
+      {
+        "position": {
+          "xLoc": 0,
+          "yLoc": 0,
+          "zLoc": 0,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 1,
+          "height": 1,
+          "depth": 1,
+          "pinX": 0,
+          "pinY": 0,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Glb",
+        "name": "HeatExchanger",
+        "uniqueGuid": "23e42b31-4418-4b05-943a-01e10228aa50",
+        "sourceURL": "TRISOC.glb",
+        "part": {
+          "promiseReference": "",
+          "structureReference": "HeatExchanger",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "36d9aa50-db68-4067-82ff-a8905de21f9a",
+        "refGuid": "b6d96d3f-24f4-4985-aa0e-4884372bec4d",
+        "timeStamp": "2024-07-27T18:27:20.168Z"
+      },
+      {
+        "position": {
+          "xLoc": 1,
+          "yLoc": 1,
+          "zLoc": -1,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.12699993142003704,
+          "height": 0.12699993142003704,
+          "depth": 0.12699993142003704,
+          "pinX": 0,
+          "pinY": 0,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "HeatExchanger.Left.Top",
+        "uniqueGuid": "0052bc07-0497-42bf-9a47-f74bdc463342",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "",
+          "structureReference": "HeatExchanger.Left.Top",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "36d9aa50-db68-4067-82ff-a8905de21f9a",
+        "refGuid": "0b7df850-059c-4121-aaaa-5abea0c33917",
+        "timeStamp": "2024-07-27T18:27:20.168Z"
+      },
+      {
+        "position": {
+          "xLoc": 1,
+          "yLoc": 1,
+          "zLoc": 1,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.12699993142003704,
+          "height": 0.12699993142003704,
+          "depth": 0.12699993142003704,
+          "pinX": 0,
+          "pinY": 0,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "HeatExchanger.Left.Bottom",
+        "uniqueGuid": "eca5967a-fb3a-49fa-b8a9-d9cde1536e6a",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "",
+          "structureReference": "HeatExchanger.Left.Bottom",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "36d9aa50-db68-4067-82ff-a8905de21f9a",
+        "refGuid": "d97c44b6-90a1-49cc-8dd0-eff28bcb164e",
+        "timeStamp": "2024-07-27T18:27:20.168Z"
+      },
+      {
+        "position": {
+          "xLoc": 1,
+          "yLoc": 1,
+          "zLoc": -1,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.12699993142003704,
+          "height": 0.12699993142003704,
+          "depth": 0.12699993142003704,
+          "pinX": 0,
+          "pinY": 0,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "HeatExchanger.Right.Top",
+        "uniqueGuid": "f2e9f029-8908-47da-a439-a3a947c24d8d",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "",
+          "structureReference": "HeatExchanger.Right.Top",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "36d9aa50-db68-4067-82ff-a8905de21f9a",
+        "refGuid": "270550f1-c060-4289-a857-aaffbec04111",
+        "timeStamp": "2024-07-27T18:27:20.168Z"
+      },
+      {
+        "position": {
+          "xLoc": 1,
+          "yLoc": -1,
+          "zLoc": 1,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.12699993142003704,
+          "height": 0.12699993142003704,
+          "depth": 0.12699993142003704,
+          "pinX": 0,
+          "pinY": 0,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "HeatExchanger.Right.Bottom",
+        "uniqueGuid": "9426d33c-0d35-4e4e-8f45-0db6ba16fc93",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "",
+          "structureReference": "HeatExchanger.Right.Bottom",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "36d9aa50-db68-4067-82ff-a8905de21f9a",
+        "refGuid": "e160c2b3-360e-406e-aaa2-f8f72080592d",
+        "timeStamp": "2024-07-27T18:27:20.168Z"
+      },
+      {
+        "position": {
+          "xLoc": 1,
+          "yLoc": -1,
+          "zLoc": -1,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.12699993142003704,
+          "height": 0.12699993142003704,
+          "depth": 0.12699993142003704,
+          "pinX": 0,
+          "pinY": 0,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "HeatExchanger.Strap.Left",
+        "uniqueGuid": "35871bfa-9176-48ee-bdf1-f6bfa2c44d4f",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "",
+          "structureReference": "HeatExchanger.Strap.Left",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "36d9aa50-db68-4067-82ff-a8905de21f9a",
+        "refGuid": "781a2e1f-33c5-4890-b0ba-89e083b9f263",
+        "timeStamp": "2024-07-27T18:27:20.169Z"
+      },
+      {
+        "position": {
+          "xLoc": 1,
+          "yLoc": -1,
+          "zLoc": 1,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.12699993142003704,
+          "height": 0.12699993142003704,
+          "depth": 0.12699993142003704,
+          "pinX": 0,
+          "pinY": 0,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "HeatExchanger.Strap.Right",
+        "uniqueGuid": "6db311a4-65a0-42e3-9e88-51d86ab1f2ba",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "",
+          "structureReference": "HeatExchanger.Strap.Right",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "36d9aa50-db68-4067-82ff-a8905de21f9a",
+        "refGuid": "adcd15d7-e65a-4378-8bc5-d71a0a561626",
+        "timeStamp": "2024-07-27T18:27:20.169Z"
+      }
+    ],
+    "pathways": [],
+    "labels": [],
+    "datums": [],
+    "relationships": [],
+    "visible": true,
+    "name": "WRLD_TRISoC TRISoC-v1",
+    "uniqueGuid": "edca9ba8-b819-4f3a-a427-47d1995bcc7f",
+    "subSystem": {
+      "threads": [],
+      "targets": [],
+      "links": [],
+      "lookup": {},
+      "IsExpanded": true,
+      "title": "Targets 0 links 0",
+      "guid": "688d831d-6cc5-414e-a9af-a85803d7eeb2",
+      "name": "System",
+      "type": "System",
+      "timeStamp": "2024-07-27T18:27:20.022Z"
+    },
+    "udtoTopic": "World",
+    "sourceGuid": "36d9aa50-db68-4067-82ff-a8905de21f9a",
+    "refGuid": "869199e5-bd2f-4bee-9421-0d6660505415",
+    "timeStamp": "2024-07-27T18:27:20.168Z"
+  },
+  "inventory": [],
+  "IsExpanded": true,
+  "guid": "81a6fd0c-26fb-46c0-8818-1b297ee4b045",
+  "type": "ModuleDefinition",
+  "timeStamp": "2024-07-27T18:27:20.169Z"
+}

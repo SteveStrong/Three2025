@@ -1,0 +1,18 @@
+﻿@page "/"
+
+@using FoundryBlazor.Shared
+@using FoundryRulesAndUnits.Extensions
+@namespace Three2025.Components.Pages
+@inherits HomeBase
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+@* <WorkSpaceMenu /> *@
+
+<RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" Text="Go" Click="@Go" />
+
+
+<div class="d-flex">
+    <Canvas3DComponent CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight" />
+
+</div>

@@ -1,0 +1,48 @@
+{
+  "IsUnsaved": false,
+  "source": {
+    "IsExpanded": true,
+    "guid": "3f00d4c1-1c51-4f67-853d-cec08023b664",
+    "name": "Sensors_TRISoC-v1",
+    "type": "Sensor",
+    "timeStamp": "2024-07-27T18:27:20.163Z"
+  },
+  "info": {
+    "title": "BOS Sensors TRISoC-v1",
+    "version": "0001",
+    "status": "DEVELOP",
+    "author": "Steve Strong",
+    "knowledgecenter": "trisoc",
+    "versionInfo": "",
+    "filename": "Sensors_TRISoC-v1_0001.json",
+    "stepCount": 0,
+    "documentCount": 0,
+    "commentCount": 0,
+    "guid": "64394d4f-10f7-4913-b9c9-70d18bbc668a",
+    "name": "Sensors_TRISoC-v1",
+    "type": "VersionInfo",
+    "timeStamp": "2024-07-27T18:27:20.164Z"
+  },
+  "modules": [
+    {
+      "title": "BOS Sensors TRISoC-v1",
+      "version": "0001",
+      "status": "DEVELOP",
+      "author": "Steve Strong",
+      "knowledgecenter": "trisoc",
+      "versionInfo": "",
+      "filename": "Sensors_TRISoC-v1_0001.json",
+      "stepCount": 0,
+      "documentCount": 0,
+      "commentCount": 0,
+      "guid": "64394d4f-10f7-4913-b9c9-70d18bbc668a",
+      "name": "Sensors_TRISoC-v1",
+      "type": "VersionInfo",
+      "timeStamp": "2024-07-27T18:27:20.164Z"
+    }
+  ],
+  "documents": [],
+  "guid": "89d5ebf1-3090-4603-923d-1b6377232bf7",
+  "type": "WorkbookDefinition",
+  "timeStamp": "2024-07-27T18:27:20.166Z"
+}

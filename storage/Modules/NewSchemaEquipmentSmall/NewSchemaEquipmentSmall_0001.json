@@ -1,0 +1,79 @@
+{
+  "source": "NETLIST",
+  "info": {
+    "title": "NETLIST NewSchemaEquipmentSmall",
+    "version": "0001",
+    "status": "DEVELOP",
+    "author": "Ron",
+    "knowledgecenter": "mk710_test",
+    "versionInfo": "",
+    "filename": "NewSchemaEquipmentSmall_0001.json",
+    "stepCount": 0,
+    "documentCount": 0,
+    "commentCount": 0,
+    "guid": "a7b1fe26-f34a-4c1b-bb06-a8c9a1d8d9d3",
+    "name": "NewSchemaEquipmentSmall",
+    "type": "VersionInfo",
+    "timeStamp": "2024-08-10T17:54:43.625Z"
+  },
+  "netlistNodes": [],
+  "netlistLinks": [
+    {
+      "part": {
+        "promiseReference": "Path1",
+        "structureReference": "ME.cable1",
+        "partNumber": ""
+      },
+      "parentName": "ME",
+      "systemName": "NET_710",
+      "category": "CABLE",
+      "IsExpanded": true,
+      "title": "",
+      "guid": "cb712a00-533e-4c93-aca5-249d6e56189f",
+      "name": "cable1",
+      "type": "Component",
+      "timeStamp": "2024-08-10T17:54:43.606Z",
+      "metadata": {
+        "lookup": {
+          "SourceURL": "https://www.wireandcableyourway.com/",
+          "Address": "Path1",
+          "Start": "DSE.8A1.J1",
+          "Finish": "ME.12AB9.CH1",
+          "Signal": "115VAC"
+        }
+      }
+    },
+    {
+      "part": {
+        "promiseReference": "Path2",
+        "structureReference": "ME.cable2",
+        "partNumber": ""
+      },
+      "parentName": "ME",
+      "systemName": "NET_710",
+      "category": "CABLE",
+      "IsExpanded": true,
+      "title": "",
+      "guid": "3aa4b590-0356-4f97-807f-7369a859b23b",
+      "name": "cable2",
+      "type": "Component",
+      "timeStamp": "2024-08-10T17:54:43.607Z",
+      "metadata": {
+        "lookup": {
+          "SourceURL": "https://www.wireandcableyourway.com/",
+          "Address": "Path2",
+          "Start": "DSE.8A1.J2",
+          "Finish": "ME.12A6.Port1",
+          "Signal": "115VAC"
+        }
+      }
+    }
+  ],
+  "assetFiles": [],
+  "assetRefs": [],
+  "inventory": [],
+  "IsExpanded": true,
+  "guid": "709f7a44-81c2-4436-ab09-55a5cb25d6a1",
+  "type": "ModuleDefinition",
+  "timeStamp": "2024-08-10T17:54:43.627Z"
+}

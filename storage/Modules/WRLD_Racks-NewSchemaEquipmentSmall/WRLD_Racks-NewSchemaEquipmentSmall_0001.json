@@ -1,0 +1,308 @@
+{
+  "source": "World",
+  "info": {
+    "title": "3D WRLD Racks NewSchemaEquipmentSmall",
+    "version": "0001",
+    "status": "DEVELOP",
+    "author": "Ron",
+    "knowledgecenter": "mk710_test",
+    "versionInfo": "",
+    "filename": "WRLD_Racks-NewSchemaEquipmentSmall_0001.json",
+    "worldGuid": "507e7266-3248-423c-bdce-7045c0631656",
+    "stepCount": 0,
+    "documentCount": 0,
+    "commentCount": 0,
+    "guid": "d9729e3f-b693-45f0-8845-48bd89f4fdb2",
+    "name": "WRLD_Racks NewSchemaEquipmentSmall",
+    "type": "VersionInfo",
+    "timeStamp": "2024-08-10T17:54:43.794Z"
+  },
+  "assetFiles": [],
+  "world": {
+    "lengthUnits": "m",
+    "angleUnits": "r",
+    "platforms": [],
+    "bodies": [
+      {
+        "position": {
+          "xLoc": -0.5079997256801482,
+          "yLoc": 0,
+          "zLoc": 0,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.30479983540808886,
+          "height": 2.336798738128681,
+          "depth": 0.2539998628400741,
+          "pinX": 0,
+          "pinY": 1.1683993690643406,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "ME",
+        "uniqueGuid": "f6c1311e-0ff0-49ba-b6fa-8eb124bf26bf",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "8626202",
+          "structureReference": "ME",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "c86a4902-2eb6-42ac-8924-bd76b05a3bf0",
+        "refGuid": "87d6bd45-80d7-421c-a7ae-849f23a584fd",
+        "timeStamp": "2024-08-10T17:54:43.780Z"
+      },
+      {
+        "position": {
+          "xLoc": -0.5079997256801482,
+          "yLoc": 0.15239991770404443,
+          "zLoc": 0,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.4825997393961407,
+          "height": 0.3386664837867654,
+          "depth": 0.4571997531121333,
+          "pinX": 0,
+          "pinY": 0.1693332418933827,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "ME.12A9",
+        "uniqueGuid": "3531650b-224e-4344-8aab-7a0b89db1ed7",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "8626974",
+          "structureReference": "ME.12A9",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "c86a4902-2eb6-42ac-8924-bd76b05a3bf0",
+        "refGuid": "a7946834-b1ea-4d89-865f-f6d505278f35",
+        "timeStamp": "2024-08-10T17:54:43.786Z"
+      },
+      {
+        "position": {
+          "xLoc": -0.5079997256801482,
+          "yLoc": 0.6603996433841925,
+          "zLoc": 0,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.4825997393961407,
+          "height": 0.1693332418933827,
+          "depth": 0.4571997531121333,
+          "pinX": 0,
+          "pinY": 0.08466662094669135,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "ME.12AB9",
+        "uniqueGuid": "f5f0a9db-49fe-4cdf-a1a7-01b8ef81f750",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "8626885",
+          "structureReference": "ME.12AB9",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "c86a4902-2eb6-42ac-8924-bd76b05a3bf0",
+        "refGuid": "4d136e22-eef7-4ce6-b16e-9e3c80b1e5a0",
+        "timeStamp": "2024-08-10T17:54:43.789Z"
+      },
+      {
+        "position": {
+          "xLoc": 0,
+          "yLoc": 0,
+          "zLoc": 0,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.025399986284007407,
+          "height": 0.025399986284007407,
+          "depth": 0.5079997256801482,
+          "pinX": 0,
+          "pinY": 0,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "ME.12AB9.CH1",
+        "uniqueGuid": "e5d438f7-d234-43c6-bff1-f147e5c76118",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "",
+          "structureReference": "ME.12AB9.CH1",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "c86a4902-2eb6-42ac-8924-bd76b05a3bf0",
+        "refGuid": "a8c8cad2-960b-453b-989c-2d74ef1404ff",
+        "timeStamp": "2024-08-10T17:54:43.790Z"
+      },
+      {
+        "position": {
+          "xLoc": 0.5079997256801482,
+          "yLoc": 0,
+          "zLoc": 0,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.30479983540808886,
+          "height": 2.336798738128681,
+          "depth": 0.2539998628400741,
+          "pinX": 0,
+          "pinY": 1.1683993690643406,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "DSE",
+        "uniqueGuid": "34cb4c7d-9e9d-47da-981b-c95674097610",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "8626179",
+          "structureReference": "DSE",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "c86a4902-2eb6-42ac-8924-bd76b05a3bf0",
+        "refGuid": "4d565055-be1e-4464-853c-adae875969c5",
+        "timeStamp": "2024-08-10T17:54:43.791Z"
+      },
+      {
+        "position": {
+          "xLoc": 0.5079997256801482,
+          "yLoc": 0.15239991770404443,
+          "zLoc": 0,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.4825997393961407,
+          "height": 0.3386664837867654,
+          "depth": 0.4571997531121333,
+          "pinX": 0,
+          "pinY": 0.1693332418933827,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "DSE.8A1",
+        "uniqueGuid": "5911a329-96e2-4c97-aa5c-309d307db646",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "8627400",
+          "structureReference": "DSE.8A1",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "c86a4902-2eb6-42ac-8924-bd76b05a3bf0",
+        "refGuid": "8c54c005-fe4d-40b0-8498-2f6d95698b23",
+        "timeStamp": "2024-08-10T17:54:43.792Z"
+      },
+      {
+        "position": {
+          "xLoc": 0,
+          "yLoc": 0,
+          "zLoc": 0,
+          "xAng": 0,
+          "yAng": 0,
+          "zAng": 0,
+          "order": "XYZ"
+        },
+        "boundingBox": {
+          "width": 0.025399986284007407,
+          "height": 0.025399986284007407,
+          "depth": 0.5079997256801482,
+          "pinX": 0,
+          "pinY": 0,
+          "pinZ": 0,
+          "scaleX": 1,
+          "scaleY": 1,
+          "scaleZ": 1
+        },
+        "visible": true,
+        "type": "Box",
+        "name": "DSE.8A1.J1",
+        "uniqueGuid": "87324cbe-619e-434a-a88f-956859158084",
+        "sourceURL": "",
+        "part": {
+          "promiseReference": "",
+          "structureReference": "DSE.8A1.J1",
+          "referenceDesignation": ""
+        },
+        "udtoTopic": "Body",
+        "sourceGuid": "c86a4902-2eb6-42ac-8924-bd76b05a3bf0",
+        "refGuid": "2b46c8ee-26b2-4977-972f-78056551b282",
+        "timeStamp": "2024-08-10T17:54:43.792Z"
+      }
+    ],
+    "pathways": [],
+    "labels": [],
+    "datums": [],
+    "relationships": [],
+    "visible": true,
+    "name": "WRLD_Racks NewSchemaEquipmentSmall",
+    "uniqueGuid": "507e7266-3248-423c-bdce-7045c0631656",
+    "subSystem": {
+      "threads": [],
+      "targets": [],
+      "links": [],
+      "lookup": {},
+      "IsExpanded": true,
+      "title": "Targets 0 links 0",
+      "guid": "86415204-abb8-4a5b-b311-608e119b22e0",
+      "name": "System",
+      "type": "System",
+      "timeStamp": "2024-08-10T17:54:43.199Z"
+    },
+    "udtoTopic": "World",
+    "sourceGuid": "c86a4902-2eb6-42ac-8924-bd76b05a3bf0",
+    "refGuid": "c5ebfbfe-f20b-4892-824e-099d271ebe2b",
+    "timeStamp": "2024-08-10T17:54:43.768Z"
+  },
+  "inventory": [],
+  "IsExpanded": true,
+  "guid": "ee7dd274-5595-4989-91fc-a14160974030",
+  "type": "ModuleDefinition",
+  "timeStamp": "2024-08-10T17:54:43.796Z"
+}

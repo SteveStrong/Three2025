@@ -1,0 +1,50 @@
+{
+  "IsUnsaved": false,
+  "source": {
+    "IsExpanded": true,
+    "title": "WRLD_TRISoC TRISoC-v1",
+    "guid": "edca9ba8-b819-4f3a-a427-47d1995bcc7f",
+    "name": "WRLD_TRISoC TRISoC-v1",
+    "type": "Hero",
+    "timeStamp": "2024-07-27T18:27:20.169Z"
+  },
+  "info": {
+    "title": "3D WRLD TRISoC TRISoC-v1",
+    "version": "0001",
+    "status": "DEVELOP",
+    "author": "Steve Strong",
+    "knowledgecenter": "trisoc",
+    "versionInfo": "",
+    "filename": "WRLD_TRISoC-TRISoC-v1_0001.json",
+    "worldGuid": "edca9ba8-b819-4f3a-a427-47d1995bcc7f",
+    "stepCount": 0,
+    "documentCount": 1,
+    "commentCount": 0,
+    "guid": "133df117-aa86-4a17-b34a-43805a127243",
+    "name": "WRLD_TRISoC TRISoC-v1",
+    "type": "VersionInfo",
+    "timeStamp": "2024-07-27T18:27:20.169Z"
+  },
+  "modules": [
+    {
+      "title": "3D WRLD TRISoC TRISoC-v1",
+      "version": "0001",
+      "status": "DEVELOP",
+      "author": "Steve Strong",
+      "knowledgecenter": "trisoc",
+      "versionInfo": "",
+      "filename": "WRLD_TRISoC-TRISoC-v1_0001.json",
+      "worldGuid": "edca9ba8-b819-4f3a-a427-47d1995bcc7f",
+      "stepCount": 0,
+      "documentCount": 1,
+      "commentCount": 0,
+      "guid": "133df117-aa86-4a17-b34a-43805a127243",
+      "name": "WRLD_TRISoC TRISoC-v1",
+      "type": "VersionInfo",
+      "timeStamp": "2024-07-27T18:27:20.169Z"
+    }
+  ],
+  "guid": "d2c4d9ca-73dc-4969-b178-300f52cd2e48",
+  "type": "WorkbookDefinition",
+  "timeStamp": "2024-07-27T18:27:20.171Z"
+}

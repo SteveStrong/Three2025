@@ -1,0 +1,47 @@
+{
+  "IsUnsaved": false,
+  "source": {
+    "IsExpanded": true,
+    "guid": "2b80380e-6202-4db8-ac5e-5cd613854559",
+    "name": "NewSchemaEquipmentSmall",
+    "type": "Component",
+    "timeStamp": "2024-08-10T17:54:43.594Z"
+  },
+  "info": {
+    "title": "NETLIST NewSchemaEquipmentSmall",
+    "version": "0001",
+    "status": "DEVELOP",
+    "author": "Ron",
+    "knowledgecenter": "mk710_test",
+    "versionInfo": "",
+    "filename": "NewSchemaEquipmentSmall_0001.json",
+    "stepCount": 0,
+    "documentCount": 0,
+    "commentCount": 0,
+    "guid": "a7b1fe26-f34a-4c1b-bb06-a8c9a1d8d9d3",
+    "name": "NewSchemaEquipmentSmall",
+    "type": "VersionInfo",
+    "timeStamp": "2024-08-10T17:54:43.625Z"
+  },
+  "modules": [
+    {
+      "title": "NETLIST NewSchemaEquipmentSmall",
+      "version": "0001",
+      "status": "DEVELOP",
+      "author": "Ron",
+      "knowledgecenter": "mk710_test",
+      "versionInfo": "",
+      "filename": "NewSchemaEquipmentSmall_0001.json",
+      "stepCount": 0,
+      "documentCount": 0,
+      "commentCount": 0,
+      "guid": "a7b1fe26-f34a-4c1b-bb06-a8c9a1d8d9d3",
+      "name": "NewSchemaEquipmentSmall",
+      "type": "VersionInfo",
+      "timeStamp": "2024-08-10T17:54:43.625Z"
+    }
+  ],
+  "guid": "89db31cd-1277-488e-958c-15f6b954265e",
+  "type": "WorkbookDefinition",
+  "timeStamp": "2024-08-10T17:54:43.750Z"
+}

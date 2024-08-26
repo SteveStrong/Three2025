@@ -1,0 +1,274 @@
+{
+  "source": "BOS",
+  "info": {
+    "title": "BOS Sensors TRISoC-v1",
+    "version": "0001",
+    "status": "DEVELOP",
+    "author": "Steve Strong",
+    "knowledgecenter": "trisoc",
+    "versionInfo": "",
+    "filename": "Sensors_TRISoC-v1_0001.json",
+    "stepCount": 0,
+    "documentCount": 0,
+    "commentCount": 0,
+    "guid": "64394d4f-10f7-4913-b9c9-70d18bbc668a",
+    "name": "Sensors_TRISoC-v1",
+    "type": "VersionInfo",
+    "timeStamp": "2024-07-27T18:27:20.164Z"
+  },
+  "sensors": [
+    {
+      "members": [
+        {
+          "topic": "container",
+          "members": [
+            {
+              "topic": "container",
+              "members": [
+                {
+                  "topic": "temperature",
+                  "part": {
+                    "promiseReference": "HeatExchanger.Strap.Left",
+                    "structureReference": "HeatExchanger.Strap.Left",
+                    "partNumber": ""
+                  },
+                  "parentName": "Strap",
+                  "systemName": "BOS_Thermocouples",
+                  "IsExpanded": true,
+                  "title": "",
+                  "guid": "eedf34bc-d2b7-45a3-93bf-9ce8ee8b310f",
+                  "parentGuid": "75b905da-1339-4afb-a0fe-454ee624b68a",
+                  "name": "Left",
+                  "type": "Sensor",
+                  "timeStamp": "2024-07-27T18:27:20.163Z",
+                  "metadata": {
+                    "lookup": {
+                      "Address": "HeatExchanger.Strap.Left"
+                    }
+                  }
+                },
+                {
+                  "topic": "temperature",
+                  "part": {
+                    "promiseReference": "HeatExchanger.Strap.Right",
+                    "structureReference": "HeatExchanger.Strap.Right",
+                    "partNumber": ""
+                  },
+                  "parentName": "Strap",
+                  "systemName": "BOS_Thermocouples",
+                  "IsExpanded": true,
+                  "title": "",
+                  "guid": "eb53a35e-56c8-4298-8b4b-7c38783c3e2c",
+                  "parentGuid": "75b905da-1339-4afb-a0fe-454ee624b68a",
+                  "name": "Right",
+                  "type": "Sensor",
+                  "timeStamp": "2024-07-27T18:27:20.163Z",
+                  "metadata": {
+                    "lookup": {
+                      "Address": "HeatExchanger.Strap.Right"
+                    }
+                  }
+                }
+              ],
+              "part": {
+                "promiseReference": "HeatExchanger.Strap",
+                "structureReference": "HeatExchanger.Strap",
+                "partNumber": ""
+              },
+              "parentName": "HeatExchanger",
+              "systemName": "BOS_Thermocouples",
+              "IsExpanded": true,
+              "title": "",
+              "guid": "75b905da-1339-4afb-a0fe-454ee624b68a",
+              "parentGuid": "b0b38058-77ec-43ea-844e-4cfff110ce71",
+              "name": "Strap",
+              "type": "Sensor",
+              "timeStamp": "2024-07-27T18:27:20.163Z",
+              "metadata": {
+                "lookup": {
+                  "Address": "HeatExchanger.Strap"
+                }
+              }
+            },
+            {
+              "topic": "container",
+              "members": [
+                {
+                  "topic": "temperature",
+                  "part": {
+                    "promiseReference": "HeatExchanger.Left.Top",
+                    "structureReference": "HeatExchanger.Left.Top",
+                    "referenceDesignation": "leftFront",
+                    "partNumber": ""
+                  },
+                  "parentName": "Left",
+                  "systemName": "BOS_Thermocouples",
+                  "IsExpanded": true,
+                  "title": " (leftFront)",
+                  "description": "Thermocouple, Left Front",
+                  "guid": "64bee31b-351b-48b1-9e6a-e1cf8acea2d2",
+                  "parentGuid": "32fafe21-d970-4bd5-a39d-e578e3b81ab8",
+                  "name": "Top",
+                  "type": "Sensor",
+                  "timeStamp": "2024-07-27T18:27:20.163Z",
+                  "metadata": {
+                    "lookup": {
+                      "Address": "HeatExchanger.Left.Top"
+                    }
+                  }
+                },
+                {
+                  "topic": "temperature",
+                  "part": {
+                    "promiseReference": "HeatExchanger.Left.Bottom",
+                    "structureReference": "HeatExchanger.Left.Bottom",
+                    "partNumber": ""
+                  },
+                  "parentName": "Left",
+                  "systemName": "BOS_Thermocouples",
+                  "IsExpanded": true,
+                  "title": "",
+                  "guid": "345909ac-a3f1-4789-afb6-5a99d7319ee8",
+                  "parentGuid": "32fafe21-d970-4bd5-a39d-e578e3b81ab8",
+                  "name": "Bottom",
+                  "type": "Sensor",
+                  "timeStamp": "2024-07-27T18:27:20.163Z",
+                  "metadata": {
+                    "lookup": {
+                      "Address": "HeatExchanger.Left.Bottom"
+                    }
+                  }
+                }
+              ],
+              "part": {
+                "promiseReference": "HeatExchanger.Left",
+                "structureReference": "HeatExchanger.Left",
+                "partNumber": ""
+              },
+              "parentName": "HeatExchanger",
+              "systemName": "BOS_Thermocouples",
+              "IsExpanded": true,
+              "title": "",
+              "guid": "32fafe21-d970-4bd5-a39d-e578e3b81ab8",
+              "parentGuid": "b0b38058-77ec-43ea-844e-4cfff110ce71",
+              "name": "Left",
+              "type": "Sensor",
+              "timeStamp": "2024-07-27T18:27:20.163Z",
+              "metadata": {
+                "lookup": {
+                  "Address": "HeatExchanger.Left"
+                }
+              }
+            },
+            {
+              "topic": "container",
+              "members": [
+                {
+                  "topic": "temperature",
+                  "part": {
+                    "promiseReference": "HeatExchanger.Right.Top",
+                    "structureReference": "HeatExchanger.Right.Top",
+                    "partNumber": ""
+                  },
+                  "parentName": "Right",
+                  "systemName": "BOS_Thermocouples",
+                  "IsExpanded": true,
+                  "title": "",
+                  "guid": "9330e59e-8075-44c7-82b4-03c6edb4af8f",
+                  "parentGuid": "4dc7320a-ffa6-4cfa-8666-d1b0632fc82e",
+                  "name": "Top",
+                  "type": "Sensor",
+                  "timeStamp": "2024-07-27T18:27:20.163Z",
+                  "metadata": {
+                    "lookup": {
+                      "Address": "HeatExchanger.Right.Top"
+                    }
+                  }
+                },
+                {
+                  "topic": "temperature",
+                  "part": {
+                    "promiseReference": "HeatExchanger.Right.Bottom",
+                    "structureReference": "HeatExchanger.Right.Bottom",
+                    "partNumber": ""
+                  },
+                  "parentName": "Right",
+                  "systemName": "BOS_Thermocouples",
+                  "IsExpanded": true,
+                  "title": "",
+                  "guid": "5cd7e984-dac4-4321-952c-58fb000ec6c4",
+                  "parentGuid": "4dc7320a-ffa6-4cfa-8666-d1b0632fc82e",
+                  "name": "Bottom",
+                  "type": "Sensor",
+                  "timeStamp": "2024-07-27T18:27:20.163Z",
+                  "metadata": {
+                    "lookup": {
+                      "Address": "HeatExchanger.Right.Bottom"
+                    }
+                  }
+                }
+              ],
+              "part": {
+                "promiseReference": "HeatExchanger.Right",
+                "structureReference": "HeatExchanger.Right",
+                "partNumber": ""
+              },
+              "parentName": "HeatExchanger",
+              "systemName": "BOS_Thermocouples",
+              "IsExpanded": true,
+              "title": "",
+              "guid": "4dc7320a-ffa6-4cfa-8666-d1b0632fc82e",
+              "parentGuid": "b0b38058-77ec-43ea-844e-4cfff110ce71",
+              "name": "Right",
+              "type": "Sensor",
+              "timeStamp": "2024-07-27T18:27:20.163Z",
+              "metadata": {
+                "lookup": {
+                  "Address": "HeatExchanger.Right"
+                }
+              }
+            }
+          ],
+          "part": {
+            "promiseReference": "HeatExchanger",
+            "structureReference": "HeatExchanger",
+            "partNumber": ""
+          },
+          "parentName": "",
+          "systemName": "BOS_Thermocouples",
+          "IsExpanded": true,
+          "title": "",
+          "description": "Temperature Group",
+          "guid": "b0b38058-77ec-43ea-844e-4cfff110ce71",
+          "parentGuid": "3f00d4c1-1c51-4f67-853d-cec08023b664",
+          "name": "HeatExchanger",
+          "type": "Sensor",
+          "timeStamp": "2024-07-27T18:27:20.163Z",
+          "metadata": {
+            "lookup": {
+              "Address": "HeatExchanger"
+            }
+          }
+        }
+      ],
+      "part": {
+        "structureReference": "ROOT",
+        "partNumber": "END",
+        "version": "1.0"
+      },
+      "parentName": "END",
+      "IsExpanded": true,
+      "guid": "3f00d4c1-1c51-4f67-853d-cec08023b664",
+      "name": "Sensors_TRISoC-v1",
+      "type": "Sensor",
+      "timeStamp": "2024-07-27T18:27:20.163Z"
+    }
+  ],
+  "assetFiles": [],
+  "assetRefs": [],
+  "inventory": [],
+  "IsExpanded": true,
+  "guid": "209e26c5-c9ed-4581-a003-cd71c201a117",
+  "type": "ModuleDefinition",
+  "timeStamp": "2024-07-27T18:27:20.165Z"
+}

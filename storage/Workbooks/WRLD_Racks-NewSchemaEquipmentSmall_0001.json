@@ -1,0 +1,50 @@
+{
+  "IsUnsaved": false,
+  "source": {
+    "IsExpanded": true,
+    "title": "WRLD_Racks NewSchemaEquipmentSmall",
+    "guid": "507e7266-3248-423c-bdce-7045c0631656",
+    "name": "WRLD_Racks NewSchemaEquipmentSmall",
+    "type": "Hero",
+    "timeStamp": "2024-08-10T17:54:43.795Z"
+  },
+  "info": {
+    "title": "3D WRLD Racks NewSchemaEquipmentSmall",
+    "version": "0001",
+    "status": "DEVELOP",
+    "author": "Ron",
+    "knowledgecenter": "mk710_test",
+    "versionInfo": "",
+    "filename": "WRLD_Racks-NewSchemaEquipmentSmall_0001.json",
+    "worldGuid": "507e7266-3248-423c-bdce-7045c0631656",
+    "stepCount": 0,
+    "documentCount": 0,
+    "commentCount": 0,
+    "guid": "d9729e3f-b693-45f0-8845-48bd89f4fdb2",
+    "name": "WRLD_Racks NewSchemaEquipmentSmall",
+    "type": "VersionInfo",
+    "timeStamp": "2024-08-10T17:54:43.794Z"
+  },
+  "modules": [
+    {
+      "title": "3D WRLD Racks NewSchemaEquipmentSmall",
+      "version": "0001",
+      "status": "DEVELOP",
+      "author": "Ron",
+      "knowledgecenter": "mk710_test",
+      "versionInfo": "",
+      "filename": "WRLD_Racks-NewSchemaEquipmentSmall_0001.json",
+      "worldGuid": "507e7266-3248-423c-bdce-7045c0631656",
+      "stepCount": 0,
+      "documentCount": 0,
+      "commentCount": 0,
+      "guid": "d9729e3f-b693-45f0-8845-48bd89f4fdb2",
+      "name": "WRLD_Racks NewSchemaEquipmentSmall",
+      "type": "VersionInfo",
+      "timeStamp": "2024-08-10T17:54:43.794Z"
+    }
+  ],
+  "guid": "ca2ad769-b065-489d-89a6-8dca405d693a",
+  "type": "WorkbookDefinition",
+  "timeStamp": "2024-08-10T17:54:43.812Z"
+}
