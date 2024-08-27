@@ -6,12 +6,17 @@ using Microsoft.JSInterop;
 using FoundryRulesAndUnits.Extensions;
 using FoundryBlazor.Shape;
 using Three2025.Model;
+using BlazorThreeJS.Viewers;
+using BlazorThreeJS.Settings;
+using BlazorThreeJS.Scenes;
 
 
 namespace Three2025.Components.Pages;
 
 public partial class HomeBase : ComponentBase, IDisposable
 {
+    public Viewer View3D1 = null!;
+
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] protected IJSRuntime JsRuntime { get; set; }
     [Inject] private IToast Toast { get; set; }
@@ -25,6 +30,20 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public FoWorkbook Workbook { get; set; }
 
+    public ViewerSettings settings = new ViewerSettings()
+    {
+        containerId = "example1",
+        CanSelect = true,// default is false
+        SelectedColor = "#808080",
+        Width = 900,
+        Height = 600,
+        WebGLRendererSettings = new WebGLRendererSettings
+        {
+            Antialias = false // if you need poor quality for some reasons
+        }
+    };
+
+    public Scene scene = new();
 
     protected override void OnInitialized()
     {
