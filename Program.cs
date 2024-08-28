@@ -78,6 +78,7 @@ builder.Services.AddScoped<IHitTestService, HitTestService>();
 builder.Services.AddScoped<ISelectionService, SelectionService>();
 
 builder.Services.AddScoped<IStageManagement, StageManagementService>();
+builder.Services.AddScoped<IWorldManager, WorldManager>();
 builder.Services.AddScoped<IFoundryService, FoundryService>();
 
 builder.Services.AddScoped<IWorkspace, FoWorkspace>();

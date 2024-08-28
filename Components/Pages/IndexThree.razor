@@ -1,12 +1,16 @@
 ﻿@page "/three"
 @inherits IndexThreePage
+@using FoundryBlazor.Shared
 @using BlazorThreeJS.Viewers
 
 @rendermode InteractiveServer
 
 @namespace Three2025.Pages.DrawingPage
 
-<Viewer @ref="View3D1" ViewerSettings=@settings Scene=scene />
+<div class="d-flex">
+    <Viewer @ref="View3D1" ViewerSettings=@settings Scene=scene />
+    <ShapeTreeView />
+</div>
 
 <div class="d-flex">
     <div>

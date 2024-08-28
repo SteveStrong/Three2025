@@ -21,6 +21,8 @@ public partial class HomeBase : ComponentBase, IDisposable
     [Inject] protected IJSRuntime JsRuntime { get; set; }
     [Inject] private IToast Toast { get; set; }
     [Inject] public IWorkspace Workspace { get; init; }
+    [Inject] public IFoundryService FoundryService { get; init; }
+
 
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
@@ -43,7 +45,6 @@ public partial class HomeBase : ComponentBase, IDisposable
         }
     };
 
-    public Scene scene = new();
 
     protected override void OnInitialized()
     {
@@ -103,8 +104,44 @@ public partial class HomeBase : ComponentBase, IDisposable
         await base.OnAfterRenderAsync(firstRender);
     }
 
-
     protected void Go()
+    {
+        //"Click Go".WriteInfo();
+        GoDrawing();
+        //GoWorld();
+         GoCables();
+    }
+    
+    protected void GoCables()
+    {
+        var cables = new CableChannels(Workspace,FoundryService);
+        cables.BuildChannels();
+    }
+
+    protected void GoWorld()
+    {
+        var arena = Workspace.GetArena();
+
+        var shape = new FoShape3D()
+        {
+            Color = "Red"
+        };
+        shape.CreateBox("Dave",1, 2, 3);
+
+        //this will render
+        //var world = new FoWorld3D("Test");
+        //world.AddGlyph3D<FoShape3D>(shape);
+        //arena.RenderWorld3D(world);
+
+        //this should render
+        arena.AddShape<FoShape3D>(shape);
+        Task.Run(async () =>
+        {
+            await arena.UpdateArena();
+        });
+
+    }
+    protected void GoDrawing()
     {
         //"Click Go".WriteInfo();
 
