@@ -29,9 +29,22 @@ public class CableChannels : FoComponent
     {
         _space = space;
         _manager = manager;
+
+        var arena = _space.GetArena();
+        arena.AddAction("Update", "btn-primary", () =>
+        {
+            Task.Run(async () => await arena.UpdateArena());
+        });
+
+        var stage = arena.CurrentStage();
+        stage.AddAction("Render", "btn-primary", () =>
+        {
+            Task.Run(() => stage.PreRender(arena));
+            Task.Run(async () => await stage.RenderDetailed(arena.CurrentScene(),0,0));
+        });
+
+
         _world = _manager.WorldManager().CreateWorld<CableWorld>("Cables");
-
-
 
         _world.AddAction("Clear", "btn-primary", () => 
         {
@@ -39,12 +52,17 @@ public class CableChannels : FoComponent
 
         });
 
-        _world.AddAction("Render", "btn-info", () => 
+        _world.AddAction("Publish", "btn-info", () => 
         {
-            var count = _world.Members<FoShape3D>().Count();
-            $"Rendering {count} shapes".WriteNote();
             var arena = _space.GetArena();
-            arena.RenderWorld3D(_world);
+            _world.PublishToStage(arena.CurrentStage());
+        });
+
+        _world.AddAction("Box", "btn-info", () => 
+        {
+            var box = AddBox();
+            var arena = _space.GetArena();
+            arena.AddShape<FoShape3D>(box);
         });
 
         _world.AddAction("TRex", "btn-primary", () =>
@@ -57,7 +75,11 @@ public class CableChannels : FoComponent
 
             $"Loading {url}".WriteNote();
 
-            DoLoad3dModel(url, 2, 6, 2);
+            var shape = DoLoad3dModel(url, 2, 6, 2);
+
+            var arena = _space.GetArena();
+            arena.AddShape<FoShape3D>(shape);
+
         });
 
         _world.AddAction("Render Tube", "btn-primary", () =>
@@ -135,7 +157,7 @@ public class CableChannels : FoComponent
 
 
 
-  public void DoLoad3dModel(string url, double bx, double by, double bz)
+  public FoShape3D DoLoad3dModel(string url, double bx, double by, double bz)
     {
         var name = url.Split('\\').Last();
         var shape = new FoShape3D(name,"blue")
@@ -148,9 +170,10 @@ public class CableChannels : FoComponent
         };
         shape.CreateGlb(url);
         GetWorld().AddGlyph3D<FoShape3D>(shape);
+        return shape;
     }
 
-    public void AddBox()
+    public Node3D AddBox()
     {
         var box = new Node3D("test","blue")
         {
@@ -160,17 +183,12 @@ public class CableChannels : FoComponent
         box.CreateBox("test", .5, 10, .5);
         
         GetWorld().AddGlyph3D<FoShape3D>(box);
+        return box;
     }
 
-    // public IWorld3D AddShapeToArena(FoShape3D spec)
-    // {
-    //     var world = GetWorld();
-    //     world.AddGlyph3D<FoShape3D>(spec);
-    //    // GetArena().RenderWorld3D(world);
-    //     return world;
-    // }
 
-    protected void GenerateGeometry()
+
+    public void GenerateGeometry()
     {
         var width = new Length(1, "m");
         var height = new Length(2.6, "m");
@@ -189,16 +207,7 @@ public class CableChannels : FoComponent
 
 
 
-    public void BuildChannels()
-    {
-        GenerateGeometry();
 
-
-        var world = GetWorld();
-        var arena = GetArena();
-        arena.RenderWorld3D(world);
-
-    }
 
 
 

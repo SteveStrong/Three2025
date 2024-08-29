@@ -61,8 +61,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         //Diagram = MentorServices!.EstablishDiagram();
         //RefreshWorkbookMenus();
 
-        var page = Workbook.CurrentPage();
-        $"new current page {page.Title}".WriteInfo();
+
 
         var url = ""; //RestAPI?.GetServerUrl() ?? "";
         Workspace.CreateCommands(Workspace, JsRuntime, Navigation, url);
@@ -91,14 +90,10 @@ public partial class HomeBase : ComponentBase, IDisposable
         {
             //PubSub!.SubscribeTo<ViewStyle>(OnViewStyleChanged);
             //Toast!.Success($"Drawing Page Loaded!");
-            Workspace.GetDrawing();
-            Workspace.GetArena();
+            //Workspace.GetDrawing();
+            //Workspace.GetArena();
 
-            // await Task.Run(async () =>
-            // {
-            //     await Task.Delay(5000);
-            //     Go();
-            // });
+
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -108,17 +103,18 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         //"Click Go".WriteInfo();
         GoDrawing();
-        //GoWorld();
-         GoCables();
+        GoCables();
+        CreateAndRenderBox();
     }
     
     protected void GoCables()
     {
         var cables = new CableChannels(Workspace,FoundryService);
-        cables.BuildChannels();
+        cables.GenerateGeometry();
+
     }
 
-    protected void GoWorld()
+    protected void CreateAndRenderBox(bool render = true)
     {
         var arena = Workspace.GetArena();
 
@@ -135,10 +131,11 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         //this should render
         arena.AddShape<FoShape3D>(shape);
-        Task.Run(async () =>
-        {
-            await arena.UpdateArena();
-        });
+        if ( render )
+            Task.Run(async () =>
+            {
+                await arena.UpdateArena();
+            });
 
     }
     protected void GoDrawing()

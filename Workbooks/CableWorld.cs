@@ -12,8 +12,6 @@ public class CableWorld : FoWorld3D
     {
     }
 
-
-
     public override string GetTreeNodeTitle()
     {
         return $"World xxx {base.GetTreeNodeTitle()}";
