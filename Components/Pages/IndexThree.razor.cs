@@ -32,7 +32,6 @@ public class IndexThreePage : ComponentBase, IDisposable
     public TextPanel TextPanel1 { get; set; } = new();
     public TextPanel TextPanel2 { get; set; } = new();
     public PanelGroup PanelGroup1 { get; set; } = new();
-    
     public Scene scene  { get; set; }
 
     public ViewerSettings settings = new ViewerSettings()
@@ -40,7 +39,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         containerId = "example1",
         CanSelect = true,// default is false
         SelectedColor = "#808080",
-        Width = 1800,
+        Width = 1500,
         Height = 1000,
         WebGLRendererSettings = new WebGLRendererSettings
         {
@@ -48,34 +47,70 @@ public class IndexThreePage : ComponentBase, IDisposable
         }
     };
 
-
-
-    public void Dispose()
-    {
-        // View3D1.ObjectSelected -= OnObjectSelected;
-        // View3D1.ObjectLoaded -= OnObjectLoaded;
-        View3D1.JsModuleLoaded -= OnJsModuleLoaded;
-    }
-
-    protected override void OnInitialized()
-    {
+ 
+    protected override Task OnInitializedAsync()
+    {        
+        objGuid = Guid.NewGuid();
         scene = new(jsRuntime!);
-        base.OnInitialized();
+        scene.Add(new AmbientLight());
+        scene.Add(new PointLight()
+        {
+            Position = new Vector3(1, 3, 0)
+        });
+         return base.OnInitializedAsync();
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-          
             // subscribe events only once
             // View3D1.ObjectSelected += OnObjectSelected;
             // View3D1.ObjectLoaded += OnObjectLoaded;
-            View3D1.JsModuleLoaded += OnJsModuleLoaded;
+            //View3D1.JsModuleLoaded += OnJsModuleLoaded;
+            DoRenderingTest();
 
         }
-
         return base.OnAfterRenderAsync(firstRender);
+    }
+
+    public void Dispose()
+    {
+        // View3D1.ObjectSelected -= OnObjectSelected;
+        // View3D1.ObjectLoaded -= OnObjectLoaded;
+        //View3D1.JsModuleLoaded -= OnJsModuleLoaded;
+    }
+
+    public void DoRenderingTest()
+    {
+        var pos = new Vector3(0, 0, 0);
+        var rot = new Euler(0, 0, 0);
+        var piv = new Vector3(0, 0, 0);
+
+        var model = new ImportSettings
+        {
+            Uuid = Guid.NewGuid(),
+            Format = Import3DFormats.Gltf,
+            FileURL = "/storage/StaticFiles/porsche_911.glb",
+            Position = pos,
+            Rotation = rot,
+            Pivot = piv,
+            OnComplete = (Scene scene, Object3D object3D) =>
+            {
+                if (object3D != null)
+                {
+                    Console.WriteLine($"OnComplete callback object3d.Uuid={object3D.Uuid}");
+                    Msg = $"Loaded 3D Model with id = {object3D.Uuid}";
+                    StateHasChanged();
+                }
+                else
+                {
+                    Console.WriteLine($"object3D is null");
+                }
+            }
+        };
+
+        Task.Run(async () => await scene.Request3DModel(model));
     }
 
     public async Task OnJsModuleLoaded()
@@ -203,9 +238,9 @@ public class IndexThreePage : ComponentBase, IDisposable
         {
             Uuid = Guid.NewGuid(),
             Format = Import3DFormats.Gltf,
-            // FileURL = "https://localhost:5228/storage/StaticFiles/jet.glb",
+            FileURL = "https://localhost:5228/storage/StaticFiles/jet.glb",
             // FileURL = "https://localhost:5228/storage/StaticFiles/block_large.glb",
-            FileURL = "https://localhost:5228/storage/StaticFiles/block_small.glb",
+            //FileURL = "https://localhost:5228/storage/StaticFiles/block_small.glb",
 
             // FileURL = "https://localhost:5228/storage/StaticFiles/pr_H64_wheel_H187_0048_inst_0.glb",
             Position = model3Pos,
@@ -391,14 +426,9 @@ public class IndexThreePage : ComponentBase, IDisposable
     }
 
 
-    protected override Task OnInitializedAsync()
-    {
-        scene.Add(new AmbientLight());
-        scene.Add(new PointLight()
-        {
-            Position = new Vector3(1, 3, 0)
-        });
 
+    private  void MoreTesting()
+    {
         var height = 4;
 
         var piv = new Vector3(-1, -height / 2, -3);
@@ -427,8 +457,39 @@ public class IndexThreePage : ComponentBase, IDisposable
             Position = new Vector3(0, 0, 0),
         };
 
-        scene.Request3DModel(model);
+        Task.Run(async () => await scene.Request3DModel(model));
 
+        var model3Pos = new Vector3(0, 0, -2);
+        var model3 = new ImportSettings
+        {
+            Uuid = Guid.NewGuid(),
+            Format = Import3DFormats.Gltf,
+            FileURL = "https://localhost:5228/storage/StaticFiles/jet.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/block_large.glb",
+            //FileURL = "https://localhost:5228/storage/StaticFiles/block_small.glb",
+
+            // FileURL = "https://localhost:5228/storage/StaticFiles/pr_H64_wheel_H187_0048_inst_0.glb",
+            Position = model3Pos,
+            OnComplete = (Scene scene, Object3D object3D) =>
+            {
+                if (object3D != null)
+                {
+                    Console.WriteLine($"OnComplete callback model3 object3d.Uuid={object3D.Uuid}");
+                    Msg = $"Loaded 3D Model with id = {object3D.Uuid}";
+                    StateHasChanged();
+
+                    object3D.Position.Set(model3Pos.X, model3Pos.Y, model3Pos.Z);
+
+                    // await View3D1.UpdateScene();
+                }
+                else
+                {
+                    Console.WriteLine($"object3D is null");
+                }
+            }
+        };
+
+        Task.Run(async () => await scene.Request3DModel(model3));
 
         //TestText = scene.Add(new LabelText("My First Text") { Position = new Vector3(0, 3, 0), Color = "#33333a" }) as LabelText;
 
@@ -651,7 +712,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         //         Color = "RosyBrown"
         //     }
         // });
-        return base.OnInitializedAsync();
+        //return base.OnInitializedAsync();
     }
 
     private PanelMenu BuildMenu()
