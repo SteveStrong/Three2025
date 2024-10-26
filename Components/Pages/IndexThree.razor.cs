@@ -96,12 +96,12 @@ public class IndexThreePage : ComponentBase, IDisposable
             Uuid = model2Guid,
             Format = Import3DFormats.Gltf,
             // FileURL = "/assets/legoMan/pr_Body.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/MK48_88480001_Pixyz_RnD.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/Tail_ANIM_v017.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/BoxAnimated.glb",
-            FileURL = "https://localhost:5001/storage/StaticFiles/pr_Leg_Left.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/8847996_STEERING_ASSY.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/pr_2505431__PISTON_RING_1_1185_278260.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/MK48_88480001_Pixyz_RnD.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/Tail_ANIM_v017.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/BoxAnimated.glb",
+            FileURL = "https://localhost:5228/storage/StaticFiles/pr_Leg_Left.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/8847996_STEERING_ASSY.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/pr_2505431__PISTON_RING_1_1185_278260.glb",
             Position = model2Pos,
             OnClick = (ImportSettings self) =>
             {
@@ -157,14 +157,14 @@ public class IndexThreePage : ComponentBase, IDisposable
         {
             Uuid = Guid.NewGuid(),
             Format = Import3DFormats.Gltf,
-            // FileURL = "https://localhost:5001/storage/StaticFiles/8847996_STEERING_ASSY.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/pr_2505431__PISTON_RING_1_1185_278260.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/barrel.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/pr_H64_wheel_H187_0048_inst_0.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/block_large.glb",
-            FileURL = "https://localhost:5001/storage/StaticFiles/block_small.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/MK48_273694.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/MK48_88480001_Pixyz_RnD.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/8847996_STEERING_ASSY.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/pr_2505431__PISTON_RING_1_1185_278260.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/barrel.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/pr_H64_wheel_H187_0048_inst_0.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/block_large.glb",
+            FileURL = "https://localhost:5228/storage/StaticFiles/block_small.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/MK48_273694.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/MK48_88480001_Pixyz_RnD.glb",
             Position = pos,
             Rotation = rot,
             Pivot = piv,
@@ -203,11 +203,11 @@ public class IndexThreePage : ComponentBase, IDisposable
         {
             Uuid = Guid.NewGuid(),
             Format = Import3DFormats.Gltf,
-            // FileURL = "https://localhost:5001/storage/StaticFiles/jet.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/block_large.glb",
-            FileURL = "https://localhost:5001/storage/StaticFiles/block_small.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/jet.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/block_large.glb",
+            FileURL = "https://localhost:5228/storage/StaticFiles/block_small.glb",
 
-            // FileURL = "https://localhost:5001/storage/StaticFiles/pr_H64_wheel_H187_0048_inst_0.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/pr_H64_wheel_H187_0048_inst_0.glb",
             Position = model3Pos,
             OnComplete = (Scene scene, Object3D object3D) =>
             {
@@ -328,12 +328,12 @@ public class IndexThreePage : ComponentBase, IDisposable
         {
             Uuid = Guid.NewGuid(),
             Format = Import3DFormats.Gltf,
-            // FileURL = "https://localhost:5001/storage/StaticFiles/8847996_STEERING_ASSY.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/pr_2505431__PISTON_RING_1_1185_278260.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/pr_H64_wheel_H187_0048_inst_0.glb",
-            FileURL = "https://localhost:5001/storage/StaticFiles/barrel.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/MK48_273694.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/MK48_88480001_Pixyz_RnD.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/8847996_STEERING_ASSY.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/pr_2505431__PISTON_RING_1_1185_278260.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/pr_H64_wheel_H187_0048_inst_0.glb",
+            FileURL = "https://localhost:5228/storage/StaticFiles/barrel.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/MK48_273694.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/MK48_88480001_Pixyz_RnD.glb",
             Position = pos,
             OnComplete = (Scene scene, Object3D object3D) =>
             {
@@ -361,14 +361,14 @@ public class IndexThreePage : ComponentBase, IDisposable
         {
             Uuid = Guid.NewGuid(),
             Format = Import3DFormats.Gltf,
-            // FileURL = "https://localhost:5001/storage/StaticFiles/8847996_STEERING_ASSY.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/pr_2505431__PISTON_RING_1_1185_278260.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/pr_H64_wheel_H187_0048_inst_0.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/barrel.glb",
-            FileURL = "https://localhost:5001/storage/StaticFiles/block_small.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/8847996_STEERING_ASSY.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/pr_2505431__PISTON_RING_1_1185_278260.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/pr_H64_wheel_H187_0048_inst_0.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/barrel.glb",
+            FileURL = "https://localhost:5228/storage/StaticFiles/block_small.glb",
 
-            // FileURL = "https://localhost:5001/storage/StaticFiles/MK48_273694.glb",
-            // FileURL = "https://localhost:5001/storage/StaticFiles/MK48_88480001_Pixyz_RnD.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/MK48_273694.glb",
+            // FileURL = "https://localhost:5228/storage/StaticFiles/MK48_88480001_Pixyz_RnD.glb",
             Position = pos,
             OnComplete = (Scene scene, Object3D object3D) =>
             {
