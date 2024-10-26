@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/home"
 
 @using FoundryBlazor.Shared
 @using FoundryRulesAndUnits.Extensions
@@ -17,6 +17,6 @@
 <div class="d-flex">
     @* <Canvas2DComponent CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight" /> *@
     <Canvas3DComponent CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight" />
-    @* <Viewer @ref="View3D1" ViewerSettings=@settings Scene=scene /> *@
+    @* <Viewer @ref="View3D1" ViewerSettings=@settings ActiveScene=scene /> *@
     <ShapeTreeView />
 </div>

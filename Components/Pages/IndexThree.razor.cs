@@ -13,12 +13,15 @@ using BlazorThreeJS.Labels;
 using BlazorThreeJS.Enums;
 using BlazorThreeJS.Menus;
 using FoundryRulesAndUnits.Extensions;
+using Microsoft.JSInterop;
 
 
 namespace Three2025.Pages.DrawingPage;
 
 public class IndexThreePage : ComponentBase, IDisposable
 {
+    [Inject] private IJSRuntime? jsRuntime { get; set; }
+
     public Viewer View3D1 = null!;
     public Guid objGuid;
     public string Msg = string.Empty;
@@ -29,21 +32,23 @@ public class IndexThreePage : ComponentBase, IDisposable
     public TextPanel TextPanel1 { get; set; } = new();
     public TextPanel TextPanel2 { get; set; } = new();
     public PanelGroup PanelGroup1 { get; set; } = new();
+    
+    public Scene scene  { get; set; }
 
     public ViewerSettings settings = new ViewerSettings()
     {
         containerId = "example1",
         CanSelect = true,// default is false
         SelectedColor = "#808080",
-        Width = 900,
-        Height = 600,
+        Width = 1800,
+        Height = 1000,
         WebGLRendererSettings = new WebGLRendererSettings
         {
             Antialias = false // if you need poor quality for some reasons
         }
     };
 
-    public Scene scene = new();
+
 
     public void Dispose()
     {
@@ -52,10 +57,17 @@ public class IndexThreePage : ComponentBase, IDisposable
         View3D1.JsModuleLoaded -= OnJsModuleLoaded;
     }
 
+    protected override void OnInitialized()
+    {
+        scene = new(jsRuntime!);
+        base.OnInitialized();
+    }
+
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+          
             // subscribe events only once
             // View3D1.ObjectSelected += OnObjectSelected;
             // View3D1.ObjectLoaded += OnObjectLoaded;
@@ -110,7 +122,7 @@ public class IndexThreePage : ComponentBase, IDisposable
 
                 Task.Run(async () =>
                 {
-                    await View3D1.UpdateScene();
+                    await scene.UpdateScene();
                 });
             }
             // OnComplete = (Scene scene, Object3D object3D) =>
@@ -132,7 +144,7 @@ public class IndexThreePage : ComponentBase, IDisposable
             // }
         };
 
-        await View3D1.Request3DModel(model2);
+        await scene.Request3DModel(model2);
 
         // var settings = new List<ImportSettings>() { model1, model2 };
 
@@ -182,7 +194,7 @@ public class IndexThreePage : ComponentBase, IDisposable
             }
         };
 
-        await View3D1.Request3DModel(sourceModel);
+        await scene.Request3DModel(sourceModel);
 
 
 
@@ -216,7 +228,7 @@ public class IndexThreePage : ComponentBase, IDisposable
             }
         };
 
-        await View3D1.Request3DModel(model3);
+        await scene.Request3DModel(model3);
 
     }
 
@@ -227,7 +239,7 @@ public class IndexThreePage : ComponentBase, IDisposable
 
         var settings = new List<ImportSettings>() { m1, m2 };
         // var settings = new List<ImportSettings>() { m1 };
-        await View3D1.Clone3DModel(sourceGuid, settings);
+        await scene.Clone3DModel(sourceGuid, settings);
     }
 
     private async Task<ImportSettings> RenderLegoMan()
@@ -298,13 +310,13 @@ public class IndexThreePage : ComponentBase, IDisposable
 
 
 
-        await View3D1.Request3DModel(body);
-        await View3D1.Request3DModel(head);
-        await View3D1.Request3DModel(armLeft);
-        await View3D1.Request3DModel(armRight);
-        await View3D1.Request3DModel(pelvis);
-        await View3D1.Request3DModel(legLeft);
-        await View3D1.Request3DModel(legRight);
+        await scene.Request3DModel(body);
+        await scene.Request3DModel(head);
+        await scene.Request3DModel(armLeft);
+        await scene.Request3DModel(armRight);
+        await scene.Request3DModel(pelvis);
+        await scene.Request3DModel(legLeft);
+        await scene.Request3DModel(legRight);
         return body;
     }
 
@@ -393,21 +405,32 @@ public class IndexThreePage : ComponentBase, IDisposable
         var pos = new Vector3(0, height, 0);
         var rot = new Euler(0, Math.PI * 45 / 180, 0);
 
-        // var realPos = new Vector3(piv.X + pos.X, piv.Y + pos.Y, piv.Z + pos.Z);
+        var realPos = new Vector3(piv.X + pos.X, piv.Y + pos.Y, piv.Z + pos.Z);
 
-        scene.Add(new Mesh
+        // scene.Add(new Mesh
+        // {
+        //     Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
+        //     Position = pos,
+        //     Rotation = rot,
+        //     Pivot = piv,
+        //     Material = new MeshStandardMaterial()
+        //     {
+        //         Color = "magenta"
+        //     }
+        // });
+
+        var model = new ImportSettings
         {
-            Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
-            Position = pos,
-            Rotation = rot,
-            Pivot = piv,
-            Material = new MeshStandardMaterial()
-            {
-                Color = "magenta"
-            }
-        });
+            Uuid = Guid.NewGuid(),
+            Format = Import3DFormats.Gltf,
+            FileURL = "/storage/StaticFiles/porsche_911.glb",
+            Position = new Vector3(0, 0, 0),
+        };
 
-        TestText = scene.Add(new LabelText("My First Text") { Position = new Vector3(0, 3, 0), Color = "#33333a" }) as LabelText;
+        scene.Request3DModel(model);
+
+
+        //TestText = scene.Add(new LabelText("My First Text") { Position = new Vector3(0, 3, 0), Color = "#33333a" }) as LabelText;
 
         // scene.Add(new Mesh
         // {
@@ -420,79 +443,79 @@ public class IndexThreePage : ComponentBase, IDisposable
         //     }
         // });
 
-        var buttons = new List<Button>() {
-            new Button("BTN1", "OFF") {
-                OnClick = ClickButton1
-            },
-            new Button("BTN2","Button 2"),
-            new Button("BTN3","Button 3")
-        };
-        var menuPos = new Vector3(-4, 3, -2);
-        var menuRot = new Euler(-1 * Math.PI * 30 / 180, 0, 0);
+        // var buttons = new List<Button>() {
+        //     new Button("BTN1", "OFF") {
+        //         OnClick = ClickButton1
+        //     },
+        //     new Button("BTN2","Button 2"),
+        //     new Button("BTN3","Button 3")
+        // };
+        // var menuPos = new Vector3(-4, 3, -2);
+        // var menuRot = new Euler(-1 * Math.PI * 30 / 180, 0, 0);
 
-        var panel = new PanelMenu
-        {
-            Name = "MENU1",
-            Width = 1.0,
-            Height = 3.0,
-            Position = menuPos,
-            Rotation = menuRot
-        };
+        // var panel = new PanelMenu
+        // {
+        //     Name = "MENU1",
+        //     Width = 1.0,
+        //     Height = 3.0,
+        //     Position = menuPos,
+        //     Rotation = menuRot
+        // };
 
-        panel.Buttons.AddRange(buttons);
-        scene.Add(panel);
+        // panel.Buttons.AddRange(buttons);
+        // scene.Add(panel);
 
         // scene.Add(BuildTextPanel());
-        scene.Add(BuildPanelGroup());
+        //scene.Add(BuildPanelGroup());
 
-        var capsuleLength = 0.35;
-        var capsuleRadius = 0.15f;
-        var capsulePositions = new List<Vector3>() {
-            new Vector3(0, 0, 0),
-            new Vector3(4, 0, 0),
-            new Vector3(4, 4, 0),
-            new Vector3(4, 4, -4)
-        };
+        // var capsuleLength = 0.35;
+        // var capsuleRadius = 0.15f;
+        // var capsulePositions = new List<Vector3>() {
+        //     new Vector3(0, 0, 0),
+        //     new Vector3(4, 0, 0),
+        //     new Vector3(4, 4, 0),
+        //     new Vector3(4, 4, -4)
+        // };
 
-        scene.Add(new Mesh
-        {
-            Geometry = new CapsuleGeometry(radius: capsuleRadius, length: capsuleLength),
-            Position = capsulePositions.ElementAt(0),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "darkgreen"
-            }
-        });
+        // scene.Add(new Mesh
+        // {
+        //     Geometry = new CapsuleGeometry(radius: capsuleRadius, length: capsuleLength),
+        //     Position = capsulePositions.ElementAt(0),
+        //     Material = new MeshStandardMaterial()
+        //     {
+        //         Color = "darkgreen"
+        //     }
+        // });
 
-        scene.Add(new Mesh
-        {
-            Geometry = new CapsuleGeometry(radius: capsuleRadius, length: capsuleLength),
-            Position = capsulePositions.ElementAt(1),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "blue"
-            }
-        });
+        // scene.Add(new Mesh
+        // {
+        //     Geometry = new CapsuleGeometry(radius: capsuleRadius, length: capsuleLength),
+        //     Position = capsulePositions.ElementAt(1),
+        //     Material = new MeshStandardMaterial()
+        //     {
+        //         Color = "blue"
+        //     }
+        // });
 
-        scene.Add(new Mesh
-        {
-            Geometry = new CapsuleGeometry(radius: capsuleRadius, length: capsuleLength),
-            Position = capsulePositions.ElementAt(2),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "yellow"
-            }
-        });
+        // scene.Add(new Mesh
+        // {
+        //     Geometry = new CapsuleGeometry(radius: capsuleRadius, length: capsuleLength),
+        //     Position = capsulePositions.ElementAt(2),
+        //     Material = new MeshStandardMaterial()
+        //     {
+        //         Color = "yellow"
+        //     }
+        // });
 
-        scene.Add(new Mesh
-        {
-            Geometry = new CapsuleGeometry(radius: capsuleRadius, length: capsuleLength),
-            Position = capsulePositions.ElementAt(3),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "red"
-            }
-        });
+        // scene.Add(new Mesh
+        // {
+        //     Geometry = new CapsuleGeometry(radius: capsuleRadius, length: capsuleLength),
+        //     Position = capsulePositions.ElementAt(3),
+        //     Material = new MeshStandardMaterial()
+        //     {
+        //         Color = "red"
+        //     }
+        // });
 
         // var tube = scene.Add(new Mesh
         // {
@@ -505,15 +528,15 @@ public class IndexThreePage : ComponentBase, IDisposable
         // });
 
 
-        var tube = scene.Add(new Mesh
-        {
-            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
-            Position = new Vector3(0, 0, 0),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "yellow"
-            }
-        });
+        // var tube = scene.Add(new Mesh
+        // {
+        //     Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+        //     Position = new Vector3(0, 0, 0),
+        //     Material = new MeshStandardMaterial()
+        //     {
+        //         Color = "yellow"
+        //     }
+        // });
 
 
         // var cone = new Mesh
@@ -798,7 +821,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         // });
         Task.Run(async () =>
         {
-            await View3D1.UpdateScene();
+            await scene.UpdateScene();
         });
 
     }
@@ -836,7 +859,7 @@ public class IndexThreePage : ComponentBase, IDisposable
     {
         if (SelectedObject != null)
         {
-            await View3D1.RemoveByUuidAsync(SelectedObject.Uuid);
+            await scene.RemoveByUuidAsync(SelectedObject.Uuid);
             SelectedObject = null;
         }
     }
@@ -844,7 +867,7 @@ public class IndexThreePage : ComponentBase, IDisposable
     public async Task OnClearScene()
     {
         SelectedObject = null;
-        await View3D1.ClearSceneAsync();
+        await scene.ClearSceneAsync();
         // await View3D1.UpdateScene();
     }
 
@@ -865,7 +888,7 @@ public class IndexThreePage : ComponentBase, IDisposable
             if (axis == 2) SelectedObject.Position.Z = pos.Z + moveBy;
 
             // await View3D1.MoveObject(SelectedObject);
-            await View3D1.UpdateScene();
+            await scene.UpdateScene();
 
         }
     }
@@ -882,7 +905,21 @@ public class IndexThreePage : ComponentBase, IDisposable
             }
         });
 
-        await View3D1.UpdateScene();
+        await scene.UpdateScene();
+    }
+
+    public async Task OnAddTRex()
+    {
+        var model = new ImportSettings
+        {
+            Uuid = Guid.NewGuid(),
+            Format = Import3DFormats.Gltf,
+            FileURL = "/storage/StaticFiles/porsche_911.glb",
+            Position = new Vector3(0, 0, 0),
+        };
+
+        await scene.Request3DModel(model);
+        await scene.UpdateScene();
     }
 
     public async Task OnUpdateText()
@@ -904,7 +941,7 @@ public class IndexThreePage : ComponentBase, IDisposable
 
         if (TestText != null) TestText.Text = newText;
 
-        await View3D1.UpdateScene();
+        await scene.UpdateScene();
     }
 
 }

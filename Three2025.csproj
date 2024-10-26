@@ -17,7 +17,7 @@
     <!-- <PackageReference Include="ApprenticeFoundryBlazor" Version="14.0.0" /> -->
     <!-- <PackageReference Include="BlazorComponentBus" Version="2.2.0" /> -->
   
-    <PackageReference Include="System.Text.Json" Version="8.0.4" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <PackageReference Include="Radzen.Blazor" Version="5.0.2" />
   </ItemGroup>
 

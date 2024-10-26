@@ -82,6 +82,23 @@ public class CableChannels : FoComponent
 
         });
 
+        _world.AddAction("Porsche", "btn-primary", () =>
+        {
+            $"Loading Porsche".WriteNote();
+
+            var space = _space;
+            var baseURL = $"{space.GetBaseUrl()}storage";
+            var url = Path.Join(baseURL, "StaticFiles","porsche_911.glb");
+
+            $"Loading {url}".WriteNote();
+
+            var shape = DoLoad3dModel(url, 2, 6, 2);
+
+            var arena = _space.GetArena();
+            arena.AddShape<FoShape3D>(shape);
+
+        });
+        
         _world.AddAction("Render Tube", "btn-primary", () =>
         {
 
@@ -109,8 +126,7 @@ public class CableChannels : FoComponent
 
             Task.Run(async () =>
             {
-                var window = arena.CurrentViewer();
-                await window.UpdateScene();
+                await scene.UpdateScene();
             });
         });
 
@@ -138,8 +154,7 @@ public class CableChannels : FoComponent
 
             Task.Run(async () =>
             {
-                var window = arena.CurrentViewer();
-                await window.UpdateScene();
+                await scene.UpdateScene();
             });
         });
     }
