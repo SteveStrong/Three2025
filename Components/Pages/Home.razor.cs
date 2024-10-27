@@ -102,9 +102,9 @@ public partial class HomeBase : ComponentBase, IDisposable
     protected void Go()
     {
         //"Click Go".WriteInfo();
-        GoDrawing();
+        //GoDrawing();
         GoCables();
-        CreateAndRenderBox();
+        //CreateAndRenderBox();
     }
     
     protected void GoCables()

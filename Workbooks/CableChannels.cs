@@ -39,7 +39,7 @@ public class CableChannels : FoComponent
         var stage = arena.CurrentStage();
         stage.AddAction("Render", "btn-primary", () =>
         {
-            Task.Run(() => stage.PreRender(arena));
+            stage.PreRender(arena);
             Task.Run(async () => await stage.RenderDetailed(arena.CurrentScene(),0,0));
         });
 
