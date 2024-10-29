@@ -11,6 +11,7 @@ using FoundryBlazor.Solutions;
 using FoundryBlazor.Shape;
 using FoundryBlazor.Shared;
 using FoundryBlazor;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,20 +36,17 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddCascadingAuthenticationState();
 
-
-
-//Services setup
 builder.Services.Configure<StaticFileOptions>(options =>
 {
-    options.ContentTypeProvider = new FileExtensionContentTypeProvider
-    {
-        Mappings =
-        {
-            [".gltf"] = "model/gltf+json",
-            [".glb"] = "model/gltf-binary"
-        }
-    };
+    var provider = new FileExtensionContentTypeProvider();
+    foreach (var item in FileExtensionHelpers.MIMETypeData())
+        if ( !provider.Mappings.ContainsKey(item.Key))
+            provider.Mappings.Add(item.Key,item.Value);
+    
+    options.ContentTypeProvider = provider;
 });
+
+
 
 // var envVaultConfig = new VaultEnvConfig("./.env");
 // builder.Services.AddSingleton<IVaultEnvConfig>(provider => envVaultConfig);
@@ -121,13 +119,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// http://binaryintellect.net/articles/612cf2d1-5b3d-40eb-a5ff-924005955a62.aspx
-// This code configures the FormOptions and sets the MultipartBodyLengthLimit 
-// property to 200 MB.
-builder.Services.Configure<FormOptions>(x =>
-{
-    x.MultipartBodyLengthLimit = 209715200;
-});
 
 
 var app = builder.Build();
@@ -155,6 +146,21 @@ var serviceScope = ((IApplicationBuilder)app).ApplicationServices
 var unitsystem = serviceScope.ServiceProvider.GetService<IUnitSystem>();
 unitsystem?.Apply(UnitSystemType.MKS);
 
+var storagePath = Path.Combine(Directory.GetCurrentDirectory(), "storage");
+
+// Enable directory browsing for the storage folder
+app.UseDirectoryBrowser(new DirectoryBrowserOptions
+{
+    FileProvider = new PhysicalFileProvider(storagePath),
+    RequestPath = "/storage"
+});
+
+// Serve files from storage directory
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(storagePath),
+    RequestPath = "/storage"
+});
 
 var root = Directory.GetCurrentDirectory();
 
