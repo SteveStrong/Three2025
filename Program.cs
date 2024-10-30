@@ -133,7 +133,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
+
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
@@ -158,9 +158,12 @@ app.UseDirectoryBrowser(new DirectoryBrowserOptions
 // Serve files from storage directory
 app.UseStaticFiles(new StaticFileOptions
 {
+    ServeUnknownFileTypes = true,
     FileProvider = new PhysicalFileProvider(storagePath),
     RequestPath = "/storage"
 });
+
+//app.UseStaticFiles();
 
 var root = Directory.GetCurrentDirectory();
 

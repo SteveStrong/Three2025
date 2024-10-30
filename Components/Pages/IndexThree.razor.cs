@@ -40,7 +40,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         CanSelect = true,// default is false
         SelectedColor = "#808080",
         Width = 1500,
-        Height = 1000,
+        Height = 800,
         WebGLRendererSettings = new WebGLRendererSettings
         {
             Antialias = false // if you need poor quality for some reasons
@@ -69,6 +69,7 @@ public class IndexThreePage : ComponentBase, IDisposable
             // View3D1.ObjectLoaded += OnObjectLoaded;
             //View3D1.JsModuleLoaded += OnJsModuleLoaded;
             DoRenderingTest();
+            //MoreTesting();
 
         }
         return base.OnAfterRenderAsync(firstRender);
@@ -91,7 +92,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         {
             Uuid = Guid.NewGuid(),
             Format = Import3DFormats.Gltf,
-            FileURL = "/storage/StaticFiles/porsche_911.glb",
+            FileURL = @"https://localhost:7101/jet.glb",
             Position = pos,
             Rotation = rot,
             Pivot = piv,
@@ -437,17 +438,17 @@ public class IndexThreePage : ComponentBase, IDisposable
 
         var realPos = new Vector3(piv.X + pos.X, piv.Y + pos.Y, piv.Z + pos.Z);
 
-        // scene.Add(new Mesh
-        // {
-        //     Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
-        //     Position = pos,
-        //     Rotation = rot,
-        //     Pivot = piv,
-        //     Material = new MeshStandardMaterial()
-        //     {
-        //         Color = "magenta"
-        //     }
-        // });
+        scene.Add(new Mesh
+        {
+            Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
+            Position = pos,
+            Rotation = rot,
+            Pivot = piv,
+            Material = new MeshStandardMaterial()
+            {
+                Color = "magenta"
+            }
+        });
 
         var model = new ImportSettings
         {
@@ -949,7 +950,7 @@ public class IndexThreePage : ComponentBase, IDisposable
             if (axis == 2) SelectedObject.Position.Z = pos.Z + moveBy;
 
             // await View3D1.MoveObject(SelectedObject);
-            await scene.UpdateScene();
+            //await scene.UpdateScene();
 
         }
     }
@@ -975,7 +976,22 @@ public class IndexThreePage : ComponentBase, IDisposable
         {
             Uuid = Guid.NewGuid(),
             Format = Import3DFormats.Gltf,
-            FileURL = "/storage/StaticFiles/porsche_911.glb",
+            //FileURL = "https://localhost:7101/storage/StaticFiles/porsche_911.glb",
+            FileURL = "https://localhost:7101/storage/StaticFiles/T_Rex.glb",
+            Position = new Vector3(2, 0, 2),
+        };
+
+        await scene.Request3DModel(model);
+        await scene.UpdateScene();
+    }
+
+    public async Task OnAddJET()
+    {
+        var model = new ImportSettings
+        {
+            Uuid = Guid.NewGuid(),
+            Format = Import3DFormats.Gltf,
+            FileURL = @"https://localhost:7101/jet.glb",
             Position = new Vector3(0, 0, 0),
         };
 
@@ -1002,7 +1018,7 @@ public class IndexThreePage : ComponentBase, IDisposable
 
         if (TestText != null) TestText.Text = newText;
 
-        await scene.UpdateScene();
+        await scene.Update();
     }
 
 }

@@ -1,5 +1,6 @@
-﻿@page "/"
+﻿
 @page "/home"
+
 @using FoundryBlazor.Shared
 @using FoundryRulesAndUnits.Extensions
 
@@ -11,9 +12,10 @@
 <PageTitle>Home</PageTitle>
 @* <WorkSpaceMenu /> *@
 
-<RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" Text="Go" Click="@Go" />
+<RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" Text="Create World" Click="@Go" />
 
-
+<button class="btn btn-primary" @onclick="OnAddTRex">Add T-Rex</button>
+<button class="btn btn-primary" @onclick="OnAddJET">Add JET</button>
 <div class="d-flex">
     @* <Canvas2DComponent CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight" /> *@
     <Canvas3DComponent CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight" />

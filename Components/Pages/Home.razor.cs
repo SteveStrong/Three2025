@@ -1,13 +1,13 @@
-﻿using BlazorComponentBus;
-using FoundryBlazor.Shared;
+﻿using FoundryBlazor.Shared;
 using FoundryBlazor.Solutions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using FoundryRulesAndUnits.Extensions;
 using FoundryBlazor.Shape;
 using Three2025.Model;
 using BlazorThreeJS.Viewers;
 using BlazorThreeJS.Settings;
+using BlazorThreeJS.Maths;
+using BlazorThreeJS.Enums;
 using BlazorThreeJS.Scenes;
 
 
@@ -31,6 +31,8 @@ public partial class HomeBase : ComponentBase, IDisposable
     [Parameter] public string LoadWorkbook { get; set; } = "knowledge";
 
     public FoWorkbook Workbook { get; set; }
+    public Scene scene  { get; set; }
+
 
     public ViewerSettings settings = new ViewerSettings()
     {
@@ -44,6 +46,8 @@ public partial class HomeBase : ComponentBase, IDisposable
             Antialias = false // if you need poor quality for some reasons
         }
     };
+
+ 
 
 
     protected override void OnInitialized()
@@ -65,10 +69,23 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var url = ""; //RestAPI?.GetServerUrl() ?? "";
         Workspace.CreateCommands(Workspace, JsRuntime, Navigation, url);
+        var arena = Workspace.GetArena();
+        scene = arena.CurrentScene();
 
         base.OnInitialized();
     }
 
+//    protected override Task OnInitializedAsync()
+//     {        
+//         objGuid = Guid.NewGuid();
+//         scene = new(jsRuntime!);
+//         scene.Add(new AmbientLight());
+//         scene.Add(new PointLight()
+//         {
+//             Position = new Vector3(1, 3, 0)
+//         });
+//          return base.OnInitializedAsync();
+//     }
 
     protected override async Task OnInitializedAsync()
     {
@@ -169,7 +186,37 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     }
 
+   public async Task OnAddTRex()
+    {
+        var model = new ImportSettings
+        {
+            Uuid = Guid.NewGuid(),
+            Format = Import3DFormats.Gltf,
+            //FileURL = "https://localhost:7101/storage/StaticFiles/porsche_911.glb",
+            FileURL = "https://localhost:7101/storage/StaticFiles/T_Rex.glb",
+            Position = new Vector3(2, 0, 2),
+        };
 
+
+
+        await scene.Request3DModel(model);
+        await scene.UpdateScene();
+    }
+
+    public async Task OnAddJET()
+    {
+        var model = new ImportSettings
+        {
+            Uuid = Guid.NewGuid(),
+            Format = Import3DFormats.Gltf,
+            FileURL = @"https://localhost:7101/jet.glb",
+            Position = new Vector3(0, 0, 0),
+        };
+
+
+        await scene.Request3DModel(model);
+        await scene.UpdateScene();
+    }
     public List<FoPage2D> AllPages()
     {
         var drawing = Workspace.GetDrawing()!;
