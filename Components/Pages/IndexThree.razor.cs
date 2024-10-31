@@ -949,8 +949,8 @@ public class IndexThreePage : ComponentBase, IDisposable
             if (axis == 1) SelectedObject.Position.Y = pos.Y + moveBy;
             if (axis == 2) SelectedObject.Position.Z = pos.Z + moveBy;
 
-            // await View3D1.MoveObject(SelectedObject);
-            //await scene.UpdateScene();
+            await scene.MoveObject(SelectedObject);
+            await scene.UpdateScene();
 
         }
     }
@@ -1018,7 +1018,7 @@ public class IndexThreePage : ComponentBase, IDisposable
 
         if (TestText != null) TestText.Text = newText;
 
-        await scene.Update();
+        await scene.UpdateScene();
     }
 
 }
