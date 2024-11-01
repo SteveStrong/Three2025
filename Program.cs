@@ -7,10 +7,7 @@ using FoundryRulesAndUnits.Extensions;
 
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.Http.Features;
-using FoundryBlazor.Solutions;
-using FoundryBlazor.Shape;
-using FoundryBlazor.Shared;
-using FoundryBlazor;
+
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -51,8 +48,8 @@ builder.Services.Configure<StaticFileOptions>(options =>
 // var envVaultConfig = new VaultEnvConfig("./.env");
 // builder.Services.AddSingleton<IVaultEnvConfig>(provider => envVaultConfig);
 
-var envConfig = new EnvConfig("./.env");
-builder.Services.AddSingleton<IEnvConfig>(provider => envConfig);
+//var envConfig = new EnvConfig("./.env");
+//builder.Services.AddSingleton<IEnvConfig>(provider => envConfig);
 //builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
 //builder.Services.AddScoped<IRestMentorService, RestMentorService>();
 // builder.Services.AddScoped<IFileService, FileService>();
@@ -60,27 +57,12 @@ builder.Services.AddSingleton<IEnvConfig>(provider => envConfig);
 //Mentor Services
 builder.Services.AddScoped<ComponentBus>();
 builder.Services.AddScoped<NotificationService>();
-builder.Services.AddScoped<IToast, Toast>();
+//builder.Services.AddScoped<IToast, Toast>();
 
 builder.Services.AddScoped<DialogService>();
-builder.Services.AddScoped<IPopupDialog, PopupDialog>();
+//builder.Services.AddScoped<IPopupDialog, PopupDialog>();
 
-builder.Services.AddScoped<IQRCodeService, QRCodeService>();
-builder.Services.AddScoped<ICommand, CommandService>();
-builder.Services.AddScoped<IPanZoomService, PanZoomService>();
-builder.Services.AddScoped<IDrawing, FoDrawing2D>();
-builder.Services.AddScoped<IArena, FoArena3D>();
 
-builder.Services.AddScoped<IPageManagement, PageManagementService>();
-builder.Services.AddScoped<IHitTestService, HitTestService>();
-builder.Services.AddScoped<ISelectionService, SelectionService>();
-
-builder.Services.AddScoped<IStageManagement, StageManagementService>();
-builder.Services.AddScoped<IWorldManager, WorldManager>();
-builder.Services.AddScoped<IFoundryService, FoundryService>();
-
-builder.Services.AddScoped<IWorkspace, FoWorkspace>();
-builder.Services.AddScoped<IWorkbook, FoWorkbook>();
 
 
 builder.Services.AddScoped<IUnitSystem, UnitSystem>();
