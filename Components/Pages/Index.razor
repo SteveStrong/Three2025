@@ -14,7 +14,8 @@
 <button class="btn btn-primary" @onclick="OnAddJet">Add JET</button>
 <button class="btn btn-primary" @onclick="OnAddCar">Add CAR</button>
 <div class="d-flex">
-    <Viewer @ref="ThreeJSViewer3D" ViewerSettings=@GetSettings() ActiveScene=@scene />
+@*     <Viewer ViewerSettings=@GetSettings() ActiveScene=@GetCurrentScene() />     *@
+    <ViewerThreeD />
 
     @* <Canvas3DComponent CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight" /> *@
     <ShapeTreeView />

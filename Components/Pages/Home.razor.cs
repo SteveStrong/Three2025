@@ -8,14 +8,13 @@ using BlazorThreeJS.Viewers;
 using BlazorThreeJS.Settings;
 using BlazorThreeJS.Maths;
 using BlazorThreeJS.Enums;
-using BlazorThreeJS.Viewers;
+
 
 
 namespace Three2025.Components.Pages;
 
 public partial class HomeBase : ComponentBase, IDisposable
 {
-    public Viewer View3D1 = null!;
 
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] protected IJSRuntime JsRuntime { get; set; }

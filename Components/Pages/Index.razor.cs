@@ -20,22 +20,14 @@ public class IndexBase : ComponentBase, IDisposable
     [Inject] protected IJSRuntime JsRuntime { get; set; }
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
-    public Viewer ThreeJSViewer3D = null!;
-    public FoWorkbook Workbook { get; set; }
-    public Scene scene { get; set; }
-    public string Msg { get; private set; }
-    private ViewerSettings Settings { get; set; }
 
-    protected override Task OnInitializedAsync()
-    {
-        scene = new("Custom Scene", JsRuntime);
-        scene.Add(new AmbientLight());
-        scene.Add(new PointLight()
-        {
-            Position = new Vector3(1, 3, 0)
-        });
-        return base.OnInitializedAsync();
-    }
+
+    public FoWorkbook Workbook { get; set; }
+
+    private Scene _currentScene { get; set; } = null;
+    private ViewerSettings _settings { get; set; } = null;
+
+
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
@@ -76,13 +68,37 @@ public class IndexBase : ComponentBase, IDisposable
             }
         };
 
-        Task.Run(async () => await scene.Request3DModel(model));
+        Task.Run(async () => await GetCurrentScene().Request3DModel(model));
         //Task.Run(async () => await scene.UpdateScene());
+    }
+
+    public Scene GetCurrentScene()
+    {
+        if (_currentScene != null )
+            return _currentScene;
+
+        var title = "Custom Scene";
+        if (Scene.FindBestScene(title, out Scene result))
+        {
+            _currentScene = result;
+        }
+        else
+        {
+            _currentScene = new Scene(title, JsRuntime);
+            _currentScene.Add(new AmbientLight() { Name = "IndexBase" });
+            _currentScene.Add(new PointLight()
+            {
+                Name = "IndexBase",
+                Position = new Vector3(1, 3, 0)
+            });
+        };
+
+        return _currentScene;
     }
 
     public ViewerSettings GetSettings()
     {
-        Settings ??= new()
+        _settings ??= new()
         {
             CanSelect = true,// default is false
             SelectedColor = "black",
@@ -94,7 +110,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         };
 
-        return Settings;
+        return _settings;
     }
 
 
@@ -118,8 +134,8 @@ public class IndexBase : ComponentBase, IDisposable
 
 
 
-        await scene.Request3DModel(model);
-        await scene.UpdateScene();
+        await GetCurrentScene().Request3DModel(model);
+        await GetCurrentScene().UpdateScene();
     }
 
     public async Task OnAddJet()
@@ -133,8 +149,8 @@ public class IndexBase : ComponentBase, IDisposable
         };
 
 
-        await scene.Request3DModel(model);
-        await scene.UpdateScene();
+        await GetCurrentScene().Request3DModel(model);
+        await GetCurrentScene().UpdateScene();
     }
 
     public async Task OnAddCar()
@@ -148,11 +164,13 @@ public class IndexBase : ComponentBase, IDisposable
         };
 
 
-        await scene.Request3DModel(model);
-        await scene.UpdateScene();
+        await GetCurrentScene().Request3DModel(model);
+        await GetCurrentScene().UpdateScene();
     }
 
     public void Dispose()
     {
+        if ( _currentScene != null )
+            Scene.RemoveScene(_currentScene);
     }
 }
