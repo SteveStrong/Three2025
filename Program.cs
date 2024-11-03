@@ -16,6 +16,16 @@ using Microsoft.Extensions.FileProviders;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+// Add services to the container.
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+builder.Services.AddRadzenComponents();
+
+// Add services to the container.
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
@@ -31,14 +41,12 @@ builder.Services.AddCors(options =>
 });
 
 
-// var blobKey = builder.Configuration.GetValue<string>("StorageConnectionString");
-// builder.Services.AddScoped(x => new BlobServiceClient(blobKey));
 
 builder.Services.AddCascadingAuthenticationState();
 
+var provider = new FileExtensionContentTypeProvider();
 builder.Services.Configure<StaticFileOptions>(options =>
 {
-    var provider = new FileExtensionContentTypeProvider();
     foreach (var item in FileExtensionHelpers.MIMETypeData())
         if ( !provider.Mappings.ContainsKey(item.Key))
             provider.Mappings.Add(item.Key,item.Value);
@@ -46,47 +54,9 @@ builder.Services.Configure<StaticFileOptions>(options =>
     options.ContentTypeProvider = provider;
 });
 
-
-
-// var envVaultConfig = new VaultEnvConfig("./.env");
-// builder.Services.AddSingleton<IVaultEnvConfig>(provider => envVaultConfig);
-
 var envConfig = new EnvConfig("./.env");
-builder.Services.AddSingleton<IEnvConfig>(provider => envConfig);
-//builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
-//builder.Services.AddScoped<IRestMentorService, RestMentorService>();
-// builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddFoundryBlazorServices(envConfig);
 
-//Mentor Services
-builder.Services.AddScoped<ComponentBus>();
-builder.Services.AddScoped<NotificationService>();
-builder.Services.AddScoped<IToast, Toast>();
-
-builder.Services.AddScoped<DialogService>();
-builder.Services.AddScoped<IPopupDialog, PopupDialog>();
-
-builder.Services.AddScoped<IQRCodeService, QRCodeService>();
-builder.Services.AddScoped<ICommand, CommandService>();
-builder.Services.AddScoped<IPanZoomService, PanZoomService>();
-builder.Services.AddScoped<IDrawing, FoDrawing2D>();
-builder.Services.AddScoped<IArena, FoArena3D>();
-
-builder.Services.AddScoped<IPageManagement, PageManagementService>();
-builder.Services.AddScoped<IHitTestService, HitTestService>();
-builder.Services.AddScoped<ISelectionService, SelectionService>();
-
-builder.Services.AddScoped<IStageManagement, StageManagementService>();
-builder.Services.AddScoped<IWorldManager, WorldManager>();
-builder.Services.AddScoped<IFoundryService, FoundryService>();
-
-builder.Services.AddScoped<IWorkspace, FoWorkspace>();
-builder.Services.AddScoped<IWorkbook, FoWorkbook>();
-
-
-builder.Services.AddScoped<IUnitSystem, UnitSystem>();
-
-builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-builder.Services.AddDirectoryBrowser();
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     var ser = options.JsonSerializerOptions;
@@ -96,11 +66,6 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     ser.WriteIndented = true;
 });
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-
-builder.Services.AddRadzenComponents();
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddDirectoryBrowser();
@@ -133,7 +98,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
+app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
@@ -155,17 +120,23 @@ app.UseDirectoryBrowser(new DirectoryBrowserOptions
     RequestPath = "/storage"
 });
 
+//include the static files at wwwwroot
+app.UseStaticFiles();
+
 // Serve files from storage directory
 app.UseStaticFiles(new StaticFileOptions
 {
-    ServeUnknownFileTypes = true,
     FileProvider = new PhysicalFileProvider(storagePath),
-    RequestPath = "/storage"
+    RequestPath = "/storage",
+    ContentTypeProvider = provider,
+    OnPrepareResponse = ctx =>
+    {
+        var headers = ctx.Context.Response.Headers;
+        headers.Append("Access-Control-Allow-Origin", "*");
+        headers.Append("Cache-Control", $"public, max-age=3600");
+    }
 });
 
-//app.UseStaticFiles();
-
-var root = Directory.GetCurrentDirectory();
 
 
 

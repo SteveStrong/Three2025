@@ -2,7 +2,7 @@
 using BlazorThreeJS.Core;
 using BlazorThreeJS.Viewers;
 using BlazorThreeJS.Settings;
-using BlazorThreeJS.Scenes;
+using BlazorThreeJS.Viewers;
 using BlazorThreeJS.Lights;
 using BlazorThreeJS.Maths;
 using BlazorThreeJS.Objects;
@@ -51,7 +51,7 @@ public class IndexThreePage : ComponentBase, IDisposable
     protected override Task OnInitializedAsync()
     {        
         objGuid = Guid.NewGuid();
-        scene = new(jsRuntime!);
+        scene = new("IndexThree", jsRuntime!);
         scene.Add(new AmbientLight());
         scene.Add(new PointLight()
         {

@@ -8,7 +8,7 @@ using BlazorThreeJS.Viewers;
 using BlazorThreeJS.Settings;
 using BlazorThreeJS.Maths;
 using BlazorThreeJS.Enums;
-using BlazorThreeJS.Scenes;
+using BlazorThreeJS.Viewers;
 
 
 namespace Three2025.Components.Pages;

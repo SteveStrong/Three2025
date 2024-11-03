@@ -1,0 +1,21 @@
+﻿@page "/Index"
+@page "/"
+@using FoundryBlazor.Shared
+@using BlazorThreeJS.Viewers
+
+@namespace Three2025.Components.Pages
+@inherits IndexBase
+@rendermode InteractiveServer
+
+<PageTitle>Index</PageTitle>
+
+<button class="btn btn-primary" @onclick="DoAxisTest">Axis</button>
+<button class="btn btn-primary" @onclick="OnAddTRex">Add T-Rex</button>
+<button class="btn btn-primary" @onclick="OnAddJet">Add JET</button>
+<button class="btn btn-primary" @onclick="OnAddCar">Add CAR</button>
+<div class="d-flex">
+    <Viewer @ref="ThreeJSViewer3D" ViewerSettings=@GetSettings() ActiveScene=@scene />
+
+    @* <Canvas3DComponent CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight" /> *@
+    <ShapeTreeView />
+</div>
