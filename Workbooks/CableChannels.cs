@@ -15,192 +15,14 @@ namespace Three2025.Model;
 
 public class CableChannels : FoComponent
 {
-    protected IWorkspace _space;
+
     protected CableWorld _world;
 
-    protected IFoundryService _manager;
-
-    public CableChannels()
+    public CableChannels(CableWorld world)
     {
+        _world = world;
+        GenerateGeometry();
     }
-
-
-    public CableChannels(IWorkspace space, IFoundryService manager)
-    {
-        _space = space;
-        _manager = manager;
-
-        var arena = _space.GetArena();
-        arena.AddAction("Update", "btn-primary", () =>
-        {
-            Task.Run(async () => await arena.UpdateArena());
-        });
-
-        var stage = arena.CurrentStage();
-        stage.AddAction("Render", "btn-primary", () =>
-        {
-            stage.PreRender(arena);
-            Task.Run(async () => await stage.RenderDetailed(arena.CurrentScene(),0,0));
-        });
-
-
-        _world = _manager.WorldManager().CreateWorld<CableWorld>("Cables");
-
-        _world.AddAction("Clear", "btn-primary", () => 
-        {
-            _world.ClearAll();
-
-        });
-
-        _world.AddAction("Publish", "btn-info", () => 
-        {
-            var arena = _space.GetArena();
-            _world.PublishToStage(arena.CurrentStage());
-        });
-
-        _world.AddAction("Box", "btn-info", () => 
-        {
-            var box = AddBox();
-            var arena = _space.GetArena();
-            arena.AddShape<FoShape3D>(box);
-        });
-
-        _world.AddAction("TRex", "btn-primary", () =>
-        {
-            $"Loading T-Rex".WriteNote();
-
-            var space = _space;
-            var baseURL = $"{space.GetBaseUrl()}storage";
-            var url = Path.Join(baseURL, "StaticFiles","T_Rex.glb");
-
-            $"Loading {url}".WriteNote();
-
-            var shape = DoLoad3dModel(url, 2, 6, 2);
-
-            var arena = _space.GetArena();
-            arena.AddShape<FoShape3D>(shape);
-
-        });
-
-        _world.AddAction("Porsche", "btn-primary", () =>
-        {
-            $"Loading Porsche".WriteNote();
-
-            var space = _space;
-            var baseURL = $"{space.GetBaseUrl()}storage";
-            var url = Path.Join(baseURL, "StaticFiles","porsche_911.glb");
-
-            $"Loading {url}".WriteNote();
-
-            var shape = DoLoad3dModel(url, 2, 6, 2);
-
-            var arena = _space.GetArena();
-            arena.AddShape<FoShape3D>(shape);
-
-        });
-        
-        _world.AddAction("Render Tube", "btn-primary", () =>
-        {
-
-            var arena = GetArena();
-            var scene = arena.CurrentScene();
-
-
-            var capsuleRadius = 0.15f;
-            var capsulePositions = new List<Vector3>() {
-                new Vector3(0, 0, 0),
-                new Vector3(4, 0, 0),
-                new Vector3(4, 4, 0),
-                new Vector3(4, 4, -4)
-            };
-
-            scene.Add(new Mesh
-            {
-                Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
-                Position = new Vector3(0, 0, 0),
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "yellow"
-                }
-            });
-
-            Task.Run(async () =>
-            {
-                await scene.UpdateScene();
-            });
-        });
-
-        _world.AddAction("Draw it", "btn-primary", () =>
-        {
-            var arena = GetArena()!;
-            var scene = arena.CurrentScene();
-
-            var height = 4;
-
-            var piv = new Vector3(-1, -height / 2, -3);
-            var pos = new Vector3(0, height, 0);
-            var rot = new Euler(0, Math.PI * 45 / 180, 0);
-            scene.Add(new Mesh
-            {
-                Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
-                Position = pos,
-                Rotation = rot,
-                Pivot = piv,
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "magenta"
-                }
-            });
-
-            Task.Run(async () =>
-            {
-                await scene.UpdateScene();
-            });
-        });
-    }
-
-    public CableWorld GetWorld()
-    {
-        return _world;
-    }
-
-    public IArena GetArena()
-    {
-        return _space.GetArena();
-    }
-
-
-
-
-  public FoShape3D DoLoad3dModel(string url, double bx, double by, double bz)
-    {
-        var name = url.Split('\\').Last();
-        var shape = new FoShape3D(name,"blue")
-        {
-            Name = name,
-            GlyphId = Guid.NewGuid().ToString(),
-            Position = new Vector3(0, 0, 0),
-            BoundingBox = new Vector3(bx, by, bz),
-            //Scale = new Vector3(.1, .1, .1)
-        };
-        shape.CreateGlb(url);
-        GetWorld().AddGlyph3D<FoShape3D>(shape);
-        return shape;
-    }
-
-    public Node3D AddBox()
-    {
-        var box = new Node3D("test","blue")
-        {
-            GlyphId = Guid.NewGuid().ToString(),
-            Position = new Vector3(0, 0, 0),
-        };
-        box.CreateBox("test", .5, 10, .5);
-        
-        GetWorld().AddGlyph3D<FoShape3D>(box);
-        return box;
-    }
-
 
 
     public void GenerateGeometry()
@@ -221,17 +43,9 @@ public class CableChannels : FoComponent
     }
 
 
-
-
-
-
-
-
-
-
     public List<Node3D> GenerateColumn(double x, double z, Length Height, Length Step)
     {
-        var world = GetWorld();
+
         var h = Height.Value();
         var s = Step.Value();
 
@@ -247,7 +61,7 @@ public class CableChannels : FoComponent
             };
             shape.CreateBox(name, .05, .03, .05);
             columns.Add(shape);
-            world.AddGlyph3D<FoShape3D>(shape);
+            _world.AddGlyph3D<FoShape3D>(shape);
             y += s;
         }
 
@@ -256,7 +70,7 @@ public class CableChannels : FoComponent
             var start = columns[i - 1];
             var finish = columns[i];
             var link = new Link3D($"Link::{x:F1}:{z:F1}{i}", "blue", start, finish, 0.01);
-            world.AddGlyph3D<FoShape3D>(link);
+            _world.AddGlyph3D<FoShape3D>(link);
         }
         return columns;
     }
@@ -264,14 +78,12 @@ public class CableChannels : FoComponent
     //create a method to link together 2 columns of List<Node3D>
     public void LinkColumns(string name, List<Node3D> start, List<Node3D> finish)
     {
-        var world = GetWorld();
-
         for (int i = 0; i < start.Count(); i++)
         {
             var s = start[i];
             var f = finish[i];
             var link = new Link3D($"{name}:{i}", "blue", s, f, 0.01);
-            world.AddGlyph3D<FoShape3D>(link);
+            _world.AddGlyph3D<FoShape3D>(link);
         }
     }
 
@@ -292,8 +104,6 @@ public class CableChannels : FoComponent
         LinkColumns($"left-back {x:F1}", lb, cb);
         LinkColumns($"right-back {x:F1}", cb, rb);
         LinkColumns($"right {x:F1}", rb, rf);
-
-
     }
 
 }

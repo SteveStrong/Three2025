@@ -170,7 +170,7 @@ public class IndexBase : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        if ( _currentScene != null )
-            Scene.RemoveScene(_currentScene);
+        // if ( _currentScene != null )
+        //     Scene.RemoveScene(_currentScene);
     }
 }

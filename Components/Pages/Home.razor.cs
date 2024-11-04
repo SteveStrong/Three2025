@@ -8,6 +8,10 @@ using BlazorThreeJS.Viewers;
 using BlazorThreeJS.Settings;
 using BlazorThreeJS.Maths;
 using BlazorThreeJS.Enums;
+using FoundryRulesAndUnits.Extensions;
+using BlazorThreeJS.Objects;
+using BlazorThreeJS.Geometires;
+using BlazorThreeJS.Materials;
 
 
 
@@ -18,116 +22,224 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] protected IJSRuntime JsRuntime { get; set; }
-    [Inject] private IToast Toast { get; set; }
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
 
+    public Canvas3DComponentBase CanvasReference = null!;
 
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
     [Parameter] public int WorldWidth { get; set; } = 1500;
     [Parameter] public int WorldHeight { get; set; } = 1500;
-    [Parameter] public string LoadWorkbook { get; set; } = "knowledge";
 
-    public FoWorkbook Workbook { get; set; }
-    public Scene scene  { get; set; }
+    private CableWorld World3D { get; set; } = null!;
 
-
-    public ViewerSettings settings = new ViewerSettings()
+    public Scene GetCurrentScene()
     {
-        containerId = "example1",
-        CanSelect = true,// default is false
-        SelectedColor = "#808080",
-        Width = 900,
-        Height = 600,
-        WebGLRendererSettings = new WebGLRendererSettings
-        {
-            Antialias = false // if you need poor quality for some reasons
-        }
-    };
-
+        return CanvasReference.GetActiveScene();
+    }
  
-
 
     protected override void OnInitialized()
     {
         Workspace.SetBaseUrl(Navigation?.BaseUri ?? "");
 
-        //create all worksbooks for reuse later, but only show the one we want
-        Workbook = Workspace.EstablishWorkbook<VisioWorkbook>("visio");
-        //Workbook.SetMentorService(MentorServices!, MentorPlayground!);
-        //book.SetVaultService(VaultService!);
 
-        Workspace.SetCurrentWorkbook(Workbook);
-        // Workspace.CreateMenus(Workspace, JsRuntime!, Navigation!);
-
-        //Diagram = MentorServices!.EstablishDiagram();
-        //RefreshWorkbookMenus();
-
-
-
-        var url = ""; //RestAPI?.GetServerUrl() ?? "";
-        Workspace.CreateCommands(Workspace, JsRuntime, Navigation, url);
-        var arena = Workspace.GetArena();
-        scene = arena.CurrentScene();
 
         base.OnInitialized();
-    }
-
-//    protected override Task OnInitializedAsync()
-//     {        
-//         objGuid = Guid.NewGuid();
-//         scene = new(jsRuntime!);
-//         scene.Add(new AmbientLight());
-//         scene.Add(new PointLight()
-//         {
-//             Position = new Vector3(1, 3, 0)
-//         });
-//          return base.OnInitializedAsync();
-//     }
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (Workspace is not null)
-        {
-            var defaultHubURI = Navigation!.ToAbsoluteUri("/DrawingSyncHub").ToString();
-            await Workspace.InitializedAsync(defaultHubURI!);
-
-            var text = LoadWorkbook == null ? "No Workbook" : $"LoadWorkbook={LoadWorkbook}";
-            Toast.Info(text);
-        }
-
-        await base.OnInitializedAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            //PubSub!.SubscribeTo<ViewStyle>(OnViewStyleChanged);
-            //Toast!.Success($"Drawing Page Loaded!");
-            //Workspace.GetDrawing();
-            //Workspace.GetArena();
+            World3D = FoundryService.WorldManager().CreateWorld<CableWorld>("Cables");
 
+            var arena = Workspace.GetArena();
+            arena.SetScene(GetCurrentScene());
 
+            CreateMenus(Workspace);
+
+            CreateServices(FoundryService, arena, World3D);
         }
 
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    protected void Go()
+    public string GetReferenceTo(string filename)
     {
-        //"Click Go".WriteInfo();
-        //GoDrawing();
-        GoCables();
-        //CreateAndRenderBox();
+        var path = Path.Combine(Navigation.BaseUri, filename);
+        path.WriteSuccess();
+        return path;
     }
-    
-    protected void GoCables()
-    {
-        var cables = new CableChannels(Workspace,FoundryService);
-        cables.GenerateGeometry();
 
+    public FoShape3D DoLoad3dModel(string url, double bx, double by, double bz)
+    {
+        var name = url.Split('\\').Last();
+        var shape = new FoShape3D(name,"blue")
+        {
+            Name = name,
+            GlyphId = Guid.NewGuid().ToString(),
+            Position = new Vector3(0, 0, 0),
+            BoundingBox = new Vector3(bx, by, bz),
+            //Scale = new Vector3(.1, .1, .1)
+        };
+        shape.CreateGlb(url);
+        World3D.AddGlyph3D<FoShape3D>(shape);
+        return shape;
+    }
+
+    public void ForceSceneRefresh()
+    {
+        Task.Run(async () =>
+        {
+            await GetCurrentScene().UpdateScene();
+        });
+    }
+
+
+    public void CreateMenus(IWorkspace space)
+    {
+        var arena = space.GetArena();
+        var stage = arena.CurrentStage();
+
+        arena.AddAction("Update", "btn-primary", () =>
+        {
+            Task.Run(async () => await arena.UpdateArena());
+        });
+
+        arena.AddAction("Clear", "btn-primary", () =>
+        {
+            Task.Run(async () => await arena.ClearArena());
+        });
+
+        stage.AddAction("Render", "btn-primary", () =>
+        {
+            stage.PreRender(arena);
+            Task.Run(async () => await stage.RenderDetailed(arena.CurrentScene(), 0, 0));
+        });
+    }
+
+    public void CreateServices(IFoundryService manager, IArena arena, FoWorld3D world)
+    {
+
+        world.AddAction("Clear", "btn-primary", () => 
+        {
+            world.ClearAll();
+        });
+
+        world.AddAction("Publish", "btn-info", () => 
+        {
+            world.PublishToStage(arena.CurrentStage());
+        });
+
+        world.AddAction("Box", "btn-info", () => 
+        {
+            var box = AddBox();
+            arena.AddShape<FoShape3D>(box);
+        });
+
+        world.AddAction("TRex", "btn-primary", () =>
+        {
+            $"Loading T-Rex".WriteNote();
+
+            var url = GetReferenceTo("T_Rex.glb");
+
+            $"Loading {url}".WriteNote();
+
+            var shape = DoLoad3dModel(url, 2, 6, 2);
+
+            arena.AddShape<FoShape3D>(shape);
+        });
+
+        world.AddAction("Porsche", "btn-primary", () =>
+        {
+            $"Loading Porsche".WriteNote();
+
+
+            var url = GetReferenceTo("porsche_911.glb");
+
+            $"Loading {url}".WriteNote();
+
+            var shape = DoLoad3dModel(url, 2, 6, 2);
+
+            arena.AddShape<FoShape3D>(shape);
+
+        });
+        
+        world.AddAction("Render Tube", "btn-primary", () =>
+        {
+            var scene = arena.CurrentScene();
+
+
+            var capsuleRadius = 0.15f;
+            var capsulePositions = new List<Vector3>() {
+                new Vector3(0, 0, 0),
+                new Vector3(4, 0, 0),
+                new Vector3(4, 4, 0),
+                new Vector3(4, 4, -4)
+            };
+
+            scene.Add(new Mesh
+            {
+                Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+                Position = new Vector3(0, 0, 0),
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "yellow"
+                }
+            });
+
+            ForceSceneRefresh();
+        });
+
+        world.AddAction("Draw Box", "btn-primary", () =>
+        {
+            var height = 4;
+
+            var piv = new Vector3(-1, -height / 2, -3);
+            var pos = new Vector3(0, height, 0);
+            var rot = new Euler(0, Math.PI * 45 / 180, 0);
+
+            var scene = arena.CurrentScene();
+            scene.Add(new Mesh
+            {
+                Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
+                Position = pos,
+                Rotation = rot,
+                Pivot = piv,
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "magenta"
+                }
+            });
+
+
+            ForceSceneRefresh();
+        });
+    }
+
+
+
+
+
+    public async Task OnAddCage()
+    {
+        var cables = new CableChannels(World3D);
+        cables.GenerateGeometry();
+    }
+
+    public Node3D AddBox()
+    {
+        var box = new Node3D("test","blue")
+        {
+            GlyphId = Guid.NewGuid().ToString(),
+            Position = new Vector3(0, 0, 0),
+        };
+        box.CreateBox("test", .5, 10, .5);
+        
+        World3D.AddGlyph3D<FoShape3D>(box);
+        return box;
     }
 
     protected void CreateAndRenderBox(bool render = true)
@@ -148,10 +260,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         //this should render
         arena.AddShape<FoShape3D>(shape);
         if ( render )
-            Task.Run(async () =>
-            {
-                await arena.UpdateArena();
-            });
+            ForceSceneRefresh();
 
     }
     protected void GoDrawing()
@@ -182,40 +291,42 @@ public partial class HomeBase : ComponentBase, IDisposable
             Layout = LineLayoutStyle.HorizontalFirst,
         };
         page?.AddShape<FoConnector1D>(shape3);
-
     }
 
-   public async Task OnAddTRex()
+
+
+    public async Task OnAddTRex()
     {
         var model = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
             Format = Import3DFormats.Gltf,
-            //FileURL = "https://localhost:7101/storage/StaticFiles/porsche_911.glb",
-            FileURL = "https://localhost:7101/storage/StaticFiles/T_Rex.glb",
-            Position = new Vector3(2, 0, 2),
+            FileURL = GetReferenceTo("T_Rex.glb"),
+            Position = new Vector3(3, 0, 3),
         };
 
-
+        var scene = GetCurrentScene();
 
         await scene.Request3DModel(model);
         await scene.UpdateScene();
     }
 
-    public async Task OnAddJET()
+    public async Task OnAddJet()
     {
         var model = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
             Format = Import3DFormats.Gltf,
-            FileURL = @"https://localhost:7101/jet.glb",
+            FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Position = new Vector3(0, 0, 0),
         };
 
+        var scene = GetCurrentScene();
 
         await scene.Request3DModel(model);
         await scene.UpdateScene();
     }
+
     public List<FoPage2D> AllPages()
     {
         var drawing = Workspace.GetDrawing()!;
@@ -235,7 +346,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         // if (Navigation != null)
         //     Navigation.LocationChanged -= LocationChanged;
-        GC.SuppressFinalize(this);
+        //GC.SuppressFinalize(this);
     }
 }
 
