@@ -141,30 +141,16 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         world.AddAction("TRex", "btn-primary", () =>
         {
-            $"Loading T-Rex".WriteNote();
-
-            var url = GetReferenceTo("T_Rex.glb");
-
-            $"Loading {url}".WriteNote();
-
-            var shape = DoLoad3dModel(url, 2, 6, 2);
-
+            var url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb");
+            var shape = DoLoad3dModel(url, -2, 6, -2);
             arena.AddShape<FoShape3D>(shape);
         });
 
         world.AddAction("Porsche", "btn-primary", () =>
         {
-            $"Loading Porsche".WriteNote();
-
-
-            var url = GetReferenceTo("porsche_911.glb");
-
-            $"Loading {url}".WriteNote();
-
+            var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
             var shape = DoLoad3dModel(url, 2, 6, 2);
-
             arena.AddShape<FoShape3D>(shape);
-
         });
         
         world.AddAction("Render Tube", "btn-primary", () =>
@@ -227,6 +213,9 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         var cables = new CableChannels(World3D);
         cables.GenerateGeometry();
+
+        var scene = GetCurrentScene();
+        await scene.UpdateScene();
     }
 
     public Node3D AddBox()
@@ -301,7 +290,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         {
             Uuid = Guid.NewGuid(),
             Format = Import3DFormats.Gltf,
-            FileURL = GetReferenceTo("T_Rex.glb"),
+            FileURL = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Position = new Vector3(3, 0, 3),
         };
 

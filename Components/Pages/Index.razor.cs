@@ -50,7 +50,7 @@ public class IndexBase : ComponentBase, IDisposable
         {
             Uuid = Guid.NewGuid(),
             Format = Import3DFormats.Gltf,
-            FileURL = GetReferenceTo("fiveMeterAxis.glb"),
+            FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Position = pos,
             Rotation = rot,
             Pivot = piv,
@@ -128,7 +128,7 @@ public class IndexBase : ComponentBase, IDisposable
         {
             Uuid = Guid.NewGuid(),
             Format = Import3DFormats.Gltf,
-            FileURL = GetReferenceTo("T_Rex.glb"),
+            FileURL = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Position = new Vector3(2, 0, 2),
         };
 

@@ -139,5 +139,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 
 
+//this pull the 3d model files and others to the storage folder
+//envConfig.RefreshStaticFiles();
 
 app.Run();
