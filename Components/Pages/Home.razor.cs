@@ -43,9 +43,6 @@ public partial class HomeBase : ComponentBase, IDisposable
     protected override void OnInitialized()
     {
         Workspace.SetBaseUrl(Navigation?.BaseUri ?? "");
-
-
-
         base.OnInitialized();
     }
 
@@ -59,7 +56,6 @@ public partial class HomeBase : ComponentBase, IDisposable
             arena.SetScene(GetCurrentScene());
 
             CreateMenus(Workspace);
-
             CreateServices(FoundryService, arena, World3D);
         }
 
@@ -333,9 +329,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        // if (Navigation != null)
-        //     Navigation.LocationChanged -= LocationChanged;
-        //GC.SuppressFinalize(this);
+
     }
 }
 

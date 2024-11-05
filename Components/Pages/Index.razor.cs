@@ -10,6 +10,9 @@ using FoundryBlazor.Solutions;
 using FoundryRulesAndUnits.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using BlazorThreeJS.Geometires;
+using BlazorThreeJS.Materials;
+using BlazorThreeJS.Objects;
 
 namespace Three2025.Components.Pages;
 
@@ -21,12 +24,17 @@ public class IndexBase : ComponentBase, IDisposable
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
 
-
+    protected ViewerThreeD View3D;
+    
+    protected ViewerThreeD ViewSteve3D;
     public FoWorkbook Workbook { get; set; }
 
-    private Scene _currentScene { get; set; } = null;
-    private ViewerSettings _settings { get; set; } = null;
 
+
+    public Scene GetCurrentScene()
+    {
+        return View3D.ActiveScene;
+    }
 
 
     protected override Task OnAfterRenderAsync(bool firstRender)
@@ -72,46 +80,31 @@ public class IndexBase : ComponentBase, IDisposable
         //Task.Run(async () => await scene.UpdateScene());
     }
 
-    public Scene GetCurrentScene()
-    {
-        if (_currentScene != null )
-            return _currentScene;
+    // public Scene GetCurrentScene()
+    // {
+    //     if (_currentScene != null )
+    //         return _currentScene;
 
-        var title = "Custom Scene";
-        if (Scene.FindBestScene(title, out Scene result))
-        {
-            _currentScene = result;
-        }
-        else
-        {
-            _currentScene = new Scene(title, JsRuntime);
-            _currentScene.Add(new AmbientLight() { Name = "IndexBase" });
-            _currentScene.Add(new PointLight()
-            {
-                Name = "IndexBase",
-                Position = new Vector3(1, 3, 0)
-            });
-        };
+    //     var title = "Custom Scene";
+    //     if (Scene.FindBestScene(title, out Scene result))
+    //     {
+    //         _currentScene = result;
+    //     }
+    //     else
+    //     {
+    //         _currentScene = new Scene(title, JsRuntime);
+    //         _currentScene.Add(new AmbientLight() { Name = "IndexBase" });
+    //         _currentScene.Add(new PointLight()
+    //         {
+    //             Name = "IndexBase",
+    //             Position = new Vector3(1, 3, 0)
+    //         });
+    //     };
 
-        return _currentScene;
-    }
+    //     return _currentScene;
+    // }
 
-    public ViewerSettings GetSettings()
-    {
-        _settings ??= new()
-        {
-            CanSelect = true,// default is false
-            SelectedColor = "black",
-            Width = CanvasWidth,
-            Height = CanvasHeight,
-            WebGLRendererSettings = new WebGLRendererSettings
-            {
-                Antialias = false // if you need poor quality for some reasons
-            }
-        };
 
-        return _settings;
-    }
 
 
 
@@ -168,9 +161,159 @@ public class IndexBase : ComponentBase, IDisposable
         await GetCurrentScene().UpdateScene();
     }
 
+    public async Task DoMeshTest()
+    {
+        var scene = GetCurrentScene();
+
+
+        scene.Add(new Mesh
+        {
+            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
+            Position = new Vector3(-2, 0, 0),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "magenta"
+            }
+        });
+
+        // scene.Add(new Mesh
+        // {
+        //     Geometry = new CircleGeometry(radius: 0.75f, segments: 12),
+        //     Position = new Vector3(2, 0, 0),
+        //     Scale = new Vector3(1, 0.75f, 1),
+        //     Material = new MeshStandardMaterial()
+        //     {
+        //         Color = "#98AFC7"
+        //     }
+        // });
+
+        scene.Add(new Mesh
+        {
+            Geometry = new CapsuleGeometry(radius: 0.5f, length: 2),
+            Position = new Vector3(-4, 0, 0),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "darkgreen"
+            }
+        });
+
+        scene.Add(new Mesh
+        {
+            Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
+            Position = new Vector3(4, 0, 0),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "green",
+                FlatShading = true,
+                Metalness = 0.5f,
+                Roughness = 0.5f
+            }
+        });
+
+        scene.Add(new Mesh
+        {
+            Geometry = new CylinderGeometry(radiusTop: 0.5f, height: 1.2f, radialSegments: 16),
+            Position = new Vector3(0, 0, -2),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "red",
+                Wireframe = true
+            }
+        });
+        scene.Add(new Mesh
+        {
+            Geometry = new DodecahedronGeometry(radius: 0.8f),
+            Position = new Vector3(-2, 0, -2),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "darkviolet",
+                Metalness = 0.5f,
+                Roughness = 0.5f
+            }
+        });
+
+        scene.Add(new Mesh
+        {
+            Geometry = new IcosahedronGeometry(radius: 0.8f),
+            Position = new Vector3(-4, 0, -2),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "violet"
+            }
+        });
+
+        scene.Add(new Mesh
+        {
+
+            Geometry = new OctahedronGeometry(radius: 0.75f),
+            Position = new Vector3(2, 0, -2),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "aqua"
+            }
+        });
+
+        scene.Add(new Mesh
+        {
+            Geometry = new PlaneGeometry(width: 0.5f, height: 2),
+            Position = new Vector3(4, 0, -2),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "purple"
+            }
+        });
+        scene.Add(new Mesh
+        {
+            Geometry = new RingGeometry(innerRadius: 0.6f, outerRadius: 0.7f),
+            Position = new Vector3(0, 0, -4),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "DodgerBlue"
+            }
+        });
+        scene.Add(new Mesh
+        {
+            Geometry = new SphereGeometry(radius: 0.6f),
+            Position = new Vector3(-2, 0, -4),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "darkgreen"
+            },
+        });
+        scene.Add(new Mesh
+        {
+            Geometry = new TetrahedronGeometry(radius: 0.75f),
+            Position = new Vector3(2, 0, -4),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "lightblue"
+            }
+        });
+        scene.Add(new Mesh
+        {
+            Geometry = new TorusGeometry(radius: 0.6f, tube: 0.4f, radialSegments: 12, tubularSegments: 12),
+            Position = new Vector3(4, 0, -4),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "lightgreen"
+            }
+        });
+        scene.Add(new Mesh
+        {
+            Geometry = new TorusKnotGeometry(radius: 0.6f, tube: 0.1f),
+            Position = new Vector3(-4, 0, -4),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "RosyBrown"
+            }
+        });
+
+        await GetCurrentScene().UpdateScene();
+    }
+
+
     public void Dispose()
     {
-        // if ( _currentScene != null )
-        //     Scene.RemoveScene(_currentScene);
+
     }
 }

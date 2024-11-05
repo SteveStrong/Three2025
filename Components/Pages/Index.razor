@@ -13,10 +13,11 @@
 <button class="btn btn-primary" @onclick="OnAddTRex">Add T-Rex</button>
 <button class="btn btn-primary" @onclick="OnAddJet">Add JET</button>
 <button class="btn btn-primary" @onclick="OnAddCar">Add CAR</button>
-<div class="d-flex">
-@*     <Viewer ViewerSettings=@GetSettings() ActiveScene=@GetCurrentScene() />     *@
-    <ViewerThreeD />
+<button class="btn btn-primary" @onclick="DoMeshTest">Mesh Test</button>
 
-    @* <Canvas3DComponent CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight" /> *@
+
+<div class="d-flex">
+    <ViewerThreeD SceneName="Dave" @ref=View3D />
+    <ViewerThreeD SceneName="Steve"  @ref=ViewSteve3D/>
     <ShapeTreeView />
 </div>
