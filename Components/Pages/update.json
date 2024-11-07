@@ -1,0 +1,675 @@
+{
+    UpdateScene: {
+        "title": "IndexView",
+        "backGroundColor": "#505050",
+        "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "pivot": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+        },
+        "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "order": "XYZ"
+        },
+        "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+        },
+        "type": "Scene",
+        "name": "",
+        "uuid": "1b2a7068-0e83-4af1-a9c4-2dbb3b951895",
+        "children": [
+            {
+                "color": "white",
+                "intensity": 0.6,
+                "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "AmbientLight",
+                "name": "Default Light",
+                "uuid": "1f4f5558-775d-437c-b4c6-5b1ab67316f4",
+                "children": []
+            },
+            {
+                "distance": 0,
+                "decay": 1,
+                "color": "white",
+                "intensity": 1,
+                "position": {
+                    "x": 1,
+                    "y": 3,
+                    "z": 0
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "PointLight",
+                "name": "Default Light",
+                "uuid": "4449e6c8-eb9e-461a-8e9c-b629ca443be2",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "3fef4215-2714-4366-bc7b-6fe80c6b9b51"
+                },
+                "geometry": {
+                    "width": 1.2000000476837158,
+                    "height": 0.5,
+                    "depth": 1,
+                    "widthSegments": 1,
+                    "heightSegments": 1,
+                    "depthSegments": 1,
+                    "name": "",
+                    "uuid": "af19f936-23ad-4947-862c-f229afe4bf1a",
+                    "type": "BoxGeometry"
+                },
+                "position": {
+                    "x": -2,
+                    "y": 0,
+                    "z": 0
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "a4f76479-1df1-481c-b61e-c76b7feae527",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "277d5ad6-7c29-4c60-8a61-bcb979160049"
+                },
+                "geometry": {
+                    "radius": 0.75,
+                    "segments": 12,
+                    "thetaStart": 0,
+                    "thetaLength": 6.28318548,
+                    "name": "",
+                    "uuid": "037bd139-cc5b-4cc6-b93a-2549f0a76cd0",
+                    "type": "CircleGeometry"
+                },
+                "position": {
+                    "x": 2,
+                    "y": 0,
+                    "z": 0
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 0.75,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "158e993f-04aa-4158-91a4-cd15ff98f3e4",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "1c7e55f4-1cda-4059-886d-454174fbfc30"
+                },
+                "geometry": {
+                    "radius": 0.5,
+                    "length": 2,
+                    "capSegments": 4,
+                    "radialSegments": 8,
+                    "name": "",
+                    "uuid": "64de1f42-a706-4103-9ee6-2095122e0084",
+                    "type": "CapsuleGeometry"
+                },
+                "position": {
+                    "x": -4,
+                    "y": 0,
+                    "z": 0
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "632c80c3-d31c-4810-baea-342f195da9e5",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "f588c45a-7cca-44b9-a597-fab40f9cf359"
+                },
+                "geometry": {
+                    "radius": 0.5,
+                    "height": 2,
+                    "radialSegments": 16,
+                    "heightSegments": 1,
+                    "openEnded": false,
+                    "thetaStart": 0,
+                    "thetaLength": 6.28318548,
+                    "name": "",
+                    "uuid": "280c307a-1d23-4dfb-828a-9f013e6f0512",
+                    "type": "ConeGeometry"
+                },
+                "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 0
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "c631c6c9-96a7-4121-b109-a2cd1253aca6",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "d49ae151-d0aa-4f8b-9717-8279c5699e3c"
+                },
+                "geometry": {
+                    "radiusTop": 0.5,
+                    "radiusBottom": 1,
+                    "height": 1.2000000476837158,
+                    "radialSegments": 16,
+                    "heightSegments": 1,
+                    "openEnded": false,
+                    "thetaStart": 0,
+                    "thetaLength": 6.28318548,
+                    "name": "",
+                    "uuid": "b4b29fdd-6555-4f8f-8d3e-3025a7e18d04",
+                    "type": "CylinderGeometry"
+                },
+                "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": -2
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "1470b9e9-422e-45af-9d5b-4a80c104a691",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "c8c92cb4-d7e7-445a-98cd-1fb5a62d669b"
+                },
+                "geometry": {
+                    "radius": 0.800000011920929,
+                    "detail": 0,
+                    "name": "",
+                    "uuid": "4ddcad49-e75f-4c9c-865c-48a6be52d745",
+                    "type": "DodecahedronGeometry"
+                },
+                "position": {
+                    "x": -2,
+                    "y": 0,
+                    "z": -2
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "1e55d979-af33-4c74-97e9-dc5bfd6805ad",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "6d35bd8f-73de-4ce2-906e-cd4121ea15ce"
+                },
+                "geometry": {
+                    "radius": 0.800000011920929,
+                    "detail": 0,
+                    "name": "",
+                    "uuid": "922f314c-8723-498a-a9e8-6ca0f2eb4ac7",
+                    "type": "IcosahedronGeometry"
+                },
+                "position": {
+                    "x": -4,
+                    "y": 0,
+                    "z": -2
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "ec9332d4-bdd0-4250-8a3b-0ffd9a6bd842",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "35641875-7fbf-44f2-b1db-31035ab96ad2"
+                },
+                "geometry": {
+                    "radius": 0.75,
+                    "detail": 0,
+                    "name": "",
+                    "uuid": "f045a770-2e4d-434a-b04b-d126aab58295",
+                    "type": "OctahedronGeometry"
+                },
+                "position": {
+                    "x": 2,
+                    "y": 0,
+                    "z": -2
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "f762089e-52c7-48de-9b8b-24b33693fc4b",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "ea571148-0560-4f92-b349-5b447847ab2a"
+                },
+                "geometry": {
+                    "width": 0.5,
+                    "height": 2,
+                    "widthSegments": 1,
+                    "heightSegments": 1,
+                    "name": "",
+                    "uuid": "5698cac9-e1cc-41f6-9660-6451ee699af5",
+                    "type": "PlaneGeometry"
+                },
+                "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": -2
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "f5ccb597-14a5-4f0f-979e-6cc76bf2a1b5",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "3e02b878-2dd9-4d50-9d6a-147a7905922e"
+                },
+                "geometry": {
+                    "innerRadius": 0.6000000238418579,
+                    "outerRadius": 0.699999988079071,
+                    "thetaSegments": 8,
+                    "phiSegments": 1,
+                    "thetaStart": 0,
+                    "thetaLength": 6.28318548,
+                    "name": "",
+                    "uuid": "6dbf3b0b-734a-48b2-9403-8ca418e21b74",
+                    "type": "RingGeometry"
+                },
+                "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": -4
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "fe44911c-b2dc-4367-83b0-0f5cc4860a91",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "17f86af2-5793-4d1c-a564-833727dabc4f"
+                },
+                "geometry": {
+                    "radius": 0.6000000238418579,
+                    "widthSegments": 32,
+                    "heightSegments": 16,
+                    "phiStart": 0,
+                    "phiLength": 6.28318548,
+                    "thetaStart": 0,
+                    "thetaLength": 6.28318548,
+                    "name": "",
+                    "uuid": "8195862c-997f-4e26-8e74-2a48c570d5a4",
+                    "type": "SphereGeometry"
+                },
+                "position": {
+                    "x": -2,
+                    "y": 0,
+                    "z": -4
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "85ca92da-bf70-4809-b985-5eda4637b4f4",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "6c5f7f3a-1c55-45ac-b69e-42f7759bc92e"
+                },
+                "geometry": {
+                    "radius": 0.75,
+                    "detail": 0,
+                    "name": "",
+                    "uuid": "d330da66-0120-4240-b8b0-40b656ed3377",
+                    "type": "TetrahedronGeometry"
+                },
+                "position": {
+                    "x": 2,
+                    "y": 0,
+                    "z": -4
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "7c415c29-0333-4d2d-8acf-4e4384de503b",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "f34c58e6-608e-4b14-940f-1363ff79debd"
+                },
+                "geometry": {
+                    "radius": 0.6000000238418579,
+                    "tube": 0.4000000059604645,
+                    "radialSegments": 12,
+                    "tubularSegments": 12,
+                    "arc": 6.28318548,
+                    "name": "",
+                    "uuid": "edf76834-6cad-4f86-bd83-03d513df3a7f",
+                    "type": "TorusGeometry"
+                },
+                "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": -4
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "393db7c4-5ec8-47a5-a516-172d24ca1237",
+                "children": []
+            },
+            {
+                "material": {
+                    "type": "MeshStandardMaterial",
+                    "name": "",
+                    "uuid": "aa9520dc-91c4-4ae2-8cd9-f1942760a7e5"
+                },
+                "geometry": {
+                    "radius": 0.6000000238418579,
+                    "tube": 0.10000000149011612,
+                    "radialSegments": 8,
+                    "tubularSegments": 64,
+                    "p": 2,
+                    "q": 3,
+                    "name": "",
+                    "uuid": "4786cb4c-3564-4c8d-b6af-fece43afbf0f",
+                    "type": "TorusKnotGeometry"
+                },
+                "position": {
+                    "x": -4,
+                    "y": 0,
+                    "z": -4
+                },
+                "pivot": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "order": "XYZ"
+                },
+                "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "type": "Mesh",
+                "name": "",
+                "uuid": "0fbc2a60-463b-48d2-878a-8c8cc0be217b",
+                "children": []
+            }
+        ]
+    }
+}

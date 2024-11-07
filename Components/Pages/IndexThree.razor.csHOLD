@@ -1021,6 +1021,9 @@ public class IndexThreePage : ComponentBase, IDisposable
         await scene.UpdateScene();
     }
 
+
+    
+
     public void Dispose()
     {
         if (_currentScene != null)

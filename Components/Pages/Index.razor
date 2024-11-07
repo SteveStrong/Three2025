@@ -1,4 +1,5 @@
-﻿@page "/Index"
+﻿
+@page "/Index"
 
 @using FoundryBlazor.Shared
 @using BlazorThreeJS.Viewers
@@ -8,16 +9,19 @@
 @rendermode InteractiveServer
 
 <PageTitle>Index</PageTitle>
+<h2>This page renders using the ViewThreeD and calls API's on the active scene</h2>
 
 <button class="btn btn-primary" @onclick="DoAxisTest">Axis</button>
 <button class="btn btn-primary" @onclick="OnAddTRex">Add T-Rex</button>
 <button class="btn btn-primary" @onclick="OnAddJet">Add JET</button>
 <button class="btn btn-primary" @onclick="OnAddCar">Add CAR</button>
-<button class="btn btn-primary" @onclick="DoMeshTest">Mesh Test</button>
+<button class="btn btn-primary" @onclick="DoMeshTest">Add Geometry</button>
+<button class="btn btn-primary" @onclick="OnAddText">Add Text</button>
+<button class="btn btn-primary" @onclick="OnUpdateText">Update Text</button>
+<button class="btn btn-primary" @onclick="OnAddMenu">Add Menu</button>
 
 
 <div class="d-flex">
-    <ViewerThreeD SceneName="Dave" @ref=View3D />
-    <ViewerThreeD SceneName="Steve"  @ref=ViewSteve3D/>
+    <ViewerThreeD SceneName="IndexView" @ref=View3D />
     <ShapeTreeView />
 </div>

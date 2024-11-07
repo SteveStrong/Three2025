@@ -12,6 +12,8 @@ using FoundryRulesAndUnits.Extensions;
 using BlazorThreeJS.Objects;
 using BlazorThreeJS.Geometires;
 using BlazorThreeJS.Materials;
+using FoundryBlazor.PubSub;
+using FoundryRulesAndUnits.Models;
 
 
 
@@ -29,14 +31,15 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
-    [Parameter] public int WorldWidth { get; set; } = 1500;
-    [Parameter] public int WorldHeight { get; set; } = 1500;
 
+
+    protected MockDataGenerator DataGenerator { get; set; } = new();
     private CableWorld World3D { get; set; } = null!;
 
     public Scene GetCurrentScene()
     {
-        return CanvasReference.GetActiveScene();
+        var arena = Workspace.GetArena();
+        return arena.CurrentScene();
     }
  
 
@@ -50,10 +53,11 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         if (firstRender)
         {
+            var scene = CanvasReference.GetActiveScene();
             World3D = FoundryService.WorldManager().CreateWorld<CableWorld>("Cables");
 
             var arena = Workspace.GetArena();
-            arena.SetScene(GetCurrentScene());
+            arena.SetScene(scene);
 
             CreateMenus(Workspace);
             CreateServices(FoundryService, arena, World3D);
@@ -85,15 +89,13 @@ public partial class HomeBase : ComponentBase, IDisposable
         return shape;
     }
 
-    public void ForceSceneRefresh()
+
+
+    public void DoRefreshTree()
     {
-        Task.Run(async () =>
-        {
-            await GetCurrentScene().UpdateScene();
-        });
+        FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
     }
-
-
+    
     public void CreateMenus(IWorkspace space)
     {
         var arena = space.GetArena();
@@ -107,12 +109,19 @@ public partial class HomeBase : ComponentBase, IDisposable
         arena.AddAction("Clear", "btn-primary", () =>
         {
             Task.Run(async () => await arena.ClearArena());
+            DoRefreshTree();
         });
+
+        stage.AddAction("Clear", "btn-primary", () =>
+        {
+            stage.ClearAll();
+            DoRefreshTree();
+         });
 
         stage.AddAction("Render", "btn-primary", () =>
         {
             stage.PreRender(arena);
-            Task.Run(async () => await stage.RenderDetailed(arena.CurrentScene(), 0, 0));
+            Task.Run(async () => await stage.RenderToScene(arena.CurrentScene(), 0, 0));
         });
     }
 
@@ -131,7 +140,9 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         world.AddAction("Box", "btn-info", () => 
         {
-            var box = AddBox();
+
+            var box = AddBox(DataGenerator.GenerateName());
+            World3D.AddGlyph3D<FoShape3D>(box);
             arena.AddShape<FoShape3D>(box);
         });
 
@@ -172,7 +183,7 @@ public partial class HomeBase : ComponentBase, IDisposable
                 }
             });
 
-            ForceSceneRefresh();
+            GetCurrentScene().ForceSceneRefresh();
         });
 
         world.AddAction("Draw Box", "btn-primary", () =>
@@ -196,8 +207,7 @@ public partial class HomeBase : ComponentBase, IDisposable
                 }
             });
 
-
-            ForceSceneRefresh();
+            GetCurrentScene().ForceSceneRefresh();
         });
     }
 
@@ -214,17 +224,53 @@ public partial class HomeBase : ComponentBase, IDisposable
         await scene.UpdateScene();
     }
 
-    public Node3D AddBox()
+    public Node3D AddBox(string name, double x=0, double z=0)
     {
-        var box = new Node3D("test","blue")
+        var color = DataGenerator.GenerateColor();
+        var label = $"{name} {color}";
+
+        var box = new Node3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
-            Position = new Vector3(0, 0, 0),
+            Position = new Vector3(x, 0, z),
+
         };
-        box.CreateBox("test", .5, 10, .5);
-        
-        World3D.AddGlyph3D<FoShape3D>(box);
+        var height = DataGenerator.GenerateDouble(1, 10);
+        box.CreateBox(label, .5, height, .5);
+        box.Pivot = new Vector3(0, height/2, 0);
         return box;
+    }
+
+    public async Task AddBoxToStage()
+    {
+        var name = DataGenerator.GenerateName();
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+
+        var scene = GetCurrentScene();
+
+        var arena = Workspace.GetArena();
+        var stage = arena.CurrentStage();
+
+        var box = AddBox(name,x,z);
+        stage.AddShape<Node3D>(box);
+        
+        await scene.SetCameraPosition(new Vector3(9f, 9f, 9f),box.Position);
+        await stage.RenderToScene(scene, 0, 0);
+
+        await scene.UpdateScene();
+    }
+    public async Task AddBoxToArena()
+    {
+        var name = DataGenerator.GenerateName();
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+
+        var box = AddBox(name,x,z);
+        var arena = Workspace.GetArena();
+        arena.AddShape<Node3D>(box);
+        
+        await arena.UpdateArena();
     }
 
     protected void CreateAndRenderBox(bool render = true)
@@ -245,7 +291,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         //this should render
         arena.AddShape<FoShape3D>(shape);
         if ( render )
-            ForceSceneRefresh();
+            GetCurrentScene().ForceSceneRefresh();
 
     }
     protected void GoDrawing()

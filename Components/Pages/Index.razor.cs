@@ -2,7 +2,8 @@
 
 using BlazorThreeJS.Core;
 using BlazorThreeJS.Enums;
-using BlazorThreeJS.Lights;
+using BlazorThreeJS.Objects;
+using BlazorThreeJS.Materials;
 using BlazorThreeJS.Maths;
 using BlazorThreeJS.Viewers;
 using BlazorThreeJS.Settings;
@@ -11,8 +12,11 @@ using FoundryRulesAndUnits.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using BlazorThreeJS.Geometires;
-using BlazorThreeJS.Materials;
-using BlazorThreeJS.Objects;
+
+using BlazorThreeJS.Labels;
+using FoundryRulesAndUnits.Models;
+using BlazorThreeJS.Menus;
+
 
 namespace Three2025.Components.Pages;
 
@@ -26,7 +30,9 @@ public class IndexBase : ComponentBase, IDisposable
 
     protected ViewerThreeD View3D;
     
-    protected ViewerThreeD ViewSteve3D;
+    protected LabelText TestText { get; set; }
+    protected TextPanel TextPanel1 { get; set; }
+    protected MockDataGenerator DataGenerator { get; set; } = new();
     public FoWorkbook Workbook { get; set; }
 
 
@@ -161,6 +167,233 @@ public class IndexBase : ComponentBase, IDisposable
         await GetCurrentScene().UpdateScene();
     }
 
+    public async Task OnAddText()
+    {
+
+        TestText = new LabelText("My First Text") 
+        { 
+            Position = new Vector3(3, 2, 3), 
+            Color = DataGenerator.GenerateColor(),  //"#33333a" 
+        };
+
+        var scene = GetCurrentScene();
+        scene.Add(TestText);
+
+        await scene.UpdateScene();
+    }
+
+    public async Task OnUpdateText()
+    {
+        var newText = DateTime.Now.ToLongTimeString();
+
+        //$"newText={newText}".WriteInfo();
+
+        if (TestText != null) 
+        {
+            TestText.Text = newText;
+            TestText.Color = DataGenerator.GenerateColor();
+        }
+
+        var scene = GetCurrentScene();
+        await scene.UpdateScene();
+    }
+
+    private TextPanel BuildTextPanel()
+    {
+        var textLines = new List<string>()
+        {
+            "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet."
+        };
+        var panelPos = new Vector3(-1, 2, -2);
+        var panelRot = new Euler(-1 * Math.PI * 30 / 180, 0, 0);
+
+        var textPanel = new TextPanel
+        {
+            Name = "TEXTPANEL1",
+            // Width = 1,
+            // Height = 1,
+            TextLines = textLines,
+            Position = panelPos,
+            Rotation = panelRot
+        };
+        return textPanel;
+    }
+
+    private void ClickButton1(Button self)
+    {
+        $"self.Name={self.Name}".WriteInfo();
+
+        self.Text = self.Text == "OFF" ? "ON" : "OFF";
+
+        var scene = GetCurrentScene();
+        if (self.Text == "ON")
+        {
+            TextPanel1 = BuildTextPanel();
+            scene.Add(TextPanel1);
+        }
+        else
+        {
+            scene.Remove(TextPanel1);
+        }
+
+
+        scene.ForceSceneRefresh();
+    }
+
+    public async Task OnAddMenu()
+    {
+        
+        var scene = GetCurrentScene();
+
+        var buttons = new List<Button>() {
+            new Button("BTN1", "OFF") {
+                OnClick = ClickButton1
+            },
+            new Button("BTN2","Button 2"),
+            new Button("BTN3","Button 3")
+        };
+        var menuPos = new Vector3(-4, 3, -2);
+        var menuRot = new Euler(-1 * Math.PI * 30 / 180, 0, 0);
+
+        var panel = new PanelMenu
+        {
+            Name = "MENU1",
+            Width = 1.0,
+            Height = 3.0,
+            Position = menuPos,
+            Rotation = menuRot
+        };
+
+        panel.Buttons.AddRange(buttons);
+        scene.Add(panel);
+
+        // scene.Add(BuildTextPanel());
+        //scene.Add(BuildPanelGroup());
+
+
+        await scene.UpdateScene();
+    }
+
+    private TextPanel BuildChildPanel(string text)
+    {
+        var textLines = new List<string>() { text };
+        // var panelPos = new Vector3(-1, 2, -2);
+        // var panelRot = new Euler(-1 * Math.PI * 30 / 180, 0, 0);
+
+        var panel = new TextPanel
+        {
+            Name = "TEXTPANEL1",
+            Color = "red",
+            // Width = 1,
+            // Height = 1,
+            TextLines = textLines,
+            // Position = panelPos,
+            // Rotation = panelRot
+        };
+        return panel;
+    }
+
+    private Mesh BuildTube()
+    {
+        var path = new List<Vector3>() {
+            new Vector3(-2, 0, 0),
+            new Vector3(4, 0, 0),
+            new Vector3(4, 4, 0),
+            new Vector3(4, 4, -4)
+        };
+        var radius = 0.1;
+        var mesh = new Mesh()
+        {
+            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: radius, path: path),
+            Position = new Vector3(0, 0, 0),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "yellow"
+            }
+        };
+        return mesh;
+    }
+
+    private Mesh BuildSomething()
+    {
+        var mesh = new Mesh
+        {
+            Geometry = new DodecahedronGeometry(radius: 0.8f),
+            Position = new Vector3(-2, 6, -2),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "darkviolet",
+                Metalness = 0.5f,
+                Roughness = 0.5f
+            }
+        };
+        return mesh;
+    }
+
+    private PanelGroup BuildPanelGroup()
+    {
+        var textLines = new List<string>()
+        {
+            "Lorem ipsum dolor sit amet."
+        };
+        var panelPos = new Vector3(2, 2, -6);
+        var panelRot = new Euler(-1 * Math.PI * 45 / 180, 0, Math.PI * 30 / 180);
+        var panelW = 5;
+        var panelH = 5;
+
+        var childPanelW = 1;
+        var childPanelH = 0.5;
+        var childPadding = 0;
+
+        var colors = new List<string>() { "red", "orange", "green", "purple", "blue" };
+        var childPanels = new List<TextPanel>();
+
+        for (int i = 0; i < 5; i++)
+        {
+            var text = $"Child Panel {i}";
+            var childPanel = BuildChildPanel(text);
+            childPanel.Color = colors[i];
+            childPanel.Position = new Vector3(-panelW / 2 + i * childPanelW + childPadding, -panelH / 2 + i, 0.1);
+            childPanel.TextLines = new List<string>() { text };
+            childPanel.Width = childPanelW;
+            childPanel.Height = childPanelH;
+            childPanels.Add(childPanel);
+        }
+
+        var group = new PanelGroup
+        {
+            Name = "PANELGROUP1",
+            Width = panelW,
+            Height = panelH,
+            TextLines = textLines,
+            Position = panelPos,
+            Rotation = panelRot,
+            TextPanels = childPanels,
+            Meshes = new List<Mesh>() 
+            { 
+                BuildTube(), 
+                BuildSomething() 
+            }
+        };
+        return group;
+    }
+
+    // [JsonDerivedType(typeof(BoxGeometry))]
+    // [JsonDerivedType(typeof(CapsuleGeometry))]
+    // [JsonDerivedType(typeof(CircleGeometry))]
+    // [JsonDerivedType(typeof(ConeGeometry))]
+    // [JsonDerivedType(typeof(CylinderGeometry))]
+    // [JsonDerivedType(typeof(DodecahedronGeometry))]
+    // [JsonDerivedType(typeof(IcosahedronGeometry))]
+    // [JsonDerivedType(typeof(LineGeometry))]
+    // [JsonDerivedType(typeof(OctahedronGeometry))]
+    // [JsonDerivedType(typeof(PlaneGeometry))]
+    // [JsonDerivedType(typeof(RingGeometry))]
+    // [JsonDerivedType(typeof(SphereGeometry))]
+    // [JsonDerivedType(typeof(TetrahedronGeometry))]
+    // [JsonDerivedType(typeof(TorusGeometry))]
+    // [JsonDerivedType(typeof(TorusKnotGeometry))]
+    // [JsonDerivedType(typeof(TubeGeometry))]
     public async Task DoMeshTest()
     {
         var scene = GetCurrentScene();
@@ -176,16 +409,16 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        // scene.Add(new Mesh
-        // {
-        //     Geometry = new CircleGeometry(radius: 0.75f, segments: 12),
-        //     Position = new Vector3(2, 0, 0),
-        //     Scale = new Vector3(1, 0.75f, 1),
-        //     Material = new MeshStandardMaterial()
-        //     {
-        //         Color = "#98AFC7"
-        //     }
-        // });
+        scene.Add(new Mesh
+        {
+            Geometry = new CircleGeometry(radius: 0.75f, segments: 12),
+            Position = new Vector3(2, 0, 0),
+            Scale = new Vector3(1, 0.75f, 1),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "#98AFC7"
+            }
+        });
 
         scene.Add(new Mesh
         {

@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <!-- <ProjectReference Include="..\FoundryRulesAndUnits\FoundryRulesAndUnits.csproj" /> -->
-    <ProjectReference Include="..\BlazorThreeJS\BlazorThreeJS.csproj" />
+    <!-- <ProjectReference Include="..\BlazorThreeJS\BlazorThreeJS.csproj" /> -->
     <ProjectReference Include="..\FoundryBlazor\FoundryBlazor.csproj" />
   </ItemGroup>
 
