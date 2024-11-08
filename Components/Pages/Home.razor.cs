@@ -221,8 +221,12 @@ public partial class HomeBase : ComponentBase, IDisposable
         var cables = new CableChannels(World3D);
         cables.GenerateGeometry();
 
+        var arena = Workspace.GetArena();
+        var stage = arena.EstablishStage<FoStage3D>("The Cage");
+        World3D.PublishToStage(stage);
+
         var scene = GetCurrentScene();
-        await scene.UpdateScene();
+        await stage.RenderToScene(scene, 0, 0);
     }
 
     public Node3D AddBox(string name, double x=0, double z=0)
