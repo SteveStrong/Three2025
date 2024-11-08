@@ -62,6 +62,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             World3D = FoundryService.WorldManager().CreateWorld<CableWorld>("Cables");
 
             var arena = Workspace.GetArena();
+            arena.EstablishStage<FoStage3D>("Main Stage");
             arena.SetScene(scene);
 
             CreateMenus(Workspace);
@@ -102,28 +103,26 @@ public partial class HomeBase : ComponentBase, IDisposable
         var arena = space.GetArena();
         var stage = arena.CurrentStage();
 
-        arena.AddAction("Update", "btn-primary", () =>
-        {
-            Task.Run(async () => await arena.UpdateArena());
-        });
+        // arena.AddAction("Update", "btn-primary", () =>
+        // {
+        //     Task.Run(async () => await arena.UpdateArena());
+        // });
 
-        arena.AddAction("Clear", "btn-primary", () =>
-        {
-            Task.Run(async () => await arena.ClearArena());
-            //DoRefreshTree();
-        });
+        // arena.AddAction("Clear", "btn-primary", () =>
+        // {
+        //     Task.Run(async () => await arena.ClearArena());
+        // });
 
-        stage.AddAction("Clear", "btn-primary", () =>
-        {
-            stage.ClearAll();
-            //DoRefreshTree();
-         });
+        // stage.AddAction("Clear", "btn-primary", () =>
+        // {
+        //     stage.ClearAll();
+        //  });
 
-        stage.AddAction("Render", "btn-primary", () =>
-        {
-            stage.PreRender(arena);
-            Task.Run(async () => await stage.RenderToScene(arena.CurrentScene(), 0, 0));
-        });
+        // stage.AddAction("Render", "btn-primary", () =>
+        // {
+        //     stage.PreRender(arena);
+        //     Task.Run(async () => await stage.RenderToScene(arena.CurrentScene(), 0, 0));
+        // });
     }
 
     public void CreateServices(IFoundryService manager, IArena arena, FoWorld3D world)
@@ -213,9 +212,6 @@ public partial class HomeBase : ComponentBase, IDisposable
     }
 
 
-
-
-
     public async Task OnAddCage()
     {
         var cables = new CableChannels(World3D);
@@ -246,6 +242,23 @@ public partial class HomeBase : ComponentBase, IDisposable
         return box;
     }
 
+    public Node3D AddCone(string name, double x=0, double z=0)
+    {
+        var color = DataGenerator.GenerateColor();
+        var label = $"{name} {color}";
+
+        var box = new Node3D(label,color)
+        {
+            GlyphId = Guid.NewGuid().ToString(),
+            Position = new Vector3(x, 0, z),
+
+        };
+        var height = DataGenerator.GenerateDouble(1, 10);
+        box.CreateCone(label, .5, height, .5);
+        box.Pivot = new Vector3(0, height/2, 0);
+        return box;
+    }
+
     public async Task AddBoxToStage()
     {
         var name = DataGenerator.GenerateName();
@@ -265,13 +278,13 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         await scene.UpdateScene();
     }
-    public async Task AddBoxToArena()
+    public async Task AddConeToArena()
     {
         var name = DataGenerator.GenerateName();
         var x = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var box = AddBox(name,x,z);
+        var box = AddCone(name,x,z);
         var arena = Workspace.GetArena();
         arena.AddShape<Node3D>(box);
 
