@@ -54,6 +54,11 @@ public partial class HomeBase : ComponentBase, IDisposable
         if (firstRender)
         {
             var scene = CanvasReference.GetActiveScene();
+            scene.SetAfterUpdateAction((s,j) =>
+            {
+                FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
+            });
+
             World3D = FoundryService.WorldManager().CreateWorld<CableWorld>("Cables");
 
             var arena = Workspace.GetArena();
@@ -91,10 +96,6 @@ public partial class HomeBase : ComponentBase, IDisposable
 
 
 
-    public void DoRefreshTree()
-    {
-        FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-    }
     
     public void CreateMenus(IWorkspace space)
     {
@@ -109,13 +110,13 @@ public partial class HomeBase : ComponentBase, IDisposable
         arena.AddAction("Clear", "btn-primary", () =>
         {
             Task.Run(async () => await arena.ClearArena());
-            DoRefreshTree();
+            //DoRefreshTree();
         });
 
         stage.AddAction("Clear", "btn-primary", () =>
         {
             stage.ClearAll();
-            DoRefreshTree();
+            //DoRefreshTree();
          });
 
         stage.AddAction("Render", "btn-primary", () =>
@@ -269,6 +270,8 @@ public partial class HomeBase : ComponentBase, IDisposable
         var box = AddBox(name,x,z);
         var arena = Workspace.GetArena();
         arena.AddShape<Node3D>(box);
+
+        var stage = arena.CurrentStage();
         
         await arena.UpdateArena();
     }

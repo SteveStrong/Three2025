@@ -16,11 +16,11 @@
 <button class="btn btn-primary" @onclick="AddBoxToArena">Add Box to Arena</button>
 <button class="btn btn-primary" @onclick="OnAddCage">Add Cage</button>
 <button class="btn btn-primary" @onclick="OnAddTRex">Add T-Rex</button>
-<button class="btn btn-success" @onclick="DoRefreshTree">Refresh</button>
+
 
 
 <div class="d-flex">
     @* <Canvas2DComponent CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight" /> *@
-    <Canvas3DComponent SceneName="HomeView" @ref="CanvasReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+    <Canvas3DComponent SceneName="Viewer3D" @ref="CanvasReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
     <ShapeTreeView />
 </div>
