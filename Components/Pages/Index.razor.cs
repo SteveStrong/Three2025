@@ -62,7 +62,7 @@ public class IndexBase : ComponentBase, IDisposable
 
         var model = new ImportSettings
         {
-            Uuid = Guid.NewGuid(),
+            Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Position = pos,
@@ -125,7 +125,7 @@ public class IndexBase : ComponentBase, IDisposable
     {
         var model = new ImportSettings
         {
-            Uuid = Guid.NewGuid(),
+            Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Position = new Vector3(2, 0, 2),
@@ -141,7 +141,7 @@ public class IndexBase : ComponentBase, IDisposable
     {
         var model = new ImportSettings
         {
-            Uuid = Guid.NewGuid(),
+            Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Position = new Vector3(0, 0, 0),
@@ -156,7 +156,7 @@ public class IndexBase : ComponentBase, IDisposable
     {
         var model = new ImportSettings
         {
-            Uuid = Guid.NewGuid(),
+            Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/mustang_1965.glb"),
             Position = new Vector3(0, 0, 0),
@@ -177,7 +177,7 @@ public class IndexBase : ComponentBase, IDisposable
         };
 
         var scene = GetCurrentScene();
-        scene.Add(TestText);
+        scene.AddChild(TestText);
 
         await scene.UpdateScene();
     }
@@ -229,11 +229,11 @@ public class IndexBase : ComponentBase, IDisposable
         if (self.Text == "ON")
         {
             TextPanel1 = BuildTextPanel();
-            scene.Add(TextPanel1);
+            scene.AddChild(TextPanel1);
         }
         else
         {
-            scene.Remove(TextPanel1);
+            scene.RemoveChild(TextPanel1);
         }
 
 
@@ -258,6 +258,7 @@ public class IndexBase : ComponentBase, IDisposable
         var panel = new PanelMenu
         {
             Name = "MENU1",
+            Uuid = Guid.NewGuid().ToString(),
             Width = 1.0,
             Height = 3.0,
             Position = menuPos,
@@ -265,7 +266,7 @@ public class IndexBase : ComponentBase, IDisposable
         };
 
         panel.Buttons.AddRange(buttons);
-        scene.Add(panel);
+        scene.AddChild(panel);
 
         // scene.Add(BuildTextPanel());
         //scene.Add(BuildPanelGroup());
@@ -399,8 +400,9 @@ public class IndexBase : ComponentBase, IDisposable
         var scene = GetCurrentScene();
 
 
-        scene.Add(new Mesh
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
             Position = new Vector3(-2, 0, 0),
             Material = new MeshStandardMaterial()
@@ -409,8 +411,9 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.Add(new Mesh
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new CircleGeometry(radius: 0.75f, segments: 12),
             Position = new Vector3(2, 0, 0),
             Scale = new Vector3(1, 0.75f, 1),
@@ -420,8 +423,9 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.Add(new Mesh
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new CapsuleGeometry(radius: 0.5f, length: 2),
             Position = new Vector3(-4, 0, 0),
             Material = new MeshStandardMaterial()
@@ -430,8 +434,9 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.Add(new Mesh
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
             Position = new Vector3(4, 0, 0),
             Material = new MeshStandardMaterial()
@@ -443,8 +448,9 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.Add(new Mesh
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new CylinderGeometry(radiusTop: 0.5f, height: 1.2f, radialSegments: 16),
             Position = new Vector3(0, 0, -2),
             Material = new MeshStandardMaterial()
@@ -453,8 +459,10 @@ public class IndexBase : ComponentBase, IDisposable
                 Wireframe = true
             }
         });
-        scene.Add(new Mesh
+
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new DodecahedronGeometry(radius: 0.8f),
             Position = new Vector3(-2, 0, -2),
             Material = new MeshStandardMaterial()
@@ -465,8 +473,9 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.Add(new Mesh
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new IcosahedronGeometry(radius: 0.8f),
             Position = new Vector3(-4, 0, -2),
             Material = new MeshStandardMaterial()
@@ -475,9 +484,9 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.Add(new Mesh
+        scene.AddChild(new Mesh
         {
-
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new OctahedronGeometry(radius: 0.75f),
             Position = new Vector3(2, 0, -2),
             Material = new MeshStandardMaterial()
@@ -486,8 +495,9 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.Add(new Mesh
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new PlaneGeometry(width: 0.5f, height: 2),
             Position = new Vector3(4, 0, -2),
             Material = new MeshStandardMaterial()
@@ -495,8 +505,10 @@ public class IndexBase : ComponentBase, IDisposable
                 Color = "purple"
             }
         });
-        scene.Add(new Mesh
+
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new RingGeometry(innerRadius: 0.6f, outerRadius: 0.7f),
             Position = new Vector3(0, 0, -4),
             Material = new MeshStandardMaterial()
@@ -504,8 +516,10 @@ public class IndexBase : ComponentBase, IDisposable
                 Color = "DodgerBlue"
             }
         });
-        scene.Add(new Mesh
+
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new SphereGeometry(radius: 0.6f),
             Position = new Vector3(-2, 0, -4),
             Material = new MeshStandardMaterial()
@@ -513,8 +527,10 @@ public class IndexBase : ComponentBase, IDisposable
                 Color = "darkgreen"
             },
         });
-        scene.Add(new Mesh
+
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new TetrahedronGeometry(radius: 0.75f),
             Position = new Vector3(2, 0, -4),
             Material = new MeshStandardMaterial()
@@ -522,8 +538,10 @@ public class IndexBase : ComponentBase, IDisposable
                 Color = "lightblue"
             }
         });
-        scene.Add(new Mesh
+
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new TorusGeometry(radius: 0.6f, tube: 0.4f, radialSegments: 12, tubularSegments: 12),
             Position = new Vector3(4, 0, -4),
             Material = new MeshStandardMaterial()
@@ -531,8 +549,10 @@ public class IndexBase : ComponentBase, IDisposable
                 Color = "lightgreen"
             }
         });
-        scene.Add(new Mesh
+
+        scene.AddChild(new Mesh
         {
+            Uuid = Guid.NewGuid().ToString(),
             Geometry = new TorusKnotGeometry(radius: 0.6f, tube: 0.1f),
             Position = new Vector3(-4, 0, -4),
             Material = new MeshStandardMaterial()

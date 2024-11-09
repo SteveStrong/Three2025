@@ -105,23 +105,18 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         // arena.AddAction("Update", "btn-primary", () =>
         // {
-        //     Task.Run(async () => await arena.UpdateArena());
         // });
 
         // arena.AddAction("Clear", "btn-primary", () =>
         // {
-        //     Task.Run(async () => await arena.ClearArena());
         // });
 
         // stage.AddAction("Clear", "btn-primary", () =>
         // {
-        //     stage.ClearAll();
         //  });
 
         // stage.AddAction("Render", "btn-primary", () =>
         // {
-        //     stage.PreRender(arena);
-        //     Task.Run(async () => await stage.RenderToScene(arena.CurrentScene(), 0, 0));
         // });
     }
 
@@ -173,8 +168,9 @@ public partial class HomeBase : ComponentBase, IDisposable
                 new Vector3(4, 4, -4)
             };
 
-            scene.Add(new Mesh
+            scene.AddChild(new Mesh
             {
+                Uuid = Guid.NewGuid().ToString(),
                 Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
                 Position = new Vector3(0, 0, 0),
                 Material = new MeshStandardMaterial()
@@ -195,8 +191,9 @@ public partial class HomeBase : ComponentBase, IDisposable
             var rot = new Euler(0, Math.PI * 45 / 180, 0);
 
             var scene = arena.CurrentScene();
-            scene.Add(new Mesh
+            scene.AddChild(new Mesh
             {
+                Uuid = Guid.NewGuid().ToString(),
                 Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
                 Position = pos,
                 Rotation = rot,
@@ -350,7 +347,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         var model = new ImportSettings
         {
-            Uuid = Guid.NewGuid(),
+            Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Position = new Vector3(3, 0, 3),
@@ -366,7 +363,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         var model = new ImportSettings
         {
-            Uuid = Guid.NewGuid(),
+            Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Position = new Vector3(0, 0, 0),

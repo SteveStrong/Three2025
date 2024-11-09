@@ -56,7 +56,7 @@ public class Node3D : FoShape3D
 
     public override string GetTreeNodeTitle()
     {
-        return $"{base.GetTreeNodeTitle()} {Position?.X:F1} {Position?.Y:F1} {Position?.Z:F1}";
+        return $"{base.GetTreeNodeTitle()} POS: {Position?.X:F1} {Position?.Y:F1} {Position?.Z:F1}";
     }
 
 }

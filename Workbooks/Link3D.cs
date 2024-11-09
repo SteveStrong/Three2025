@@ -46,7 +46,7 @@ public class Link3D : FoShape3D
 
     public override string GetTreeNodeTitle()
     {
-        return $"{base.GetTreeNodeTitle()}  {Start.GetName()} to {Finish.GetName()}";
+        return $"{base.GetTreeNodeTitle()}  from {Start.GetName()} to {Finish.GetName()}";
     }
 
 }
