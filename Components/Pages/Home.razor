@@ -13,12 +13,13 @@
 <PageTitle>Home</PageTitle>
 <h2>This page renders using the Canvas3DComponent and calls API's on the World, Arena, and Stage</h2>
 
+<button class="btn btn-primary" @onclick="DoAxisTest">Axis</button>
 <button class="btn btn-primary" @onclick="AddBoxToStage">Add Box to Stage</button>
 <button class="btn btn-primary" @onclick="AddConeToArena">Add Cone to Arena</button>
 <button class="btn btn-primary" @onclick="OnAddCage">Add Cage</button>
 <button class="btn btn-primary" @onclick="OnAddTRex">Add T-Rex</button>
-
-
+<button class="btn btn-primary" @onclick="OnAddGeom">Add Geom</button>
+<button class="btn btn-primary" @onclick="OnAddText">Add Text</button>
 
 <div class="d-flex">
     @* <Canvas2DComponent CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight" /> *@

@@ -222,6 +222,104 @@ public partial class HomeBase : ComponentBase, IDisposable
         await stage.RenderToScene(scene, 0, 0);
     }
 
+    public async Task OnAddTRex()
+    {
+        var name = DataGenerator.GenerateWord();
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+
+        var arena = Workspace.GetArena();
+        var shape = new FoShape3D()
+        {
+            Name = "T-Rex " + name,
+            Color = "blue",
+            Position = new Vector3(x, 0, z),
+        };
+        shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"));
+
+
+        var stage = arena.EstablishStage<FoStage3D>("Main Stage");
+        arena.AddShape<FoShape3D>(shape);
+        stage.PreRender(arena);
+
+        var scene = GetCurrentScene();
+        await stage.RenderToScene(scene, 0, 0);
+    }
+
+    
+    public async Task OnAddGeom()
+    {
+        var name = DataGenerator.GenerateName();
+        var color = DataGenerator.GenerateColor();
+        var label = $"{name} {color}";
+
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+
+        var arena = Workspace.GetArena();
+        var shape = new FoShape3D()
+        {
+            Name = name,
+            Color = color,
+            Position = new Vector3(x, 0, z),
+        };
+
+        var w = DataGenerator.GenerateDouble(1, 10);
+        var h = DataGenerator.GenerateDouble(1, 10);
+        var d = DataGenerator.GenerateDouble(1, 10);
+        var index = DataGenerator.GenerateInt(0, 10);
+
+        shape = index switch
+        {
+            0 => shape.CreateBox(label, w, h, d),
+            1 => shape.CreateCone(label, w, h, d),
+            2 => shape.CreateCylinder(label, w, h, d),
+            3 => shape.CreateDodecahedron(label, w, h, d),
+            4 => shape.CreateIcosahedron(label, w, h, d),
+            5 => shape.CreateOctahedron(label, w, h, d),
+            6 => shape.CreateSphere(label, w, h, d),
+            7 => shape.CreateTetrahedron(label, w, h, d),
+            8 => shape.CreateTorusKnot(label, w, h, d),
+            9 => shape.CreateTorus(label, w, h, d),
+            _ => shape.CreateBox(label, w, h, d),
+        };
+ 
+
+
+
+        var stage = arena.EstablishStage<FoStage3D>("Main Stage");
+        arena.AddShape<FoShape3D>(shape);
+
+        var scene = GetCurrentScene();
+        await stage.RenderToScene(scene, 0, 0);
+    }
+
+    public async Task OnAddText()
+    {
+        var name = DataGenerator.GenerateWord();
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var y = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+        var color = DataGenerator.GenerateColor();
+        var label = $"{name} {color}";
+        var arena = Workspace.GetArena();
+
+        var shape = new FoText3D()
+        {
+            Name = label,
+            Text = DataGenerator.GenerateText(),
+            Color = color,
+            Position = new Vector3(x, y, z),
+        };
+
+
+        var stage = arena.EstablishStage<FoStage3D>("Main Stage");
+        arena.AddShape<FoText3D>(shape);
+
+        var scene = GetCurrentScene();
+        await stage.RenderToScene(scene, 0, 0);
+    }
+
     public Node3D AddBox(string name, double x=0, double z=0)
     {
         var color = DataGenerator.GenerateColor();
@@ -251,7 +349,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         };
         var height = DataGenerator.GenerateDouble(1, 10);
-        box.CreateCone(label, .5, height, .5);
+        box.CreateCone(label, .75, height, .75);
         box.Pivot = new Vector3(0, height/2, 0);
         return box;
     }
@@ -283,34 +381,14 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var box = AddCone(name,x,z);
         var arena = Workspace.GetArena();
+        arena.EstablishStage<FoStage3D>("Main Stage");
         arena.AddShape<Node3D>(box);
 
-        var stage = arena.CurrentStage();
         
         await arena.UpdateArena();
     }
 
-    protected void CreateAndRenderBox(bool render = true)
-    {
-        var arena = Workspace.GetArena();
 
-        var shape = new FoShape3D()
-        {
-            Color = "Red"
-        };
-        shape.CreateBox("Dave",1, 2, 3);
-
-        //this will render
-        //var world = new FoWorld3D("Test");
-        //world.AddGlyph3D<FoShape3D>(shape);
-        //arena.RenderWorld3D(world);
-
-        //this should render
-        arena.AddShape<FoShape3D>(shape);
-        if ( render )
-            GetCurrentScene().ForceSceneRefresh();
-
-    }
     protected void GoDrawing()
     {
         //"Click Go".WriteInfo();
@@ -342,22 +420,42 @@ public partial class HomeBase : ComponentBase, IDisposable
     }
 
 
-
-    public async Task OnAddTRex()
+   public void DoAxisTest()
     {
-        var model = new ImportSettings
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Format = Import3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
-            Position = new Vector3(3, 0, 3),
-        };
+        var pos = new Vector3(0, 0, 0);
+        var rot = new Euler(0, 0, 0);
+        var piv = new Vector3(0, 0, 0);
 
         var scene = GetCurrentScene();
+        var Uuid = Guid.NewGuid().ToString();
 
-        await scene.Request3DModel(model);
-        await scene.UpdateScene();
+        var model = new ImportSettings
+        {
+            Uuid = Uuid,
+            Format = Import3DFormats.Gltf,
+            FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Position = pos,
+            Rotation = rot,
+            Pivot = piv,
+            OnComplete = () =>
+            {
+                var group = new Group3D()
+                {
+                    Name = "Axis",
+                    Uuid = Uuid,
+                };
+                scene.AddChild(group);
+
+                StateHasChanged();
+            }
+
+        };
+
+        Task.Run(async () => await scene.Request3DModel(model));
     }
+
+
+
 
     public async Task OnAddJet()
     {

@@ -60,55 +60,33 @@ public class IndexBase : ComponentBase, IDisposable
         var rot = new Euler(0, 0, 0);
         var piv = new Vector3(0, 0, 0);
 
+        var scene = GetCurrentScene();
+        var Uuid = Guid.NewGuid().ToString();
+
         var model = new ImportSettings
         {
-            Uuid = Guid.NewGuid().ToString(),
+            Uuid = Uuid,
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Position = pos,
             Rotation = rot,
             Pivot = piv,
-            OnComplete = (Scene scene, Object3D object3D) =>
+            OnComplete = () =>
             {
-                if (object3D != null)
+                var group = new Group3D()
                 {
-                    $"OnComplete callback object3d.Uuid={object3D.Uuid}".WriteSuccess();
-                    StateHasChanged();
-                }
-                else
-                {
-                    "object3D is null".WriteError();
-                }
+                    Name = "Axis",
+                    Uuid = Uuid,
+                };
+                scene.AddChild(group);
+                //scene.UpdateScene();
+                StateHasChanged();
             }
+
         };
 
-        Task.Run(async () => await GetCurrentScene().Request3DModel(model));
-        //Task.Run(async () => await scene.UpdateScene());
+        Task.Run(async () => await scene.Request3DModel(model));
     }
-
-    // public Scene GetCurrentScene()
-    // {
-    //     if (_currentScene != null )
-    //         return _currentScene;
-
-    //     var title = "Custom Scene";
-    //     if (Scene.FindBestScene(title, out Scene result))
-    //     {
-    //         _currentScene = result;
-    //     }
-    //     else
-    //     {
-    //         _currentScene = new Scene(title, JsRuntime);
-    //         _currentScene.Add(new AmbientLight() { Name = "IndexBase" });
-    //         _currentScene.Add(new PointLight()
-    //         {
-    //             Name = "IndexBase",
-    //             Position = new Vector3(1, 3, 0)
-    //         });
-    //     };
-
-    //     return _currentScene;
-    // }
 
 
 
@@ -169,7 +147,6 @@ public class IndexBase : ComponentBase, IDisposable
 
     public async Task OnAddText()
     {
-
         TestText = new LabelText("My First Text") 
         { 
             Position = new Vector3(3, 2, 3), 
