@@ -347,7 +347,7 @@ public class IndexBase : ComponentBase, IDisposable
             Position = panelPos,
             Rotation = panelRot,
             TextPanels = childPanels,
-            Meshes = new List<Mesh>() 
+            Meshes = new List<Object3D>() 
             { 
                 BuildTube(), 
                 BuildSomething() 

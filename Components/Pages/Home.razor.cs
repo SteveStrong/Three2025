@@ -82,7 +82,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     public FoShape3D DoLoad3dModel(string url, double bx, double by, double bz)
     {
         var name = url.Split('\\').Last();
-        var shape = new FoShape3D(name,"blue")
+        var shape = new FoModel3D(name,"blue")
         {
             Name = name,
             GlyphId = Guid.NewGuid().ToString(),
@@ -214,9 +214,9 @@ public partial class HomeBase : ComponentBase, IDisposable
         var cables = new CableChannels(World3D);
         cables.GenerateGeometry();
 
-        var arena = Workspace.GetArena();
+        var arena = Workspace.GetArena() as FoArena3D;
         var stage = arena.EstablishStage<FoStage3D>("The Cage");
-        World3D.PublishToStage(stage);
+        World3D.PublishToArena(arena);
 
         var scene = GetCurrentScene();
         await stage.RenderToScene(scene, 0, 0);
@@ -229,10 +229,8 @@ public partial class HomeBase : ComponentBase, IDisposable
         var z = DataGenerator.GenerateDouble(-10, 10);
 
         var arena = Workspace.GetArena();
-        var shape = new FoShape3D()
+        var shape = new FoModel3D("T-Rex " + name)
         {
-            Name = "T-Rex " + name,
-            Color = "blue",
             Position = new Vector3(x, 0, z),
         };
         shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"));
@@ -254,14 +252,13 @@ public partial class HomeBase : ComponentBase, IDisposable
         var label = $"{name} {color}";
 
         var x = DataGenerator.GenerateDouble(-10, 10);
+        var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
         var arena = Workspace.GetArena();
-        var shape = new FoShape3D()
+        var shape = new FoShape3D(name,color)
         {
-            Name = name,
-            Color = color,
-            Position = new Vector3(x, 0, z),
+            Position = new Vector3(x, y, z),
         };
 
         var w = DataGenerator.GenerateDouble(1, 10);
@@ -301,14 +298,11 @@ public partial class HomeBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
         var color = DataGenerator.GenerateColor();
-        var label = $"{name} {color}";
         var arena = Workspace.GetArena();
 
-        var shape = new FoText3D()
+        var shape = new FoText3D(name,color)
         {
-            Name = label,
             Text = DataGenerator.GenerateText(),
-            Color = color,
             Position = new Vector3(x, y, z),
         };
 

@@ -34,16 +34,16 @@ public class CableChannels : FoComponent
 
         var (x, z) = (0.0, 0.0);
         GenerateCage(x, z, width, height, depth, step);
-        x += width.Value() + 0.05;
-        GenerateCage(x, z, width, height, depth, step);
-        x += width.Value() + 0.05;
-        GenerateCage(x, z, width, height, depth, step);
-        x += width.Value() + 0.05;
-        GenerateCage(x, z, width, height, depth, step);
+        // x += width.Value() + 0.05;
+        // GenerateCage(x, z, width, height, depth, step);
+        // x += width.Value() + 0.05;
+        // GenerateCage(x, z, width, height, depth, step);
+        // x += width.Value() + 0.05;
+        // GenerateCage(x, z, width, height, depth, step);
     }
 
 
-    public List<Node3D> GenerateColumn(double x, double z, Length Height, Length Step)
+    public List<Node3D> GenerateColumn(string groupName, double x, double z, Length Height, Length Step)
     {
 
         var h = Height.Value();
@@ -52,16 +52,19 @@ public class CableChannels : FoComponent
         var columns = new List<Node3D>();
         var y = 0.0;
 
+        var root = new FoGroup3D(groupName);
+        _world.AddGlyph3D<FoGroup3D>(root);
+
         while (y <= h)
         {
-            var name = $"Node:{x:F1}:{y:F1}:{z:F1}";
+            var name = $"{groupName}:{x:F1}:{y:F1}:{z:F1}";
             var shape = new Node3D(name, "blue")
             {
                 Position = new Vector3(x, y, z),
             };
             shape.CreateBox(name, .05, .03, .05);
             columns.Add(shape);
-            _world.AddGlyph3D<FoShape3D>(shape);
+            root.AddShape<FoShape3D>(shape);
             y += s;
         }
 
@@ -70,7 +73,7 @@ public class CableChannels : FoComponent
             var start = columns[i - 1];
             var finish = columns[i];
             var link = new Link3D($"Link::{x:F1}:{z:F1}{i}", "blue", start, finish, 0.01);
-            _world.AddGlyph3D<FoShape3D>(link);
+            root.AddShape<FoShape3D>(link);
         }
         return columns;
     }
@@ -78,12 +81,15 @@ public class CableChannels : FoComponent
     //create a method to link together 2 columns of List<Node3D>
     public void LinkColumns(string name, List<Node3D> start, List<Node3D> finish)
     {
+        var root = new FoGroup3D(name);
+        _world.AddGlyph3D<FoGroup3D>(root);
+
         for (int i = 0; i < start.Count(); i++)
         {
             var s = start[i];
             var f = finish[i];
             var link = new Link3D($"{name}:{i}", "blue", s, f, 0.01);
-            _world.AddGlyph3D<FoShape3D>(link);
+            root.AddShape<FoShape3D>(link);
         }
     }
 
@@ -94,16 +100,18 @@ public class CableChannels : FoComponent
         var w = Width.Value();
         var d = Depth.Value();
 
-        var lf = GenerateColumn(x, z, Height, Step);
-        var lb = GenerateColumn(x, z+d, Height, Step);
-        var cb = GenerateColumn(x+w/2, z+d, Height, Step);
-        var rb = GenerateColumn(x+w, z+d, Height, Step);
-        var rf = GenerateColumn(x+w, z, Height, Step);
+        var lf = GenerateColumn("Left-Front", x, z, Height, Step);
+        //var lb = GenerateColumn("Left-Back", x, z+d, Height, Step);
+        //LinkColumns($"Left-Side", lf, lb);
 
-        LinkColumns($"left {x:F1}", lf, lb);
-        LinkColumns($"left-back {x:F1}", lb, cb);
-        LinkColumns($"right-back {x:F1}", cb, rb);
-        LinkColumns($"right {x:F1}", rb, rf);
+        //var cb = GenerateColumn("Center-Back", x +w/2, z+d, Height, Step);
+        //LinkColumns($"Left-Back-Side", lb, cb);
+
+        //var rb = GenerateColumn("Right-Back", x +w, z+d, Height, Step);
+        //LinkColumns($"Right-Back-Side", cb, rb);
+
+        //var rf = GenerateColumn("Right-Front", x +w, z, Height, Step);
+        //LinkColumns($"Right-Side", rb, rf);
     }
 
 }
