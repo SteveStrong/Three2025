@@ -19,7 +19,7 @@ using FoundryRulesAndUnits.Models;
 
 namespace Three2025.Components.Pages;
 
-public partial class HomeBase : ComponentBase, IDisposable
+public partial class DrawingBase : ComponentBase, IDisposable
 {
 
     [Inject] public NavigationManager Navigation { get; set; }
@@ -27,7 +27,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
 
-    public Canvas3DComponentBase CanvasReference = null!;
+    public Canvas2DComponentBase CanvasReference = null!;
 
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
@@ -53,20 +53,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         if (firstRender)
         {
-            var scene = CanvasReference.GetActiveScene();
-            scene.SetAfterUpdateAction((s,j) =>
-            {
-                FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-            });
-
-            World3D = FoundryService.WorldManager().CreateWorld<CableWorld>("Cables");
-
-            var arena = Workspace.GetArena();
-            arena.EstablishStage<FoStage3D>("Main Stage");
-            arena.SetScene(scene);
-
             CreateMenus(Workspace);
-            CreateServices(FoundryService, arena, World3D);
         }
 
         await base.OnAfterRenderAsync(firstRender);

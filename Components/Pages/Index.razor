@@ -1,5 +1,6 @@
 ﻿
 @page "/Index"
+@page "/"
 
 @using FoundryBlazor.Shared
 @using BlazorThreeJS.Viewers
@@ -19,7 +20,8 @@
 <button class="btn btn-primary" @onclick="OnAddText">Add Text</button>
 <button class="btn btn-primary" @onclick="OnUpdateText">Update Text</button>
 <button class="btn btn-primary" @onclick="OnAddMenu">Add Menu</button>
-
+<button class="btn btn-primary" @onclick="OnAddGroup1">Add Group1</button>
+<button class="btn btn-primary" @onclick="OnAddGroup2">Add Group2</button>
 
 <div class="d-flex">
     <ViewerThreeD SceneName="ViewerThreeD" @ref=View3D />

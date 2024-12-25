@@ -1,0 +1,487 @@
+{
+    "title": "ViewerThreeD",
+    "backGroundColor": "#505050",
+    "camera": {
+      "animateRotationSettings": {
+        "animateRotation": false,
+        "thetaX": 0.1,
+        "thetaY": 0.1,
+        "thetaZ": 0.1,
+        "radius": 5,
+        "stopAnimationOnOrbitControlMove": false
+      },
+      "lookAt": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "position": {
+        "x": 5,
+        "y": 5,
+        "z": 5
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "order": "XYZ"
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "PerspectiveCamera",
+      "name": "",
+      "children": []
+    },
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "pivot": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "order": "XYZ"
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "type": "Scene",
+    "name": "viewerthreed",
+    "children": [
+      {
+        "color": "white",
+        "intensity": 0.6,
+        "uuid": "8775195e-7c94-4cd5-92d0-762a8704b29b",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "type": "AmbientLight",
+        "name": "Ambient Light",
+        "children": []
+      },
+      {
+        "distance": 0,
+        "decay": 1,
+        "color": "white",
+        "intensity": 1,
+        "uuid": "5afb617b-0793-408a-aa60-a710687a83e8",
+        "position": {
+          "x": 1,
+          "y": 3,
+          "z": 0
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "type": "PointLight",
+        "name": "Point Light",
+        "children": []
+      },
+      {
+        "uuid": "7e6f5939-b7dc-479f-8d38-404cb27c7180",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "type": "Group",
+        "name": "Group1",
+        "children": [
+          {
+            "material": {
+              "color": "magenta",
+              "flatShading": false,
+              "metalness": 0,
+              "roughness": 1,
+              "wireframe": false,
+              "map": {
+                "type": "Texture",
+                "name": "",
+                "textureUrl": "",
+                "wrapS": 1001,
+                "wrapT": 1001,
+                "repeat": {
+                  "x": 1,
+                  "y": 1
+                },
+                "offset": {
+                  "x": 0,
+                  "y": 0
+                },
+                "center": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotation": 0
+              },
+              "type": "MeshStandardMaterial",
+              "name": ""
+            },
+            "geometry": {
+              "width": 1.2000000476837158,
+              "height": 0.5,
+              "depth": 1,
+              "widthSegments": 1,
+              "heightSegments": 1,
+              "depthSegments": 1,
+              "name": "",
+              "type": "BoxGeometry"
+            },
+            "uuid": "359bc5e2-13e9-417b-9714-5cf609f56847",
+            "position": {
+              "x": -5,
+              "y": 0,
+              "z": 0
+            },
+            "pivot": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "order": "XYZ"
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "type": "Mesh",
+            "name": "Box1",
+            "children": []
+          },
+          {
+            "material": {
+              "color": "green",
+              "flatShading": false,
+              "metalness": 0,
+              "roughness": 1,
+              "wireframe": false,
+              "map": {
+                "type": "Texture",
+                "name": "",
+                "textureUrl": "",
+                "wrapS": 1001,
+                "wrapT": 1001,
+                "repeat": {
+                  "x": 1,
+                  "y": 1
+                },
+                "offset": {
+                  "x": 0,
+                  "y": 0
+                },
+                "center": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotation": 0
+              },
+              "type": "MeshStandardMaterial",
+              "name": ""
+            },
+            "geometry": {
+              "width": 1.2000000476837158,
+              "height": 0.5,
+              "depth": 1,
+              "widthSegments": 1,
+              "heightSegments": 1,
+              "depthSegments": 1,
+              "name": "",
+              "type": "BoxGeometry"
+            },
+            "uuid": "35e19686-b1e3-48f1-b258-64694eaba674",
+            "position": {
+              "x": 5,
+              "y": 0,
+              "z": 0
+            },
+            "pivot": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "order": "XYZ"
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "type": "Mesh",
+            "name": "Box2",
+            "children": []
+          }
+        ]
+      },
+      {
+        "material": {
+          "color": "red",
+          "flatShading": false,
+          "metalness": 0,
+          "roughness": 1,
+          "wireframe": false,
+          "map": {
+            "type": "Texture",
+            "name": "",
+            "textureUrl": "",
+            "wrapS": 1001,
+            "wrapT": 1001,
+            "repeat": {
+              "x": 1,
+              "y": 1
+            },
+            "offset": {
+              "x": 0,
+              "y": 0
+            },
+            "center": {
+              "x": 0,
+              "y": 0
+            },
+            "rotation": 0
+          },
+          "type": "MeshStandardMaterial",
+          "name": ""
+        },
+        "geometry": {
+          "width": 1.2000000476837158,
+          "height": 0.5,
+          "depth": 1,
+          "widthSegments": 1,
+          "heightSegments": 1,
+          "depthSegments": 1,
+          "name": "",
+          "type": "BoxGeometry"
+        },
+        "uuid": "a10a6e2e-427e-44c8-933d-51b1a0617690",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "type": "Mesh",
+        "name": "Group2",
+        "children": [
+          {
+            "material": {
+              "color": "magenta",
+              "flatShading": false,
+              "metalness": 0,
+              "roughness": 1,
+              "wireframe": false,
+              "map": {
+                "type": "Texture",
+                "name": "",
+                "textureUrl": "",
+                "wrapS": 1001,
+                "wrapT": 1001,
+                "repeat": {
+                  "x": 1,
+                  "y": 1
+                },
+                "offset": {
+                  "x": 0,
+                  "y": 0
+                },
+                "center": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotation": 0
+              },
+              "type": "MeshStandardMaterial",
+              "name": ""
+            },
+            "geometry": {
+              "width": 1.2000000476837158,
+              "height": 0.5,
+              "depth": 1,
+              "widthSegments": 1,
+              "heightSegments": 1,
+              "depthSegments": 1,
+              "name": "",
+              "type": "BoxGeometry"
+            },
+            "uuid": "14a42b22-7917-4695-8f28-c9e5f6eaedff",
+            "position": {
+              "x": -5,
+              "y": 0,
+              "z": -5
+            },
+            "pivot": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "order": "XYZ"
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "type": "Mesh",
+            "name": "Box3",
+            "children": []
+          },
+          {
+            "material": {
+              "color": "green",
+              "flatShading": false,
+              "metalness": 0,
+              "roughness": 1,
+              "wireframe": false,
+              "map": {
+                "type": "Texture",
+                "name": "",
+                "textureUrl": "",
+                "wrapS": 1001,
+                "wrapT": 1001,
+                "repeat": {
+                  "x": 1,
+                  "y": 1
+                },
+                "offset": {
+                  "x": 0,
+                  "y": 0
+                },
+                "center": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotation": 0
+              },
+              "type": "MeshStandardMaterial",
+              "name": ""
+            },
+            "geometry": {
+              "width": 1.2000000476837158,
+              "height": 0.5,
+              "depth": 1,
+              "widthSegments": 1,
+              "heightSegments": 1,
+              "depthSegments": 1,
+              "name": "",
+              "type": "BoxGeometry"
+            },
+            "uuid": "211802cb-0bf9-43ce-92da-49be89d08529",
+            "position": {
+              "x": 5,
+              "y": 0,
+              "z": 5
+            },
+            "pivot": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "order": "XYZ"
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "type": "Mesh",
+            "name": "Box4",
+            "children": []
+          }
+        ]
+      }
+    ]
+  }

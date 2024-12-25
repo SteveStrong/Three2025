@@ -1,0 +1,21 @@
+﻿
+
+@page "/drawing"
+
+@using FoundryBlazor.Shared
+@using FoundryRulesAndUnits.Extensions
+@using BlazorThreeJS.Viewers
+
+@namespace Three2025.Components.Pages
+@inherits DrawingBase
+@rendermode InteractiveServer
+
+<PageTitle>Drawing</PageTitle>
+<h2>This page renders using the Canvas2DComponent to catch the onclose bug </h2>
+
+
+
+<div class="d-flex">
+    <Canvas2DComponent @ref="CanvasReference" CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight" />
+
+</div>

@@ -18,6 +18,10 @@ using FoundryRulesAndUnits.Models;
 using BlazorThreeJS.Menus;
 
 
+
+        
+
+
 namespace Three2025.Components.Pages;
 
 public class IndexBase : ComponentBase, IDisposable
@@ -271,7 +275,7 @@ public class IndexBase : ComponentBase, IDisposable
         return panel;
     }
 
-    private Mesh BuildTube()
+    private Mesh3D BuildTube()
     {
         var path = new List<Vector3>() {
             new Vector3(-2, 0, 0),
@@ -280,7 +284,7 @@ public class IndexBase : ComponentBase, IDisposable
             new Vector3(4, 4, -4)
         };
         var radius = 0.1;
-        var mesh = new Mesh()
+        var mesh = new Mesh3D()
         {
             Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: radius, path: path),
             Position = new Vector3(0, 0, 0),
@@ -292,9 +296,9 @@ public class IndexBase : ComponentBase, IDisposable
         return mesh;
     }
 
-    private Mesh BuildSomething()
+    private Mesh3D BuildSomething()
     {
-        var mesh = new Mesh
+        var mesh = new Mesh3D
         {
             Geometry = new DodecahedronGeometry(radius: 0.8f),
             Position = new Vector3(-2, 6, -2),
@@ -356,28 +360,93 @@ public class IndexBase : ComponentBase, IDisposable
         return group;
     }
 
-    // [JsonDerivedType(typeof(BoxGeometry))]
-    // [JsonDerivedType(typeof(CapsuleGeometry))]
-    // [JsonDerivedType(typeof(CircleGeometry))]
-    // [JsonDerivedType(typeof(ConeGeometry))]
-    // [JsonDerivedType(typeof(CylinderGeometry))]
-    // [JsonDerivedType(typeof(DodecahedronGeometry))]
-    // [JsonDerivedType(typeof(IcosahedronGeometry))]
-    // [JsonDerivedType(typeof(LineGeometry))]
-    // [JsonDerivedType(typeof(OctahedronGeometry))]
-    // [JsonDerivedType(typeof(PlaneGeometry))]
-    // [JsonDerivedType(typeof(RingGeometry))]
-    // [JsonDerivedType(typeof(SphereGeometry))]
-    // [JsonDerivedType(typeof(TetrahedronGeometry))]
-    // [JsonDerivedType(typeof(TorusGeometry))]
-    // [JsonDerivedType(typeof(TorusKnotGeometry))]
-    // [JsonDerivedType(typeof(TubeGeometry))]
+    public async Task OnAddGroup1()
+    {
+        var scene = GetCurrentScene();
+        var group = new Group3D()
+        {
+            Name = "Group1",
+            Uuid = Guid.NewGuid().ToString(),
+        };
+
+        group.AddChild(new Mesh3D
+        {
+            Name = "Box1",
+            Uuid = Guid.NewGuid().ToString(),
+            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
+            Position = new Vector3(-5, 0, 0),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "magenta"
+            }
+        });
+
+        group.AddChild(new Mesh3D
+        {
+            Name = "Box2",
+            Uuid = Guid.NewGuid().ToString(),
+            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
+            Position = new Vector3(5, 0, 0),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "green"
+            }
+        });
+
+        scene.AddChild(group);
+
+        await scene.UpdateScene();
+    }
+
+    public async Task OnAddGroup2()
+    {
+        var scene = GetCurrentScene();
+
+        var group = new Mesh3D
+        {
+            Name = "Group2",
+            Uuid = Guid.NewGuid().ToString(),
+            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
+            Position = new Vector3(0, 0, 0),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "red"
+            }
+        };
+
+        group.AddChild(new Mesh3D
+        {
+            Name = "Box3",
+            Uuid = Guid.NewGuid().ToString(),
+            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
+            Position = new Vector3(-5, 0, -5),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "magenta"
+            }
+        });
+
+        group.AddChild(new Mesh3D
+        {
+            Name = "Box4",
+            Uuid = Guid.NewGuid().ToString(),
+            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
+            Position = new Vector3(5, 0, 5),
+            Material = new MeshStandardMaterial()
+            {
+                Color = "green"
+            }
+        });
+        scene.AddChild(group);
+        await scene.UpdateScene();
+    }
+
     public async Task DoMeshTest()
     {
         var scene = GetCurrentScene();
 
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
@@ -388,7 +457,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new CircleGeometry(radius: 0.75f, segments: 12),
@@ -400,7 +469,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new CapsuleGeometry(radius: 0.5f, length: 2),
@@ -411,7 +480,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
@@ -425,7 +494,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new CylinderGeometry(radiusTop: 0.5f, height: 1.2f, radialSegments: 16),
@@ -437,7 +506,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new DodecahedronGeometry(radius: 0.8f),
@@ -450,7 +519,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new IcosahedronGeometry(radius: 0.8f),
@@ -461,7 +530,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new OctahedronGeometry(radius: 0.75f),
@@ -472,7 +541,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new PlaneGeometry(width: 0.5f, height: 2),
@@ -483,7 +552,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new RingGeometry(innerRadius: 0.6f, outerRadius: 0.7f),
@@ -494,7 +563,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new SphereGeometry(radius: 0.6f),
@@ -505,7 +574,7 @@ public class IndexBase : ComponentBase, IDisposable
             },
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new TetrahedronGeometry(radius: 0.75f),
@@ -516,7 +585,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new TorusGeometry(radius: 0.6f, tube: 0.4f, radialSegments: 12, tubularSegments: 12),
@@ -527,7 +596,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        scene.AddChild(new Mesh
+        scene.AddChild(new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new TorusKnotGeometry(radius: 0.6f, tube: 0.1f),
@@ -538,7 +607,7 @@ public class IndexBase : ComponentBase, IDisposable
             }
         });
 
-        await GetCurrentScene().UpdateScene();
+        await scene.UpdateScene();
     }
 
 
