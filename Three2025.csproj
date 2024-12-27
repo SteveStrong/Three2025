@@ -13,7 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- <PackageReference Include="ApprenticeFoundryBlazor" Version="15.3.0" /> -->
+
+    <PackageReference Include="ApprenticeFoundryBlazor" Version="16.4.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <PackageReference Include="Radzen.Blazor" Version="5.0.2" />
   </ItemGroup>
@@ -21,7 +22,7 @@
   <ItemGroup>
     <!-- <ProjectReference Include="..\FoundryRulesAndUnits\FoundryRulesAndUnits.csproj" /> -->
     <!-- <ProjectReference Include="..\BlazorThreeJS\BlazorThreeJS.csproj" /> -->
-    <ProjectReference Include="..\FoundryBlazor\FoundryBlazor.csproj" />
+    <!-- <ProjectReference Include="..\FoundryBlazor\FoundryBlazor.csproj" /> -->
   </ItemGroup>
 
 </Project>

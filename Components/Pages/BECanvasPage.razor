@@ -1,0 +1,46 @@
+@page "/becanvas"
+@using Blazor.Extensions
+@using Blazor.Extensions.Canvas
+@using Blazor.Extensions.Canvas.Canvas2D
+
+@using FoundryBlazor.Shared
+@using BlazorThreeJS.Viewers
+@rendermode InteractiveServer
+
+@namespace Three2025.Components.Pages
+
+
+<h3>Canvas Drawing</h3>
+
+<div class="d-flex">
+    <Canvas2DComponent @ref="Canvas2DReference" CanvasWidth="500" CanvasHeight="300" AutoRender="true" />
+    <ShapeTreeView />
+    <BECanvas  Width="500" Height="300" @ref="canvasReference"></BECanvas>
+</div>
+
+@code {
+    private BECanvasComponent canvasReference;
+    private Canvas2DComponent Canvas2DReference;
+    private Canvas2DContext context;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            context = await canvasReference.CreateCanvas2DAsync();
+            await context.SetFillStyleAsync("green");
+
+            await context.FillRectAsync(10, 100, 100, 100);
+
+            await context.SetFontAsync("48px serif");
+            await context.StrokeTextAsync("Hello Blazor!!!", 10, 100);
+            await Draw();
+        }
+    }
+
+    private async Task Draw()
+    {
+        await context.SetFillStyleAsync("blue");
+        await context.FillRectAsync(50, 50, 150, 100);
+    }
+}
