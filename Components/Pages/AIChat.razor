@@ -1,0 +1,62 @@
+
+@using Radzen
+@using Radzen.Blazor
+
+@namespace Three2025.Components.Pages
+@inherits AIChatBase
+
+<style>
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 500px;
+    width: 100%;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.message {
+    margin-bottom: 5px;
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 5px;
+    margin-right: 5px;
+}
+
+button {
+    padding: 5px 10px;
+}    
+</style>
+
+<PageTitle>AIChat</PageTitle>
+
+
+<RadzenCard>
+    <div class="chat-container">
+        <div class="messages">
+            @foreach (var message in messages)
+            {
+                <div class="message">
+                    <strong>@message.User:</strong> @message.Text
+                </div>
+            }
+        </div>
+        <div class="input-container">
+            <RadzenTextBox @bind-Value="newMessage" Placeholder="Type your message..." Style="width: 100%;" @onkeypress="HandleKeyPress" />
+            <RadzenButton Text="Send" Click="SendMessage" Style="margin-left: 10px;" />
+        </div>
+    </div>
+</RadzenCard>

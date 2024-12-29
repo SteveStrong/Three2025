@@ -4,6 +4,8 @@
 
 @using FoundryBlazor.Shared
 @using BlazorThreeJS.Viewers
+@using Radzen
+@using Radzen.Blazor
 
 @namespace Three2025.Components.Pages
 @inherits IndexBase
@@ -25,5 +27,15 @@
 
 <div class="d-flex">
     <ViewerThreeD SceneName="ViewerThreeD" @ref=View3D />
-    <ShapeTreeView />
+
+    <RadzenTabs>
+                <Tabs>
+                    <RadzenTabsItem Text="Chat View">
+                        <AIChat/>
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Shape View">
+                        <ShapeTreeView/>
+                    </RadzenTabsItem>
+                </Tabs>
+            </RadzenTabs>
 </div>

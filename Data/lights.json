@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "name": "Table Lamp",
+    "is_on": false
+  },
+  {
+    "id": 2,
+    "name": "Porch light",
+    "is_on": false
+  },
+  {
+    "id": 3,
+    "name": "Chandelier",
+    "is_on": true
+  },
+  {
+    "id": 4,
+    "name": "Pitcher Light",
+    "is_on": false
+  },
+  {
+    "id": 5,
+    "name": "Catcher Light",
+    "is_on": false
+  },
+  {
+    "id": 6,
+    "name": "First Base Light",
+    "is_on": false
+  },
+  {
+    "id": 7,
+    "name": "Second Base Light",
+    "is_on": false
+  },
+  {
+    "id": 8,
+    "name": "Third Base Light",
+    "is_on": false
+  },
+  {
+    "id": 9,
+    "name": "Shortstop Light",
+    "is_on": false
+  },
+  {
+    "id": 10,
+    "name": "Left Field Light",
+    "is_on": false
+  },
+  {
+    "id": 11,
+    "name": "Center Field Light",
+    "is_on": false
+  },
+  {
+    "id": 12,
+    "name": "Right Field Light",
+    "is_on": false
+  }
+]

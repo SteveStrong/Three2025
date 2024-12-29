@@ -41,7 +41,7 @@ public class IndexBase : ComponentBase, IDisposable
 
 
 
-    public Scene GetCurrentScene()
+    public Scene3D GetCurrentScene()
     {
         return View3D.ActiveScene;
     }

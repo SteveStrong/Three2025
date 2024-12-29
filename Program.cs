@@ -12,6 +12,7 @@ using FoundryBlazor.Shape;
 using FoundryBlazor.Shared;
 using FoundryBlazor;
 using Microsoft.Extensions.FileProviders;
+using Three2025.Apprentice;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +57,7 @@ builder.Services.Configure<StaticFileOptions>(options =>
 
 var envConfig = new EnvConfig("./.env");
 builder.Services.AddFoundryBlazorServices(envConfig);
+builder.Services.AddSingleton<IApprenticeAI, ApprenticeAI>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

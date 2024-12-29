@@ -21,13 +21,13 @@ namespace Three2025.Components.Pages;
 
 public partial class HomeBase : ComponentBase, IDisposable
 {
+    public Canvas3DComponent Canvas3DReference = null;
 
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] protected IJSRuntime JsRuntime { get; set; }
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
 
-    public Canvas3DComponentBase CanvasReference = null!;
 
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
@@ -36,7 +36,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     protected MockDataGenerator DataGenerator { get; set; } = new();
     private CableWorld World3D { get; set; } = null!;
 
-    public Scene GetCurrentScene()
+    public (bool, Scene3D) GetCurrentScene()
     {
         var arena = Workspace.GetArena();
         return arena.CurrentScene();
@@ -53,8 +53,9 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         if (firstRender)
         {
-            var scene = CanvasReference.GetActiveScene();
-            scene.SetAfterUpdateAction((s,j) =>
+            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false,null!);
+
+            scene?.SetAfterUpdateAction((s,j) =>
             {
                 FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
             });
@@ -63,7 +64,8 @@ public partial class HomeBase : ComponentBase, IDisposable
 
             var arena = Workspace.GetArena();
             arena.EstablishStage<FoStage3D>("Main Stage");
-            arena.SetScene(scene);
+            if (found)
+                arena.SetScene(scene);
 
             CreateMenus(Workspace);
             CreateServices(FoundryService, arena, World3D);
@@ -157,7 +159,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         
         world.AddAction("Render Tube", "btn-primary", () =>
         {
-            var scene = arena.CurrentScene();
+            var (found, scene) = arena.CurrentScene();
 
 
             var capsuleRadius = 0.15f;
@@ -168,18 +170,19 @@ public partial class HomeBase : ComponentBase, IDisposable
                 new Vector3(4, 4, -4)
             };
 
-            scene.AddChild(new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
-                Position = new Vector3(0, 0, 0),
-                Material = new MeshStandardMaterial()
+            if (found)
+                scene.AddChild(new Mesh3D
                 {
-                    Color = "yellow"
-                }
-            });
+                    Uuid = Guid.NewGuid().ToString(),
+                    Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+                    Position = new Vector3(0, 0, 0),
+                    Material = new MeshStandardMaterial()
+                    {
+                        Color = "yellow"
+                    }
+                });
 
-            GetCurrentScene().ForceSceneRefresh();
+            scene?.ForceSceneRefresh();
         });
 
         world.AddAction("Draw Box", "btn-primary", () =>
@@ -190,21 +193,22 @@ public partial class HomeBase : ComponentBase, IDisposable
             var pos = new Vector3(0, height, 0);
             var rot = new Euler(0, Math.PI * 45 / 180, 0);
 
-            var scene = arena.CurrentScene();
-            scene.AddChild(new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
-                Position = pos,
-                Rotation = rot,
-                Pivot = piv,
-                Material = new MeshStandardMaterial()
+            var (found,scene) = arena.CurrentScene();
+            if ( found)
+                scene.AddChild(new Mesh3D
                 {
-                    Color = "magenta"
-                }
-            });
+                    Uuid = Guid.NewGuid().ToString(),
+                    Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
+                    Position = pos,
+                    Rotation = rot,
+                    Pivot = piv,
+                    Material = new MeshStandardMaterial()
+                    {
+                        Color = "magenta"
+                    }
+                });
 
-            GetCurrentScene().ForceSceneRefresh();
+            scene?.ForceSceneRefresh();
         });
     }
 
@@ -218,8 +222,9 @@ public partial class HomeBase : ComponentBase, IDisposable
         var stage = arena.EstablishStage<FoStage3D>("The Cage");
         World3D.PublishToArena(arena);
 
-        var scene = GetCurrentScene();
-        await stage.RenderToScene(scene, 0, 0);
+        var (found, scene) = GetCurrentScene();
+        if (found)
+            await stage.RenderToScene(scene, 0, 0);
     }
 
     public async Task OnAddTRex()
@@ -240,8 +245,9 @@ public partial class HomeBase : ComponentBase, IDisposable
         arena.AddShape<FoShape3D>(shape);
         stage.PreRender(arena);
 
-        var scene = GetCurrentScene();
-        await stage.RenderToScene(scene, 0, 0);
+        var (found, scene) = GetCurrentScene();
+        if (found)
+            await stage.RenderToScene(scene, 0, 0);
     }
 
     
@@ -287,8 +293,9 @@ public partial class HomeBase : ComponentBase, IDisposable
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
         arena.AddShape<FoShape3D>(shape);
 
-        var scene = GetCurrentScene();
-        await stage.RenderToScene(scene, 0, 0);
+        var (found, scene) = GetCurrentScene();
+        if (found)
+            await stage.RenderToScene(scene, 0, 0);
     }
 
     public async Task OnAddText()
@@ -310,8 +317,9 @@ public partial class HomeBase : ComponentBase, IDisposable
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
         arena.AddShape<FoText3D>(shape);
 
-        var scene = GetCurrentScene();
-        await stage.RenderToScene(scene, 0, 0);
+        var (found, scene) = GetCurrentScene();
+        if (found)
+            await stage.RenderToScene(scene, 0, 0);
     }
 
     public Node3D AddBox(string name, double x=0, double z=0)
@@ -354,17 +362,17 @@ public partial class HomeBase : ComponentBase, IDisposable
         var x = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var scene = GetCurrentScene();
-
         var arena = Workspace.GetArena();
         var stage = arena.CurrentStage();
 
         var box = AddBox(name,x,z);
         stage.AddShape<Node3D>(box);
         
-        await scene.SetCameraPosition(new Vector3(9f, 9f, 9f),box.Position);
-        await stage.RenderToScene(scene, 0, 0);
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
 
+        await stage.RenderToScene(scene, 0, 0);
+        await scene.SetCameraPosition(new Vector3(9f, 9f, 9f),box.Position);
         await scene.UpdateScene();
     }
     public async Task AddConeToArena()
@@ -420,7 +428,9 @@ public partial class HomeBase : ComponentBase, IDisposable
         var rot = new Euler(0, 0, 0);
         var piv = new Vector3(0, 0, 0);
 
-        var scene = GetCurrentScene();
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
+
         var Uuid = Guid.NewGuid().ToString();
 
         var model = new ImportSettings
@@ -438,7 +448,7 @@ public partial class HomeBase : ComponentBase, IDisposable
                     Name = "Axis",
                     Uuid = Uuid,
                 };
-                scene.AddChild(group);
+                scene?.AddChild(group);
 
                 StateHasChanged();
             }
@@ -461,7 +471,8 @@ public partial class HomeBase : ComponentBase, IDisposable
             Position = new Vector3(0, 0, 0),
         };
 
-        var scene = GetCurrentScene();
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
 
         await scene.Request3DModel(model);
         await scene.UpdateScene();
