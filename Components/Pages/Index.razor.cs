@@ -60,11 +60,17 @@ public class IndexBase : ComponentBase, IDisposable
 
     public void DoAxisTest()
     {
+        var scene = GetCurrentScene();
+        AddAxisToScene(scene);
+
+    }
+    public void AddAxisToScene(Scene3D scene)
+    {
         var pos = new Vector3(0, 0, 0);
         var rot = new Euler(0, 0, 0);
         var piv = new Vector3(0, 0, 0);
 
-        var scene = GetCurrentScene();
+
         var Uuid = Guid.NewGuid().ToString();
 
         var model = new ImportSettings
@@ -83,7 +89,6 @@ public class IndexBase : ComponentBase, IDisposable
                     Uuid = Uuid,
                 };
                 scene.AddChild(group);
-                //scene.UpdateScene();
                 StateHasChanged();
             }
 
@@ -113,10 +118,9 @@ public class IndexBase : ComponentBase, IDisposable
             Position = new Vector3(2, 0, 2),
         };
 
-
-
-        await GetCurrentScene().Request3DModel(model);
-        await GetCurrentScene().UpdateScene();
+        var scene = GetCurrentScene();
+        await scene.Request3DModel(model);
+        await scene.UpdateScene();
     }
 
     public async Task OnAddJet()
@@ -130,8 +134,9 @@ public class IndexBase : ComponentBase, IDisposable
         };
 
 
-        await GetCurrentScene().Request3DModel(model);
-        await GetCurrentScene().UpdateScene();
+        var scene = GetCurrentScene();
+        await scene.Request3DModel(model);
+        await scene.UpdateScene();;
     }
 
     public async Task OnAddCar()
@@ -145,8 +150,9 @@ public class IndexBase : ComponentBase, IDisposable
         };
 
 
-        await GetCurrentScene().Request3DModel(model);
-        await GetCurrentScene().UpdateScene();
+        var scene = GetCurrentScene();
+        await scene.Request3DModel(model);
+        await scene.UpdateScene();
     }
 
     public async Task OnAddText()

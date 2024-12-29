@@ -21,7 +21,7 @@ namespace Three2025.Components.Pages;
 
 public partial class HomeBase : ComponentBase, IDisposable
 {
-    public Canvas3DComponent Canvas3DReference = null;
+    public Canvas3DComponentBase Canvas3DReference = null;
 
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] protected IJSRuntime JsRuntime { get; set; }
