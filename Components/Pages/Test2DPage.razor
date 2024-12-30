@@ -1,0 +1,39 @@
+@page "/test2d"
+
+
+@using Blazor.Extensions
+@using Blazor.Extensions.Canvas
+@using Blazor.Extensions.Canvas.Canvas2D
+
+@using FoundryBlazor.Shared
+@using BlazorThreeJS.Viewers
+@using Three2025.Shared
+@rendermode InteractiveServer
+
+@namespace Three2025.Components.Pages
+
+
+<h3>Canvas2D</h3>
+
+<div class="d-flex">
+
+    <Canvas2D  @ref="Canvas2DReference" CanvasWidth="800" CanvasHeight="800" />
+</div>
+
+@code {
+
+    private Canvas2D Canvas2DReference;
+    //private Canvas2DContext context;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+               await Task.CompletedTask;
+           // context = await BECanvasReference.CreateCanvas2DAsync();
+
+        }
+    }
+
+
+}

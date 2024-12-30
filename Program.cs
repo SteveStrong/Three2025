@@ -20,9 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+
 
 builder.Services.AddRadzenComponents();
 
@@ -57,7 +55,7 @@ builder.Services.Configure<StaticFileOptions>(options =>
 
 var envConfig = new EnvConfig("./.env");
 builder.Services.AddFoundryBlazorServices(envConfig);
-builder.Services.AddSingleton<IApprenticeAI, ApprenticeAI>();
+builder.Services.AddScoped<IApprenticeAI, ApprenticeAI>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

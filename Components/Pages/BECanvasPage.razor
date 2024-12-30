@@ -13,13 +13,13 @@
 <h3>Canvas2DComponent  And  BECanvas</h3>
 
 <div class="d-flex">
-    <Canvas2DComponent @ref="Canvas2DReference" CanvasWidth="800" CanvasHeight="800" />
+    <BECanvas  Width="800" Height="800" @ref="BECanvasReference"></BECanvas>
     <ShapeTreeView />
-    <BECanvas  Width="800" Height="800" @ref="canvasReference"></BECanvas>
+    <Canvas2DComponent @ref="Canvas2DReference" CanvasWidth="800" CanvasHeight="800" />
 </div>
 
 @code {
-    private BECanvasComponent canvasReference;
+    private BECanvasComponent BECanvasReference;
     private Canvas2DComponent Canvas2DReference;
     private Canvas2DContext context;
 
@@ -27,7 +27,7 @@
     {
         if (firstRender)
         {
-            context = await canvasReference.CreateCanvas2DAsync();
+            context = await BECanvasReference.CreateCanvas2DAsync();
             await context.SetFillStyleAsync("green");
 
             await context.FillRectAsync(10, 100, 100, 100);
@@ -41,6 +41,6 @@
     private async Task Draw()
     {
         await context.SetFillStyleAsync("blue");
-        await context.FillRectAsync(50, 50, 150, 100);
+        await context.FillRectAsync(250, 250, 150, 100);
     }
 }

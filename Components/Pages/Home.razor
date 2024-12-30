@@ -16,35 +16,9 @@
 
 
 <div class="d-flex">
-    <div>
-        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
-            <button class="btn btn-primary" @onclick="DoAxisTest">Axis</button>
-            <button class="btn btn-primary" @onclick="AddBoxToStage">Add Box to Stage</button>
-            <button class="btn btn-primary" @onclick="AddConeToArena">Add Cone to Arena</button>
-            <button class="btn btn-primary" @onclick="OnAddCage">Add Cage</button>
-            <button class="btn btn-primary" @onclick="OnAddTRex">Add T-Rex</button>
-            <button class="btn btn-primary" @onclick="OnAddGeom">Add Geom</button>
-            <button class="btn btn-primary" @onclick="OnAddText">Add Text</button>
-        </RadzenStack>
-        <Canvas3DComponent SceneName="Canvas3DComponent" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
-    </div>
-    <RadzenTabs>
-        <Tabs>
-            <RadzenTabsItem Text="Chat View">
-                <AIChat/>
-            </RadzenTabsItem>
-            <RadzenTabsItem Text="Shape View">
-                <ShapeTreeView/>
-            </RadzenTabsItem>
-        </Tabs>
-    </RadzenTabs>
-    <div>
-        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
-            <button class="btn btn-primary" @onclick="OnAddCage">Add Cage</button>
-            <button class="btn btn-primary" @onclick="OnAddTRex">Add T-Rex</button>
-            <button class="btn btn-primary" @onclick="OnAddGeom">Add Geom</button>
-            <button class="btn btn-primary" @onclick="OnAddText">Add Text</button>
-        </RadzenStack>
-        <Canvas2DComponent CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight"  AutoRender="true"/>
-    </div>
+
+    <Canvas3DComponent SceneName="Canvas3DComponent" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+    <ShapeTreeView/>
+    <AIChat/>
+
 </div>

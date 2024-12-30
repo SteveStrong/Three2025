@@ -1,0 +1,9 @@
+﻿@using FoundryBlazor.Shared
+@using BlazorThreeJS.Viewers
+@inherits Canvas3DBase
+
+@namespace Three2025.Shared
+
+<div style="@GetCanvasStyle()" Width="@CanvasWidth" Height="@CanvasHeight">
+    <ViewerThreeD SceneName=@SceneName @ref="Viewer3DReference" ViewerSettings=@Settings3D ActiveScene=@Scene3D  CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight"/>
+</div>

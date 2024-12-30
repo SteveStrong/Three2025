@@ -7,6 +7,7 @@
 //https://learn.microsoft.com/en-us/semantic-kernel/concepts/kernel?pivots=programming-language-csharp
 
 // Import packages
+using FoundryBlazor.Solutions;
 using FoundryRulesAndUnits.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,7 +37,7 @@ public class ApprenticeAI : IApprenticeAI
     private IChatCompletionService chatCompletionService;
     private OpenAIPromptExecutionSettings openAIPromptExecutionSettings;
 
-    public ApprenticeAI()
+    public ApprenticeAI(IFoundryService foundry)
     {
         //export OPENAI_KEY="your_openai_api_key"
         //export OPENAI_ENDPOINT="https://your-openai-endpoint.com"
@@ -44,7 +45,12 @@ public class ApprenticeAI : IApprenticeAI
         var modelId = "gpt-4o-mini"; //"GPT-3.5";
 
         var apiKey = Environment.GetEnvironmentVariable("OPENAI_KEY");
+        if (string.IsNullOrWhiteSpace(apiKey))
+            return;
+
         var endpoint = Environment.GetEnvironmentVariable("OPENAI_ENDPOINT");
+        if (string.IsNullOrWhiteSpace(endpoint))
+            return;
 
         // Create a kernel with Azure OpenAI chat completion
         var builder = Kernel.CreateBuilder().AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
@@ -56,8 +62,9 @@ public class ApprenticeAI : IApprenticeAI
         kernel = builder.Build();
         chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
+        var plug3D = new ThreeDPlugin(foundry);
         kernel.Plugins.AddFromType<LightsPlugin>("Lights");
-        kernel.Plugins.AddFromType<ThreeDPlugin>("3DSolutions");
+        kernel.Plugins.AddFromObject(plug3D,"3DBuilder");
         
 
         openAIPromptExecutionSettings = new OpenAIPromptExecutionSettings() 
@@ -71,6 +78,9 @@ public class ApprenticeAI : IApprenticeAI
 
     public async Task<ChatMessageContent> GetAIResponse(string userMessage)
     {
+        if ( kernel == null ) 
+            return new ChatMessageContent(AuthorRole.System, "Apprentice Not Found!");
+
         chatHistory.AddUserMessage(userMessage);
 
         var result = await chatCompletionService.GetChatMessageContentAsync(

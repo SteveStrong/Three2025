@@ -4,6 +4,7 @@ using FoundryRulesAndUnits.Extensions;
 using Microsoft.SemanticKernel;
 
 namespace Three2025.Apprentice;
+#nullable enable
 
 public class LightsPlugin
 {
