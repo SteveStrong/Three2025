@@ -81,7 +81,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         return path;
     }
 
-    public FoShape3D DoLoad3dModel(string url, double bx, double by, double bz)
+    public FoShape3D DoLoad3dModelToWworld(string url, double bx, double by, double bz)
     {
         var name = url.Split('\\').Last();
         var shape = new FoModel3D(name,"blue")
@@ -143,73 +143,21 @@ public partial class HomeBase : ComponentBase, IDisposable
             arena.AddShape<FoShape3D>(box);
         });
 
-        world.AddAction("TRex", "btn-primary", () =>
-        {
-            var url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb");
-            var shape = DoLoad3dModel(url, -2, 6, -2);
-            arena.AddShape<FoShape3D>(shape);
-        });
+        // world.AddAction("TRex", "btn-primary", () =>
+        // {
+        //     var url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb");
+        //     var shape = DoLoad3dModel(url, -2, 6, -2);
+        //     arena.AddShape<FoShape3D>(shape);
+        // });
 
-        world.AddAction("Porsche", "btn-primary", () =>
-        {
-            var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
-            var shape = DoLoad3dModel(url, 2, 6, 2);
-            arena.AddShape<FoShape3D>(shape);
-        });
+        // world.AddAction("Porsche", "btn-primary", () =>
+        // {
+        //     var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
+        //     var shape = DoLoad3dModel(url, 2, 6, 2);
+        //     arena.AddShape<FoShape3D>(shape);
+        // });
         
-        world.AddAction("Render Tube", "btn-primary", () =>
-        {
-            var (found, scene) = arena.CurrentScene();
 
-
-            var capsuleRadius = 0.15f;
-            var capsulePositions = new List<Vector3>() {
-                new Vector3(0, 0, 0),
-                new Vector3(4, 0, 0),
-                new Vector3(4, 4, 0),
-                new Vector3(4, 4, -4)
-            };
-
-            if (found)
-                scene.AddChild(new Mesh3D
-                {
-                    Uuid = Guid.NewGuid().ToString(),
-                    Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
-                    Position = new Vector3(0, 0, 0),
-                    Material = new MeshStandardMaterial()
-                    {
-                        Color = "yellow"
-                    }
-                });
-
-            scene?.ForceSceneRefresh();
-        });
-
-        world.AddAction("Draw Box", "btn-primary", () =>
-        {
-            var height = 4;
-
-            var piv = new Vector3(-1, -height / 2, -3);
-            var pos = new Vector3(0, height, 0);
-            var rot = new Euler(0, Math.PI * 45 / 180, 0);
-
-            var (found,scene) = arena.CurrentScene();
-            if ( found)
-                scene.AddChild(new Mesh3D
-                {
-                    Uuid = Guid.NewGuid().ToString(),
-                    Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
-                    Position = pos,
-                    Rotation = rot,
-                    Pivot = piv,
-                    Material = new MeshStandardMaterial()
-                    {
-                        Color = "magenta"
-                    }
-                });
-
-            scene?.ForceSceneRefresh();
-        });
     }
 
 
@@ -227,7 +175,65 @@ public partial class HomeBase : ComponentBase, IDisposable
             await stage.RenderToScene(scene, 0, 0);
     }
 
-    public async Task OnAddTRex()
+
+    public void DoAddTubeToScene()
+    {
+        var arena = Workspace.GetArena();
+        var (found, scene) = arena.CurrentScene();
+
+
+        var capsuleRadius = 0.15f;
+        var capsulePositions = new List<Vector3>() {
+            new Vector3(0, 0, 0),
+            new Vector3(4, 0, 0),
+            new Vector3(4, 4, 0),
+            new Vector3(4, 4, -4)
+        };
+
+        if (found)
+            scene.AddChild(new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+                Position = new Vector3(0, 0, 0),
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "yellow"
+                }
+            });
+
+        scene?.ForceSceneRefresh();
+    }
+
+    public void DoAddBoxToScene()
+    {
+        var arena = Workspace.GetArena();
+        var (found, scene) = arena.CurrentScene();
+        var height = 4;
+
+        var piv = new Vector3(-1, -height / 2, -3);
+        var pos = new Vector3(0, height, 0);
+        var rot = new Euler(0, Math.PI * 45 / 180, 0);
+
+
+        if ( found)
+            scene.AddChild(new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
+                Position = pos,
+                Rotation = rot,
+                Pivot = piv,
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "magenta"
+                }
+            });
+
+        scene?.ForceSceneRefresh();
+    }
+
+    public async Task DoAddTRexToArena()
     {
         var name = DataGenerator.GenerateWord();
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -251,7 +257,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     }
 
     
-    public async Task OnAddGeom()
+    public async Task DoAddGeomToStage()
     {
         var name = DataGenerator.GenerateName();
         var color = DataGenerator.GenerateColor();
@@ -391,38 +397,10 @@ public partial class HomeBase : ComponentBase, IDisposable
     }
 
 
-    protected void GoDrawing()
-    {
-        //"Click Go".WriteInfo();
-
-        var drawing = Workspace.GetDrawing();
-        var page = drawing?.CurrentPage();
-        //$"Current Page {page?.Title}".WriteSuccess();
-
-        var shape = new FoShape2D()
-        {
-            Name = "Rectangle",
-            PinX = 100,
-            PinY = 100,
-            Width = 100,
-            Height = 100,
-            Color = "Red"
-        };
-        page?.AddShape<FoShape2D>(shape);
-
-        var shape2 = new FoShape1D(200,100,800,500,10,"Green");
-        page?.AddShape<FoShape1D>(shape2);
 
 
-        var shape3 = new FoConnector1D(300, 100, 600, 200, "Blue")
-        {
-            Layout = LineLayoutStyle.HorizontalFirst,
-        };
-        page?.AddShape<FoConnector1D>(shape3);
-    }
 
-
-   public void DoAxisTest()
+   public void DoAddAxisToScene()
     {
         var pos = new Vector3(0, 0, 0);
         var rot = new Euler(0, 0, 0);
@@ -448,50 +426,51 @@ public partial class HomeBase : ComponentBase, IDisposable
                     Name = "Axis",
                     Uuid = Uuid,
                 };
-                scene?.AddChild(group);
+                scene.AddChild(group);
 
                 StateHasChanged();
             }
 
         };
-
         Task.Run(async () => await scene.Request3DModel(model));
     }
 
 
 
 
-    public async Task OnAddJet()
+    public void DoAddJetToScene()
     {
-        var model = new ImportSettings
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Format = Import3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
-            Position = new Vector3(0, 0, 0),
-        };
-
         var (found, scene) = GetCurrentScene();
         if (!found) return;
 
-        await scene.Request3DModel(model);
-        await scene.UpdateScene();
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var y = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+
+        var Uuid = Guid.NewGuid().ToString();
+
+        var model = new ImportSettings
+        {
+            Uuid = Uuid,
+            Format = Import3DFormats.Gltf,
+            FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
+            Position = new Vector3(x, y, z),
+            OnComplete = () =>
+            {
+                var group = new Group3D()
+                {
+                    Name = DataGenerator.GenerateName(),
+                    Uuid = Uuid,
+                };
+                scene.AddChild(group);
+
+                StateHasChanged();
+            }
+
+        };
+        Task.Run(async () => await scene.Request3DModel(model));
     }
 
-    public List<FoPage2D> AllPages()
-    {
-        var drawing = Workspace.GetDrawing()!;
-        var manager = drawing.Pages();
-        return manager.GetAllPages();
-    }
-
-    
-    public bool GoToPage(FoPage2D page)
-    {
-        var drawing = Workspace.GetDrawing()!;
-        drawing.SetCurrentPage(page);
-        return true;
-    }
 
     public void Dispose()
     {

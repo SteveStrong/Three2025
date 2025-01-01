@@ -44,12 +44,14 @@ public class ApprenticeAI : IApprenticeAI
 
         var modelId = "gpt-4o-mini"; //"GPT-3.5";
 
-        var apiKey = Environment.GetEnvironmentVariable("OPENAI_KEY");
-        if (string.IsNullOrWhiteSpace(apiKey))
+        var endpoint = Environment.GetEnvironmentVariable("OPENAI_ENDPOINT",EnvironmentVariableTarget.User);
+        if (string.IsNullOrWhiteSpace(endpoint))
             return;
 
-        var endpoint = Environment.GetEnvironmentVariable("OPENAI_ENDPOINT");
-        if (string.IsNullOrWhiteSpace(endpoint))
+        $"Endpoint {endpoint}".WriteSuccess();
+
+        var apiKey = Environment.GetEnvironmentVariable("OPENAI_KEY", EnvironmentVariableTarget.User);
+        if (string.IsNullOrWhiteSpace(apiKey))
             return;
 
         // Create a kernel with Azure OpenAI chat completion

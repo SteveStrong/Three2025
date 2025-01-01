@@ -13,11 +13,13 @@ using FoundryBlazor.Shared;
 using FoundryBlazor;
 using Microsoft.Extensions.FileProviders;
 using Three2025.Apprentice;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
+
     .AddInteractiveServerComponents();
 
 
@@ -42,6 +44,7 @@ builder.Services.AddCors(options =>
 
 
 builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddSingleton<CircuitHandler, CustomCircuitHandler>();
 
 var provider = new FileExtensionContentTypeProvider();
 builder.Services.Configure<StaticFileOptions>(options =>

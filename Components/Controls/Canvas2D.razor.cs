@@ -65,8 +65,8 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
             CreateTickPlayground();
             //SetDoTugOfWar();
 
-            PubSub!.SubscribeTo<RefreshUIEvent>(OnRefreshUIEvent);
-            PubSub!.SubscribeTo<TriggerRedrawEvent>(OnTriggerRedrawEvent);
+            PubSub?.SubscribeTo<RefreshUIEvent>(OnRefreshUIEvent);
+            PubSub?.SubscribeTo<TriggerRedrawEvent>(OnTriggerRedrawEvent);
  
 
             await DoStart();
@@ -84,8 +84,8 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
             $"Canvas2DComponentBase {SceneName} DisposeAsync".WriteInfo();
             await DoStop();
                 
-            PubSub!.UnSubscribeFrom<RefreshUIEvent>(OnRefreshUIEvent);
-            PubSub!.UnSubscribeFrom<TriggerRedrawEvent>(OnTriggerRedrawEvent);
+            PubSub?.UnSubscribeFrom<RefreshUIEvent>(OnRefreshUIEvent);
+            PubSub?.UnSubscribeFrom<TriggerRedrawEvent>(OnTriggerRedrawEvent);
 
             await _jsRuntime!.InvokeVoidAsync("AppBrowser.Finalize");
 
@@ -129,7 +129,7 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
         {     
             
             if (Ctx == null) {  
-                $"Canvas2DComponentBase {SceneName} RenderFrameEventCalled Ctx is null".WriteError();
+                $"Canvas2D {SceneName} RenderFrameEventCalled Ctx is null".WriteError();
                 return;
             }
 

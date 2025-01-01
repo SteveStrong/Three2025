@@ -1,0 +1,260 @@
+{
+  "scene": {
+    "title": "Canvas3DComponent",
+    "backGroundColor": "#505050",
+    "camera": {
+      "animateRotationSettings": {
+        "animateRotation": false,
+        "thetaX": 0.1,
+        "thetaY": 0.1,
+        "thetaZ": 0.1,
+        "radius": 5,
+        "stopAnimationOnOrbitControlMove": false
+      },
+      "lookAt": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "uuid": "1",
+      "position": {
+        "x": 10,
+        "y": 10,
+        "z": 10
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "order": "XYZ"
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "PerspectiveCamera",
+      "name": "",
+      "children": []
+    },
+    "uuid": "2",
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "pivot": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "order": "XYZ"
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "type": "Scene",
+    "name": "canvas3dcomponent",
+    "children": [
+      {
+        "color": "white",
+        "intensity": 0.6,
+        "uuid": "ed4d5f4a-85eb-40ba-affe-8577f244a640",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "type": "AmbientLight",
+        "name": "Ambient Light",
+        "children": []
+      },
+      {
+        "distance": 0,
+        "decay": 1,
+        "color": "white",
+        "intensity": 1,
+        "uuid": "3b561111-928f-4ff3-9613-2baa6909de36",
+        "position": {
+          "x": 1,
+          "y": 3,
+          "z": 0
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "type": "PointLight",
+        "name": "Point Light",
+        "children": []
+      },
+      {
+        "material": {
+          "color": "yellow",
+          "flatShading": false,
+          "metalness": 0,
+          "roughness": 1,
+          "wireframe": false,
+          "map": {
+            "type": "Texture",
+            "name": "",
+            "textureUrl": "",
+            "wrapS": 1001,
+            "wrapT": 1001,
+            "repeat": {
+              "x": 1,
+              "y": 1
+            },
+            "offset": {
+              "x": 0,
+              "y": 0
+            },
+            "center": {
+              "x": 0,
+              "y": 0
+            },
+            "rotation": 0
+          },
+          "uuid": "90522dd8-508c-4827-9fa8-c59c47d8244d",
+          "type": "MeshStandardMaterial",
+          "name": "est"
+        },
+        "geometry": {
+          "width": 3.113971094332622,
+          "height": 7.474510911314236,
+          "depth": 7.5780929407889595,
+          "widthSegments": 1,
+          "heightSegments": 1,
+          "depthSegments": 1,
+          "name": "",
+          "type": "BoxGeometry"
+        },
+        "uuid": "cd0da12d-ddf9-44f4-844f-de88f0f81829",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "type": "Mesh",
+        "name": "Block",
+        "children": []
+      }
+    ]
+  },
+  "viewerSettings": {
+    "containerId": "Canvas3DComponent",
+    "canSelect": true,
+    "canSelectHelpers": false,
+    "selectedColor": "black",
+    "webGLRendererSettings": {
+      "antialias": false
+    },
+    "width": 1000,
+    "height": 800
+  },
+  "camera": {
+    "animateRotationSettings": {
+      "animateRotation": false,
+      "thetaX": 0.1,
+      "thetaY": 0.1,
+      "thetaZ": 0.1,
+      "radius": 5,
+      "stopAnimationOnOrbitControlMove": false
+    },
+    "lookAt": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "uuid": "1",
+    "position": {
+      "x": 10,
+      "y": 10,
+      "z": 10
+    },
+    "pivot": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "order": "XYZ"
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "type": "PerspectiveCamera",
+    "name": "",
+    "children": []
+  },
+  "orbitControls": {
+    "enabled": true,
+    "minDistance": 0,
+    "maxDistance": 10000,
+    "targetPosition": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  }
+}

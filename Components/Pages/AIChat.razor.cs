@@ -48,8 +48,6 @@ public partial class AIChatBase: ComponentBase, IDisposable
     }
     protected async Task<string> GetAIResponse(string userMessage)
     {
-
-
         var result = await AI.GetAIResponse(userMessage);
         return result.Content ?? "I'm sorry, I don't understand that.";
     }
