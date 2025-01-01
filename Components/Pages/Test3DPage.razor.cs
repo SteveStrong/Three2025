@@ -1,0 +1,186 @@
+﻿
+
+using BlazorThreeJS.Core;
+using BlazorThreeJS.Enums;
+using BlazorThreeJS.Objects;
+using BlazorThreeJS.Materials;
+using BlazorThreeJS.Maths;
+using BlazorThreeJS.Viewers;
+using BlazorThreeJS.Settings;
+using FoundryBlazor.Solutions;
+using FoundryRulesAndUnits.Extensions;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+using BlazorThreeJS.Geometires;
+
+using BlazorThreeJS.Labels;
+using FoundryRulesAndUnits.Models;
+using BlazorThreeJS.Menus;
+using Three2025.Shared;
+
+
+namespace Three2025.Components.Pages;
+
+public class Test3DPageBase : ComponentBase, IDisposable
+{
+
+    [Inject] public NavigationManager Navigation { get; set; }
+
+    protected Canvas3D Canvas3DReference;
+    protected LabelText TestText;
+
+    protected MockDataGenerator DataGenerator { get; set; } = new();
+    
+
+    public Scene3D GetCurrentScene()
+    {
+        var (success, scene) = Canvas3DReference.GetActiveScene();
+        return scene;
+    }
+
+    public string GetReferenceTo(string filename)
+    {
+        var path = Path.Combine(Navigation.BaseUri, filename);
+        path.WriteSuccess();
+        return path;
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            //for now this call is too early,  scene is not setup
+            //DoRenderingTest();
+
+        }
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    public void DoAxisTest()
+    {
+        var scene = GetCurrentScene();
+        AddAxisToScene(scene);
+
+    }
+    public void AddAxisToScene(Scene3D scene)
+    {
+        var pos = new Vector3(0, 0, 0);
+        var rot = new Euler(0, 0, 0);
+        var piv = new Vector3(0, 0, 0);
+
+
+        var Uuid = Guid.NewGuid().ToString();
+
+        var model = new ImportSettings
+        {
+            Uuid = Uuid,
+            Format = Import3DFormats.Gltf,
+            FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Position = pos,
+            Rotation = rot,
+            Pivot = piv,
+            OnComplete = () =>
+            {
+                var group = new Group3D()
+                {
+                    Name = "Axis",
+                    Uuid = Uuid,
+                };
+                scene.AddChild(group);
+                StateHasChanged();
+            }
+
+        };
+
+        Task.Run(async () => await scene.Request3DModel(model));
+    }
+
+
+
+    public async Task OnAddTRex()
+    {
+        var model = new ImportSettings
+        {
+            Uuid = Guid.NewGuid().ToString(),
+            Format = Import3DFormats.Gltf,
+            FileURL = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
+            Position = new Vector3(2, 0, 2),
+        };
+
+        var scene = GetCurrentScene();
+        await scene.Request3DModel(model);
+        await scene.UpdateScene();
+    }
+
+    public async Task OnAddJet()
+    {
+        var model = new ImportSettings
+        {
+            Uuid = Guid.NewGuid().ToString(),
+            Format = Import3DFormats.Gltf,
+            FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
+            Position = new Vector3(0, 0, 0),
+        };
+
+
+        var scene = GetCurrentScene();
+        await scene.Request3DModel(model);
+        await scene.UpdateScene();;
+    }
+
+    public async Task OnAddCar()
+    {
+        var model = new ImportSettings
+        {
+            Uuid = Guid.NewGuid().ToString(),
+            Format = Import3DFormats.Gltf,
+            FileURL = GetReferenceTo(@"storage/StaticFiles/mustang_1965.glb"),
+            Position = new Vector3(0, 0, 0),
+        };
+
+
+        var scene = GetCurrentScene();
+        await scene.Request3DModel(model);
+        await scene.UpdateScene();
+    }
+
+     public async Task OnAddText()
+    {
+        var x = DataGenerator.GenerateInt(-5, 5);
+        var y = DataGenerator.GenerateInt(-5, 5);
+        var z = DataGenerator.GenerateInt(-5, 5);
+
+        TestText = new LabelText("My First Text") 
+        { 
+            Position = new Vector3(x, y, z), 
+            Color = "#33333a",
+            Uuid = Guid.NewGuid().ToString(),
+        };
+
+        var scene = GetCurrentScene();
+        scene.AddChild(TestText);
+
+        await scene.UpdateScene();
+    }
+
+    public async Task OnUpdateText()
+    {
+        var newText = DateTime.Now.ToLongTimeString();
+
+        //$"newText={newText}".WriteInfo();
+
+        if (TestText != null) 
+        {
+            TestText.Text = newText;
+            TestText.Color = DataGenerator.GenerateColor();
+        }
+
+        var scene = GetCurrentScene();
+        await scene.UpdateScene();
+    }
+
+    public void Dispose()
+    {
+
+    }
+}

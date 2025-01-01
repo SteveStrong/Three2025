@@ -8,25 +8,25 @@ using Microsoft.JSInterop;
 using FoundryRulesAndUnits.Extensions;
 using FoundryBlazor.PubSub;
 using System.Text;
+using System.Runtime.CompilerServices;
 
 namespace Three2025.Shared;
 #nullable enable
 
-public class Canvas2DBase : ComponentBase, IAsyncDisposable, IDisposable
+public class Canvas2DBase : ComponentBase, IAsyncDisposable
 {
 
     [Inject] public IWorkspace? Workspace { get; set; }
     [Inject] private ComponentBus? PubSub { get; set; }
     [Inject] protected IJSRuntime? _jsRuntime { get; set; }
 
-    [Parameter] public string CanvasStyle { get; set; } = "width:max-content; border:1px solid black;cursor:default";
 
     [Parameter] public int CanvasWidth { get; set; } = 1800;
     [Parameter] public int CanvasHeight { get; set; } = 1200;
 
-    private bool _isRendering = false;
-    [Parameter] public bool AutoRender { get; set; } = true;
-    
+
+    [Parameter,EditorRequired] public string? SceneName { get; set; }
+
     public int tick { get; private set; }
 
     private DateTime _lastRender;
@@ -35,36 +35,27 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable, IDisposable
 
     private Canvas2DContext? Ctx;
 
-    public string GetCanvasStyle()
-    {
-        var style = new StringBuilder(CanvasStyle)
-            .Append("; ")
-            .Append("width:")
-            .Append(CanvasWidth)
-            .Append("px; ")
-            .Append("height:")
-            .Append(CanvasHeight)
-            .Append("px; ")
-            .ToString();
-        return style;
-    }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        if (AutoRender)
-            await DoStart();
-        else
-            await DoStop();
-    }
-    
+
+
+
+//https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-disposeasync
+// https://learn.microsoft.com/en-us/aspnet/core/blazor/components/lifecycle?view=aspnetcore-9.0
+
+
+
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+              $"Canvas2DComponentBase {SceneName} OnAfterRenderAsync".WriteSuccess();
+            //this should be disposed
             await _jsRuntime!.InvokeVoidAsync("AppBrowser.Initialize", DotNetObjectReference.Create(this));
  
 
             var drawing = Workspace!.GetDrawing();
+            drawing?.ClearAll();  //we do not want to share the old drawing here
             drawing?.SetCanvasSizeInPixels(CanvasWidth, CanvasHeight);
 
             //lets hope the reference to BECanvas was found
@@ -72,15 +63,13 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable, IDisposable
  
 
             CreateTickPlayground();
-            SetDoTugOfWar();
+            //SetDoTugOfWar();
 
             PubSub!.SubscribeTo<RefreshUIEvent>(OnRefreshUIEvent);
             PubSub!.SubscribeTo<TriggerRedrawEvent>(OnTriggerRedrawEvent);
  
-            if ( !AutoRender)
-                await RenderFrame(0);
-            else
-                await DoStart();
+
+            await DoStart();
         }
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -89,89 +78,85 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable, IDisposable
     {
         try
         {
-            "Canvas2DComponentBase DisposeAsync".WriteInfo();
-             if ( _isRendering )
-                await DoStop();
+            if ( Ctx == null ) return;
+            Ctx = null;
+
+            $"Canvas2DComponentBase {SceneName} DisposeAsync".WriteInfo();
+            await DoStop();
                 
             PubSub!.UnSubscribeFrom<RefreshUIEvent>(OnRefreshUIEvent);
             PubSub!.UnSubscribeFrom<TriggerRedrawEvent>(OnTriggerRedrawEvent);
 
-            if ( Ctx != null )
-                await _jsRuntime!.InvokeVoidAsync("AppBrowser.Finalize");
-            Ctx = null;
+            await _jsRuntime!.InvokeVoidAsync("AppBrowser.Finalize");
+
 
         }
         catch (Exception ex)
         {
-            $"Canvas2DComponentBase DisposeAsync Exception {ex.Message}".WriteError();
+            $"Canvas2DComponentBase {SceneName}  DisposeAsync Exception {ex.Message}".WriteError();
         }
     }
 
-    public void Dispose()
-    {
-        "Canvas2DComponentBase Dispose".WriteInfo();
-         GC.SuppressFinalize(this);
-    }
 
     public async Task DoStart()
     {
         try {
-            if ( !_isRendering )
-            {
-                $"Canvas2DComponentBase CALLING DO START  AppBrowser.StartAnimation".WriteSuccess();
-                await _jsRuntime!.InvokeVoidAsync("AppBrowser.StartAnimation");
-            }
-            _isRendering = true;
+
+            $"Canvas2DComponentBase {SceneName}  CALLING DO START  AppBrowser.StartAnimation".WriteSuccess();
+            await _jsRuntime!.InvokeVoidAsync("AppBrowser.StartAnimation");
+
         } catch (Exception ex) {
-            $"Canvas2DComponentBase DoStart Error {ex.Message}".WriteError();
+            $"Canvas2DComponentBase {SceneName} DoStart Error {ex.Message}".WriteError();
         }
     }
 
     public async Task DoStop()
     {
         try {
-            if ( _isRendering )
-            {
-                $"Canvas2DComponentBase CALLING DO STOP  AppBrowser.StopAnimation".WriteSuccess();
-                await _jsRuntime!.InvokeVoidAsync("AppBrowser.StopAnimation");
-            }
-            _isRendering = false;
+
+            $"Canvas2DComponentBase {SceneName} CALLING DO STOP  AppBrowser.StopAnimation".WriteSuccess();
+            await _jsRuntime!.InvokeVoidAsync("AppBrowser.StopAnimation");
+
         } catch (Exception ex) {
-            $"Canvas2DComponentBase DoStop Error {ex.Message}".WriteError();
+            $"Canvas2DComponentBase {SceneName} DoStop Error {ex.Message}".WriteError();
         }
     }
 
     [JSInvokable]
     public async ValueTask RenderFrameEventCalled()
     {
-        if (Ctx == null) return;
-
-        double fps = 1.0 / (DateTime.Now - _lastRender).TotalSeconds;
-        _lastRender = DateTime.Now; // update for the next time 
-
         try
-        {
-            //recomputing the ctx here look like it is needed and fixes moving between pages
-            //Ctx = await BECanvasReference?.CreateCanvas2DAsync();
+        {     
+            
+            if (Ctx == null) {  
+                $"Canvas2DComponentBase {SceneName} RenderFrameEventCalled Ctx is null".WriteError();
+                return;
+            }
+
+
+            double fps = 1.0 / (DateTime.Now - _lastRender).TotalSeconds;
+            _lastRender = DateTime.Now; // update for the next time 
+
             await RenderFrame(fps);
         }
         catch (Exception ex)
         {
-            $"Canvas2DComponentBase RenderFrameEventCalled Error {ex.Message}".WriteError();
+            $"Canvas2DComponentBase {SceneName} RenderFrameEventCalled Error {ex.Message}".WriteError();
         }
     }
 
     private void OnRefreshUIEvent(RefreshUIEvent e)
     {
         InvokeAsync(StateHasChanged);
-        //$"Canvas2DComponentBase OnRefreshUIEvent StateHasChanged {e.note}".WriteInfo();
+        //$"Canvas2DComponentBase {SceneName} OnRefreshUIEvent StateHasChanged {e.note}".WriteInfo();
     }
+
     private void OnTriggerRedrawEvent(TriggerRedrawEvent e)
     {
         Task.Run(async () =>
         {
             await RenderFrame(0);
-            $"Canvas2DComponentBase TriggerRedrawEvent StateHasChanged {e.note}".WriteInfo();
+            $"Canvas2DComponentBase {SceneName} TriggerRedrawEvent StateHasChanged {e.note}".WriteInfo();
         });
     }
 

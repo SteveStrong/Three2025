@@ -372,7 +372,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         if (!found) return;
 
         await stage.RenderToScene(scene, 0, 0);
-        await scene.SetCameraPosition(new Vector3(9f, 9f, 9f),box.Position);
+        await scene.SetCameraPosition(new Vector3(15f, 15f, 15f),box.Position);
         await scene.UpdateScene();
     }
     public async Task AddConeToArena()

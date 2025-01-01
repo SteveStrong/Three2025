@@ -1,4 +1,4 @@
-@page "/becanvas"
+@page "/becanvas1"
 @using Blazor.Extensions
 @using Blazor.Extensions.Canvas
 @using Blazor.Extensions.Canvas.Canvas2D
@@ -11,13 +11,12 @@
 @namespace Three2025.Components.Pages
 
 
-<h3>Canvas2DComponent  And  BECanvas</h3>
+<h3>BECanvas1</h3>
 
 <div class="d-flex">
     <BECanvas  Width="800" Height="800" @ref="BECanvasReference"></BECanvas>
-
-    <Canvas2D SceneName="Canvas0"  CanvasWidth="800" CanvasHeight="800" />
-    <ShapeTreeView />
+        <Canvas2D SceneName="Canvas1"  CanvasWidth="800" CanvasHeight="800" />
+            <ShapeTreeView />
 </div>
 
 @code {
@@ -30,19 +29,14 @@
         if (firstRender)
         {
             context = await BECanvasReference.CreateCanvas2DAsync();
-            await context.SetFillStyleAsync("green");
+            await context.SetFillStyleAsync("blue");
 
             await context.FillRectAsync(10, 100, 100, 100);
 
             await context.SetFontAsync("48px serif");
-            await context.StrokeTextAsync("Hello Blazor!!!", 10, 100);
-            await Draw();
+            await context.StrokeTextAsync("Canvas 1", 10, 100);
         }
     }
 
-    private async Task Draw()
-    {
-        await context.SetFillStyleAsync("blue");
-        await context.FillRectAsync(250, 250, 150, 100);
-    }
+
 }

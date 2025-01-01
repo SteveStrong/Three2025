@@ -1,5 +1,4 @@
 @page "/test3d"
-@page "/"
 
 @using Blazor.Extensions
 @using Blazor.Extensions.Canvas
@@ -8,6 +7,7 @@
 @using FoundryBlazor.Shared
 @using BlazorThreeJS.Viewers
 @using Three2025.Shared
+@inherits Test3DPageBase
 @rendermode InteractiveServer
 
 
@@ -17,24 +17,12 @@
 <h3>Canvas3D</h3>
 
 <div class="d-flex">
-
-    <Canvas3D SceneName="BestScene"  @ref="Canvas3DReference" CanvasWidth="800" CanvasHeight="800" />
+    <Canvas3D SceneName="BestScene"  @ref="Canvas3DReference" CanvasWidth="1800" CanvasHeight="1000" />
+    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">
+        <button class="btn btn-primary" @onclick="DoAxisTest">Axis</button>
+        <button class="btn btn-primary" @onclick="OnAddTRex">Add T-Rex</button>
+        <button class="btn btn-primary" @onclick="OnAddText">Add Text</button>
+        <button class="btn btn-primary" @onclick="OnUpdateText">Update Text</button>
+    </RadzenStack>
 </div>
 
-@code {
-
-    private Canvas3D Canvas3DReference;
-    //private Canvas2DContext context;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await Task.CompletedTask;
-           // context = await BECanvasReference.CreateCanvas2DAsync();
-
-        }
-    }
-
-
-}
