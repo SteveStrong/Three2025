@@ -80,22 +80,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         path.WriteSuccess();
         return path;
     }
-
-    public FoShape3D DoLoad3dModelToWworld(string url, double bx, double by, double bz)
-    {
-        var name = url.Split('\\').Last();
-        var shape = new FoModel3D(name,"blue")
-        {
-            Name = name,
-            GlyphId = Guid.NewGuid().ToString(),
-            Position = new Vector3(0, 0, 0),
-            BoundingBox = new Vector3(bx, by, bz),
-            //Scale = new Vector3(.1, .1, .1)
-        };
-        shape.CreateGlb(url);
-        World3D.AddGlyph3D<FoShape3D>(shape);
-        return shape;
-    }
+    
 
 
 
@@ -143,25 +128,14 @@ public partial class HomeBase : ComponentBase, IDisposable
             arena.AddShape<FoShape3D>(box);
         });
 
-        // world.AddAction("TRex", "btn-primary", () =>
-        // {
-        //     var url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb");
-        //     var shape = DoLoad3dModel(url, -2, 6, -2);
-        //     arena.AddShape<FoShape3D>(shape);
-        // });
 
-        // world.AddAction("Porsche", "btn-primary", () =>
-        // {
-        //     var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
-        //     var shape = DoLoad3dModel(url, 2, 6, 2);
-        //     arena.AddShape<FoShape3D>(shape);
-        // });
+
         
 
     }
 
 
-    public async Task OnAddCage()
+    public void OnAddCage()
     {
         var cables = new CableChannels(World3D);
         cables.GenerateGeometry();
@@ -172,7 +146,25 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            await stage.RenderToScene(scene, 0, 0);
+            stage.RenderToScene(scene);
+    }
+
+    
+    public void DoAddTriSocGeometry()
+    {
+
+        DoLoad3dModelToWorld(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"), 0, 0, 0);
+
+        var cables = new TriSocGeometry(World3D);
+        cables.GenerateGeometry();
+
+        var arena = Workspace.GetArena() as FoArena3D;
+        var stage = arena.EstablishStage<FoStage3D>("TriSoc");
+        World3D.PublishToArena(arena);
+
+        var (found, scene) = GetCurrentScene();
+        if (found)
+            stage.RenderToScene(scene);
     }
 
 
@@ -233,7 +225,10 @@ public partial class HomeBase : ComponentBase, IDisposable
         scene?.ForceSceneRefresh();
     }
 
-    public async Task DoAddTRexToArena()
+
+
+
+    public void DoAddTRexToArena()
     {
         var name = DataGenerator.GenerateWord();
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -246,18 +241,85 @@ public partial class HomeBase : ComponentBase, IDisposable
         };
         shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"));
 
+        LoadIntoArena(shape);
+    }
+
+    public void DoAddPorscheToArena()
+    {
+        var name = DataGenerator.GenerateWord();
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+
+
+        var shape = new FoModel3D("Porsche " + name)
+        {
+            Position = new Vector3(x, 0, z),
+        };
+        shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/Porsche_911.glb"));
+
+        LoadIntoArena(shape);
+    }
+
+    // world.AddAction("Porsche", "btn-primary", () =>
+    // {
+    //     var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
+    //     var shape = DoLoad3dModel(url, 2, 6, 2);
+    //     arena.AddShape<FoShape3D>(shape);
+    // });
+        
+    public FoShape3D DoLoad3dModelToWorld(string url, double bx, double by, double bz)
+    {
+        var name = url.Split('\\').Last();
+        var shape = new FoModel3D(name, "blue")
+        {
+            Name = name,
+            GlyphId = Guid.NewGuid().ToString(),
+            Position = new Vector3(0, 0, 0),
+            BoundingBox = new Vector3(bx, by, bz),
+            //Scale = new Vector3(.1, .1, .1)
+        };
+        shape.CreateGlb(url);
+        World3D.AddGlyph3D<FoShape3D>(shape);
+
+        return LoadIntoArena(shape);
+    }
+
+    private FoShape3D LoadIntoArena(FoShape3D shape)
+    {
+        var arena = Workspace.GetArena();
+        arena.AddShape<FoShape3D>(shape);  //this is what the world publish is doing
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShape<FoShape3D>(shape);
         stage.PreRender(arena);
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            await stage.RenderToScene(scene, 0, 0);
+            stage.RenderToScene(scene);
+
+        return shape;
     }
 
+
+
+
+
+    public void DoAddTRISOCToArena()
+    {
+        var name = DataGenerator.GenerateWord();
+        // var x = DataGenerator.GenerateDouble(-10, 10);
+        // var z = DataGenerator.GenerateDouble(-10, 10);
+
+        var arena = Workspace.GetArena();
+        var shape = new FoModel3D("TRISOC " + name)
+        {
+            Position = new Vector3(0, 0, 0),
+        };
+        shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"));
+
+        LoadIntoArena(shape);
+    }
     
-    public async Task DoAddGeomToStage()
+    public void DoAddGeomToStage()
     {
         var name = DataGenerator.GenerateName();
         var color = DataGenerator.GenerateColor();
@@ -267,7 +329,6 @@ public partial class HomeBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var arena = Workspace.GetArena();
         var shape = new FoShape3D(name,color)
         {
             Position = new Vector3(x, y, z),
@@ -293,18 +354,10 @@ public partial class HomeBase : ComponentBase, IDisposable
             _ => shape.CreateBox(label, w, h, d),
         };
  
-
-
-
-        var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShape<FoShape3D>(shape);
-
-        var (found, scene) = GetCurrentScene();
-        if (found)
-            await stage.RenderToScene(scene, 0, 0);
+        LoadIntoArena(shape);
     }
 
-    public async Task OnAddText()
+    public void OnAddText()
     {
         var name = DataGenerator.GenerateWord();
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -325,7 +378,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            await stage.RenderToScene(scene, 0, 0);
+            stage.RenderToScene(scene);
     }
 
     public Node3D AddBox(string name, double x=0, double z=0)
@@ -362,7 +415,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         return box;
     }
 
-    public async Task AddBoxToStage()
+    public void AddBoxToStage()
     {
         var name = DataGenerator.GenerateName();
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -377,11 +430,12 @@ public partial class HomeBase : ComponentBase, IDisposable
         var (found, scene) = GetCurrentScene();
         if (!found) return;
 
-        await stage.RenderToScene(scene, 0, 0);
-        await scene.SetCameraPosition(new Vector3(15f, 15f, 15f),box.Position);
-        await scene.UpdateScene();
+        stage.RenderToScene(scene);
+        // await scene.SetCameraPosition(new Vector3(15f, 15f, 15f),box.Position);
+        // await scene.UpdateScene();
     }
-    public async Task AddConeToArena()
+
+    public void AddConeToArena()
     {
         var name = DataGenerator.GenerateName();
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -389,11 +443,11 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var box = AddCone(name,x,z);
         var arena = Workspace.GetArena();
+
         arena.EstablishStage<FoStage3D>("Main Stage");
         arena.AddShape<Node3D>(box);
-
         
-        await arena.UpdateArena();
+        arena.UpdateArena();
     }
 
 
@@ -459,7 +513,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             {
                 var group = new Group3D()
                 {
-                    Name = DataGenerator.GenerateName(),
+                    Name = DataGenerator.GenerateWord(),
                     Uuid = Uuid,
                 };
                 scene.AddChild(group);

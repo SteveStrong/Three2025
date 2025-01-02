@@ -198,7 +198,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
     }
 
 
-    public async Task OnAddCage()
+    public void OnAddCage()
     {
         var cables = new CableChannels(World3D);
         cables.GenerateGeometry();
@@ -209,10 +209,10 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            await stage.RenderToScene(scene, 0, 0);
+            stage.RenderToScene(scene);
     }
 
-    public async Task OnAddTRex()
+    public void OnAddTRex()
     {
         var name = DataGenerator.GenerateWord();
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -232,11 +232,11 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            await stage.RenderToScene(scene, 0, 0);
+            stage.RenderToScene(scene);
     }
 
     
-    public async Task OnAddGeom()
+    public void OnAddGeom()
     {
         var name = DataGenerator.GenerateName();
         var color = DataGenerator.GenerateColor();
@@ -280,10 +280,10 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            await stage.RenderToScene(scene, 0, 0);
+            stage.RenderToScene(scene);
     }
 
-    public async Task OnAddText()
+    public void OnAddText()
     {
         var name = DataGenerator.GenerateWord();
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -304,7 +304,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            await stage.RenderToScene(scene, 0, 0);
+            stage.RenderToScene(scene);
     }
 
     public Node3D AddBox(string name, double x=0, double z=0)
@@ -341,7 +341,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         return box;
     }
 
-    public async Task AddBoxToStage()
+    public void AddBoxToStage()
     {
         var name = DataGenerator.GenerateName();
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -355,12 +355,13 @@ public partial class DrawingBase : ComponentBase, IDisposable
         stage.AddShape<Node3D>(box);
         
         var (found, scene) = GetCurrentScene();
-        await scene.SetCameraPosition(new Vector3(9f, 9f, 9f),box.Position);
-        await stage.RenderToScene(scene, 0, 0);
-
-        await scene.UpdateScene();
+        if ( found )
+            stage.RenderToScene(scene, 0, 0);
+        //await scene.SetCameraPosition(new Vector3(9f, 9f, 9f),box.Position);
     }
-    public async Task AddConeToArena()
+
+
+    public void AddConeToArena()
     {
         var name = DataGenerator.GenerateName();
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -368,11 +369,10 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var box = AddCone(name,x,z);
         var arena = Workspace.GetArena();
+
         arena.EstablishStage<FoStage3D>("Main Stage");
         arena.AddShape<Node3D>(box);
-
-        
-        await arena.UpdateArena();
+        arena.UpdateArena();
     }
 
 

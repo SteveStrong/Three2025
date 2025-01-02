@@ -70,7 +70,7 @@
       {
         "color": "white",
         "intensity": 0.6,
-        "uuid": "ed4d5f4a-85eb-40ba-affe-8577f244a640",
+        "uuid": "6924b153-b62d-49a9-a42c-06386c836bc2",
         "position": {
           "x": 0,
           "y": 0,
@@ -101,7 +101,7 @@
         "decay": 1,
         "color": "white",
         "intensity": 1,
-        "uuid": "3b561111-928f-4ff3-9613-2baa6909de36",
+        "uuid": "efcf03d0-45c2-42cb-87c9-855122734753",
         "position": {
           "x": 1,
           "y": 3,
@@ -125,73 +125,6 @@
         },
         "type": "PointLight",
         "name": "Point Light",
-        "children": []
-      },
-      {
-        "material": {
-          "color": "yellow",
-          "flatShading": false,
-          "metalness": 0,
-          "roughness": 1,
-          "wireframe": false,
-          "map": {
-            "type": "Texture",
-            "name": "",
-            "textureUrl": "",
-            "wrapS": 1001,
-            "wrapT": 1001,
-            "repeat": {
-              "x": 1,
-              "y": 1
-            },
-            "offset": {
-              "x": 0,
-              "y": 0
-            },
-            "center": {
-              "x": 0,
-              "y": 0
-            },
-            "rotation": 0
-          },
-          "uuid": "90522dd8-508c-4827-9fa8-c59c47d8244d",
-          "type": "MeshStandardMaterial",
-          "name": "est"
-        },
-        "geometry": {
-          "width": 3.113971094332622,
-          "height": 7.474510911314236,
-          "depth": 7.5780929407889595,
-          "widthSegments": 1,
-          "heightSegments": 1,
-          "depthSegments": 1,
-          "name": "",
-          "type": "BoxGeometry"
-        },
-        "uuid": "cd0da12d-ddf9-44f4-844f-de88f0f81829",
-        "position": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "pivot": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "order": "XYZ"
-        },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
-        },
-        "type": "Mesh",
-        "name": "Block",
         "children": []
       }
     ]

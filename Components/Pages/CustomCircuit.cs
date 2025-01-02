@@ -1,3 +1,4 @@
+using FoundryRulesAndUnits.Extensions;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.Logging;
 using System.Threading;
@@ -14,25 +15,27 @@ public class CustomCircuitHandler : CircuitHandler
 
     public override Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Circuit opened: {CircuitId}", circuit.Id);
+        //logger.LogInformation("Circuit opened: {CircuitId}", circuit.Id);
         return Task.CompletedTask;
     }
 
     public override Task OnCircuitClosedAsync(Circuit circuit, CancellationToken cancellationToken)
     {
         logger.LogInformation("Circuit closed: {CircuitId}", circuit.Id);
+        $@"Circuit closed: {circuit.Id}".WriteError();
         return Task.CompletedTask;
     }
 
     public override Task OnConnectionUpAsync(Circuit circuit, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Connection up: {CircuitId}", circuit.Id);
+        //logger.LogInformation("Connection up: {CircuitId}", circuit.Id);
         return Task.CompletedTask;
     }
 
     public override Task OnConnectionDownAsync(Circuit circuit, CancellationToken cancellationToken)
     {
         logger.LogInformation("Connection down: {CircuitId}", circuit.Id);
+        $@"Connection down: {circuit.Id}".WriteError();
         return Task.CompletedTask;
     }
 }

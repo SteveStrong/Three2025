@@ -19,7 +19,7 @@
 
     <Canvas3DComponent SceneName="Canvas3DComponent" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
     <ShapeTreeView/>
-    <AIChat/>
+
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">
         <h3>Add to Scene</h3>
         <button class="btn btn-primary" @onclick="DoAddAxisToScene">Axis to Scene</button>
@@ -29,11 +29,14 @@
 
         <h3>Add to Arena</h3>
         <button class="btn btn-primary" @onclick="DoAddTRexToArena">T-Rex to Arena</button>
-
+        <button class="btn btn-primary" @onclick="DoAddTRISOCToArena">TRISOC to Arena</button>
         <h3>Add to Stage</h3>
         <button class="btn btn-primary" @onclick="DoAddGeomToStage">Geometry to Stage</button>
 
         <h3>Add to World</h3>
         <button class="btn btn-primary" @onclick="OnAddCage">Add Cage</button>
+        <button class="btn btn-primary" @onclick="DoAddTriSocGeometry">TriSoc</button>
+        <button class="btn btn-primary" @onclick="DoAddPorscheToArena">Porsche</button>
     </RadzenStack>
+    <AIChat/>
 </div>

@@ -124,13 +124,12 @@ public class Canvas3DBase : ComponentBase, IDisposable
         //InvokeAsync(StateHasChanged);
         $"Canvas3DBase OnRefreshUIEvent StateHasChanged {e.note}".WriteInfo();
 
-        Task.Run(async () =>
-        {
-            var arena = Workspace?.GetArena();
-            if ( arena != null )
-                await arena.UpdateArena();
+
+        var arena = Workspace?.GetArena();
+        if ( arena != null )
+            arena.UpdateArena();
             //$"after ThreeJSView3D.UpdateScene() {e.note}".WriteInfo();
-        });
+        
     }
 
 

@@ -13,12 +13,12 @@ using FoundryRulesAndUnits.Units;
 
 namespace Three2025.Model;
 
-public class CableChannels : FoComponent
+public class TriSocGeometry : FoComponent
 {
 
     protected CableWorld _world;
 
-    public CableChannels(CableWorld world)
+    public TriSocGeometry(CableWorld world)
     {
         _world = world;
         GenerateGeometry();
@@ -34,12 +34,7 @@ public class CableChannels : FoComponent
 
         var (x, z) = (5.0, 5.0);
         GenerateCage(x, z, width, height, depth, step);
-        // x += width.Value() + 0.05;
-        // GenerateCage(x, z, width, height, depth, step);
-        // x += width.Value() + 0.05;
-        // GenerateCage(x, z, width, height, depth, step);
-        // x += width.Value() + 0.05;
-        // GenerateCage(x, z, width, height, depth, step);
+
     }
 
 

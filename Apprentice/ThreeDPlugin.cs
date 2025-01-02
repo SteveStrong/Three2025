@@ -19,9 +19,9 @@ public class ThreeDPlugin
       Foundry = service;
    }
 
-   [KernelFunction("CreateBlock")]
-   [Description("Create a block 1,2,3")]
-   public async void CreateBlock(string Color)
+   [KernelFunction("CreateBlockShape")]
+   [Description("Create a block shape with a random color")]
+   public void CreateBlockShape(string Color)
    {
 
       $"Creating block".WriteSuccess();
@@ -38,7 +38,7 @@ public class ThreeDPlugin
       var d = DataGenerator.GenerateDouble(2, 10);
       block.CreateBox(name,w,h,d);
       Arena.AddShape<FoShape3D>(block);
-      await Arena.UpdateArena();
+      Arena.UpdateArena();
    }
 
    [KernelFunction("PickARandomColor")]
@@ -63,7 +63,7 @@ public class ThreeDPlugin
 
    [KernelFunction("FindShapeByColor")]
    [Description("find a Block by name")]
-   [return: Description("FoShape3D or nothing")]
+   [return: Description("List of all the shapes that match the color")]
    public List<FoShape3D> FindShapeByColor(string color)
    {
       var Arena = Foundry.Arena();
@@ -72,11 +72,23 @@ public class ThreeDPlugin
       return shapes;
    }
 
-   [KernelFunction("GetShapeColor")]
+    [KernelFunction("GetAllShapes")]
+    [Description("Get a list of all the blocks")]
+    [return: Description("List of all the shapes")]
+    public List<FoShape3D> GetAllTheShapes()
+    {
+        var Arena = Foundry.Arena();
+        var Stage = Arena.CurrentStage();
+        var shapes = Stage.GetShapes3D().ToList();
+        return shapes;
+    }
+
+    [KernelFunction("GetShapeColor")]
    [Description("get the color of a Block")]
    [return: Description("color as a string")]
-   public string GetShapeColor(FoShape3D Block)
+   public async Task<string> GetShapeColor(FoShape3D Block)
    {
+      await Task.CompletedTask;
       return Block.Color;
    }
 
