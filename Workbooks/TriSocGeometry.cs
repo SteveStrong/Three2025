@@ -1,13 +1,6 @@
-using BlazorThreeJS.Geometires;
-using BlazorThreeJS.Materials;
 using BlazorThreeJS.Maths;
-using BlazorThreeJS.Objects;
 using FoundryBlazor;
 using FoundryBlazor.Shape;
-using FoundryBlazor.Solutions;
-
-using FoundryRulesAndUnits.Extensions;
-using FoundryRulesAndUnits.Models;
 using FoundryRulesAndUnits.Units;
 
 
@@ -21,20 +14,49 @@ public class TriSocGeometry : FoComponent
     public TriSocGeometry(CableWorld world)
     {
         _world = world;
-        GenerateGeometry();
+
     }
 
 
-    public void GenerateGeometry()
+
+    public List<FoText3D> GenerateLabels()
     {
-        var width = new Length(1, "m");
-        var height = new Length(2.6, "m");
-        var depth = new Length(.8, "m");
-        var step = new Length(.2, "m");
+        var width = new Length(.1, "m");
+        var height = new Length(.1, "m");
+        var depth = new Length(.1, "m");
 
-        var (x, z) = (5.0, 5.0);
-        GenerateCage(x, z, width, height, depth, step);
+        var root = new FoGroup3D("Labels");
+        _world.AddGlyph3D<FoGroup3D>(root);
 
+        var box = new SpacialBox3D(width.Value(), height.Value(), depth.Value(), "m");
+
+        GenerateText(root, box.Center, "Center");
+
+        GenerateText(root, box.TopLeftFront, "TopLeftFront");
+        GenerateText(root, box.TopRightFront, "TopRightFront");
+        GenerateText(root, box.BottomLeftFront, "BottomLeftFront");
+        GenerateText(root, box.BottomRightFront, "BottomRightFront");
+
+        GenerateText(root, box.TopLeftBack, "TopLeftBack");
+        GenerateText(root, box.TopRightBack, "TopRightBack");
+        GenerateText(root, box.BottomLeftBack, "BottomLeftBack");
+        GenerateText(root, box.BottomRightBack, "BottomRightBack");
+
+
+        return root.GetSlot<FoText3D>().Values();
+    }
+
+    public FoText3D GenerateText(FoGroup3D group, Point3D point, string text)
+    {
+
+        var textShape = new FoText3D(text, "green")
+        {
+            Position = point.AsVector3(),
+            Text = text
+        };
+        group.Add<FoText3D>(textShape);
+
+        return textShape;
     }
 
 
@@ -89,24 +111,5 @@ public class TriSocGeometry : FoComponent
     }
 
 
-    public void GenerateCage(double x, double z, Length Width, Length Height, Length Depth, Length Step)
-    {
-
-        var w = Width.Value();
-        var d = Depth.Value();
-
-        var lf = GenerateColumn("Left-Front", x, z, Height, Step);
-        var lb = GenerateColumn("Left-Back", x, z+d, Height, Step);
-        LinkColumns($"Left-Side", lf, lb);
-
-        var cb = GenerateColumn("Center-Back", x +w/2, z+d, Height, Step);
-        LinkColumns($"Left-Back-Side", lb, cb);
-
-        var rb = GenerateColumn("Right-Back", x +w, z+d, Height, Step);
-        LinkColumns($"Right-Back-Side", cb, rb);
-
-        var rf = GenerateColumn("Right-Front", x +w, z, Height, Step);
-        LinkColumns($"Right-Side", rb, rf);
-    }
 
 }

@@ -155,8 +155,8 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         DoLoad3dModelToWorld(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"), 0, 0, 0);
 
-        var cables = new TriSocGeometry(World3D);
-        cables.GenerateGeometry();
+        var trisoc = new TriSocGeometry(World3D);
+        trisoc.GenerateLabels();
 
         var arena = Workspace.GetArena() as FoArena3D;
         var stage = arena.EstablishStage<FoStage3D>("TriSoc");

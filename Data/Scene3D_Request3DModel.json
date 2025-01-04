@@ -1,11 +1,11 @@
 {
   "format": "Gltf",
-  "fileURL": "http://localhost:5228/storage/StaticFiles/jet.glb",
-  "uuid": "7a59ba1b-057e-45ad-ba6d-380b82466615",
+  "fileURL": "http://localhost:5228/storage/StaticFiles/TRISOC.glb",
+  "uuid": "1119620e-9a61-4cbb-b488-90560951b040",
   "position": {
-    "x": -8.176185845305445,
-    "y": -7.632632440683825,
-    "z": -0.583676523553871
+    "x": 0,
+    "y": 0,
+    "z": 0
   },
   "pivot": {
     "x": 0,

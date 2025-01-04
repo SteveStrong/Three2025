@@ -13,11 +13,15 @@ using System.Runtime.CompilerServices;
 namespace Three2025.Shared;
 #nullable enable
 
+
+
 public class Canvas2DBase : ComponentBase, IAsyncDisposable
 {
 
     [Inject] public IWorkspace? Workspace { get; set; }
-    [Inject] private ComponentBus? PubSub { get; set; }
+    [Inject] protected IFoundryService? FoundryService { get; set; }
+
+    [Inject] static private ComponentBus? PubSub { get; set; }
     [Inject] protected IJSRuntime? _jsRuntime { get; set; }
 
 
@@ -29,7 +33,6 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
 
     public int tick { get; private set; }
 
-    private DateTime _lastRender;
 
     protected BECanvasComponent? BECanvasReference;
 
@@ -49,9 +52,9 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
     {
         if (firstRender)
         {
-              $"Canvas2DComponentBase {SceneName} OnAfterRenderAsync".WriteSuccess();
-            //this should be disposed
-            await _jsRuntime!.InvokeVoidAsync("AppBrowser.Initialize", DotNetObjectReference.Create(this));
+              $"Canvas2D {SceneName} OnAfterRenderAsync".WriteSuccess();
+
+            await _jsRuntime!.InvokeVoidAsync("AppBrowser.Initialize");
  
 
             var drawing = Workspace!.GetDrawing();
@@ -60,19 +63,25 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
 
             //lets hope the reference to BECanvas was found
             Ctx = await BECanvasReference!.CreateCanvas2DAsync();
+
+
  
 
             CreateTickPlayground();
-            //SetDoTugOfWar();
+            SetDoTugOfWar();
 
             PubSub?.SubscribeTo<RefreshUIEvent>(OnRefreshUIEvent);
             PubSub?.SubscribeTo<TriggerRedrawEvent>(OnTriggerRedrawEvent);
+            FoundryService?.AnimationBus().SubscribeTo<AnimationEvent>(OnAnimationEvent);
  
 
+            await RenderFrame(0);
             await DoStart();
         }
         await base.OnAfterRenderAsync(firstRender);
     }
+
+
 
     public async ValueTask DisposeAsync()
     {
@@ -81,11 +90,12 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
             if ( Ctx == null ) return;
             Ctx = null;
 
-            $"Canvas2DComponentBase {SceneName} DisposeAsync".WriteInfo();
+            $"Canvas2D {SceneName} DisposeAsync".WriteInfo();
             await DoStop();
                 
             PubSub?.UnSubscribeFrom<RefreshUIEvent>(OnRefreshUIEvent);
             PubSub?.UnSubscribeFrom<TriggerRedrawEvent>(OnTriggerRedrawEvent);
+            FoundryService?.AnimationBus().UnSubscribeFrom<AnimationEvent>(OnAnimationEvent);
 
             await _jsRuntime!.InvokeVoidAsync("AppBrowser.Finalize");
 
@@ -93,7 +103,7 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            $"Canvas2DComponentBase {SceneName}  DisposeAsync Exception {ex.Message}".WriteError();
+            $"Canvas2D {SceneName}  DisposeAsync Exception {ex.Message}".WriteError();
         }
     }
 
@@ -102,11 +112,11 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
     {
         try {
 
-            $"Canvas2DComponentBase {SceneName}  CALLING DO START  AppBrowser.StartAnimation".WriteSuccess();
+            $"Canvas2D {SceneName}  CALLING DO START  AppBrowser.StartAnimation".WriteSuccess();
             await _jsRuntime!.InvokeVoidAsync("AppBrowser.StartAnimation");
 
         } catch (Exception ex) {
-            $"Canvas2DComponentBase {SceneName} DoStart Error {ex.Message}".WriteError();
+            $"Canvas2D {SceneName} DoStart Error {ex.Message}".WriteError();
         }
     }
 
@@ -114,35 +124,19 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
     {
         try {
 
-            $"Canvas2DComponentBase {SceneName} CALLING DO STOP  AppBrowser.StopAnimation".WriteSuccess();
+            $"Canvas2D {SceneName} CALLING DO STOP  AppBrowser.StopAnimation".WriteSuccess();
             await _jsRuntime!.InvokeVoidAsync("AppBrowser.StopAnimation");
 
         } catch (Exception ex) {
-            $"Canvas2DComponentBase {SceneName} DoStop Error {ex.Message}".WriteError();
+            $"Canvas2D {SceneName} DoStop Error {ex.Message}".WriteError();
         }
     }
 
-    [JSInvokable]
-    public async ValueTask RenderFrameEventCalled()
+
+
+    protected async void OnAnimationEvent(AnimationEvent message)
     {
-        try
-        {     
-            
-            if (Ctx == null) {  
-                $"Canvas2D {SceneName} RenderFrameEventCalled Ctx is null".WriteError();
-                return;
-            }
-
-
-            double fps = 1.0 / (DateTime.Now - _lastRender).TotalSeconds;
-            _lastRender = DateTime.Now; // update for the next time 
-
-            await RenderFrame(fps);
-        }
-        catch (Exception ex)
-        {
-            $"Canvas2DComponentBase {SceneName} RenderFrameEventCalled Error {ex.Message}".WriteError();
-        }
+        await RenderFrame(message.fps);
     }
 
     private void OnRefreshUIEvent(RefreshUIEvent e)
@@ -156,7 +150,7 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
         Task.Run(async () =>
         {
             await RenderFrame(0);
-            $"Canvas2DComponentBase {SceneName} TriggerRedrawEvent StateHasChanged {e.note}".WriteInfo();
+            $"Canvas2D {SceneName} TriggerRedrawEvent StateHasChanged {e.note}".WriteInfo();
         });
     }
 
@@ -224,7 +218,7 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
     {
         var drawing = Workspace!.GetDrawing();
         if (drawing == null) return;
-        var s1 = new FoShape2D(50, 50, "Blue");
+        var s1 = new FoShape2D(50, 50, "Green");
         s1.MoveTo(300, 200);
         var s2 = new FoShape2D(50, 50, "Orange");
         s2.MoveTo(500, 200);
@@ -239,6 +233,7 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
         wire2.GlueStartTo(s1, "RIGHT");
         wire2.GlueFinishTo(s2, "LEFT");
         drawing.AddShape(wire2);
+
         FoGlyph2D.Animations.Tween<FoShape2D>(s1, new { PinX = s1.PinX - 150, }, 2, 2.2F);
         FoGlyph2D.Animations.Tween<FoShape2D>(s2, new { PinX = s2.PinX + 150, PinY = s2.PinY + 50, }, 2, 2.4f).OnComplete(() =>
         {

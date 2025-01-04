@@ -44,7 +44,7 @@ builder.Services.AddCors(options =>
 
 
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddSingleton<CircuitHandler, CustomCircuitHandler>();
+//builder.Services.AddSingleton<CircuitHandler, CustomCircuitHandler>();
 
 var provider = new FileExtensionContentTypeProvider();
 builder.Services.Configure<StaticFileOptions>(options =>
