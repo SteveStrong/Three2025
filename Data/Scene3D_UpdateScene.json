@@ -1,5 +1,5 @@
 {
-  "title": "Canvas3DComponent",
+  "title": "BestScene",
   "backGroundColor": "#505050",
   "camera": {
     "animateRotationSettings": {
@@ -15,7 +15,7 @@
       "y": 0,
       "z": 0
     },
-    "uuid": "1",
+    "uuid": "5",
     "position": {
       "x": 10,
       "y": 10,
@@ -41,7 +41,7 @@
     "name": "",
     "children": []
   },
-  "uuid": "2",
+  "uuid": "6",
   "position": {
     "x": 0,
     "y": 0,
@@ -64,12 +64,12 @@
     "z": 1
   },
   "type": "Scene",
-  "name": "canvas3dcomponent",
+  "name": "bestscene",
   "children": [
     {
       "color": "white",
       "intensity": 0.6,
-      "uuid": "b4317901-b907-4ef0-975e-a2ffd0fce98d",
+      "uuid": "a056f82a-fc32-4d0b-ade8-9fd821294f2c",
       "position": {
         "x": 0,
         "y": 0,
@@ -100,7 +100,7 @@
       "decay": 1,
       "color": "white",
       "intensity": 1,
-      "uuid": "7af35863-18ad-42e5-87c5-26ae29186f93",
+      "uuid": "d30f4a08-9574-47da-a207-f6b60fadedb7",
       "position": {
         "x": 1,
         "y": 3,
@@ -127,15 +127,15 @@
       "children": []
     },
     {
-      "text": "Center",
+      "text": "My First Text",
       "fontSize": 0.5,
-      "color": "green",
+      "color": "#33333a",
       "intensity": 1,
-      "uuid": "825c19a7-3d83-4b3b-9354-cd24d8c1867a",
+      "uuid": "df6f951b-dc19-4222-abf2-e9c0d3753fc3",
       "position": {
-        "x": 0.05,
-        "y": 0.05,
-        "z": 0.05
+        "x": -4,
+        "y": 1,
+        "z": 1
       },
       "pivot": {
         "x": 0,
@@ -154,255 +154,7 @@
         "z": 1
       },
       "type": "LabelText",
-      "name": "Center",
-      "children": []
-    },
-    {
-      "text": "TopLeftFront",
-      "fontSize": 0.5,
-      "color": "green",
-      "intensity": 1,
-      "uuid": "832c132c-d7fc-4d23-82d1-45c2f0f1a165",
-      "position": {
-        "x": 0,
-        "y": 0.1,
-        "z": 0.1
-      },
-      "pivot": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "order": "XYZ"
-      },
-      "scale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "type": "LabelText",
-      "name": "TopLeftFront",
-      "children": []
-    },
-    {
-      "text": "TopRightFront",
-      "fontSize": 0.5,
-      "color": "green",
-      "intensity": 1,
-      "uuid": "29ed8dfd-9359-4585-aaa5-2d311a3afa17",
-      "position": {
-        "x": 0.1,
-        "y": 0.1,
-        "z": 0.1
-      },
-      "pivot": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "order": "XYZ"
-      },
-      "scale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "type": "LabelText",
-      "name": "TopRightFront",
-      "children": []
-    },
-    {
-      "text": "BottomLeftFront",
-      "fontSize": 0.5,
-      "color": "green",
-      "intensity": 1,
-      "uuid": "140ef318-e60e-40be-bbd1-9e941c4f70c3",
-      "position": {
-        "x": 0,
-        "y": 0,
-        "z": 0.1
-      },
-      "pivot": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "order": "XYZ"
-      },
-      "scale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "type": "LabelText",
-      "name": "BottomLeftFront",
-      "children": []
-    },
-    {
-      "text": "BottomRightFront",
-      "fontSize": 0.5,
-      "color": "green",
-      "intensity": 1,
-      "uuid": "182323a8-289e-4c63-81cc-10bb20e6043a",
-      "position": {
-        "x": 0.1,
-        "y": 0,
-        "z": 0.1
-      },
-      "pivot": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "order": "XYZ"
-      },
-      "scale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "type": "LabelText",
-      "name": "BottomRightFront",
-      "children": []
-    },
-    {
-      "text": "TopLeftBack",
-      "fontSize": 0.5,
-      "color": "green",
-      "intensity": 1,
-      "uuid": "368301f3-0fac-4920-a4f7-c894042efd19",
-      "position": {
-        "x": 0,
-        "y": 0.1,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "order": "XYZ"
-      },
-      "scale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "type": "LabelText",
-      "name": "TopLeftBack",
-      "children": []
-    },
-    {
-      "text": "TopRightBack",
-      "fontSize": 0.5,
-      "color": "green",
-      "intensity": 1,
-      "uuid": "78123e84-0b9b-4a13-98d2-3ec8b5633aa0",
-      "position": {
-        "x": 0.1,
-        "y": 0.1,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "order": "XYZ"
-      },
-      "scale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "type": "LabelText",
-      "name": "TopRightBack",
-      "children": []
-    },
-    {
-      "text": "BottomLeftBack",
-      "fontSize": 0.5,
-      "color": "green",
-      "intensity": 1,
-      "uuid": "d9e5f438-9a1a-4a2c-93b8-c51e800d055b",
-      "position": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "order": "XYZ"
-      },
-      "scale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "type": "LabelText",
-      "name": "BottomLeftBack",
-      "children": []
-    },
-    {
-      "text": "BottomRightBack",
-      "fontSize": 0.5,
-      "color": "green",
-      "intensity": 1,
-      "uuid": "f17421b4-493c-4106-9fd2-b50ec510a3fc",
-      "position": {
-        "x": 0.1,
-        "y": 0,
-        "z": 0
-      },
-      "pivot": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "order": "XYZ"
-      },
-      "scale": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "type": "LabelText",
-      "name": "BottomRightBack",
+      "name": "",
       "children": []
     }
   ]

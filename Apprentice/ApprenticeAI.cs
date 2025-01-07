@@ -65,8 +65,8 @@ public class ApprenticeAI : IApprenticeAI
         chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         var plug3D = new ThreeDPlugin(foundry);
-        kernel.Plugins.AddFromType<LightsPlugin>("Lights");
         kernel.Plugins.AddFromObject(plug3D,"3DBuilder");
+        //kernel.Plugins.AddFromType<LightsPlugin>("Lights");
         
 
         openAIPromptExecutionSettings = new OpenAIPromptExecutionSettings() 

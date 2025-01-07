@@ -153,10 +153,11 @@ public partial class HomeBase : ComponentBase, IDisposable
     public void DoAddTriSocGeometry()
     {
 
-        DoLoad3dModelToWorld(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"), 0, 0, 0);
+        var shape = DoLoad3dModelToWorld(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"), 0, 0, 0, 10);
 
         var trisoc = new TriSocGeometry(World3D);
-        trisoc.GenerateLabels();
+        //trisoc.GenerateLabels();
+        //trisoc.GenerateMarkers();
 
         var arena = Workspace.GetArena() as FoArena3D;
         var stage = arena.EstablishStage<FoStage3D>("TriSoc");
@@ -267,7 +268,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     //     arena.AddShape<FoShape3D>(shape);
     // });
         
-    public FoShape3D DoLoad3dModelToWorld(string url, double bx, double by, double bz)
+    public FoShape3D DoLoad3dModelToWorld(string url, double bx, double by, double bz, double scale = 1)
     {
         var name = url.Split('\\').Last();
         var shape = new FoModel3D(name, "blue")
@@ -276,7 +277,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             GlyphId = Guid.NewGuid().ToString(),
             Position = new Vector3(0, 0, 0),
             BoundingBox = new Vector3(bx, by, bz),
-            //Scale = new Vector3(.1, .1, .1)
+            Scale = new Vector3(scale, scale, scale),
         };
         shape.CreateGlb(url);
         World3D.AddGlyph3D<FoShape3D>(shape);
@@ -306,13 +307,14 @@ public partial class HomeBase : ComponentBase, IDisposable
     public void DoAddTRISOCToArena()
     {
         var name = DataGenerator.GenerateWord();
-        // var x = DataGenerator.GenerateDouble(-10, 10);
-        // var z = DataGenerator.GenerateDouble(-10, 10);
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var arena = Workspace.GetArena();
+        //var arena = Workspace.GetArena();
         var shape = new FoModel3D("TRISOC " + name)
         {
-            Position = new Vector3(0, 0, 0),
+            Position = new Vector3(x, 0, z),
+            Scale = new Vector3(30, 30, 30),
         };
         shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"));
 
@@ -454,7 +456,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
 
 
-   public void DoAddAxisToScene()
+   public async Task DoAddAxisToScene()
     {
         var pos = new Vector3(0, 0, 0);
         var rot = new Euler(0, 0, 0);
@@ -465,7 +467,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var Uuid = Guid.NewGuid().ToString();
 
-        var model = new ImportSettings
+        var settings = new ImportSettings
         {
             Uuid = Uuid,
             Format = Import3DFormats.Gltf,
@@ -481,12 +483,13 @@ public partial class HomeBase : ComponentBase, IDisposable
                     Uuid = Uuid,
                 };
                 scene.AddChild(group);
+                $"DoAddAxisToScene: OnComplete {group.Uuid}".WriteInfo();
 
                 StateHasChanged();
             }
 
         };
-        Task.Run(async () => await scene.Request3DModel(model));
+        await scene.Request3DModel(settings);
     }
 
 

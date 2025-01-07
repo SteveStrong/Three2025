@@ -80,6 +80,11 @@ public class ThreeDPlugin
         var Arena = Foundry.Arena();
         var Stage = Arena.CurrentStage();
         var shapes = Stage.GetShapes3D().ToList();
+
+        foreach (var item in shapes)
+        {
+            $"Shape: {item.Name} Type: {item.Type} Color: {item.Color}".WriteSuccess();
+        }
         return shapes;
     }
 

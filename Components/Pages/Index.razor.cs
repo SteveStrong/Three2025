@@ -89,6 +89,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Uuid = Uuid,
                 };
                 scene.AddChild(group);
+                $"Axis added to scene in callback".WriteSuccess();
                 StateHasChanged();
             }
 

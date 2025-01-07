@@ -49,16 +49,56 @@ public class TriSocGeometry : FoComponent
     public FoText3D GenerateText(FoGroup3D group, Point3D point, string text)
     {
 
-        var textShape = new FoText3D(text, "green")
+        var shape = new FoText3D(text, "green")
         {
             Position = point.AsVector3(),
             Text = text
         };
-        group.Add<FoText3D>(textShape);
+        group.Add<FoText3D>(shape);
 
-        return textShape;
+        return shape;
     }
 
+    public FoShape3D GenerateMarker(FoGroup3D group, Point3D point, string text)
+    {
+
+        var shape = new FoShape3D(text, "green")
+        {
+            Position = point.AsVector3(),
+        };
+        shape.CreateSphere(text, .1, .1, .1);
+        group.Add<FoShape3D>(shape);
+
+        return shape;
+    }
+
+
+    public List<FoShape3D> GenerateMarkers()
+    {
+        var width = new Length(.1, "m");
+        var height = new Length(.1, "m");
+        var depth = new Length(.1, "m");
+
+        var root = new FoGroup3D("Labels");
+        _world.AddGlyph3D<FoGroup3D>(root);
+
+        var box = new SpacialBox3D(width.Value(), height.Value(), depth.Value(), "m");
+
+        GenerateMarker(root, box.Center, "Center");
+
+        GenerateMarker(root, box.TopLeftFront, "TopLeftFront");
+        GenerateMarker(root, box.TopRightFront, "TopRightFront");
+        GenerateMarker(root, box.BottomLeftFront, "BottomLeftFront");
+        GenerateMarker(root, box.BottomRightFront, "BottomRightFront");
+
+        GenerateMarker(root, box.TopLeftBack, "TopLeftBack");
+        GenerateMarker(root, box.TopRightBack, "TopRightBack");
+        GenerateMarker(root, box.BottomLeftBack, "BottomLeftBack");
+        GenerateMarker(root, box.BottomRightBack, "BottomRightBack");
+
+
+        return root.GetSlot<FoShape3D>().Values();
+    }
 
     public List<Node3D> GenerateColumn(string groupName, double x, double z, Length Height, Length Step)
     {
