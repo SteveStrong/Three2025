@@ -1,6 +1,6 @@
 {
   "scene": {
-    "title": "BestScene",
+    "title": "Home3D",
     "backGroundColor": "#505050",
     "camera": {
       "animateRotationSettings": {
@@ -16,7 +16,7 @@
         "y": 0,
         "z": 0
       },
-      "uuid": "5",
+      "uuid": "1",
       "position": {
         "x": 10,
         "y": 10,
@@ -42,7 +42,7 @@
       "name": "",
       "children": []
     },
-    "uuid": "6",
+    "uuid": "2",
     "position": {
       "x": 0,
       "y": 0,
@@ -65,12 +65,12 @@
       "z": 1
     },
     "type": "Scene",
-    "name": "bestscene",
+    "name": "home3d",
     "children": [
       {
         "color": "white",
         "intensity": 0.6,
-        "uuid": "a056f82a-fc32-4d0b-ade8-9fd821294f2c",
+        "uuid": "a8f0c05b-8c79-4069-8deb-d284fe38ceff",
         "position": {
           "x": 0,
           "y": 0,
@@ -101,7 +101,7 @@
         "decay": 1,
         "color": "white",
         "intensity": 1,
-        "uuid": "d30f4a08-9574-47da-a207-f6b60fadedb7",
+        "uuid": "dadb2140-1a99-4bf6-9b1a-a15981724f40",
         "position": {
           "x": 1,
           "y": 3,
@@ -126,50 +126,19 @@
         "type": "PointLight",
         "name": "Point Light",
         "children": []
-      },
-      {
-        "text": "My First Text",
-        "fontSize": 0.5,
-        "color": "#33333a",
-        "intensity": 1,
-        "uuid": "df6f951b-dc19-4222-abf2-e9c0d3753fc3",
-        "position": {
-          "x": -4,
-          "y": 1,
-          "z": 1
-        },
-        "pivot": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "order": "XYZ"
-        },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
-        },
-        "type": "LabelText",
-        "name": "",
-        "children": []
       }
     ]
   },
   "viewerSettings": {
-    "containerId": "BestScene",
+    "containerId": "Home3D",
     "canSelect": true,
     "canSelectHelpers": false,
     "selectedColor": "black",
     "webGLRendererSettings": {
       "antialias": false
     },
-    "width": 1800,
-    "height": 1000
+    "width": 1000,
+    "height": 800
   },
   "camera": {
     "animateRotationSettings": {
@@ -185,7 +154,7 @@
       "y": 0,
       "z": 0
     },
-    "uuid": "5",
+    "uuid": "1",
     "position": {
       "x": 10,
       "y": 10,

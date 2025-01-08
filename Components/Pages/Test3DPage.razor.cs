@@ -32,10 +32,10 @@ public class Test3DPageBase : ComponentBase, IDisposable
     protected MockDataGenerator DataGenerator { get; set; } = new();
     
 
-    public Scene3D GetCurrentScene()
+    public (bool, Scene3D) GetCurrentScene()
     {
         var (success, scene) = Canvas3DReference.GetActiveScene();
-        return scene;
+        return (success, scene);
     }
 
     public string GetReferenceTo(string filename)
@@ -58,15 +58,20 @@ public class Test3DPageBase : ComponentBase, IDisposable
 
     public void DoAxisTest()
     {
-        var scene = GetCurrentScene();
+        var (found, scene) = GetCurrentScene();
+        if ( !found ) return;
         AddAxisToScene(scene);
 
     }
+
+
+
     public void AddAxisToScene(Scene3D scene)
     {
         var pos = new Vector3(0, 0, 0);
         var rot = new Euler(0, 0, 0);
         var piv = new Vector3(0, 0, 0);
+
 
 
         var Uuid = Guid.NewGuid().ToString();
@@ -107,7 +112,9 @@ public class Test3DPageBase : ComponentBase, IDisposable
             Position = new Vector3(2, 0, 2),
         };
 
-        var scene = GetCurrentScene();
+        var (success, scene) = GetCurrentScene();
+        if (!success) return;
+
         await scene.Request3DModel(model);
         await scene.UpdateScene();
     }
@@ -123,7 +130,8 @@ public class Test3DPageBase : ComponentBase, IDisposable
         };
 
 
-        var scene = GetCurrentScene();
+        var (success, scene) = GetCurrentScene();
+        if (!success) return;
         await scene.Request3DModel(model);
         await scene.UpdateScene();;
     }
@@ -139,7 +147,8 @@ public class Test3DPageBase : ComponentBase, IDisposable
         };
 
 
-        var scene = GetCurrentScene();
+        var (success, scene) = GetCurrentScene();
+        if (!success) return;
         await scene.Request3DModel(model);
         await scene.UpdateScene();
     }
@@ -157,7 +166,9 @@ public class Test3DPageBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
         };
 
-        var scene = GetCurrentScene();
+        var (success, scene) = GetCurrentScene();
+        if (!success) return;
+
         scene.AddChild(TestText);
 
         await scene.UpdateScene();
@@ -175,7 +186,9 @@ public class Test3DPageBase : ComponentBase, IDisposable
             TestText.Color = DataGenerator.GenerateColor();
         }
 
-        var scene = GetCurrentScene();
+        var (success, scene) = GetCurrentScene();
+        if (!success) return;
+
         await scene.UpdateScene();
     }
 

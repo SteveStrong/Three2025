@@ -153,7 +153,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     public void DoAddTriSocGeometry()
     {
 
-        var shape = DoLoad3dModelToWorld(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"), 0, 0, 0, 10);
+        var shape = DoLoad3dModelToWorld(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"), 0, 0, 0, 30);
 
         var trisoc = new TriSocGeometry(World3D);
         //trisoc.GenerateLabels();

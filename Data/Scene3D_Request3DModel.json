@@ -1,7 +1,7 @@
 {
   "format": "Gltf",
-  "fileURL": "http://localhost:5228/storage/StaticFiles/fiveMeterAxis.glb",
-  "uuid": "abe3984f-9d16-4e68-9489-44138eed2539",
+  "fileURL": "http://localhost:5228/storage/StaticFiles/TRISOC.glb",
+  "uuid": "8ffe61d9-0ffc-49ca-b8d2-04f63274984d",
   "position": {
     "x": 0,
     "y": 0,
@@ -13,9 +13,9 @@
     "z": 0
   },
   "scale": {
-    "x": 1,
-    "y": 1,
-    "z": 1
+    "x": 30,
+    "y": 30,
+    "z": 30
   },
   "rotation": {
     "x": 0,
