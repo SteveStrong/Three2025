@@ -1,11 +1,11 @@
 {
   "format": "Gltf",
-  "fileURL": "http://localhost:5228/storage/StaticFiles/TRISOC.glb",
-  "uuid": "8ffe61d9-0ffc-49ca-b8d2-04f63274984d",
+  "uuid": "af4b5431-54b5-4a9f-afd3-321c514530f1",
+  "fileURL": "http://localhost:5228/storage/StaticFiles/jet.glb",
   "position": {
-    "x": 0,
-    "y": 0,
-    "z": 0
+    "x": 4.759048166409606,
+    "y": -3.65677666389743,
+    "z": -5.288482693002359
   },
   "pivot": {
     "x": 0,
@@ -13,9 +13,9 @@
     "z": 0
   },
   "scale": {
-    "x": 30,
-    "y": 30,
-    "z": 30
+    "x": 1,
+    "y": 1,
+    "z": 1
   },
   "rotation": {
     "x": 0,

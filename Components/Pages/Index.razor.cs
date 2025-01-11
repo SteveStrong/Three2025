@@ -13,9 +13,9 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using BlazorThreeJS.Geometires;
 
-using BlazorThreeJS.Labels;
+
 using FoundryRulesAndUnits.Models;
-using BlazorThreeJS.Menus;
+
 
 
 
@@ -34,8 +34,8 @@ public class IndexBase : ComponentBase, IDisposable
 
     protected ViewerThreeD View3D;
     
-    protected LabelText TestText { get; set; }
-    protected TextPanel TextPanel1 { get; set; }
+    protected Text3D TestText { get; set; }
+    protected TextPanel3D TextPanel1 { get; set; }
     protected MockDataGenerator DataGenerator { get; set; } = new();
     public FoWorkbook Workbook { get; set; }
 
@@ -158,7 +158,7 @@ public class IndexBase : ComponentBase, IDisposable
 
     public async Task OnAddText()
     {
-        TestText = new LabelText("My First Text") 
+        TestText = new Text3D("My First Text") 
         { 
             Position = new Vector3(3, 2, 3), 
             Color = DataGenerator.GenerateColor(),  //"#33333a" 
@@ -186,7 +186,7 @@ public class IndexBase : ComponentBase, IDisposable
         await scene.UpdateScene();
     }
 
-    private TextPanel BuildTextPanel()
+    private TextPanel3D BuildTextPanel()
     {
         var textLines = new List<string>()
         {
@@ -195,7 +195,7 @@ public class IndexBase : ComponentBase, IDisposable
         var panelPos = new Vector3(-1, 2, -2);
         var panelRot = new Euler(-1 * Math.PI * 30 / 180, 0, 0);
 
-        var textPanel = new TextPanel
+        var textPanel = new TextPanel3D
         {
             Name = "TEXTPANEL1",
             // Width = 1,
@@ -207,7 +207,7 @@ public class IndexBase : ComponentBase, IDisposable
         return textPanel;
     }
 
-    private void ClickButton1(Button self)
+    private void ClickButton1(Button3D self)
     {
         $"self.Name={self.Name}".WriteInfo();
 
@@ -233,17 +233,17 @@ public class IndexBase : ComponentBase, IDisposable
         
         var scene = GetCurrentScene();
 
-        var buttons = new List<Button>() {
-            new Button("BTN1", "OFF") {
+        var buttons = new List<Button3D>() {
+            new Button3D("BTN1", "OFF") {
                 OnClick = ClickButton1
             },
-            new Button("BTN2","Button 2"),
-            new Button("BTN3","Button 3")
+            new Button3D("BTN2","Button 2"),
+            new Button3D("BTN3","Button 3")
         };
         var menuPos = new Vector3(-4, 3, -2);
         var menuRot = new Euler(-1 * Math.PI * 30 / 180, 0, 0);
 
-        var panel = new PanelMenu
+        var panel = new PanelMenu3D
         {
             Name = "MENU1",
             Uuid = Guid.NewGuid().ToString(),
@@ -263,13 +263,13 @@ public class IndexBase : ComponentBase, IDisposable
         await scene.UpdateScene();
     }
 
-    private TextPanel BuildChildPanel(string text)
+    private TextPanel3D BuildChildPanel(string text)
     {
         var textLines = new List<string>() { text };
         // var panelPos = new Vector3(-1, 2, -2);
         // var panelRot = new Euler(-1 * Math.PI * 30 / 180, 0, 0);
 
-        var panel = new TextPanel
+        var panel = new TextPanel3D
         {
             Name = "TEXTPANEL1",
             Color = "red",
@@ -319,7 +319,7 @@ public class IndexBase : ComponentBase, IDisposable
         return mesh;
     }
 
-    private PanelGroup BuildPanelGroup()
+    private PanelGroup3D BuildPanelGroup()
     {
         var textLines = new List<string>()
         {
@@ -335,7 +335,7 @@ public class IndexBase : ComponentBase, IDisposable
         var childPadding = 0;
 
         var colors = new List<string>() { "red", "orange", "green", "purple", "blue" };
-        var childPanels = new List<TextPanel>();
+        var childPanels = new List<TextPanel3D>();
 
         for (int i = 0; i < 5; i++)
         {
@@ -349,7 +349,7 @@ public class IndexBase : ComponentBase, IDisposable
             childPanels.Add(childPanel);
         }
 
-        var group = new PanelGroup
+        var group = new PanelGroup3D
         {
             Name = "PANELGROUP1",
             Width = panelW,

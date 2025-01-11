@@ -1,0 +1,28 @@
+{
+  "format": "Text",
+  "uuid": "3278ab8a-f000-48a6-83c0-5edf21505ad1",
+  "fontSize": "24px",
+  "text": "id maecenas morbi ligula maecenas aliquam",
+  "color": "Indigo",
+  "position": {
+    "x": 9.221746980608202,
+    "y": -1.796367032392066,
+    "z": 9.253543871653449
+  },
+  "pivot": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "scale": {
+    "x": 1,
+    "y": 1,
+    "z": 1
+  },
+  "rotation": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "order": "XYZ"
+  }
+}

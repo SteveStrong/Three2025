@@ -13,9 +13,9 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using BlazorThreeJS.Geometires;
 
-using BlazorThreeJS.Labels;
+
 using FoundryRulesAndUnits.Models;
-using BlazorThreeJS.Menus;
+
 using Three2025.Shared;
 
 
@@ -27,7 +27,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
     [Inject] public NavigationManager Navigation { get; set; }
 
     protected Canvas3D Canvas3DReference;
-    protected LabelText TestText;
+    protected Text3D TestText;
 
     protected MockDataGenerator DataGenerator { get; set; } = new();
     
@@ -159,7 +159,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateInt(-5, 5);
         var z = DataGenerator.GenerateInt(-5, 5);
 
-        TestText = new LabelText("My First Text") 
+        TestText = new Text3D("My First Text") 
         { 
             Position = new Vector3(x, y, z), 
             Color = "#33333a",

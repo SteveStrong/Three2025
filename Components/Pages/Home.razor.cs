@@ -14,6 +14,7 @@ using BlazorThreeJS.Geometires;
 using BlazorThreeJS.Materials;
 using FoundryBlazor.PubSub;
 using FoundryRulesAndUnits.Models;
+using BlazorThreeJS.Core;
 
 
 
@@ -301,7 +302,28 @@ public partial class HomeBase : ComponentBase, IDisposable
     }
 
 
+    public void DoAddTextArena()
+    {
+        var name = DataGenerator.GenerateWord();
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var y = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+        var color = DataGenerator.GenerateColor();
+        var arena = Workspace.GetArena();
 
+        var shape = new FoText3D(name,color)
+        {
+            Text = DataGenerator.GenerateText(),
+            Position = new Vector3(x, y, z),
+        };
+
+        arena.AddShape<FoText3D>(shape);
+
+        var stage = arena.EstablishStage<FoStage3D>("Main Stage");
+        var (found, scene) = GetCurrentScene();
+        if (found)
+            stage.RenderToScene(scene);
+    }
 
 
     public void DoAddTRISOCToArena()
@@ -493,9 +515,32 @@ public partial class HomeBase : ComponentBase, IDisposable
     }
 
 
+    // public request3DTextLabel(spec: string): Text | null {
+    //     const options = JSON.parse(spec);
+    //     console.log('request3DTextLabel modelOptions=', options);
 
+    //     const label = new Text();
 
-    public void DoAddJetToScene()
+    //     label.text = options.text;
+    //     label.fontSize = options.fontSize;
+    //     label.userData = {
+    //         isTextLabel: true,
+    //     };
+
+    //     const { position: pos } = options;
+    //     label.position.x = pos.x;
+    //     label.position.y = pos.y;
+    //     label.position.z = pos.z;
+    //     label.color = options.color;
+
+    //     // Update the rendering:
+    //     label.uuid = options.uuid;
+    //     label.sync();
+    //     ObjectLookup.addLabel(label.uuid, label);
+    //     return label;
+    // }
+
+    public void DoRequestAddTextToScene()
     {
         var (found, scene) = GetCurrentScene();
         if (!found) return;
@@ -505,27 +550,66 @@ public partial class HomeBase : ComponentBase, IDisposable
         var z = DataGenerator.GenerateDouble(-10, 10);
 
         var Uuid = Guid.NewGuid().ToString();
+        var text = DataGenerator.GenerateText();
+        var color = DataGenerator.GenerateColor();
 
-        var model = new ImportSettings
+        var spec = new ImportSettings
+        {
+            Uuid = Uuid,
+            Format = Import3DFormats.Text,
+            Text = text,
+            FontSize = "24px",
+            Color = color,
+
+            Position = new Vector3(x, y, z),
+            OnComplete = () =>
+            {
+                var text3d = new Text3D()
+                {
+                    Uuid = Uuid,
+                    Text = text,
+                    Color = color,
+                };
+                scene.AddChild(text3d);
+                StateHasChanged();
+            }
+
+        };
+        Task.Run(async () => await scene.Request3DLabel(spec));
+    }
+
+
+    public void DoRequestAddJetToScene()
+    {
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
+
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var y = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+
+        var Uuid = Guid.NewGuid().ToString();
+        var url = GetReferenceTo(@"storage/StaticFiles/jet.glb");
+
+        var spec = new ImportSettings
         {
             Uuid = Uuid,
             Format = Import3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
+            FileURL = url,
             Position = new Vector3(x, y, z),
             OnComplete = () =>
             {
                 var group = new Group3D()
                 {
-                    Name = DataGenerator.GenerateWord(),
+                    Name = $"JET:{DataGenerator.GenerateWord()}",
                     Uuid = Uuid,
                 };
                 scene.AddChild(group);
-
                 StateHasChanged();
             }
 
         };
-        Task.Run(async () => await scene.Request3DModel(model));
+        Task.Run(async () => await scene.Request3DModel(spec));
     }
 
 
