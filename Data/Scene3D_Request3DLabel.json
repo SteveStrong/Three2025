@@ -1,0 +1,28 @@
+{
+  "format": "Text",
+  "uuid": "ce4f55f3-fc0b-4ff1-97af-1a09c88c9055",
+  "fontSize": "24px",
+  "text": "nec id sapien vehicula morbi ac justo ligula",
+  "color": "DarkGoldenrod",
+  "position": {
+    "x": -5.505304174546053,
+    "y": -0.9654694564410811,
+    "z": -3.69321850288447
+  },
+  "pivot": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "scale": {
+    "x": 1,
+    "y": 1,
+    "z": 1
+  },
+  "rotation": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "order": "XYZ"
+  }
+}

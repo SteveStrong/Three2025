@@ -69,7 +69,7 @@
     {
       "color": "white",
       "intensity": 0.6,
-      "uuid": "c0374372-351f-408d-a9cc-862ca18ab063",
+      "uuid": "7b206aa6-72a7-4a5d-a91a-44da34ebc4c1",
       "position": {
         "x": 0,
         "y": 0,
@@ -100,7 +100,7 @@
       "decay": 1,
       "color": "white",
       "intensity": 1,
-      "uuid": "3359e114-6132-4b3a-89ef-6997c2d73f82",
+      "uuid": "52170733-f655-4da5-8404-532da2e7023a",
       "position": {
         "x": 1,
         "y": 3,
@@ -124,6 +124,161 @@
       },
       "type": "PointLight",
       "name": "Point Light",
+      "children": []
+    },
+    {
+      "text": "nec id sapien vehicula morbi ac justo ligula",
+      "fontSize": 0.5,
+      "color": "DarkGoldenrod",
+      "intensity": 1,
+      "uuid": "ce4f55f3-fc0b-4ff1-97af-1a09c88c9055",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "order": "XYZ"
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "Text3D",
+      "name": "",
+      "children": []
+    },
+    {
+      "text": "est quis quis orci vitae ante quis",
+      "fontSize": 0.5,
+      "color": "Purple",
+      "intensity": 1,
+      "uuid": "32819529-6d1b-4418-aead-5188c05d5669",
+      "position": {
+        "x": -4.291187324013239,
+        "y": 2.9481465459667042,
+        "z": 3.7728923398094967
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "order": "XYZ"
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "Text3D",
+      "name": "semper",
+      "children": []
+    },
+    {
+      "text": "tempus nulla a diam mauris elementum",
+      "fontSize": 0.5,
+      "color": "Yellow",
+      "intensity": 1,
+      "uuid": "cd85b381-a64e-490b-862e-ed269f86b3b5",
+      "position": {
+        "x": -3.1125523516950926,
+        "y": -7.802482097858061,
+        "z": 1.8273275426717195
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "order": "XYZ"
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "Text3D",
+      "name": "nisi",
+      "children": []
+    },
+    {
+      "text": "tempus nullam pede ac tellus in id",
+      "fontSize": 0.5,
+      "color": "Pink",
+      "intensity": 1,
+      "uuid": "80cf4496-d5d9-4bb7-b248-7ab185a99dd6",
+      "position": {
+        "x": -8.426353904707085,
+        "y": -9.880420992326213,
+        "z": -8.683738319394141
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "order": "XYZ"
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "Text3D",
+      "name": "ac",
+      "children": []
+    },
+    {
+      "text": "eu quis nisi eu aliquam ultrices orci diam",
+      "fontSize": 0.5,
+      "color": "DarkKhaki",
+      "intensity": 1,
+      "uuid": "bfda2e19-d616-41d2-8aef-225d060e45b1",
+      "position": {
+        "x": 4.291998131896435,
+        "y": 4.800781653746151,
+        "z": -9.213939775539634
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "order": "XYZ"
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "Text3D",
+      "name": "maecenas",
       "children": []
     }
   ]
