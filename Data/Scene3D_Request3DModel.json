@@ -1,12 +1,12 @@
 {
   "format": "Gltf",
-  "fileURL": "http://localhost:5228/storage/StaticFiles/T_Rex.glb",
-  "uuid": "647dda17-bb0d-4b02-9f5e-10f2ffb089a1",
+  "fileURL": "http://localhost:5228/storage/StaticFiles/jet.glb",
+  "uuid": "64aac691-bb67-427b-a1b9-c5394fed6f33",
   "transform": {
     "position": {
-      "x": -9.008001342331474,
-      "y": 0,
-      "z": -2.588613625542708
+      "x": 6.105358771463692,
+      "y": -4.4050437474805655,
+      "z": 5.3891947754029985
     },
     "pivot": {
       "x": 0,

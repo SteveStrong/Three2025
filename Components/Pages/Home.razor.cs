@@ -198,6 +198,64 @@ public partial class HomeBase : ComponentBase, IDisposable
         scene?.ForceSceneRefresh();
     }
 
+        public void DoAddConeToScene()
+    {
+        var arena = Workspace.GetArena();
+        var (found, scene) = arena.CurrentScene();
+
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var y = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+
+        var Uuid = Guid.NewGuid().ToString();
+        var text = DataGenerator.GenerateText();
+        var color = DataGenerator.GenerateColor();
+
+
+        var mesh = new Mesh3D
+        {
+            Uuid = Guid.NewGuid().ToString(),
+            Name = DataGenerator.GenerateWord(),
+            Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(4, 0, 0),
+                Rotation = new Euler(0, 0, 0),
+                Scale = new Vector3(1, 1, 1)
+            },
+            Material = new MeshStandardMaterial()
+            {
+                Color = "green",
+                FlatShading = true,
+                Metalness = 0.5f,
+                Roughness = 0.5f
+            }
+        };
+
+        var spec = new ImportSettings
+        {
+            Uuid = Uuid,
+            Format = Import3DFormats.Mesh,
+            Color = color,
+            Mesh = mesh,
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(x, y, z),
+            },
+            OnComplete = () =>
+            {
+                var mesh3d = new Mesh3D()
+                {
+                    Uuid = Uuid,
+                };
+                scene.AddChild(mesh3d);
+                StateHasChanged();
+            }
+
+        };
+        Task.Run(async () => await scene.Request3DGeometry(spec));
+    }
+
     public void DoAddBoxToScene()
     {
         var arena = Workspace.GetArena();

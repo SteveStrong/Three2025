@@ -447,10 +447,7 @@ public class IndexBase : ComponentBase, IDisposable
             Name = "Group2",
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "red"
-            }
+            Material = new MeshStandardMaterial("red"),
         };
 
         group.AddChild(new Mesh3D
@@ -464,10 +461,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Rotation = new Euler(0, 0, 0),
                 Scale = new Vector3(1, 1, 1)
             },
-            Material = new MeshStandardMaterial()
-            {
-                Color = "magenta"
-            }
+            Material = new MeshStandardMaterial("magenta")
         });
 
         group.AddChild(new Mesh3D
@@ -481,10 +475,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Rotation = new Euler(0, 0, 0),
                 Scale = new Vector3(1, 1, 1)
             },
-            Material = new MeshStandardMaterial()
-            {
-                Color = "green"
-            }
+            Material = new MeshStandardMaterial("green")
         });
         scene.AddChild(group);
         await scene.UpdateScene();
@@ -506,10 +497,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "magenta"
-                }
+                Material = new MeshStandardMaterial("magenta")
             },
             new Mesh3D
             {
@@ -522,10 +510,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 0.75f, 1),
                 },
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "#98AFC7"
-                }
+                Material = new MeshStandardMaterial("#98AFC7")
             },
             new Mesh3D
             {
@@ -538,10 +523,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "darkgreen"
-                }
+                Material = new MeshStandardMaterial("darkgreen")
             },
             new Mesh3D
             {
@@ -608,10 +590,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "violet"
-                }
+                Material = new MeshStandardMaterial("violet")
             },
             new Mesh3D
             {
@@ -624,10 +603,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "aqua"
-                }
+                Material = new MeshStandardMaterial("aqua")
             },
             new Mesh3D
             {
@@ -640,10 +616,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "purple"
-                }
+                Material = new MeshStandardMaterial("purple")
             },
             new Mesh3D
             {
@@ -656,10 +629,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "DodgerBlue"
-                }
+                Material = new MeshStandardMaterial("DodgerBlue")
             },
             new Mesh3D
             {
@@ -672,10 +642,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "darkgreen"
-                },
+                Material = new MeshStandardMaterial("darkgreen")
             },
             new Mesh3D
             {
@@ -688,10 +655,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "lightblue"
-                }
+                Material = new MeshStandardMaterial("lightblue")
             },
             new Mesh3D
             {
@@ -704,10 +668,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "lightgreen"
-                }
+                Material = new MeshStandardMaterial("lightgreen")
             },
             new Mesh3D
             {
@@ -721,10 +682,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Scale = new Vector3(1, 1, 1)
                 },
             
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "RosyBrown"
-                }
+                Material = new MeshStandardMaterial("RosyBrown")
             }
         };
 
