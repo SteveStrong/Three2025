@@ -78,9 +78,12 @@ public class IndexBase : ComponentBase, IDisposable
             Uuid = Uuid,
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
-            Position = pos,
-            Rotation = rot,
-            Pivot = piv,
+            Transform = new Transform3D()
+            {
+                Position = pos,
+                Rotation = rot,
+                Pivot = piv
+            },
             OnComplete = () =>
             {
                 var group = new Group3D()
@@ -116,7 +119,10 @@ public class IndexBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
-            Position = new Vector3(2, 0, 2),
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(2, 0, 2),
+            },
         };
 
         var scene = GetCurrentScene();
@@ -131,7 +137,6 @@ public class IndexBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
-            Position = new Vector3(0, 0, 0),
         };
 
 
@@ -147,7 +152,6 @@ public class IndexBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/mustang_1965.glb"),
-            Position = new Vector3(0, 0, 0),
         };
 
 
@@ -158,10 +162,14 @@ public class IndexBase : ComponentBase, IDisposable
 
     public async Task OnAddText()
     {
-        TestText = new Text3D("My First Text") 
+        TestText = new Text3D(DataGenerator.GenerateText())  
         { 
-            Position = new Vector3(3, 2, 3), 
+            Transform = new Transform3D()
+            {   
+                Position = new Vector3(3, 2, 3), 
+            },
             Color = DataGenerator.GenerateColor(),  //"#33333a" 
+            Uuid = Guid.NewGuid().ToString()
         };
 
         var scene = GetCurrentScene();
@@ -188,10 +196,12 @@ public class IndexBase : ComponentBase, IDisposable
 
     private TextPanel3D BuildTextPanel()
     {
-        var textLines = new List<string>()
+        var textLines = new List<string>();
+
+        for (int i = 0; i < 10; i++)
         {
-            "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet.", "Lorem ipsum dolor sit amet."
-        };
+            textLines.Add(DataGenerator.GenerateText());
+        }
         var panelPos = new Vector3(-1, 2, -2);
         var panelRot = new Euler(-1 * Math.PI * 30 / 180, 0, 0);
 
@@ -201,8 +211,11 @@ public class IndexBase : ComponentBase, IDisposable
             // Width = 1,
             // Height = 1,
             TextLines = textLines,
-            Position = panelPos,
-            Rotation = panelRot
+            Transform = new Transform3D()
+            {
+                Position = panelPos,
+                Rotation = panelRot
+            },
         };
         return textPanel;
     }
@@ -249,8 +262,11 @@ public class IndexBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Width = 1.0,
             Height = 3.0,
-            Position = menuPos,
-            Rotation = menuRot
+            Transform = new Transform3D()
+            {
+                Position = menuPos,
+                Rotation = menuRot
+            }
         };
 
         panel.Buttons.AddRange(buttons);
@@ -294,7 +310,6 @@ public class IndexBase : ComponentBase, IDisposable
         var mesh = new Mesh3D()
         {
             Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: radius, path: path),
-            Position = new Vector3(0, 0, 0),
             Material = new MeshStandardMaterial()
             {
                 Color = "yellow"
@@ -308,7 +323,12 @@ public class IndexBase : ComponentBase, IDisposable
         var mesh = new Mesh3D
         {
             Geometry = new DodecahedronGeometry(radius: 0.8f),
-            Position = new Vector3(-2, 6, -2),
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(-2, 6, -2),
+                Rotation = new Euler(0, 0, 0),
+                Scale = new Vector3(1, 1, 1)
+            },
             Material = new MeshStandardMaterial()
             {
                 Color = "darkviolet",
@@ -342,7 +362,7 @@ public class IndexBase : ComponentBase, IDisposable
             var text = $"Child Panel {i}";
             var childPanel = BuildChildPanel(text);
             childPanel.Color = colors[i];
-            childPanel.Position = new Vector3(-panelW / 2 + i * childPanelW + childPadding, -panelH / 2 + i, 0.1);
+            childPanel.Transform.Position = new Vector3(-panelW / 2 + i * childPanelW + childPadding, -panelH / 2 + i, 0.1);
             childPanel.TextLines = new List<string>() { text };
             childPanel.Width = childPanelW;
             childPanel.Height = childPanelH;
@@ -355,8 +375,11 @@ public class IndexBase : ComponentBase, IDisposable
             Width = panelW,
             Height = panelH,
             TextLines = textLines,
-            Position = panelPos,
-            Rotation = panelRot,
+            Transform = new Transform3D()
+            {
+                Position = panelPos,
+                Rotation = panelRot,
+            },
             TextPanels = childPanels,
             Meshes = new List<Object3D>() 
             { 
@@ -381,7 +404,12 @@ public class IndexBase : ComponentBase, IDisposable
             Name = "Box1",
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-            Position = new Vector3(-5, 0, 0),
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(-5, 0, 0),
+                Rotation = new Euler(0, 0, 0),
+                Scale = new Vector3(1, 1, 1)
+            },
             Material = new MeshStandardMaterial()
             {
                 Color = "magenta"
@@ -393,7 +421,12 @@ public class IndexBase : ComponentBase, IDisposable
             Name = "Box2",
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-            Position = new Vector3(5, 0, 0),
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(5, 0, 5),
+                Rotation = new Euler(0, 0, 0),
+                Scale = new Vector3(1, 1, 1)
+            },
             Material = new MeshStandardMaterial()
             {
                 Color = "green"
@@ -414,7 +447,6 @@ public class IndexBase : ComponentBase, IDisposable
             Name = "Group2",
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-            Position = new Vector3(0, 0, 0),
             Material = new MeshStandardMaterial()
             {
                 Color = "red"
@@ -426,7 +458,12 @@ public class IndexBase : ComponentBase, IDisposable
             Name = "Box3",
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-            Position = new Vector3(-5, 0, -5),
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(-5, 0, -5),
+                Rotation = new Euler(0, 0, 0),
+                Scale = new Vector3(1, 1, 1)
+            },
             Material = new MeshStandardMaterial()
             {
                 Color = "magenta"
@@ -438,7 +475,12 @@ public class IndexBase : ComponentBase, IDisposable
             Name = "Box4",
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-            Position = new Vector3(5, 0, 5),
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(5, 0, 5),
+                Rotation = new Euler(0, 0, 0),
+                Scale = new Vector3(1, 1, 1)
+            },
             Material = new MeshStandardMaterial()
             {
                 Color = "green"
@@ -451,168 +493,242 @@ public class IndexBase : ComponentBase, IDisposable
     public async Task DoMeshTest()
     {
         var scene = GetCurrentScene();
-
-
-        scene.AddChild(new Mesh3D
+        var list = new List<Mesh3D>
         {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-            Position = new Vector3(-2, 0, 0),
-            Material = new MeshStandardMaterial()
+            new Mesh3D
             {
-                Color = "magenta"
-            }
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new CircleGeometry(radius: 0.75f, segments: 12),
-            Position = new Vector3(2, 0, 0),
-            Scale = new Vector3(1, 0.75f, 1),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "#98AFC7"
-            }
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new CapsuleGeometry(radius: 0.5f, length: 2),
-            Position = new Vector3(-4, 0, 0),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "darkgreen"
-            }
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
-            Position = new Vector3(4, 0, 0),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "green",
-                FlatShading = true,
-                Metalness = 0.5f,
-                Roughness = 0.5f
-            }
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new CylinderGeometry(radiusTop: 0.5f, height: 1.2f, radialSegments: 16),
-            Position = new Vector3(0, 0, -2),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "red",
-                Wireframe = true
-            }
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new DodecahedronGeometry(radius: 0.8f),
-            Position = new Vector3(-2, 0, -2),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "darkviolet",
-                Metalness = 0.5f,
-                Roughness = 0.5f
-            }
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new IcosahedronGeometry(radius: 0.8f),
-            Position = new Vector3(-4, 0, -2),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "violet"
-            }
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new OctahedronGeometry(radius: 0.75f),
-            Position = new Vector3(2, 0, -2),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "aqua"
-            }
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new PlaneGeometry(width: 0.5f, height: 2),
-            Position = new Vector3(4, 0, -2),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "purple"
-            }
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new RingGeometry(innerRadius: 0.6f, outerRadius: 0.7f),
-            Position = new Vector3(0, 0, -4),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "DodgerBlue"
-            }
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new SphereGeometry(radius: 0.6f),
-            Position = new Vector3(-2, 0, -4),
-            Material = new MeshStandardMaterial()
-            {
-                Color = "darkgreen"
+                Uuid = Guid.NewGuid().ToString(),
+                Name = DataGenerator.GenerateWord(),
+                Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(-2, 0, 0),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "magenta"
+                }
             },
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new TetrahedronGeometry(radius: 0.75f),
-            Position = new Vector3(2, 0, -4),
-            Material = new MeshStandardMaterial()
+            new Mesh3D
             {
-                Color = "lightblue"
-            }
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new TorusGeometry(radius: 0.6f, tube: 0.4f, radialSegments: 12, tubularSegments: 12),
-            Position = new Vector3(4, 0, -4),
-            Material = new MeshStandardMaterial()
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new CircleGeometry(radius: 0.75f, segments: 12),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(2, 0, 0),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 0.75f, 1),
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "#98AFC7"
+                }
+            },
+            new Mesh3D
             {
-                Color = "lightgreen"
-            }
-        });
-
-        scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new TorusKnotGeometry(radius: 0.6f, tube: 0.1f),
-            Position = new Vector3(-4, 0, -4),
-            Material = new MeshStandardMaterial()
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new CapsuleGeometry(radius: 0.5f, length: 2),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(-4, 0, 0),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "darkgreen"
+                }
+            },
+            new Mesh3D
             {
-                Color = "RosyBrown"
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(4, 0, 0),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "green",
+                    FlatShading = true,
+                    Metalness = 0.5f,
+                    Roughness = 0.5f
+                }
+            },
+            new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new CylinderGeometry(radiusTop: 0.5f, height: 1.2f, radialSegments: 16),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(0, 0, -2),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "red",
+                    Wireframe = true
+                }
+            },
+            new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new DodecahedronGeometry(radius: 0.8f),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(-2, 0, -2),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "darkviolet",
+                    Metalness = 0.5f,
+                    Roughness = 0.5f
+                }
+            },
+            new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new IcosahedronGeometry(radius: 0.8f),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(-4, 0, -2),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "violet"
+                }
+            },
+            new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new OctahedronGeometry(radius: 0.75f),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(2, 0, -2),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "aqua"
+                }
+            },
+            new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new PlaneGeometry(width: 0.5f, height: 2),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(4, 0, -2),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "purple"
+                }
+            },
+            new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new RingGeometry(innerRadius: 0.6f, outerRadius: 0.7f),
+                 Transform = new Transform3D()
+                {
+                    Position = new Vector3(0, 0, -4),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "DodgerBlue"
+                }
+            },
+            new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new SphereGeometry(radius: 0.6f),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(-2, 0, -4),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "darkgreen"
+                },
+            },
+            new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new TetrahedronGeometry(radius: 0.75f),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(2, 0, -4),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "lightblue"
+                }
+            },
+            new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new TorusGeometry(radius: 0.6f, tube: 0.4f, radialSegments: 12, tubularSegments: 12),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(4, 0, -4),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "lightgreen"
+                }
+            },
+            new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                 Name = DataGenerator.GenerateWord(),
+                Geometry = new TorusKnotGeometry(radius: 0.6f, tube: 0.1f),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(6, 0, -4),
+                    Rotation = new Euler(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1)
+                },
+            
+                Material = new MeshStandardMaterial()
+                {
+                    Color = "RosyBrown"
+                }
             }
-        });
+        };
+
+        list.ForEach(mesh => scene.AddChild(mesh));
 
         await scene.UpdateScene();
     }

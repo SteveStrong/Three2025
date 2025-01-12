@@ -1,6 +1,6 @@
 {
   "scene": {
-    "title": "Home3D",
+    "title": "ViewerThreeD",
     "backGroundColor": "#505050",
     "camera": {
       "animateRotationSettings": {
@@ -17,10 +17,39 @@
         "z": 0
       },
       "uuid": "1",
+      "transform": {
+        "position": {
+          "x": 10,
+          "y": 10,
+          "z": 10
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "type": "PerspectiveCamera",
+      "name": "",
+      "children": []
+    },
+    "uuid": "2",
+    "transform": {
       "position": {
-        "x": 10,
-        "y": 10,
-        "z": 10
+        "x": 0,
+        "y": 0,
+        "z": 0
       },
       "pivot": {
         "x": 0,
@@ -37,60 +66,37 @@
         "x": 1,
         "y": 1,
         "z": 1
-      },
-      "type": "PerspectiveCamera",
-      "name": "",
-      "children": []
+      }
     },
-    "uuid": "2",
-    "position": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "pivot": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "rotation": {
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "order": "XYZ"
-    },
-    "scale": {
-      "x": 1,
-      "y": 1,
-      "z": 1
-    },
-    "type": "Scene",
-    "name": "home3d",
+    "type": "Scene3D",
+    "name": "viewerthreed",
     "children": [
       {
         "color": "white",
         "intensity": 0.6,
-        "uuid": "7b206aa6-72a7-4a5d-a91a-44da34ebc4c1",
-        "position": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "pivot": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "order": "XYZ"
-        },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+        "uuid": "ec3f108f-345f-4da1-bb70-bc6e783cdbe5",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "pivot": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "order": "XYZ"
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
         },
         "type": "AmbientLight",
         "name": "Ambient Light",
@@ -101,27 +107,29 @@
         "decay": 1,
         "color": "white",
         "intensity": 1,
-        "uuid": "52170733-f655-4da5-8404-532da2e7023a",
-        "position": {
-          "x": 1,
-          "y": 3,
-          "z": 0
-        },
-        "pivot": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "order": "XYZ"
-        },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+        "uuid": "cfe8bb53-afe4-4a1b-9b52-79a7bd5884d6",
+        "transform": {
+          "position": {
+            "x": 1,
+            "y": 3,
+            "z": 0
+          },
+          "pivot": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "order": "XYZ"
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
         },
         "type": "PointLight",
         "name": "Point Light",
@@ -130,7 +138,7 @@
     ]
   },
   "viewerSettings": {
-    "containerId": "Home3D",
+    "containerId": "ViewerThreeD",
     "canSelect": true,
     "canSelectHelpers": false,
     "selectedColor": "black",
@@ -155,26 +163,28 @@
       "z": 0
     },
     "uuid": "1",
-    "position": {
-      "x": 10,
-      "y": 10,
-      "z": 10
-    },
-    "pivot": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "rotation": {
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "order": "XYZ"
-    },
-    "scale": {
-      "x": 1,
-      "y": 1,
-      "z": 1
+    "transform": {
+      "position": {
+        "x": 10,
+        "y": 10,
+        "z": 10
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "order": "XYZ"
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
     },
     "type": "PerspectiveCamera",
     "name": "",

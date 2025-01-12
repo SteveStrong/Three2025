@@ -14,6 +14,7 @@ using BlazorThreeJS.Geometires;
 using BlazorThreeJS.Materials;
 using FoundryBlazor.PubSub;
 using FoundryRulesAndUnits.Models;
+using BlazorThreeJS.Core;
 
 
 
@@ -160,7 +161,6 @@ public partial class DrawingBase : ComponentBase, IDisposable
                 {
                     Uuid = Guid.NewGuid().ToString(),
                     Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
-                    Position = new Vector3(0, 0, 0),
                     Material = new MeshStandardMaterial()
                     {
                         Color = "yellow"
@@ -184,9 +184,13 @@ public partial class DrawingBase : ComponentBase, IDisposable
                 {
                     Uuid = Guid.NewGuid().ToString(),
                     Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
-                    Position = pos,
-                    Rotation = rot,
-                    Pivot = piv,
+                    Transform = new Transform3D()
+                    {
+                        Position = pos,
+                        Rotation = rot,
+                        Pivot = piv,
+                    },
+  
                     Material = new MeshStandardMaterial()
                     {
                         Color = "magenta"
@@ -423,9 +427,12 @@ public partial class DrawingBase : ComponentBase, IDisposable
             Uuid = Uuid,
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
-            Position = pos,
-            Rotation = rot,
-            Pivot = piv,
+            Transform = new Transform3D()
+            {
+                Position = pos,
+                Rotation = rot,
+                Pivot = piv
+            },
             OnComplete = () =>
             {
                 var group = new Group3D()
@@ -453,7 +460,6 @@ public partial class DrawingBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
-            Position = new Vector3(0, 0, 0),
         };
 
         var (found, scene) = GetCurrentScene();

@@ -65,8 +65,6 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
             Ctx = await BECanvasReference!.CreateCanvas2DAsync();
 
 
- 
-
             CreateTickPlayground();
             SetDoTugOfWar();
 

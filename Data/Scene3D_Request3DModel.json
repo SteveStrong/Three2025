@@ -1,26 +1,31 @@
 {
   "format": "Gltf",
-  "uuid": "af4b5431-54b5-4a9f-afd3-321c514530f1",
-  "fileURL": "http://localhost:5228/storage/StaticFiles/jet.glb",
-  "position": {
-    "x": 4.759048166409606,
-    "y": -3.65677666389743,
-    "z": -5.288482693002359
+  "fileURL": "http://localhost:5228/storage/StaticFiles/T_Rex.glb",
+  "uuid": "647dda17-bb0d-4b02-9f5e-10f2ffb089a1",
+  "transform": {
+    "position": {
+      "x": -9.008001342331474,
+      "y": 0,
+      "z": -2.588613625542708
+    },
+    "pivot": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "order": "XYZ"
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    }
   },
-  "pivot": {
-    "x": 0,
-    "y": 0,
-    "z": 0
-  },
-  "scale": {
-    "x": 1,
-    "y": 1,
-    "z": 1
-  },
-  "rotation": {
-    "x": 0,
-    "y": 0,
-    "z": 0,
-    "order": "XYZ"
-  }
+  "type": "ImportSettings",
+  "name": "",
+  "children": []
 }

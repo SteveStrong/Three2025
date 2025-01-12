@@ -81,9 +81,12 @@ public class Test3DPageBase : ComponentBase, IDisposable
             Uuid = Uuid,
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
-            Position = pos,
-            Rotation = rot,
-            Pivot = piv,
+            Transform = new Transform3D()
+            {
+                Position = pos,
+                Rotation = rot,
+                Pivot = piv
+            },
             OnComplete = () =>
             {
                 var group = new Group3D()
@@ -109,7 +112,10 @@ public class Test3DPageBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
-            Position = new Vector3(2, 0, 2),
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(2, 0, 2)
+            },
         };
 
         var (success, scene) = GetCurrentScene();
@@ -126,7 +132,6 @@ public class Test3DPageBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
-            Position = new Vector3(0, 0, 0),
         };
 
 
@@ -143,7 +148,6 @@ public class Test3DPageBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/mustang_1965.glb"),
-            Position = new Vector3(0, 0, 0),
         };
 
 
@@ -161,7 +165,12 @@ public class Test3DPageBase : ComponentBase, IDisposable
 
         TestText = new Text3D("My First Text") 
         { 
-            Position = new Vector3(x, y, z), 
+            Transform = new Transform3D() 
+            { 
+                Position = new Vector3(x, y, z), 
+                Pivot = new Vector3(0, 0, 0), 
+                Rotation = new Euler(0, 0, 0), 
+            },
             Color = "#33333a",
             Uuid = Guid.NewGuid().ToString(),
         };

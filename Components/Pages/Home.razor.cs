@@ -189,7 +189,6 @@ public partial class HomeBase : ComponentBase, IDisposable
             {
                 Uuid = Guid.NewGuid().ToString(),
                 Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
-                Position = new Vector3(0, 0, 0),
                 Material = new MeshStandardMaterial()
                 {
                     Color = "yellow"
@@ -215,9 +214,12 @@ public partial class HomeBase : ComponentBase, IDisposable
             {
                 Uuid = Guid.NewGuid().ToString(),
                 Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
-                Position = pos,
-                Rotation = rot,
-                Pivot = piv,
+                Transform = new Transform3D()
+                {
+                    Position = pos,
+                    Rotation = rot,
+                    Pivot = piv,
+                },
                 Material = new MeshStandardMaterial()
                 {
                     Color = "magenta"
@@ -494,9 +496,12 @@ public partial class HomeBase : ComponentBase, IDisposable
             Uuid = Uuid,
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
-            Position = pos,
-            Rotation = rot,
-            Pivot = piv,
+            Transform = new Transform3D()
+            {
+                Position = pos,
+                Rotation = rot,
+                Pivot = piv
+            },
             OnComplete = () =>
             {
                 var group = new Group3D()
@@ -560,8 +565,10 @@ public partial class HomeBase : ComponentBase, IDisposable
             Text = text,
             FontSize = "24px",
             Color = color,
-
-            Position = new Vector3(x, y, z),
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(x, y, z),
+            },
             OnComplete = () =>
             {
                 var text3d = new Text3D()
@@ -596,7 +603,10 @@ public partial class HomeBase : ComponentBase, IDisposable
             Uuid = Uuid,
             Format = Import3DFormats.Gltf,
             FileURL = url,
-            Position = new Vector3(x, y, z),
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(x, y, z),
+            },
             OnComplete = () =>
             {
                 var group = new Group3D()
