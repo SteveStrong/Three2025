@@ -15,6 +15,8 @@ using BlazorThreeJS.Materials;
 using FoundryBlazor.PubSub;
 using FoundryRulesAndUnits.Models;
 using BlazorThreeJS.Core;
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Mvc;
 
 
 
@@ -36,6 +38,9 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     protected MockDataGenerator DataGenerator { get; set; } = new();
     private CableWorld World3D { get; set; } = null!;
+
+    private Timer _timer = null!;
+    private Text3D GlobalText = null!;
 
     public (bool, Scene3D) GetCurrentScene()
     {
@@ -66,7 +71,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             var arena = Workspace.GetArena();
             arena.EstablishStage<FoStage3D>("Main Stage");
             if (found)
-                arena.SetScene(scene);
+                arena.SetScene(scene!);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -98,7 +103,69 @@ public partial class ClockBase : ComponentBase, IDisposable
             stage.RenderToScene(scene);
     }
 
+    private void UpdateTextWithCurrentTime(object state)
+    {
+        var time = DateTime.Now;
+        var angle = time.Second;
+        var currentTime = time.ToString("HH:mm:ss");
+        var x = DataGenerator.GenerateDouble(-1, 1);
+        var y = DataGenerator.GenerateDouble(-1, 1);
+        var z = DataGenerator.GenerateDouble(-1, 1);
 
+        if (GlobalText != null)
+        {
+            GlobalText.Text = currentTime;
+            GlobalText.Transform.Position = new Vector3(x, y, z);
+        }
+        else 
+        {
+            GlobalText = new Text3D()
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                Text = currentTime,
+                Color = DataGenerator.GenerateColor(),
+                FontSize = 1.0,
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(x, y, z),
+                },
+            };
+        }
+
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
+
+        var spec = new ImportSettings
+        {
+            Uuid = GlobalText.Uuid,
+            Format = Import3DFormats.Text,
+            OnComplete = () =>
+            {
+                scene.AddChild(GlobalText);
+                StateHasChanged();
+            }
+        };
+        spec.AddChild(GlobalText);
+        Task.Run(async () => await scene.Request3DLabel(spec));
+    }
+
+    public void DoLabelAutoRefresh()
+    {
+        if (_timer == null)
+        {
+            _timer = new Timer(UpdateTextWithCurrentTime, null, 0, 1000);
+        }
+        else
+        {
+            _timer?.Dispose();
+            _timer = null;
+        }
+    }
+
+    public void DoClockFace()
+    {
+
+    }
 
 
     public void DoRequestConeToScene()

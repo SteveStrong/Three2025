@@ -1,12 +1,12 @@
 {
   "format": "Gltf",
   "fileURL": "http://localhost:5228/storage/staticfiles/BoxAnimated.glb",
-  "uuid": "719451c6-ec13-4ca6-a9a2-3349a9de908c",
+  "uuid": "cf382d63-dcd9-456f-936f-24d08ef14e9c",
   "transform": {
     "position": {
-      "x": -4.352224492964851,
-      "y": -5.915184690648514,
-      "z": -6.0768257286318805
+      "x": 7.171474636232066,
+      "y": 1.862933800003507,
+      "z": 1.139587098563009
     },
     "pivot": {
       "x": 0,

@@ -1,27 +1,20 @@
 using System.Text.Json.Serialization;
 using Three2025.Components;
 using FoundryRulesAndUnits.Units;
-using BlazorComponentBus;
 using Radzen;
 using FoundryRulesAndUnits.Extensions;
 
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.AspNetCore.Http.Features;
-using FoundryBlazor.Solutions;
-using FoundryBlazor.Shape;
-using FoundryBlazor.Shared;
 using FoundryBlazor;
 using Microsoft.Extensions.FileProviders;
 using Three2025.Apprentice;
-using Microsoft.AspNetCore.Components.Server.Circuits;
+using BlazorThreeJS;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-
     .AddInteractiveServerComponents();
-
 
 
 builder.Services.AddRadzenComponents();
@@ -58,6 +51,7 @@ builder.Services.Configure<StaticFileOptions>(options =>
 
 var envConfig = new EnvConfig("./.env");
 builder.Services.AddFoundryBlazorServices(envConfig);
+builder.Services.AddBlazorThreeJSServices();
 builder.Services.AddScoped<IApprenticeAI, ApprenticeAI>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>

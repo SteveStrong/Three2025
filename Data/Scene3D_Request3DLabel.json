@@ -1,20 +1,20 @@
 {
   "format": "Text",
-  "uuid": "d68ae307-8185-4774-972a-72db0ee06348",
+  "uuid": "aadbe1b0-f89a-4880-9f05-d1c82811b978",
   "type": "ImportSettings",
   "name": "",
   "children": [
     {
-      "color": "Sienna",
+      "color": "Magenta",
       "intensity": 1,
-      "text": "suspendisse tortor tortor nisi lacus faucibus morbi metus semper",
+      "text": "18:49:05",
       "fontSize": 1,
-      "uuid": "d68ae307-8185-4774-972a-72db0ee06348",
+      "uuid": "aadbe1b0-f89a-4880-9f05-d1c82811b978",
       "transform": {
         "position": {
-          "x": 3.8416870227643045,
-          "y": -7.1824181958505235,
-          "z": 3.6925147484943004
+          "x": 0.6123155146512329,
+          "y": -0.45875522366606747,
+          "z": -0.5980586599192008
         },
         "pivot": {
           "x": 0,
