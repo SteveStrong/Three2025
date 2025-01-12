@@ -1,5 +1,5 @@
 {
-  "title": "Home3D",
+  "title": "Clock3D",
   "backGroundColor": "#505050",
   "camera": {
     "animateRotationSettings": {
@@ -68,12 +68,12 @@
     }
   },
   "type": "Scene3D",
-  "name": "home3d",
+  "name": "clock3d",
   "children": [
     {
       "color": "white",
       "intensity": 0.6,
-      "uuid": "170ac1cb-805a-4b8e-b55a-113fb331f0b7",
+      "uuid": "85194287-f42f-4dc8-a9f0-74badf77bc83",
       "transform": {
         "position": {
           "x": 0,
@@ -106,7 +106,7 @@
       "decay": 1,
       "color": "white",
       "intensity": 1,
-      "uuid": "097f06bc-2f83-484e-a5bd-de4847f05422",
+      "uuid": "7b9ac083-c30a-4fce-843c-f108e999984f",
       "transform": {
         "position": {
           "x": 1,
@@ -132,158 +132,6 @@
       },
       "type": "PointLight",
       "name": "Point Light",
-      "children": []
-    },
-    {
-      "material": {
-        "color": "yellow",
-        "flatShading": false,
-        "metalness": 0,
-        "roughness": 1,
-        "wireframe": false,
-        "map": {
-          "type": "Texture",
-          "name": "",
-          "textureUrl": "",
-          "wrapS": 1001,
-          "wrapT": 1001,
-          "repeat": {
-            "x": 1,
-            "y": 1
-          },
-          "offset": {
-            "x": 0,
-            "y": 0
-          },
-          "center": {
-            "x": 0,
-            "y": 0
-          },
-          "rotation": 0
-        },
-        "type": "MeshStandardMaterial",
-        "name": ""
-      },
-      "geometry": {
-        "radius": 0.15000000596046448,
-        "path": [
-          {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          {
-            "x": 4,
-            "y": 0,
-            "z": 0
-          },
-          {
-            "x": 4,
-            "y": 4,
-            "z": 0
-          },
-          {
-            "x": 4,
-            "y": 4,
-            "z": -4
-          }
-        ],
-        "tubularSegments": 10,
-        "radialSegments": 8,
-        "name": "",
-        "type": "TubeGeometry"
-      },
-      "uuid": "90dc4f4f-ebe9-453e-86c0-a4b623d898ae",
-      "transform": {
-        "position": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "pivot": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "order": "XYZ"
-        },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
-        }
-      },
-      "type": "Mesh3D",
-      "name": "",
-      "children": []
-    },
-    {
-      "material": {
-        "color": "SlateGray",
-        "flatShading": false,
-        "metalness": 0,
-        "roughness": 1,
-        "wireframe": false,
-        "map": {
-          "type": "Texture",
-          "name": "",
-          "textureUrl": "",
-          "wrapS": 1001,
-          "wrapT": 1001,
-          "repeat": {
-            "x": 1,
-            "y": 1
-          },
-          "offset": {
-            "x": 0,
-            "y": 0
-          },
-          "center": {
-            "x": 0,
-            "y": 0
-          },
-          "rotation": 0
-        },
-        "uuid": "b45fefd0-6feb-4056-8d35-1e1e7c73de28",
-        "type": "MeshStandardMaterial",
-        "name": "Ward_Water SlateGray"
-      },
-      "geometry": {
-        "radius": 1.1950200795060402,
-        "detail": 0,
-        "name": "",
-        "type": "OctahedronGeometry"
-      },
-      "uuid": "8c848d00-888e-4121-a140-866f6a2fa1bd",
-      "transform": {
-        "position": {
-          "x": 4.469651846485679,
-          "y": 7.603494560083121,
-          "z": 9.84088489571252
-        },
-        "pivot": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "order": "XYZ"
-        },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
-        }
-      },
-      "type": "Mesh3D",
-      "name": "Ward_Water",
       "children": []
     }
   ]

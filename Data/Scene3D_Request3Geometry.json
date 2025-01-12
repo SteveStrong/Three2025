@@ -1,0 +1,77 @@
+{
+  "format": "Mesh",
+  "uuid": "cab6b033-c91d-483d-8bbb-808753306d2f",
+  "type": "ImportSettings",
+  "name": "",
+  "children": [
+    {
+      "material": {
+        "color": "DarkSlateGray",
+        "flatShading": true,
+        "metalness": 0.5,
+        "roughness": 0.5,
+        "wireframe": false,
+        "map": {
+          "type": "Texture",
+          "name": "",
+          "textureUrl": "",
+          "wrapS": 1001,
+          "wrapT": 1001,
+          "repeat": {
+            "x": 1,
+            "y": 1
+          },
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "center": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0
+        },
+        "type": "MeshStandardMaterial",
+        "name": ""
+      },
+      "geometry": {
+        "radius": 0.5,
+        "height": 2,
+        "radialSegments": 16,
+        "heightSegments": 1,
+        "openEnded": false,
+        "thetaStart": 0,
+        "thetaLength": 6.28318548,
+        "name": "",
+        "type": "ConeGeometry"
+      },
+      "uuid": "6902e070-79dc-4a6d-9128-59584ff2f43b",
+      "transform": {
+        "position": {
+          "x": 2.0923087728806937,
+          "y": 4.485517937061294,
+          "z": 1.6774439979415678
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 3.5516925107085533,
+          "y": 3.798462069410213,
+          "z": 1.4014518362986357,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 0.7958734216104102,
+          "y": 0.7958734216104102,
+          "z": 0.7958734216104102
+        }
+      },
+      "type": "Mesh3D",
+      "name": "leo",
+      "children": []
+    }
+  ]
+}

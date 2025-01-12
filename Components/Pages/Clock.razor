@@ -1,32 +1,36 @@
-﻿
-@page "/home"
+@page "/"
+@page "/clock"
 
 @using FoundryBlazor.Shared
 @using FoundryRulesAndUnits.Extensions
 @using BlazorThreeJS.Viewers
 
 @namespace Three2025.Components.Pages
-@inherits HomeBase
+@inherits ClockBase
 @rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
-<h2>Canvas3DComponent and calls API's on the Arena, Stage, and World</h2>
+<PageTitle>Clock</PageTitle>
+<h2>Canvas3DComponent and calls API's top create Clock</h2>
 
 
 
 <div class="d-flex">
 
-    <Canvas3DComponent SceneName="Home3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+    <Canvas3DComponent SceneName="Clock3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
     <ShapeTreeView/>
-
+    <AIChat/>
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">
-        <h4>Add to Scene</h4>
-        <button class="btn btn-primary" @onclick="DoAddAxisToScene">Axis to Scene</button>
+        <h4>Work on the Clock</h4>
+        <button class="btn btn-primary" @onclick="DoRequestAxisToScene">Request Axis to Scene</button>
+        <button class="btn btn-primary" @onclick="DoRequestConeToScene">Request Cone to Scene</button>
+        <button class="btn btn-primary" @onclick="DoRequestAddTextToScene">Request Text to Scene</button>
         <button class="btn btn-primary" @onclick="DoRequestAddJetToScene">Request Jet to Scene</button>
+         <button class="btn btn-primary" @onclick="DoRequestAddBoxGLBToScene">Request BoxAnimated to Scene</button>
+       @* 
         <button class="btn btn-primary" @onclick="DoAddBoxToScene">Box to Scene</button>
         <button class="btn btn-primary" @onclick="DoAddTubeToScene">Tube to Scene</button>
-                <button class="btn btn-primary" @onclick="DoAddConeToScene">Cone to Scene</button>
-        <button class="btn btn-primary" @onclick="DoRequestAddTextToScene">Request Text to Scene</button>
+        <button class="btn btn-primary" @onclick="DoAddConeToScene">Cone to Scene</button>
+
         
         <h4>Add to Stage</h4>
         <button class="btn btn-primary" @onclick="DoAddGeomToStage">Geometry to Stage</button>
@@ -39,7 +43,7 @@
         <h4>Add to World</h4>
         <button class="btn btn-primary" @onclick="OnAddCage">Add Cage</button>
         <button class="btn btn-primary" @onclick="DoAddTriSocGeometry">TriSoc</button>
-        <button class="btn btn-primary" @onclick="DoAddPorscheToArena">Porsche</button>
+        <button class="btn btn-primary" @onclick="DoAddPorscheToArena">Porsche</button> *@
     </RadzenStack>
-    <AIChat/>
+
 </div>

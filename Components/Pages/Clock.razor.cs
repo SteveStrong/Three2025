@@ -20,7 +20,7 @@ using BlazorThreeJS.Core;
 
 namespace Three2025.Components.Pages;
 
-public partial class HomeBase : ComponentBase, IDisposable
+public partial class ClockBase : ComponentBase, IDisposable
 {
     public Canvas3DComponentBase Canvas3DReference = null;
 
@@ -61,15 +61,12 @@ public partial class HomeBase : ComponentBase, IDisposable
                 FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
             });
 
-            World3D = FoundryService.WorldManager().CreateWorld<CableWorld>("Cables");
+            World3D = FoundryService.WorldManager().CreateWorld<CableWorld>("Clocks");
 
             var arena = Workspace.GetArena();
             arena.EstablishStage<FoStage3D>("Main Stage");
             if (found)
                 arena.SetScene(scene);
-
-            CreateMenus(Workspace);
-            CreateServices(FoundryService, arena, World3D);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -82,74 +79,6 @@ public partial class HomeBase : ComponentBase, IDisposable
         return path;
     }
     
-
-
-
-    
-    public void CreateMenus(IWorkspace space)
-    {
-        var arena = space.GetArena();
-        var stage = arena.CurrentStage();
-
-        // arena.AddAction("Update", "btn-primary", () =>
-        // {
-        // });
-
-        // arena.AddAction("Clear", "btn-primary", () =>
-        // {
-        // });
-
-        // stage.AddAction("Clear", "btn-primary", () =>
-        // {
-        //  });
-
-        // stage.AddAction("Render", "btn-primary", () =>
-        // {
-        // });
-    }
-
-    public void CreateServices(IFoundryService manager, IArena arena, FoWorld3D world)
-    {
-
-        world.AddAction("Clear", "btn-primary", () => 
-        {
-            world.ClearAll();
-        });
-
-        world.AddAction("Publish", "btn-info", () => 
-        {
-            world.PublishToStage(arena.CurrentStage());
-        });
-
-        world.AddAction("Box", "btn-info", () => 
-        {
-
-            var box = AddBox(DataGenerator.GenerateName());
-            World3D.AddGlyph3D<FoShape3D>(box);
-            arena.AddShape<FoShape3D>(box);
-        });
-
-
-
-        
-
-    }
-
-
-    public void OnAddCage()
-    {
-        var cables = new CableChannels(World3D);
-        cables.GenerateGeometry();
-
-        var arena = Workspace.GetArena() as FoArena3D;
-        var stage = arena.EstablishStage<FoStage3D>("The Cage");
-        World3D.PublishToArena(arena);
-
-        var (found, scene) = GetCurrentScene();
-        if (found)
-            stage.RenderToScene(scene);
-    }
-
     
     public void DoAddTriSocGeometry()
     {
@@ -170,35 +99,9 @@ public partial class HomeBase : ComponentBase, IDisposable
     }
 
 
-    public void DoAddTubeToScene()
-    {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
 
 
-        var capsuleRadius = 0.15f;
-        var capsulePositions = new List<Vector3>() {
-            new Vector3(0, 0, 0),
-            new Vector3(4, 0, 0),
-            new Vector3(4, 4, 0),
-            new Vector3(4, 4, -4)
-        };
-
-        if (found)
-            scene.AddChild(new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "yellow"
-                }
-            });
-
-        scene?.ForceSceneRefresh();
-    }
-
-    public void DoAddConeToScene()
+    public void DoRequestConeToScene()
     {
         var arena = Workspace.GetArena();
         var (found, scene) = arena.CurrentScene();
@@ -206,6 +109,12 @@ public partial class HomeBase : ComponentBase, IDisposable
         var x = DataGenerator.GenerateDouble(-10, 10);
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
+
+        var rx = DataGenerator.GenerateDouble(0, 2 * Math.PI);
+        var ry = DataGenerator.GenerateDouble(0, 2 * Math.PI);
+        var rz = DataGenerator.GenerateDouble(0, 2 * Math.PI);
+
+        var s = DataGenerator.GenerateDouble(0.1, 5);
 
         var Uuid = Guid.NewGuid().ToString();
         var text = DataGenerator.GenerateText();
@@ -220,8 +129,8 @@ public partial class HomeBase : ComponentBase, IDisposable
             Transform = new Transform3D()
             {
                 Position = new Vector3(x, y, z),
-                Rotation = new Euler(0, 0, 0),
-                Scale = new Vector3(1, 1, 1)
+                Rotation = new Euler(rx, ry, rz),
+                Scale = new Vector3(s, s, s)
             },
             Material = new MeshStandardMaterial()
             {
@@ -529,12 +438,8 @@ public partial class HomeBase : ComponentBase, IDisposable
 
 
 
-   public async Task DoAddAxisToScene()
+    public async Task DoRequestAxisToScene()
     {
-        var pos = new Vector3(0, 0, 0);
-        var rot = new Euler(0, 0, 0);
-        var piv = new Vector3(0, 0, 0);
-
         var (found, scene) = GetCurrentScene();
         if (!found) return;
 
@@ -545,12 +450,6 @@ public partial class HomeBase : ComponentBase, IDisposable
             Uuid = Uuid,
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
-            Transform = new Transform3D()
-            {
-                Position = pos,
-                Rotation = rot,
-                Pivot = piv
-            },
             OnComplete = () =>
             {
                 var group = new Group3D()
@@ -559,40 +458,16 @@ public partial class HomeBase : ComponentBase, IDisposable
                     Uuid = Uuid,
                 };
                 scene.AddChild(group);
-                $"DoAddAxisToScene: OnComplete {group.Uuid}".WriteInfo();
+                $"DoRequestAxisToScene: OnComplete {group.Uuid}".WriteInfo();
 
                 StateHasChanged();
             }
-
         };
         await scene.Request3DModel(settings);
     }
 
 
-    // public request3DTextLabel(spec: string): Text | null {
-    //     const options = JSON.parse(spec);
-    //     console.log('request3DTextLabel modelOptions=', options);
 
-    //     const label = new Text();
-
-    //     label.text = options.text;
-    //     label.fontSize = options.fontSize;
-    //     label.userData = {
-    //         isTextLabel: true,
-    //     };
-
-    //     const { position: pos } = options;
-    //     label.position.x = pos.x;
-    //     label.position.y = pos.y;
-    //     label.position.z = pos.z;
-    //     label.color = options.color;
-
-    //     // Update the rendering:
-    //     label.uuid = options.uuid;
-    //     label.sync();
-    //     ObjectLookup.addLabel(label.uuid, label);
-    //     return label;
-    // }
 
     public void DoRequestAddTextToScene()
     {
@@ -612,6 +487,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             Uuid = Uuid,
             Text = text,
             Color = color,
+            FontSize = 1.0,
             Transform = new Transform3D()
             {
                 Position = new Vector3(x, y, z),
@@ -630,9 +506,44 @@ public partial class HomeBase : ComponentBase, IDisposable
         };
         spec.AddChild(text3d);
         Task.Run(async () => await scene.Request3DLabel(spec));
-        scene?.ForceSceneRefresh();
+        //scene?.ForceSceneRefresh();
     }
 
+    public void DoRequestAddBoxGLBToScene()
+    {
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
+
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var y = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+
+        var Uuid = Guid.NewGuid().ToString();
+        var url = GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb");
+
+        var spec = new ImportSettings
+        {
+            Uuid = Uuid,
+            Format = Import3DFormats.Gltf,
+            FileURL = url,
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(x, y, z),
+            },
+            OnComplete = () =>
+            {
+                var group = new Group3D()
+                {
+                    Name = $"BOX:{DataGenerator.GenerateWord()}",
+                    Uuid = Uuid,
+                };
+                scene.AddChild(group);
+                StateHasChanged();
+            }
+
+        };
+        Task.Run(async () => await scene.Request3DModel(spec));
+    }
 
     public void DoRequestAddJetToScene()
     {

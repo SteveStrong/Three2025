@@ -1,12 +1,12 @@
 {
   "format": "Gltf",
-  "fileURL": "http://localhost:5228/storage/StaticFiles/jet.glb",
-  "uuid": "64aac691-bb67-427b-a1b9-c5394fed6f33",
+  "fileURL": "http://localhost:5228/storage/staticfiles/BoxAnimated.glb",
+  "uuid": "719451c6-ec13-4ca6-a9a2-3349a9de908c",
   "transform": {
     "position": {
-      "x": 6.105358771463692,
-      "y": -4.4050437474805655,
-      "z": 5.3891947754029985
+      "x": -4.352224492964851,
+      "y": -5.915184690648514,
+      "z": -6.0768257286318805
     },
     "pivot": {
       "x": 0,

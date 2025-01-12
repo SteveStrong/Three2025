@@ -1,0 +1,41 @@
+{
+  "format": "Text",
+  "uuid": "d68ae307-8185-4774-972a-72db0ee06348",
+  "type": "ImportSettings",
+  "name": "",
+  "children": [
+    {
+      "color": "Sienna",
+      "intensity": 1,
+      "text": "suspendisse tortor tortor nisi lacus faucibus morbi metus semper",
+      "fontSize": 1,
+      "uuid": "d68ae307-8185-4774-972a-72db0ee06348",
+      "transform": {
+        "position": {
+          "x": 3.8416870227643045,
+          "y": -7.1824181958505235,
+          "z": 3.6925147484943004
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "type": "Text3D",
+      "name": "",
+      "children": []
+    }
+  ]
+}
