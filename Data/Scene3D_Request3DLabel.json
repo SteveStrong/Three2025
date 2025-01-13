@@ -1,20 +1,20 @@
 {
   "format": "Text",
-  "uuid": "aadbe1b0-f89a-4880-9f05-d1c82811b978",
+  "uuid": "75d4b7e1-411c-4e06-a38f-891cebc4348d",
   "type": "ImportSettings",
   "name": "",
   "children": [
     {
-      "color": "Magenta",
+      "color": "DarkMagenta",
       "intensity": 1,
-      "text": "18:49:05",
-      "fontSize": 1,
-      "uuid": "aadbe1b0-f89a-4880-9f05-d1c82811b978",
+      "text": "10:06:40",
+      "fontSize": 3,
+      "uuid": "75d4b7e1-411c-4e06-a38f-891cebc4348d",
       "transform": {
         "position": {
-          "x": 0.6123155146512329,
-          "y": -0.45875522366606747,
-          "z": -0.5980586599192008
+          "x": -8.660254037844386,
+          "y": 2,
+          "z": 5.0000000000000036
         },
         "pivot": {
           "x": 0,

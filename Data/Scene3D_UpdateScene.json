@@ -73,7 +73,7 @@
     {
       "color": "white",
       "intensity": 0.6,
-      "uuid": "e0d1f7db-9d12-4d40-8a4c-308dec710008",
+      "uuid": "f42c4c34-6140-478f-adda-5016444db111",
       "transform": {
         "position": {
           "x": 0,
@@ -106,7 +106,7 @@
       "decay": 1,
       "color": "white",
       "intensity": 1,
-      "uuid": "9f8e6107-a3aa-4cb8-86fa-45385cc1e684",
+      "uuid": "bc6f87fc-2c60-480b-8c60-2a7b0550cb45",
       "transform": {
         "position": {
           "x": 1,

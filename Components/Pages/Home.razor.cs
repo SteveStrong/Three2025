@@ -236,15 +236,14 @@ public partial class HomeBase : ComponentBase, IDisposable
         {
             Uuid = Uuid,
             Format = Import3DFormats.Mesh,
-            OnComplete = () =>
-            {
-                scene.AddChild(mesh);
-                StateHasChanged();
-            }
         };
-        spec.AddChild(mesh);
 
-        Task.Run(async () => await scene.Request3DGeometry(spec));
+        spec.AddChild(mesh);
+        Task.Run(async () => await scene.Request3DGeometry(spec, async () => {
+            scene.AddChild(mesh);
+            StateHasChanged();
+            await scene.UpdateScene();
+        }));
     }
 
     public void DoAddBoxToScene()
@@ -531,41 +530,29 @@ public partial class HomeBase : ComponentBase, IDisposable
 
    public async Task DoAddAxisToScene()
     {
-        var pos = new Vector3(0, 0, 0);
-        var rot = new Euler(0, 0, 0);
-        var piv = new Vector3(0, 0, 0);
-
         var (found, scene) = GetCurrentScene();
         if (!found) return;
 
         var Uuid = Guid.NewGuid().ToString();
 
-        var settings = new ImportSettings
+        var spec = new ImportSettings
         {
             Uuid = Uuid,
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
-            Transform = new Transform3D()
-            {
-                Position = pos,
-                Rotation = rot,
-                Pivot = piv
-            },
-            OnComplete = () =>
-            {
-                var group = new Group3D()
-                {
-                    Name = "Axis",
-                    Uuid = Uuid,
-                };
-                scene.AddChild(group);
-                $"DoAddAxisToScene: OnComplete {group.Uuid}".WriteInfo();
-
-                StateHasChanged();
-            }
-
         };
-        await scene.Request3DModel(settings);
+
+        await scene.Request3DModel(spec, async () => {
+            var group = new Group3D()
+            {
+                Name = "Axis",
+                Uuid = Uuid,
+            };
+            scene.AddChild(group);
+            $"Axis added to scene in callback".WriteSuccess();
+            StateHasChanged();
+            await scene.UpdateScene();
+        });
     }
 
 
@@ -622,15 +609,14 @@ public partial class HomeBase : ComponentBase, IDisposable
         {
             Uuid = Uuid,
             Format = Import3DFormats.Text,
-            OnComplete = () =>
-            {
-                scene.AddChild(text3d);
-                StateHasChanged();
-            }
         };
         spec.AddChild(text3d);
-        Task.Run(async () => await scene.Request3DLabel(spec));
-        scene?.ForceSceneRefresh();
+        Task.Run(async () => await scene.Request3DLabel(spec, async () => {
+
+            scene.AddChild(text3d);
+            StateHasChanged();
+            await scene.UpdateScene();
+        }));
     }
 
 
@@ -655,19 +641,17 @@ public partial class HomeBase : ComponentBase, IDisposable
             {
                 Position = new Vector3(x, y, z),
             },
-            OnComplete = () =>
-            {
-                var group = new Group3D()
-                {
-                    Name = $"JET:{DataGenerator.GenerateWord()}",
-                    Uuid = Uuid,
-                };
-                scene.AddChild(group);
-                StateHasChanged();
-            }
-
         };
-        Task.Run(async () => await scene.Request3DModel(spec));
+        Task.Run(async () => await scene.Request3DModel(spec, async () => {
+            var group = new Group3D()
+            {
+                Name = $"JET:{DataGenerator.GenerateWord()}",
+                Uuid = Uuid,
+            };
+            scene.AddChild(group);
+            StateHasChanged();
+            await scene.UpdateScene();
+        }));
     }
 
 

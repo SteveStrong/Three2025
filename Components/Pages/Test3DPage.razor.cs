@@ -68,39 +68,26 @@ public class Test3DPageBase : ComponentBase, IDisposable
 
     public void AddAxisToScene(Scene3D scene)
     {
-        var pos = new Vector3(0, 0, 0);
-        var rot = new Euler(0, 0, 0);
-        var piv = new Vector3(0, 0, 0);
-
-
-
         var Uuid = Guid.NewGuid().ToString();
 
-        var model = new ImportSettings
+        var spec = new ImportSettings
         {
             Uuid = Uuid,
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
-            Transform = new Transform3D()
-            {
-                Position = pos,
-                Rotation = rot,
-                Pivot = piv
-            },
-            OnComplete = () =>
-            {
-                var group = new Group3D()
-                {
-                    Name = "Axis",
-                    Uuid = Uuid,
-                };
-                scene.AddChild(group);
-                StateHasChanged();
-            }
-
         };
 
-        Task.Run(async () => await scene.Request3DModel(model));
+        Task.Run(async () => await scene.Request3DModel(spec, async () => {
+            var group = new Group3D()
+            {
+                Name = "Axis",
+                Uuid = Uuid,
+            };
+            scene.AddChild(group);
+            $"Axis added to scene in callback".WriteSuccess();
+            StateHasChanged();
+            await scene.UpdateScene();
+        }));
     }
 
 

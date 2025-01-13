@@ -1,15 +1,15 @@
 {
   "format": "Mesh",
-  "uuid": "55fed2d9-f726-44ac-9a43-f4c2a631c4c5",
+  "uuid": "1afcdd4c-071f-45f3-8848-278583006be4",
   "type": "ImportSettings",
   "name": "",
   "children": [
     {
       "material": {
-        "color": "Crimson",
-        "flatShading": true,
-        "metalness": 0.5,
-        "roughness": 0.5,
+        "color": "blue",
+        "flatShading": false,
+        "metalness": 0,
+        "roughness": 1,
         "wireframe": false,
         "map": {
           "type": "Texture",
@@ -35,22 +35,23 @@
         "name": ""
       },
       "geometry": {
-        "radius": 0.5,
-        "height": 2,
-        "radialSegments": 16,
+        "radiusTop": 9,
+        "radiusBottom": 10,
+        "height": 0.10000000149011612,
+        "radialSegments": 36,
         "heightSegments": 1,
         "openEnded": false,
         "thetaStart": 0,
         "thetaLength": 6.28318548,
         "name": "",
-        "type": "ConeGeometry"
+        "type": "CylinderGeometry"
       },
-      "uuid": "28f4fe2f-1017-4c64-a347-8e86a1444e95",
+      "uuid": "1afcdd4c-071f-45f3-8848-278583006be4",
       "transform": {
         "position": {
-          "x": -6.981713807061507,
-          "y": 5.556696226992436,
-          "z": -1.7964135584487373
+          "x": 0,
+          "y": 0,
+          "z": 0
         },
         "pivot": {
           "x": 0,
@@ -58,19 +59,19 @@
           "z": 0
         },
         "rotation": {
-          "x": 0.9405770727859324,
-          "y": 2.011355728544465,
-          "z": 0.9800956037316685,
+          "x": 0,
+          "y": 0,
+          "z": 0,
           "order": "XYZ"
         },
         "scale": {
-          "x": 4.824053601513527,
-          "y": 4.824053601513527,
-          "z": 4.824053601513527
+          "x": 1,
+          "y": 1,
+          "z": 1
         }
       },
       "type": "Mesh3D",
-      "name": "id",
+      "name": "lacus",
       "children": []
     }
   ]
