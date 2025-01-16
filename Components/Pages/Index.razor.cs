@@ -66,26 +66,25 @@ public class IndexBase : ComponentBase, IDisposable
     }
     public void AddAxisToScene(Scene3D scene)
     {
-
-        var Uuid = Guid.NewGuid().ToString();
-
         var spec = new ImportSettings
         {
-            Uuid = Uuid,
+            Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
         };
 
-        Task.Run(async () => await scene.Request3DModel(spec, async () => {
+        Task.Run(async () => await scene.Request3DModel(spec, async (uuid) => {
             var group = new Group3D()
             {
                 Name = "Axis",
-                Uuid = Uuid,
+                Uuid = uuid,
             };
-            scene.AddChild(group);
-            $"Axis added to scene in callback".WriteSuccess();
-            StateHasChanged();
-            await scene.UpdateScene();
+            if ( scene.AddChild(group).success)
+            {
+                $"Axis added to scene in callback".WriteSuccess();
+                StateHasChanged();
+                await Task.CompletedTask;
+            }
         }));
 
     }
@@ -116,7 +115,7 @@ public class IndexBase : ComponentBase, IDisposable
 
         var scene = GetCurrentScene();
         await scene.Request3DModel(model);
-        await scene.UpdateScene();
+        await Task.CompletedTask;
     }
 
     public async Task OnAddJet()
@@ -131,7 +130,7 @@ public class IndexBase : ComponentBase, IDisposable
 
         var scene = GetCurrentScene();
         await scene.Request3DModel(model);
-        await scene.UpdateScene();;
+        await Task.CompletedTask;;
     }
 
     public async Task OnAddCar()
@@ -146,7 +145,7 @@ public class IndexBase : ComponentBase, IDisposable
 
         var scene = GetCurrentScene();
         await scene.Request3DModel(model);
-        await scene.UpdateScene();
+        await Task.CompletedTask;
     }
 
     public async Task OnAddText()
@@ -164,7 +163,7 @@ public class IndexBase : ComponentBase, IDisposable
         var scene = GetCurrentScene();
         scene.AddChild(TestText);
 
-        await scene.UpdateScene();
+        await Task.CompletedTask;
     }
 
     public async Task OnUpdateText()
@@ -180,7 +179,7 @@ public class IndexBase : ComponentBase, IDisposable
         }
 
         var scene = GetCurrentScene();
-        await scene.UpdateScene();
+        await Task.CompletedTask;
     }
 
     private TextPanel3D BuildTextPanel()
@@ -227,7 +226,7 @@ public class IndexBase : ComponentBase, IDisposable
         }
 
 
-        scene.ForceSceneRefresh();
+        
     }
 
     public async Task OnAddMenu()
@@ -265,7 +264,7 @@ public class IndexBase : ComponentBase, IDisposable
         //scene.Add(BuildPanelGroup());
 
 
-        await scene.UpdateScene();
+        await Task.CompletedTask;
     }
 
     private TextPanel3D BuildChildPanel(string text)
@@ -424,7 +423,7 @@ public class IndexBase : ComponentBase, IDisposable
 
         scene.AddChild(group);
 
-        await scene.UpdateScene();
+        await Task.CompletedTask;
     }
 
     public async Task OnAddGroup2()
@@ -467,7 +466,7 @@ public class IndexBase : ComponentBase, IDisposable
             Material = new MeshStandardMaterial("green")
         });
         scene.AddChild(group);
-        await scene.UpdateScene();
+        await Task.CompletedTask;
     }
 
     public async Task DoMeshTest()
@@ -677,7 +676,7 @@ public class IndexBase : ComponentBase, IDisposable
 
         list.ForEach(mesh => scene.AddChild(mesh));
 
-        await scene.UpdateScene();
+        await Task.CompletedTask;
     }
 
 

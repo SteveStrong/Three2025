@@ -167,7 +167,6 @@ public partial class DrawingBase : ComponentBase, IDisposable
                     }
                 });
 
-            scene?.ForceSceneRefresh();
         });
 
         world.AddAction("Draw Box", "btn-primary", () =>
@@ -197,7 +196,6 @@ public partial class DrawingBase : ComponentBase, IDisposable
                     }
                 });
 
-            scene?.ForceSceneRefresh();
         });
     }
 
@@ -417,25 +415,23 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var (found, scene) = GetCurrentScene();
         if (!found) return;
 
-        var Uuid = Guid.NewGuid().ToString();
-
         var spec = new ImportSettings
         {
-            Uuid = Uuid,
+            Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
         };
 
-        await scene.Request3DModel(spec, async () => {
+        await scene.Request3DModel(spec, async (uuid) => {
             var group = new Group3D()
             {
                 Name = "Axis",
-                Uuid = Uuid,
+                Uuid = uuid,
             };
             scene.AddChild(group);
             $"Axis added to scene in callback".WriteSuccess();
             StateHasChanged();
-            await scene.UpdateScene();
+            await Task.CompletedTask;
         });
     }
 
@@ -455,7 +451,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         if (!found) return;
 
         await scene.Request3DModel(model);
-        await scene.UpdateScene();
+        await Task.CompletedTask;
     }
 
     public List<FoPage2D> AllPages()

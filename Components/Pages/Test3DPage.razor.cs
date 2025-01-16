@@ -68,25 +68,23 @@ public class Test3DPageBase : ComponentBase, IDisposable
 
     public void AddAxisToScene(Scene3D scene)
     {
-        var Uuid = Guid.NewGuid().ToString();
-
         var spec = new ImportSettings
         {
-            Uuid = Uuid,
+            Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
         };
 
-        Task.Run(async () => await scene.Request3DModel(spec, async () => {
+        Task.Run(async () => await scene.Request3DModel(spec, async (uuid) => {
             var group = new Group3D()
             {
                 Name = "Axis",
-                Uuid = Uuid,
+                Uuid = uuid,
             };
             scene.AddChild(group);
             $"Axis added to scene in callback".WriteSuccess();
             StateHasChanged();
-            await scene.UpdateScene();
+            await Task.CompletedTask;
         }));
     }
 
@@ -109,7 +107,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
         if (!success) return;
 
         await scene.Request3DModel(model);
-        await scene.UpdateScene();
+        await Task.CompletedTask;
     }
 
     public async Task OnAddJet()
@@ -125,7 +123,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
         var (success, scene) = GetCurrentScene();
         if (!success) return;
         await scene.Request3DModel(model);
-        await scene.UpdateScene();;
+        await Task.CompletedTask;;
     }
 
     public async Task OnAddCar()
@@ -141,7 +139,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
         var (success, scene) = GetCurrentScene();
         if (!success) return;
         await scene.Request3DModel(model);
-        await scene.UpdateScene();
+        await Task.CompletedTask;
     }
 
      public async Task OnAddText()
@@ -167,7 +165,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
 
         scene.AddChild(TestText);
 
-        await scene.UpdateScene();
+       await Task.CompletedTask;
     }
 
     public async Task OnUpdateText()
@@ -185,7 +183,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
         var (success, scene) = GetCurrentScene();
         if (!success) return;
 
-        await scene.UpdateScene();
+        await Task.CompletedTask;
     }
 
     public void Dispose()

@@ -41,6 +41,7 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     private Timer _timer = null!;
     private Text3D GlobalText = null!;
+    private Mesh3D SecondHand = null!;
 
     public (bool, Scene3D) GetCurrentScene()
     {
@@ -89,6 +90,9 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     private void UpdateTextWithCurrentTime(object state)
     {
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
+
         var time = DateTime.Now;
         var angle = time.Second * (2 * Math.PI / 60) - Math.PI / 2; // Convert seconds to radians
         var radius = 10.0;
@@ -104,6 +108,9 @@ public partial class ClockBase : ComponentBase, IDisposable
         {
             GlobalText.Text = currentTime;
             GlobalText.Transform.Position = new Vector3(x, y, z);
+            SecondHand.Transform.Rotation = new Euler(0, -angle, 0);
+            GlobalText.SetDirty(true);
+            SecondHand.SetDirty(true);
         }
         else 
         {
@@ -118,22 +125,22 @@ public partial class ClockBase : ComponentBase, IDisposable
                     Position = new Vector3(x, y, z),
                 },
             };
+            SecondHand = new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                Name = "Second Hand",
+                Geometry = new BoxGeometry(width: 2 * radius, depth: 0.1, height: 2),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(0, 5, 0),
+                    Rotation = new Euler(0, -angle, 0),
+                },
+                Material = new MeshStandardMaterial("green")
+            };
+            scene.AddChild(GlobalText);
+            scene.AddChild(SecondHand);
         }
 
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
-
-        var spec = new ImportSettings
-        {
-            Uuid = GlobalText.Uuid,
-            Format = Import3DFormats.Text,
-        };
-        spec.AddChild(GlobalText);
-        Task.Run(async () => await scene.Request3DLabel(spec, async () => {
-            scene.AddChild(GlobalText);
-            StateHasChanged();
-            await scene.UpdateScene();
-        }));
     }
 
     public void PlaceTextAtPosition(double angle, double radius, double height, double size,  string text)
@@ -165,10 +172,10 @@ public partial class ClockBase : ComponentBase, IDisposable
         };
 
         spec.AddChild(letter);
-        Task.Run(async () => await scene.Request3DLabel(spec, async () => {
+        Task.Run(async () => await scene.Request3DLabel(spec, async (uuid) => {
             scene.AddChild(letter);
             StateHasChanged();
-            await scene.UpdateScene();
+            await Task.CompletedTask;
         }));
     }
  
@@ -207,7 +214,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         var mesh = new Mesh3D
         {
             Uuid = Guid.NewGuid().ToString(),
-            Name = DataGenerator.GenerateWord(),
+            Name = "Clock Face",
             Geometry = new CylinderGeometry(radiusTop: radius-1.0, radiusBottom: radius, height: height,  radialSegments: 36),
             Transform = new Transform3D()
             {
@@ -223,42 +230,17 @@ public partial class ClockBase : ComponentBase, IDisposable
         };
         spec.AddChild(mesh);
         
-        Task.Run(async () => await scene.Request3DGeometry(spec, async () => {
+        Task.Run(async () => await scene.Request3DGeometry(spec, async (uuid) => {
 
-            scene.AddChild(mesh);
-            StateHasChanged();
-            await scene.UpdateScene();
+            var (dirty, _) = scene.AddChild(mesh);
+            if (dirty)
+            {
+                StateHasChanged();
+                await Task.CompletedTask;
+            }
         }));
   
 
-    }
-
-
-
-
-
-        
-   
-
-
-
-
-
-    public Node3D AddCone(string name, double x=0, double z=0)
-    {
-        var color = DataGenerator.GenerateColor();
-        var label = $"{name} {color}";
-
-        var box = new Node3D(label,color)
-        {
-            GlyphId = Guid.NewGuid().ToString(),
-            Position = new Vector3(x, 0, z),
-
-        };
-        var height = DataGenerator.GenerateDouble(1, 10);
-        box.CreateCone(label, .75, height, .75);
-        box.Pivot = new Vector3(0, height/2, 0);
-        return box;
     }
 
 
@@ -278,16 +260,16 @@ public partial class ClockBase : ComponentBase, IDisposable
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
         };
 
-        await scene.Request3DModel(spec, async () => {
+        await scene.Request3DModel(spec, async (uuid) => {
             var group = new Group3D()
             {
                 Name = "Axis",
-                Uuid = Uuid,
+                Uuid = uuid,
             };
             scene.AddChild(group);
             $"Axis added to scene in callback".WriteSuccess();
             StateHasChanged();
-            await scene.UpdateScene();
+            await Task.CompletedTask;
         });
     }
 
@@ -325,10 +307,10 @@ public partial class ClockBase : ComponentBase, IDisposable
             Format = Import3DFormats.Text,
         };
         spec.AddChild(text3d);
-        Task.Run(async () => await scene.Request3DLabel(spec, async () => {
+        Task.Run(async () => await scene.Request3DLabel(spec, async (uuid) => {
             scene.AddChild(text3d);
             StateHasChanged();
-            await scene.UpdateScene();
+            await Task.CompletedTask;
         }));
     }
 
@@ -341,12 +323,11 @@ public partial class ClockBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var Uuid = Guid.NewGuid().ToString();
         var url = GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb");
 
         var spec = new ImportSettings
         {
-            Uuid = Uuid,
+            Uuid = Guid.NewGuid().ToString(),
             Format = Import3DFormats.Gltf,
             FileURL = url,
             Transform = new Transform3D()
@@ -355,15 +336,15 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
 
         };
-        Task.Run(async () => await scene.Request3DModel(spec, async () => {
+        Task.Run(async () => await scene.Request3DModel(spec, async (uuid) => {
             var group = new Group3D()
             {
                 Name = $"BOX:{DataGenerator.GenerateWord()}",
-                Uuid = Uuid,
+                Uuid = uuid,
             };
             scene.AddChild(group);
             StateHasChanged();
-            await scene.UpdateScene();
+            await Task.CompletedTask;
         }));
     }
    public void DoRequestConeToScene()
@@ -413,11 +394,11 @@ public partial class ClockBase : ComponentBase, IDisposable
         };
         spec.AddChild(mesh);
 
-        Task.Run(async () => await scene.Request3DGeometry(spec, async () => {
+        Task.Run(async () => await scene.Request3DGeometry(spec, async (uuid) => {
 
             scene.AddChild(mesh);
             StateHasChanged();
-            await scene.UpdateScene();
+            await Task.CompletedTask;
         }));
     }
 
@@ -443,15 +424,15 @@ public partial class ClockBase : ComponentBase, IDisposable
                 Position = new Vector3(x, y, z),
             },
         };
-        Task.Run(async () => await scene.Request3DModel(spec, async () => {
+        Task.Run(async () => await scene.Request3DModel(spec, async (uuid) => {
             var group = new Group3D()
             {
                 Name = $"JET:{DataGenerator.GenerateWord()}",
-                Uuid = Uuid,
+                Uuid = uuid,
             };
             scene.AddChild(group);
             StateHasChanged();
-            await scene.UpdateScene();
+            await Task.CompletedTask;
         }));
     }
 

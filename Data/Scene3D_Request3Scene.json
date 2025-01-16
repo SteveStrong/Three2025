@@ -1,0 +1,109 @@
+{
+  "format": "Obj",
+  "uuid": "144",
+  "type": "ImportSettings",
+  "name": "",
+  "children": [
+    {
+      "color": "Orange",
+      "intensity": 1,
+      "text": "07:01:08",
+      "fontSize": 3,
+      "uuid": "c3e19c8d-a494-41c1-bae8-1c748f6ce3be",
+      "transform": {
+        "position": {
+          "x": 7.431448254773942,
+          "y": 2,
+          "z": -6.691306063588582
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "type": "Text3D",
+      "name": "",
+      "children": []
+    },
+    {
+      "material": {
+        "color": "green",
+        "flatShading": false,
+        "metalness": 0,
+        "roughness": 1,
+        "wireframe": false,
+        "map": {
+          "type": "Texture",
+          "name": "",
+          "textureUrl": "",
+          "wrapS": 1001,
+          "wrapT": 1001,
+          "repeat": {
+            "x": 1,
+            "y": 1
+          },
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "center": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0
+        },
+        "type": "MeshStandardMaterial",
+        "name": ""
+      },
+      "geometry": {
+        "width": 20,
+        "height": 2,
+        "depth": 0.1,
+        "widthSegments": 1,
+        "heightSegments": 1,
+        "depthSegments": 1,
+        "name": "",
+        "type": "BoxGeometry"
+      },
+      "uuid": "6ac87010-2cca-4767-a3f1-85dfc057001e",
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 5,
+          "z": 0
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0.7330382858376184,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "type": "Mesh3D",
+      "name": "Second Hand",
+      "children": []
+    }
+  ]
+}
