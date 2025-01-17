@@ -71,7 +71,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
         var spec = new ImportSettings
         {
             Uuid = Guid.NewGuid().ToString(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
         };
 
@@ -95,7 +95,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
         var model = new ImportSettings
         {
             Uuid = Guid.NewGuid().ToString(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Transform = new Transform3D()
             {
@@ -115,7 +115,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
         var model = new ImportSettings
         {
             Uuid = Guid.NewGuid().ToString(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
         };
 
@@ -131,7 +131,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
         var model = new ImportSettings
         {
             Uuid = Guid.NewGuid().ToString(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/mustang_1965.glb"),
         };
 

@@ -418,7 +418,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var spec = new ImportSettings
         {
             Uuid = Guid.NewGuid().ToString(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
         };
 
@@ -443,7 +443,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var model = new ImportSettings
         {
             Uuid = Guid.NewGuid().ToString(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
         };
 

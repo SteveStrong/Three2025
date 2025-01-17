@@ -230,19 +230,19 @@ public partial class HomeBase : ComponentBase, IDisposable
                 Roughness = 0.5f
             }
         };
+        scene.AddChild(mesh);
+        // var spec = new ImportSettings
+        // {
+        //     Uuid = Uuid,
+        //     Format = Model3DFormats.Mesh,
+        // };
 
-        var spec = new ImportSettings
-        {
-            Uuid = Uuid,
-            Format = Import3DFormats.Mesh,
-        };
-
-        spec.AddChild(mesh);
-        Task.Run(async () => await scene.Request3DGeometry(spec, async (uuid) => {
-            scene.AddChild(mesh);
-            StateHasChanged();
-            await Task.CompletedTask;
-        }));
+        // spec.AddChild(mesh);
+        // Task.Run(async () => await scene.Request3DGeometry(spec, async (uuid) => {
+        //     scene.AddChild(mesh);
+        //     StateHasChanged();
+        //     await Task.CompletedTask;
+        // }));
     }
 
     public void DoAddBoxToScene()
@@ -536,7 +536,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         var spec = new ImportSettings
         {
             Uuid = Guid.NewGuid().ToString(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
         };
 
@@ -589,33 +589,31 @@ public partial class HomeBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var Uuid = Guid.NewGuid().ToString();
-        var text = DataGenerator.GenerateText();
-        var color = DataGenerator.GenerateColor();
 
         var text3d = new Text3D()
         {
-            Uuid = Uuid,
-            Text = text,
-            Color = color,
+            Uuid = Guid.NewGuid().ToString(),
+            Text = DataGenerator.GenerateText(),
+            Color = DataGenerator.GenerateColor(),
             Transform = new Transform3D()
             {
                 Position = new Vector3(x, y, z),
             },
         };
+        scene.AddChild(text3d);
 
-        var spec = new ImportSettings
-        {
-            Uuid = Uuid,
-            Format = Import3DFormats.Text,
-        };
-        spec.AddChild(text3d);
-        Task.Run(async () => await scene.Request3DLabel(spec, async (uuid) => {
+        // var spec = new ImportSettings
+        // {
+        //     Uuid = Uuid,
+        //     Format = Model3DFormats.Text,
+        // };
+        // spec.AddChild(text3d);
+        // Task.Run(async () => await scene.Request3DLabel(spec, async (uuid) => {
 
-            scene.AddChild(text3d);
-            StateHasChanged();
-            await Task.CompletedTask;
-        }));
+        //     scene.AddChild(text3d);
+        //     StateHasChanged();
+        //     await Task.CompletedTask;
+        // }));
     }
 
 
@@ -634,7 +632,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         var spec = new ImportSettings
         {
             Uuid = Uuid,
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = url,
             Transform = new Transform3D()
             {

@@ -49,26 +49,7 @@ public class Canvas3DBase : ComponentBase, IDisposable
 
     // https://stackoverflow.com/questions/72488563/blazor-server-side-application-throwing-system-invalidoperationexception-javas
 
-    public async ValueTask DisposeAsync()
-    {
-        try
-        {
-            "Canvas3DBase DisposeAsync".WriteInfo();
-            //await DoStop();
-            //await _jsRuntime!.InvokeVoidAsync("AppBrowser.Finalize");
-            await ValueTask.CompletedTask;
-        }
-        catch (JSDisconnectedException)
-        {
-            // Ignore
-        }
-        catch (Exception ex)
-        {
-            $"Canvas3DBase DisposeAsync Exception {ex.Message}".WriteError();
-        }
 
-
-    }
 
     public void Dispose()
     {

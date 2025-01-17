@@ -1,20 +1,20 @@
 {
   "format": "Obj",
-  "uuid": "144",
+  "uuid": "35",
   "type": "ImportSettings",
   "name": "",
   "children": [
     {
-      "color": "Orange",
+      "color": "SlateGray",
       "intensity": 1,
-      "text": "07:01:08",
+      "text": "17:57:51",
       "fontSize": 3,
-      "uuid": "c3e19c8d-a494-41c1-bae8-1c748f6ce3be",
+      "uuid": "9c210108-ecff-470c-ad5a-71d2591f65e4",
       "transform": {
         "position": {
-          "x": 7.431448254773942,
+          "x": -8.090169943749475,
           "y": 2,
-          "z": -6.691306063588582
+          "z": -5.87785252292473
         },
         "pivot": {
           "x": 0,
@@ -39,7 +39,7 @@
     },
     {
       "material": {
-        "color": "green",
+        "color": "red",
         "flatShading": false,
         "metalness": 0,
         "roughness": 1,
@@ -68,20 +68,20 @@
         "name": ""
       },
       "geometry": {
-        "width": 20,
-        "height": 2,
-        "depth": 0.1,
+        "width": 0.5,
+        "height": 2.5,
+        "depth": 0.5,
         "widthSegments": 1,
         "heightSegments": 1,
         "depthSegments": 1,
         "name": "",
         "type": "BoxGeometry"
       },
-      "uuid": "6ac87010-2cca-4767-a3f1-85dfc057001e",
+      "uuid": "edc609cb-c36a-4eed-899c-f7f64c9792d9",
       "transform": {
         "position": {
           "x": 0,
-          "y": 5,
+          "y": 0,
           "z": 0
         },
         "pivot": {
@@ -91,7 +91,7 @@
         },
         "rotation": {
           "x": 0,
-          "y": 0.7330382858376184,
+          "y": -3.7699111843077517,
           "z": 0,
           "order": "XYZ"
         },
@@ -102,8 +102,77 @@
         }
       },
       "type": "Mesh3D",
-      "name": "Second Hand",
-      "children": []
+      "name": "CenterPost",
+      "children": [
+        {
+          "material": {
+            "color": "green",
+            "flatShading": false,
+            "metalness": 0,
+            "roughness": 1,
+            "wireframe": false,
+            "map": {
+              "type": "Texture",
+              "name": "",
+              "textureUrl": "",
+              "wrapS": 1001,
+              "wrapT": 1001,
+              "repeat": {
+                "x": 1,
+                "y": 1
+              },
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "center": {
+                "x": 0,
+                "y": 0
+              },
+              "rotation": 0
+            },
+            "type": "MeshStandardMaterial",
+            "name": ""
+          },
+          "geometry": {
+            "width": 12,
+            "height": 2,
+            "depth": 0.1,
+            "widthSegments": 1,
+            "heightSegments": 1,
+            "depthSegments": 1,
+            "name": "",
+            "type": "BoxGeometry"
+          },
+          "uuid": "c79f5282-1782-4fcc-9f40-49f04c26f956",
+          "transform": {
+            "position": {
+              "x": 5,
+              "y": 1,
+              "z": 0
+            },
+            "pivot": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "order": "XYZ"
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          },
+          "type": "Mesh3D",
+          "name": "Second Hand",
+          "children": []
+        }
+      ]
     }
   ]
 }

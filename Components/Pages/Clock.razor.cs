@@ -41,7 +41,8 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     private Timer _timer = null!;
     private Text3D GlobalText = null!;
-    private Mesh3D SecondHand = null!;
+
+    private Mesh3D CenterPost = null!;
 
     public (bool, Scene3D) GetCurrentScene()
     {
@@ -80,7 +81,7 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public string GetReferenceTo(string filename)
     {
-        var path = Path.Combine(Navigation.BaseUri, filename);
+        var path = string.Intern(Path.Combine(Navigation.BaseUri, filename));
         path.WriteSuccess();
         return path;
     }
@@ -108,9 +109,12 @@ public partial class ClockBase : ComponentBase, IDisposable
         {
             GlobalText.Text = currentTime;
             GlobalText.Transform.Position = new Vector3(x, y, z);
-            SecondHand.Transform.Rotation = new Euler(0, -angle, 0);
             GlobalText.SetDirty(true);
-            SecondHand.SetDirty(true);
+
+            //SecondHand.Transform.Rotation = new Euler(0, -angle, 0);
+            //SecondHand.SetDirty(true);
+            CenterPost.Transform.Rotation = new Euler(0, -angle, 0);
+            CenterPost.SetDirty(true);
         }
         else 
         {
@@ -125,25 +129,38 @@ public partial class ClockBase : ComponentBase, IDisposable
                     Position = new Vector3(x, y, z),
                 },
             };
-            SecondHand = new Mesh3D
+            CenterPost = new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                Name = "CenterPost",
+                Geometry = new BoxGeometry(width: 0.5, depth: 0.5, height: 2.5),
+                Transform = new Transform3D()
+                {
+                    Position = new Vector3(0, 0, 0),
+                    Rotation = new Euler(0, -angle, 0),
+                },
+                Material = new MeshStandardMaterial("red")
+            };
+            var secondHand = new Mesh3D
             {
                 Uuid = Guid.NewGuid().ToString(),
                 Name = "Second Hand",
-                Geometry = new BoxGeometry(width: 2 * radius, depth: 0.1, height: 2),
+                Geometry = new BoxGeometry(width: 1.2 * radius, depth: 0.1, height: 2),
                 Transform = new Transform3D()
                 {
-                    Position = new Vector3(0, 5, 0),
-                    Rotation = new Euler(0, -angle, 0),
+                    Position = new Vector3(0.5 * radius, 1, 0),
+                    Rotation = new Euler(0, 0, 0),
                 },
                 Material = new MeshStandardMaterial("green")
             };
             scene.AddChild(GlobalText);
-            scene.AddChild(SecondHand);
+            scene.AddChild(CenterPost);
+            CenterPost.AddChild(secondHand);
         }
 
     }
 
-    public void PlaceTextAtPosition(double angle, double radius, double height, double size,  string text)
+    public void PlaceTextAtPosition(Mesh3D parent, double angle, double radius, double height, double size,  string text)
     {
         var (found, scene) = GetCurrentScene();
         if (!found) return;
@@ -165,18 +182,8 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
         };
 
-        var spec = new ImportSettings
-        {
-            Uuid = letter.Uuid,
-            Format = Import3DFormats.Text,
-        };
+        scene.AddChild(letter);     
 
-        spec.AddChild(letter);
-        Task.Run(async () => await scene.Request3DLabel(spec, async (uuid) => {
-            scene.AddChild(letter);
-            StateHasChanged();
-            await Task.CompletedTask;
-        }));
     }
  
 
@@ -202,14 +209,6 @@ public partial class ClockBase : ComponentBase, IDisposable
 
         var radius = 10.0f;
         var height = 0.1f;
- 
-        for (int i = 1; i <= 12; i++)
-        {
-            var letter = $"{i}";
-            var angle = i * (2 * Math.PI / 12) - Math.PI / 2;
-
-            PlaceTextAtPosition(angle, radius-1.0, height + 1.0, 1.2, letter);
-        }
 
         var mesh = new Mesh3D
         {
@@ -223,23 +222,15 @@ public partial class ClockBase : ComponentBase, IDisposable
             Material = new MeshStandardMaterial("blue")
         };
 
-        var spec = new ImportSettings
-        {
-            Uuid = mesh.Uuid,
-            Format = Import3DFormats.Mesh,
-        };
-        spec.AddChild(mesh);
-        
-        Task.Run(async () => await scene.Request3DGeometry(spec, async (uuid) => {
+        scene.AddChild(mesh);
 
-            var (dirty, _) = scene.AddChild(mesh);
-            if (dirty)
-            {
-                StateHasChanged();
-                await Task.CompletedTask;
-            }
-        }));
-  
+        for (int i = 1; i <= 12; i++)
+        {
+            var letter = $"{i}";
+            var angle = i * (2 * Math.PI / 12) - Math.PI / 2;
+
+            PlaceTextAtPosition(mesh, angle, radius-1.0, height + 1.0, 1.2, letter);
+        }
 
     }
 
@@ -256,7 +247,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         var spec = new ImportSettings
         {
             Uuid = Uuid,
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
         };
 
@@ -300,18 +291,18 @@ public partial class ClockBase : ComponentBase, IDisposable
                 Position = new Vector3(x, y, z),
             },
         };
+        scene.AddChild(text3d);
 
-        var spec = new ImportSettings
-        {
-            Uuid = Uuid,
-            Format = Import3DFormats.Text,
-        };
-        spec.AddChild(text3d);
-        Task.Run(async () => await scene.Request3DLabel(spec, async (uuid) => {
-            scene.AddChild(text3d);
-            StateHasChanged();
-            await Task.CompletedTask;
-        }));
+        // var spec = new ImportSettings
+        // {
+        //     Uuid = Uuid,
+        //     Format = Model3DFormats.Text,
+        // };
+        // spec.AddChild(text3d);
+        // Task.Run(async () => await scene.Request3DLabel(spec, async (uuid) => {
+        //     StateHasChanged();
+        //     await Task.CompletedTask;
+        // }));
     }
 
     public void DoRequestAddBoxGLBToScene()
@@ -328,7 +319,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         var spec = new ImportSettings
         {
             Uuid = Guid.NewGuid().ToString(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = url,
             Transform = new Transform3D()
             {
@@ -347,6 +338,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             await Task.CompletedTask;
         }));
     }
+
    public void DoRequestConeToScene()
     {
         var arena = Workspace.GetArena();
@@ -362,8 +354,8 @@ public partial class ClockBase : ComponentBase, IDisposable
 
         var s = DataGenerator.GenerateDouble(0.1, 5);
 
-        var Uuid = Guid.NewGuid().ToString();
-        var text = DataGenerator.GenerateText();
+        //var Uuid = Guid.NewGuid().ToString();
+        //var text = DataGenerator.GenerateText();
         var color = DataGenerator.GenerateColor();
 
 
@@ -387,19 +379,20 @@ public partial class ClockBase : ComponentBase, IDisposable
             }
         };
 
-        var spec = new ImportSettings
-        {
-            Uuid = Uuid,
-            Format = Import3DFormats.Mesh,
-        };
-        spec.AddChild(mesh);
+        scene.AddChild(mesh);
 
-        Task.Run(async () => await scene.Request3DGeometry(spec, async (uuid) => {
+        // var spec = new ImportSettings
+        // {
+        //     Uuid = Uuid,
+        //     Format = Model3DFormats.Mesh,
+        // };
 
-            scene.AddChild(mesh);
-            StateHasChanged();
-            await Task.CompletedTask;
-        }));
+        // Task.Run(async () => await scene.Request3DGeometry(spec, async (uuid) => {
+
+        //     scene.AddChild(mesh);
+        //     StateHasChanged();
+        //     await Task.CompletedTask;
+        // }));
     }
 
     public void DoRequestAddJetToScene()
@@ -417,7 +410,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         var spec = new ImportSettings
         {
             Uuid = Uuid,
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = url,
             Transform = new Transform3D()
             {

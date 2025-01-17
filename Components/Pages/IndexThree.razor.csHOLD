@@ -91,7 +91,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var model = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = @"https://localhost:7101/jet.glb",
             Position = pos,
             Rotation = rot,
@@ -130,7 +130,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var model2 = new ImportSettings
         {
             Uuid = model2Guid,
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             // FileURL = "/assets/legoMan/pr_Body.glb",
             // FileURL = "https://localhost:5228/storage/StaticFiles/MK48_88480001_Pixyz_RnD.glb",
             // FileURL = "https://localhost:5228/storage/StaticFiles/Tail_ANIM_v017.glb",
@@ -192,7 +192,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var sourceModel = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             // FileURL = "https://localhost:5228/storage/StaticFiles/8847996_STEERING_ASSY.glb",
             // FileURL = "https://localhost:5228/storage/StaticFiles/pr_2505431__PISTON_RING_1_1185_278260.glb",
             // FileURL = "https://localhost:5228/storage/StaticFiles/barrel.glb",
@@ -238,7 +238,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var model3 = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = "https://localhost:5228/storage/StaticFiles/jet.glb",
             // FileURL = "https://localhost:5228/storage/StaticFiles/block_large.glb",
             //FileURL = "https://localhost:5228/storage/StaticFiles/block_small.glb",
@@ -285,7 +285,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var body = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = "/assets/legoMan/pr_Body.glb",
             Position = bodyPos,
         };
@@ -294,7 +294,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var head = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = "/assets/legoMan/pr_Head.glb",
             Position = headPos,
         };
@@ -303,7 +303,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var armLeft = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = "/assets/legoMan/pr_Arm_Left.glb",
             Position = armLeftPos,
         };
@@ -312,7 +312,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var armRight = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = "/assets/legoMan/pr_Arm_Right.glb",
             Position = armRightPos,
         };
@@ -321,7 +321,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var pelvis = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = "/assets/legoMan/pr_Pelvis.glb",
             Position = pelvisPos,
         };
@@ -330,7 +330,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var legLeft = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = "/assets/legoMan/pr_Leg_Left.glb",
             Position = legLeftPos,
         };
@@ -339,7 +339,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var legRight = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = "/assets/legoMan/pr_Leg_Right.glb",
             Position = legRightPos,
         };
@@ -363,7 +363,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var model = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             // FileURL = "https://localhost:5228/storage/StaticFiles/8847996_STEERING_ASSY.glb",
             // FileURL = "https://localhost:5228/storage/StaticFiles/pr_2505431__PISTON_RING_1_1185_278260.glb",
             // FileURL = "https://localhost:5228/storage/StaticFiles/pr_H64_wheel_H187_0048_inst_0.glb",
@@ -396,7 +396,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var model = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             // FileURL = "https://localhost:5228/storage/StaticFiles/8847996_STEERING_ASSY.glb",
             // FileURL = "https://localhost:5228/storage/StaticFiles/pr_2505431__PISTON_RING_1_1185_278260.glb",
             // FileURL = "https://localhost:5228/storage/StaticFiles/pr_H64_wheel_H187_0048_inst_0.glb",
@@ -453,7 +453,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var model = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = "/storage/StaticFiles/porsche_911.glb",
             Position = new Vector3(0, 0, 0),
         };
@@ -464,7 +464,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var model3 = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = "https://localhost:5228/storage/StaticFiles/jet.glb",
             // FileURL = "https://localhost:5228/storage/StaticFiles/block_large.glb",
             //FileURL = "https://localhost:5228/storage/StaticFiles/block_small.glb",
@@ -975,7 +975,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var model = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             //FileURL = "https://localhost:7101/storage/StaticFiles/porsche_911.glb",
             FileURL = "https://localhost:7101/storage/StaticFiles/T_Rex.glb",
             Position = new Vector3(2, 0, 2),
@@ -990,7 +990,7 @@ public class IndexThreePage : ComponentBase, IDisposable
         var model = new ImportSettings
         {
             Uuid = Guid.NewGuid(),
-            Format = Import3DFormats.Gltf,
+            Format = Model3DFormats.Gltf,
             FileURL = @"https://localhost:7101/jet.glb",
             Position = new Vector3(0, 0, 0),
         };
