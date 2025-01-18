@@ -440,18 +440,25 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
     public async Task OnAddJet()
     {
-        var model = new ImportSettings
+        var model = new Model3D()
         {
+            Name = $"JET:{DataGenerator.GenerateWord()}",
             Uuid = Guid.NewGuid().ToString(),
+            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
         };
+
+        var spec = new ImportSettings();
+        spec.AddRequestedModel(model);
 
         var (found, scene) = GetCurrentScene();
         if (!found) return;
 
-        await scene.Request3DModel(model);
-        await Task.CompletedTask;
+        await scene.Request3DModel(spec, async (uuid) => {
+            scene.AddChild(model);
+            StateHasChanged();
+            await Task.CompletedTask;
+        });
     }
 
     public List<FoPage2D> AllPages()

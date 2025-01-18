@@ -533,20 +533,20 @@ public partial class HomeBase : ComponentBase, IDisposable
         if (!found) return;
 
 
-        var spec = new ImportSettings
+        var model = new Model3D()
         {
+            Name = "Axis",
             Uuid = Guid.NewGuid().ToString(),
+            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
         };
 
+        var spec = new ImportSettings();
+        spec.AddRequestedModel(model);
+
         await scene.Request3DModel(spec, async (uuid) => {
-            var group = new Group3D()
-            {
-                Name = "Axis",
-                Uuid = uuid,
-            };
-            var ( isdirty, _) = scene.AddChild(group);
+
+            var ( isdirty, _) = scene.AddChild(model);
             if ( !isdirty) return;
             $"Axis added to scene in callback".WriteSuccess();
             StateHasChanged();
@@ -617,7 +617,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     }
 
 
-    public void DoRequestAddJetToScene()
+    public async Task DoRequestAddJetToScene()
     {
         var (found, scene) = GetCurrentScene();
         if (!found) return;
@@ -626,29 +626,28 @@ public partial class HomeBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var Uuid = Guid.NewGuid().ToString();
-        var url = GetReferenceTo(@"storage/StaticFiles/jet.glb");
+        var model = new Model3D()
+        {
+            Name = $"JET:{DataGenerator.GenerateWord()}",
+            Uuid = Guid.NewGuid().ToString(),
+            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
+            Format = Model3DFormats.Gltf,
+        };
 
         var spec = new ImportSettings
         {
-            Uuid = Uuid,
-            Format = Model3DFormats.Gltf,
-            FileURL = url,
             Transform = new Transform3D()
             {
                 Position = new Vector3(x, y, z),
             },
         };
-        Task.Run(async () => await scene.Request3DModel(spec, async (uuid) => {
-            var group = new Group3D()
-            {
-                Name = $"JET:{DataGenerator.GenerateWord()}",
-                Uuid = uuid,
-            };
-            scene.AddChild(group);
+        spec.AddRequestedModel(model);
+
+        await scene.Request3DModel(spec, async (uuid) => {
+            scene.AddChild(model);
             StateHasChanged();
             await Task.CompletedTask;
-        }));
+        });
     }
 
 

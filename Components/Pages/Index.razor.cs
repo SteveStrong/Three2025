@@ -66,20 +66,20 @@ public class IndexBase : ComponentBase, IDisposable
     }
     public void AddAxisToScene(Scene3D scene)
     {
-        var spec = new ImportSettings
+        var model = new Model3D()
         {
+            Name = "Axis",
             Uuid = Guid.NewGuid().ToString(),
+            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
         };
 
+        var spec = new ImportSettings();
+        spec.AddRequestedModel(model);
+
         Task.Run(async () => await scene.Request3DModel(spec, async (uuid) => {
-            var group = new Group3D()
-            {
-                Name = "Axis",
-                Uuid = uuid,
-            };
-            if ( scene.AddChild(group).success)
+
+            if ( scene.AddChild(model).success)
             {
                 $"Axis added to scene in callback".WriteSuccess();
                 StateHasChanged();

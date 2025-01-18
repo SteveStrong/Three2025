@@ -1,20 +1,21 @@
 {
-  "format": "Obj",
-  "uuid": "35",
+  "format": "Gltf",
+  "fileURL": "",
+  "uuid": "66",
   "type": "ImportSettings",
   "name": "",
   "children": [
     {
-      "color": "SlateGray",
+      "color": "DarkGoldenrod",
       "intensity": 1,
-      "text": "17:57:51",
+      "text": "13:59:29",
       "fontSize": 3,
-      "uuid": "9c210108-ecff-470c-ad5a-71d2591f65e4",
+      "uuid": "5bedc949-9f9c-44dc-a3b1-543e538c0170",
       "transform": {
         "position": {
-          "x": -8.090169943749475,
+          "x": 1.0452846326765368,
           "y": 2,
-          "z": -5.87785252292473
+          "z": 9.945218953682733
         },
         "pivot": {
           "x": 0,
@@ -77,7 +78,7 @@
         "name": "",
         "type": "BoxGeometry"
       },
-      "uuid": "edc609cb-c36a-4eed-899c-f7f64c9792d9",
+      "uuid": "d939fd5d-758a-4d60-9fad-94872e3b7e14",
       "transform": {
         "position": {
           "x": 0,
@@ -91,7 +92,7 @@
         },
         "rotation": {
           "x": 0,
-          "y": -3.7699111843077517,
+          "y": -1.4660765716752366,
           "z": 0,
           "order": "XYZ"
         },
@@ -144,7 +145,7 @@
             "name": "",
             "type": "BoxGeometry"
           },
-          "uuid": "c79f5282-1782-4fcc-9f40-49f04c26f956",
+          "uuid": "2f449691-857c-4f4b-9cd0-e9e10c8706d5",
           "transform": {
             "position": {
               "x": 5,

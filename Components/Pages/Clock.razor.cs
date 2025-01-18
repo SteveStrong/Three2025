@@ -82,7 +82,7 @@ public partial class ClockBase : ComponentBase, IDisposable
     public string GetReferenceTo(string filename)
     {
         var path = string.Intern(Path.Combine(Navigation.BaseUri, filename));
-        path.WriteSuccess();
+        //path.WriteSuccess();
         return path;
     }
     
@@ -242,22 +242,22 @@ public partial class ClockBase : ComponentBase, IDisposable
         var (found, scene) = GetCurrentScene();
         if (!found) return;
 
-        var Uuid = Guid.NewGuid().ToString();
 
-        var spec = new ImportSettings
+        var model = new Model3D()
         {
-            Uuid = Uuid,
+            Name = "Axis",
+            Uuid = Guid.NewGuid().ToString(),
+            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
         };
 
+        var spec = new ImportSettings();
+        spec.AddRequestedModel(model);
+
+
         await scene.Request3DModel(spec, async (uuid) => {
-            var group = new Group3D()
-            {
-                Name = "Axis",
-                Uuid = uuid,
-            };
-            scene.AddChild(group);
+
+            scene.AddChild(model);
             $"Axis added to scene in callback".WriteSuccess();
             StateHasChanged();
             await Task.CompletedTask;
@@ -305,7 +305,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         // }));
     }
 
-    public void DoRequestAddBoxGLBToScene()
+    public async Task DoRequestAddBoxGLBToScene()
     {
         var (found, scene) = GetCurrentScene();
         if (!found) return;
@@ -314,29 +314,63 @@ public partial class ClockBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var url = GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb");
-
-        var spec = new ImportSettings
+        var model = new Model3D()
         {
+            Name = $"BOX:{DataGenerator.GenerateWord()}",
             Uuid = Guid.NewGuid().ToString(),
+            Url =  GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
             Format = Model3DFormats.Gltf,
-            FileURL = url,
+        };
+
+        var spec = new ImportSettings()
+        {
             Transform = new Transform3D()
             {
                 Position = new Vector3(x, y, z),
             },
-
         };
-        Task.Run(async () => await scene.Request3DModel(spec, async (uuid) => {
-            var group = new Group3D()
-            {
-                Name = $"BOX:{DataGenerator.GenerateWord()}",
-                Uuid = uuid,
-            };
-            scene.AddChild(group);
+        spec.AddRequestedModel(model);
+
+
+        await scene.Request3DModel(spec, async (uuid) => {
+            scene.AddChild(model);
             StateHasChanged();
             await Task.CompletedTask;
-        }));
+        });
+    }
+
+    public async Task DoAddTRexToArena()
+    {
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
+
+        var name = DataGenerator.GenerateWord();
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+
+        var model = new Model3D()
+        {
+            Name = $"TRex:{DataGenerator.GenerateWord()}",
+            Uuid = Guid.NewGuid().ToString(),
+            Url =  GetReferenceTo(@"storage/staticfiles/T_Rex.glb"),
+            Format = Model3DFormats.Gltf,
+        };
+
+        var spec = new ImportSettings()
+        {
+            Transform = new Transform3D()
+            {
+                Position = new Vector3(x, 0, z),
+            },
+        };
+        spec.AddRequestedModel(model);
+
+        await scene.Request3DModel(spec, async (uuid) => {
+            scene.AddChild(model);
+            StateHasChanged();
+            await Task.CompletedTask;
+        });
+
     }
 
    public void DoRequestConeToScene()
@@ -404,26 +438,26 @@ public partial class ClockBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var Uuid = Guid.NewGuid().ToString();
-        var url = GetReferenceTo(@"storage/StaticFiles/jet.glb");
+
+        var model = new Model3D()
+        {
+            Name = $"JET:{DataGenerator.GenerateWord()}",
+            Uuid = Guid.NewGuid().ToString(),
+            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
+            Format = Model3DFormats.Gltf,
+        };
 
         var spec = new ImportSettings
         {
-            Uuid = Uuid,
-            Format = Model3DFormats.Gltf,
-            FileURL = url,
             Transform = new Transform3D()
             {
                 Position = new Vector3(x, y, z),
             },
         };
+        spec.AddRequestedModel(model);
+
         Task.Run(async () => await scene.Request3DModel(spec, async (uuid) => {
-            var group = new Group3D()
-            {
-                Name = $"JET:{DataGenerator.GenerateWord()}",
-                Uuid = uuid,
-            };
-            scene.AddChild(group);
+            scene.AddChild(model);
             StateHasChanged();
             await Task.CompletedTask;
         }));
