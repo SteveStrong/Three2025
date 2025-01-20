@@ -354,6 +354,12 @@ public partial class ClockBase : ComponentBase, IDisposable
             self.Transform.Position.Z = loc;
             self.Transform.Rotation.Y = angle;
             self.SetDirty(true);
+
+            // FoGlyph2D.Animations.Tween<FoShape2D>(s1, new { PinX = s1.PinX - 150, }, 2, 2.2F);
+            // FoGlyph2D.Animations.Tween<FoShape2D>(s2, new { PinX = s2.PinX + 150, PinY = s2.PinY + 50, }, 2, 2.4f).OnComplete(() =>
+            // {
+            //     service.ClearAll();
+            // });
         });
 
         scene.AddChild(model);
