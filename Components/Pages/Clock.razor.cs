@@ -43,7 +43,6 @@ public partial class ClockBase : ComponentBase, IDisposable
     private Text3D GlobalText = null!;
 
     private Mesh3D CenterPost = null!;
-    private List<Model3D> ModelsInMotion = new();
 
     public (bool, Scene3D) GetCurrentScene()
     {
@@ -322,6 +321,8 @@ public partial class ClockBase : ComponentBase, IDisposable
         var name = DataGenerator.GenerateWord();
         var x = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
+        var delta = 0.5;
+        var angle = 0.0;
 
         var model = new Model3D()
         {
@@ -333,13 +334,33 @@ public partial class ClockBase : ComponentBase, IDisposable
             {
                 Position = new Vector3(x, 0, z),
             },
+
         };
+        model.SetAnimationUpdate((self, tick, fps) =>
+        {
+            bool move = tick % 10 == 0;
+            if (!move) return;
+
+            var loc = self.Transform.Position.Z;
+            loc += delta;
+            if ( loc > 10 || loc < -10)
+            {
+                delta = -delta;
+                if (loc > 10) angle = Math.PI;
+                else angle = 0.0;
+            }
+
+
+            self.Transform.Position.Z = loc;
+            self.Transform.Rotation.Y = angle;
+            self.SetDirty(true);
+        });
 
         scene.AddChild(model);
-        ModelsInMotion.Add(model);
 
         await scene.Request3DModel(model);
     }
+
 
    public void DoRequestConeToScene()
     {

@@ -1,18 +1,18 @@
 {
-  "uuid": "6e42b3dc-a4ce-4225-97fc-070da6052557",
+  "uuid": "1240b77c-dfad-460e-81ec-cfcb5bbf334b",
   "type": "ImportSettings",
   "name": "",
   "children": [
     {
       "url": "http://localhost:5228/storage/staticfiles/T_Rex.glb",
-      "runAnimation": false,
+      "runAnimation": true,
       "format": "Gltf",
-      "uuid": "6e42b3dc-a4ce-4225-97fc-070da6052557",
+      "uuid": "1240b77c-dfad-460e-81ec-cfcb5bbf334b",
       "transform": {
         "position": {
-          "x": 6.039663181959721,
+          "x": 7.427955354867073,
           "y": 0,
-          "z": 1.1642542272790486
+          "z": 2.0395270748182366
         },
         "pivot": {
           "x": 0,
@@ -32,7 +32,7 @@
         }
       },
       "type": "Model3D",
-      "name": "TRex:eu",
+      "name": "TRex",
       "children": []
     }
   ]

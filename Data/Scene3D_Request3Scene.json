@@ -1,19 +1,18 @@
 {
-  "uuid": "143",
+  "uuid": "1077",
   "type": "ImportSettings",
   "name": "",
   "children": [
     {
-      "color": "Pink",
-      "intensity": 1,
-      "text": "09:23:22",
-      "fontSize": 3,
-      "uuid": "9012d248-e734-458b-a4a2-e742e9e3d3eb",
+      "url": "http://localhost:5228/storage/staticfiles/T_Rex.glb",
+      "runAnimation": true,
+      "format": "Gltf",
+      "uuid": "1240b77c-dfad-460e-81ec-cfcb5bbf334b",
       "transform": {
         "position": {
-          "x": 7.431448254773945,
-          "y": 2,
-          "z": 6.691306063588581
+          "x": 7.427955354867073,
+          "y": 0,
+          "z": 2.0395270748182366
         },
         "pivot": {
           "x": 0,
@@ -32,146 +31,9 @@
           "z": 1
         }
       },
-      "type": "Text3D",
-      "name": "",
+      "type": "Model3D",
+      "name": "TRex",
       "children": []
-    },
-    {
-      "material": {
-        "color": "red",
-        "flatShading": false,
-        "metalness": 0,
-        "roughness": 1,
-        "wireframe": false,
-        "map": {
-          "type": "Texture",
-          "name": "",
-          "textureUrl": "",
-          "wrapS": 1001,
-          "wrapT": 1001,
-          "repeat": {
-            "x": 1,
-            "y": 1
-          },
-          "offset": {
-            "x": 0,
-            "y": 0
-          },
-          "center": {
-            "x": 0,
-            "y": 0
-          },
-          "rotation": 0
-        },
-        "type": "MeshStandardMaterial",
-        "name": ""
-      },
-      "geometry": {
-        "width": 0.5,
-        "height": 2.5,
-        "depth": 0.5,
-        "widthSegments": 1,
-        "heightSegments": 1,
-        "depthSegments": 1,
-        "name": "",
-        "type": "BoxGeometry"
-      },
-      "uuid": "2f50cccb-5c20-4e98-9afb-9a692188a9a0",
-      "transform": {
-        "position": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "pivot": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "rotation": {
-          "x": 0,
-          "y": -0.7330382858376181,
-          "z": 0,
-          "order": "XYZ"
-        },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
-        }
-      },
-      "type": "Mesh3D",
-      "name": "CenterPost",
-      "children": [
-        {
-          "material": {
-            "color": "green",
-            "flatShading": false,
-            "metalness": 0,
-            "roughness": 1,
-            "wireframe": false,
-            "map": {
-              "type": "Texture",
-              "name": "",
-              "textureUrl": "",
-              "wrapS": 1001,
-              "wrapT": 1001,
-              "repeat": {
-                "x": 1,
-                "y": 1
-              },
-              "offset": {
-                "x": 0,
-                "y": 0
-              },
-              "center": {
-                "x": 0,
-                "y": 0
-              },
-              "rotation": 0
-            },
-            "type": "MeshStandardMaterial",
-            "name": ""
-          },
-          "geometry": {
-            "width": 12,
-            "height": 2,
-            "depth": 0.1,
-            "widthSegments": 1,
-            "heightSegments": 1,
-            "depthSegments": 1,
-            "name": "",
-            "type": "BoxGeometry"
-          },
-          "uuid": "a412f770-f7be-44d6-86a8-85c6ace151c4",
-          "transform": {
-            "position": {
-              "x": 5,
-              "y": 1,
-              "z": 0
-            },
-            "pivot": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "order": "XYZ"
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          },
-          "type": "Mesh3D",
-          "name": "Second Hand",
-          "children": []
-        }
-      ]
     }
   ]
 }
