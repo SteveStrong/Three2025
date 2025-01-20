@@ -295,6 +295,9 @@ public partial class ClockBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
+        var angle = 0.0;
+        var delta = 0.5;
+
         var model = new Model3D()
         {
             Name = "Box Animated",
@@ -307,10 +310,34 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
         };
 
-        scene.AddChild(model);
+        model.SetAnimationUpdate((self, tick, fps) =>
+        {
+            bool move = tick % 10 == 0;
+            if (!move) return;
+
+            var loc = self.Transform.Position.Z;
+            loc += delta;
+            if ( loc > 10 || loc < -10)
+            {
+                delta = -delta;
+                if (loc > 10) angle = Math.PI;
+                else angle = 0.0;
+            }
+
+
+            self.Transform.Position.Z = loc;
+            self.Transform.Rotation.Y = angle;
+            self.SetDirty(true);
+
+        });
+
         //ModelsInMotion.Add(model);
 
-        await scene.Request3DModel(model);
+        await scene.Request3DModel(model, async (uuid) =>
+        {
+            scene.AddChild(model);
+            await Task.CompletedTask;
+        });
     }
 
     public async Task DoAddTRexToArena()
@@ -362,9 +389,11 @@ public partial class ClockBase : ComponentBase, IDisposable
             // });
         });
 
-        scene.AddChild(model);
-
-        await scene.Request3DModel(model);
+        await scene.Request3DModel(model, async (uuid) =>
+        {
+            scene.AddChild(model);
+            await Task.CompletedTask;
+        });
     }
 
 

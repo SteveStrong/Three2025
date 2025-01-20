@@ -1,5 +1,5 @@
 {
-  "uuid": "ded84864-ba4a-4c1a-9176-af1ea136fdb9",
+  "uuid": "3fa2c1a0-34ef-444c-9bb7-676924b548d8",
   "type": "ImportSettings",
   "name": "",
   "children": [
@@ -7,12 +7,12 @@
       "url": "http://localhost:5228/storage/staticfiles/T_Rex.glb",
       "runAnimation": true,
       "format": "Gltf",
-      "uuid": "ded84864-ba4a-4c1a-9176-af1ea136fdb9",
+      "uuid": "3fa2c1a0-34ef-444c-9bb7-676924b548d8",
       "transform": {
         "position": {
-          "x": 6.544940864624557,
+          "x": 0.2084116289160356,
           "y": 0,
-          "z": -0.8345375401039341
+          "z": -4.551636736925861
         },
         "pivot": {
           "x": 0,
