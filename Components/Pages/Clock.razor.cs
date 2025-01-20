@@ -43,6 +43,7 @@ public partial class ClockBase : ComponentBase, IDisposable
     private Text3D GlobalText = null!;
 
     private Mesh3D CenterPost = null!;
+    private List<Model3D> ModelsInMotion = new();
 
     public (bool, Scene3D) GetCurrentScene()
     {
@@ -111,8 +112,6 @@ public partial class ClockBase : ComponentBase, IDisposable
             GlobalText.Transform.Position = new Vector3(x, y, z);
             GlobalText.SetDirty(true);
 
-            //SecondHand.Transform.Rotation = new Euler(0, -angle, 0);
-            //SecondHand.SetDirty(true);
             CenterPost.Transform.Rotation = new Euler(0, -angle, 0);
             CenterPost.SetDirty(true);
         }
@@ -153,14 +152,15 @@ public partial class ClockBase : ComponentBase, IDisposable
                 },
                 Material = new MeshStandardMaterial("green")
             };
+            CenterPost.AddChild(secondHand);
+            
             scene.AddChild(GlobalText);
             scene.AddChild(CenterPost);
-            CenterPost.AddChild(secondHand);
         }
 
     }
 
-    public void PlaceTextAtPosition(Mesh3D parent, double angle, double radius, double height, double size,  string text)
+    public void PlaceTextAtPosition(Object3D parent, double angle, double radius, double height, double size,  string text)
     {
         var (found, scene) = GetCurrentScene();
         if (!found) return;
@@ -182,7 +182,9 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
         };
 
-        scene.AddChild(letter);     
+        //or this could be the scene if the text is not a child of the parent
+
+        parent.AddChild(letter);     
 
     }
  
@@ -251,17 +253,8 @@ public partial class ClockBase : ComponentBase, IDisposable
             Format = Model3DFormats.Gltf,
         };
 
-        var spec = new ImportSettings();
-        spec.AddRequestedModel(model);
-
-
-        await scene.Request3DModel(spec, async (uuid) => {
-
-            scene.AddChild(model);
-            $"Axis added to scene in callback".WriteSuccess();
-            StateHasChanged();
-            await Task.CompletedTask;
-        });
+        scene.AddChild(model);
+        await scene.Request3DModel(model);
     }
 
 
@@ -292,17 +285,6 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
         };
         scene.AddChild(text3d);
-
-        // var spec = new ImportSettings
-        // {
-        //     Uuid = Uuid,
-        //     Format = Model3DFormats.Text,
-        // };
-        // spec.AddChild(text3d);
-        // Task.Run(async () => await scene.Request3DLabel(spec, async (uuid) => {
-        //     StateHasChanged();
-        //     await Task.CompletedTask;
-        // }));
     }
 
     public async Task DoRequestAddBoxGLBToScene()
@@ -316,27 +298,20 @@ public partial class ClockBase : ComponentBase, IDisposable
 
         var model = new Model3D()
         {
-            Name = $"BOX:{DataGenerator.GenerateWord()}",
+            Name = "Box Animated",
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
             Format = Model3DFormats.Gltf,
-        };
-
-        var spec = new ImportSettings()
-        {
             Transform = new Transform3D()
             {
                 Position = new Vector3(x, y, z),
             },
         };
-        spec.AddRequestedModel(model);
 
+        scene.AddChild(model);
+        //ModelsInMotion.Add(model);
 
-        await scene.Request3DModel(spec, async (uuid) => {
-            scene.AddChild(model);
-            StateHasChanged();
-            await Task.CompletedTask;
-        });
+        await scene.Request3DModel(model);
     }
 
     public async Task DoAddTRexToArena()
@@ -350,27 +325,20 @@ public partial class ClockBase : ComponentBase, IDisposable
 
         var model = new Model3D()
         {
-            Name = $"TRex:{DataGenerator.GenerateWord()}",
+            Name = "TRex", // $"TRex:{DataGenerator.GenerateWord()}",
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/staticfiles/T_Rex.glb"),
             Format = Model3DFormats.Gltf,
-        };
-
-        var spec = new ImportSettings()
-        {
             Transform = new Transform3D()
             {
                 Position = new Vector3(x, 0, z),
             },
         };
-        spec.AddRequestedModel(model);
 
-        await scene.Request3DModel(spec, async (uuid) => {
-            scene.AddChild(model);
-            StateHasChanged();
-            await Task.CompletedTask;
-        });
+        scene.AddChild(model);
+        ModelsInMotion.Add(model);
 
+        await scene.Request3DModel(model);
     }
 
    public void DoRequestConeToScene()
@@ -414,22 +382,9 @@ public partial class ClockBase : ComponentBase, IDisposable
         };
 
         scene.AddChild(mesh);
-
-        // var spec = new ImportSettings
-        // {
-        //     Uuid = Uuid,
-        //     Format = Model3DFormats.Mesh,
-        // };
-
-        // Task.Run(async () => await scene.Request3DGeometry(spec, async (uuid) => {
-
-        //     scene.AddChild(mesh);
-        //     StateHasChanged();
-        //     await Task.CompletedTask;
-        // }));
     }
 
-    public void DoRequestAddJetToScene()
+    public async Task  DoRequestAddJetToScene()
     {
         var (found, scene) = GetCurrentScene();
         if (!found) return;
@@ -438,29 +393,26 @@ public partial class ClockBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
+        var rx = DataGenerator.GenerateDouble(0, 2 * Math.PI);
+        var ry = DataGenerator.GenerateDouble(0, 2 * Math.PI);
+        var rz = DataGenerator.GenerateDouble(0, 2 * Math.PI);
+
 
         var model = new Model3D()
         {
-            Name = $"JET:{DataGenerator.GenerateWord()}",
+            Name = "jet", //$"JET:{DataGenerator.GenerateWord()}",
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
-        };
-
-        var spec = new ImportSettings
-        {
             Transform = new Transform3D()
             {
                 Position = new Vector3(x, y, z),
+                Rotation = new Euler(rx, ry, rz),
             },
         };
-        spec.AddRequestedModel(model);
 
-        Task.Run(async () => await scene.Request3DModel(spec, async (uuid) => {
-            scene.AddChild(model);
-            StateHasChanged();
-            await Task.CompletedTask;
-        }));
+        scene.AddChild(model);
+        await scene.Request3DModel(model);
     }
 
     public void Dispose()

@@ -1,21 +1,19 @@
 {
-  "format": "Gltf",
-  "fileURL": "",
-  "uuid": "66",
+  "uuid": "143",
   "type": "ImportSettings",
   "name": "",
   "children": [
     {
-      "color": "DarkGoldenrod",
+      "color": "Pink",
       "intensity": 1,
-      "text": "13:59:29",
+      "text": "09:23:22",
       "fontSize": 3,
-      "uuid": "5bedc949-9f9c-44dc-a3b1-543e538c0170",
+      "uuid": "9012d248-e734-458b-a4a2-e742e9e3d3eb",
       "transform": {
         "position": {
-          "x": 1.0452846326765368,
+          "x": 7.431448254773945,
           "y": 2,
-          "z": 9.945218953682733
+          "z": 6.691306063588581
         },
         "pivot": {
           "x": 0,
@@ -78,7 +76,7 @@
         "name": "",
         "type": "BoxGeometry"
       },
-      "uuid": "d939fd5d-758a-4d60-9fad-94872e3b7e14",
+      "uuid": "2f50cccb-5c20-4e98-9afb-9a692188a9a0",
       "transform": {
         "position": {
           "x": 0,
@@ -92,7 +90,7 @@
         },
         "rotation": {
           "x": 0,
-          "y": -1.4660765716752366,
+          "y": -0.7330382858376181,
           "z": 0,
           "order": "XYZ"
         },
@@ -145,7 +143,7 @@
             "name": "",
             "type": "BoxGeometry"
           },
-          "uuid": "2f449691-857c-4f4b-9cd0-e9e10c8706d5",
+          "uuid": "a412f770-f7be-44d6-86a8-85c6ace151c4",
           "transform": {
             "position": {
               "x": 5,

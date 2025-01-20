@@ -415,20 +415,17 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var (found, scene) = GetCurrentScene();
         if (!found) return;
 
-        var spec = new ImportSettings
+        var model = new Model3D()
         {
+            Name = $"Axis:{DataGenerator.GenerateWord()}",
             Uuid = Guid.NewGuid().ToString(),
+            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
         };
 
-        await scene.Request3DModel(spec, async (uuid) => {
-            var group = new Group3D()
-            {
-                Name = "Axis",
-                Uuid = uuid,
-            };
-            scene.AddChild(group);
+
+        await scene.Request3DModel(model, async (uuid) => {
+            scene.AddChild(model);
             $"Axis added to scene in callback".WriteSuccess();
             StateHasChanged();
             await Task.CompletedTask;
@@ -448,13 +445,10 @@ public partial class DrawingBase : ComponentBase, IDisposable
             Format = Model3DFormats.Gltf,
         };
 
-        var spec = new ImportSettings();
-        spec.AddRequestedModel(model);
-
         var (found, scene) = GetCurrentScene();
         if (!found) return;
 
-        await scene.Request3DModel(spec, async (uuid) => {
+        await scene.Request3DModel(model, async (uuid) => {
             scene.AddChild(model);
             StateHasChanged();
             await Task.CompletedTask;

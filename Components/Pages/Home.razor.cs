@@ -541,10 +541,8 @@ public partial class HomeBase : ComponentBase, IDisposable
             Format = Model3DFormats.Gltf,
         };
 
-        var spec = new ImportSettings();
-        spec.AddRequestedModel(model);
 
-        await scene.Request3DModel(spec, async (uuid) => {
+        await scene.Request3DModel(model, async (uuid) => {
 
             var ( isdirty, _) = scene.AddChild(model);
             if ( !isdirty) return;
@@ -632,18 +630,14 @@ public partial class HomeBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
-        };
-
-        var spec = new ImportSettings
-        {
             Transform = new Transform3D()
             {
                 Position = new Vector3(x, y, z),
             },
         };
-        spec.AddRequestedModel(model);
 
-        await scene.Request3DModel(spec, async (uuid) => {
+
+        await scene.Request3DModel(model, async (uuid) => {
             scene.AddChild(model);
             StateHasChanged();
             await Task.CompletedTask;

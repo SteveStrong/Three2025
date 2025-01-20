@@ -76,10 +76,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
             Format = Model3DFormats.Gltf,
         };
 
-        var spec = new ImportSettings();
-        spec.AddRequestedModel(model);
-
-        Task.Run(async () => await scene.Request3DModel(spec, async (uuid) => {
+        Task.Run(async () => await scene.Request3DModel(model, async (uuid) => {
             var group = new Group3D()
             {
                 Name = "Axis",
@@ -96,26 +93,30 @@ public class Test3DPageBase : ComponentBase, IDisposable
 
     public async Task OnAddTRex()
     {
-        var model = new ImportSettings
+        var (success, scene) = GetCurrentScene();
+        if (!success) return;
+
+        var model = new Model3D()
         {
+            Name = "TRex",
             Uuid = Guid.NewGuid().ToString(),
+            Url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Format = Model3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Transform = new Transform3D()
             {
                 Position = new Vector3(2, 0, 2)
             },
         };
 
-        var (success, scene) = GetCurrentScene();
-        if (!success) return;
-
         await scene.Request3DModel(model);
-        await Task.CompletedTask;
+
     }
 
     public async Task OnAddJet()
     {
+        var (success, scene) = GetCurrentScene();
+        if (!success) return;
+
         var x = DataGenerator.GenerateDouble(-10, 10);
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
@@ -126,22 +127,16 @@ public class Test3DPageBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
-        };
-
-        var spec = new ImportSettings
-        {
             Transform = new Transform3D()
             {
                 Position = new Vector3(x, y, z),
             },
         };
-        spec.AddRequestedModel(model);
 
 
-        var (success, scene) = GetCurrentScene();
-        if (!success) return;
+
         
-        await scene.Request3DModel(spec, async (uuid) => {
+        await scene.Request3DModel(model, async (uuid) => {
             scene.AddChild(model);
             StateHasChanged();
             await Task.CompletedTask;
@@ -150,16 +145,17 @@ public class Test3DPageBase : ComponentBase, IDisposable
 
     public async Task OnAddCar()
     {
-        var model = new ImportSettings
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Format = Model3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/mustang_1965.glb"),
-        };
-
-
         var (success, scene) = GetCurrentScene();
         if (!success) return;
+
+        var model = new Model3D()
+        {
+            Name = "Car",
+            Uuid = Guid.NewGuid().ToString(),
+            Url = GetReferenceTo(@"storage/StaticFiles/mustang_1965.glb"),
+            Format = Model3DFormats.Gltf,
+        };
+
         await scene.Request3DModel(model);
         await Task.CompletedTask;
     }

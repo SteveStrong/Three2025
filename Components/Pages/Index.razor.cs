@@ -74,10 +74,8 @@ public class IndexBase : ComponentBase, IDisposable
             Format = Model3DFormats.Gltf,
         };
 
-        var spec = new ImportSettings();
-        spec.AddRequestedModel(model);
 
-        Task.Run(async () => await scene.Request3DModel(spec, async (uuid) => {
+        Task.Run(async () => await scene.Request3DModel(model, async (uuid) => {
 
             if ( scene.AddChild(model).success)
             {
@@ -102,11 +100,12 @@ public class IndexBase : ComponentBase, IDisposable
 
     public async Task OnAddTRex()
     {
-        var model = new ImportSettings
+        var model = new Model3D()
         {
+            Name = "TRex",
             Uuid = Guid.NewGuid().ToString(),
+            Url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Format = Model3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Transform = new Transform3D()
             {
                 Position = new Vector3(2, 0, 2),
@@ -115,18 +114,19 @@ public class IndexBase : ComponentBase, IDisposable
 
         var scene = GetCurrentScene();
         await scene.Request3DModel(model);
-        await Task.CompletedTask;
+
     }
 
     public async Task OnAddJet()
     {
-        var model = new ImportSettings
+        var model = new Model3D()
         {
+            Name = "Jet",
             Uuid = Guid.NewGuid().ToString(),
+            Url = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
-        };
 
+        };
 
         var scene = GetCurrentScene();
         await scene.Request3DModel(model);
@@ -135,11 +135,12 @@ public class IndexBase : ComponentBase, IDisposable
 
     public async Task OnAddCar()
     {
-        var model = new ImportSettings
+        var model = new Model3D()
         {
+            Name = "Car",
             Uuid = Guid.NewGuid().ToString(),
+            Url = GetReferenceTo(@"storage/StaticFiles/mustang_1965.glb"),
             Format = Model3DFormats.Gltf,
-            FileURL = GetReferenceTo(@"storage/StaticFiles/mustang_1965.glb"),
         };
 
 

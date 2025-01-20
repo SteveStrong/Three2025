@@ -1,31 +1,39 @@
 {
-  "format": "Gltf",
-  "fileURL": "http://localhost:5228/storage/staticfiles/BoxAnimated.glb",
-  "uuid": "cf382d63-dcd9-456f-936f-24d08ef14e9c",
-  "transform": {
-    "position": {
-      "x": 7.171474636232066,
-      "y": 1.862933800003507,
-      "z": 1.139587098563009
-    },
-    "pivot": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "rotation": {
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "order": "XYZ"
-    },
-    "scale": {
-      "x": 1,
-      "y": 1,
-      "z": 1
-    }
-  },
+  "uuid": "6e42b3dc-a4ce-4225-97fc-070da6052557",
   "type": "ImportSettings",
   "name": "",
-  "children": []
+  "children": [
+    {
+      "url": "http://localhost:5228/storage/staticfiles/T_Rex.glb",
+      "runAnimation": false,
+      "format": "Gltf",
+      "uuid": "6e42b3dc-a4ce-4225-97fc-070da6052557",
+      "transform": {
+        "position": {
+          "x": 6.039663181959721,
+          "y": 0,
+          "z": 1.1642542272790486
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "type": "Model3D",
+      "name": "TRex:eu",
+      "children": []
+    }
+  ]
 }
