@@ -211,7 +211,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            stage.RenderToScene(scene);
+            stage.RefreshScene(scene);
     }
 
     public void OnAddTRex()
@@ -234,7 +234,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            stage.RenderToScene(scene);
+            stage.RefreshScene(scene);
     }
 
     
@@ -282,7 +282,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            stage.RenderToScene(scene);
+            stage.RefreshScene(scene);
     }
 
     public void OnAddText()
@@ -306,7 +306,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            stage.RenderToScene(scene);
+            stage.RefreshScene(scene);
     }
 
     public Node3D AddBox(string name, double x=0, double z=0)
@@ -358,7 +358,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         
         var (found, scene) = GetCurrentScene();
         if ( found )
-            stage.RenderToScene(scene, 0, 0);
+            stage.RefreshScene(scene);
         //await scene.SetCameraPosition(new Vector3(9f, 9f, 9f),box.Position);
     }
 

@@ -87,7 +87,38 @@ public partial class ClockBase : ComponentBase, IDisposable
     }
     
     
+    public void DoAddTRISOCToArena()
+    {
+        var name = DataGenerator.GenerateWord();
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+        var s = 50.0;
 
+
+        var shape = new FoModel3D("TRISOC " + name)
+        {
+            Position = new Vector3(x, 0, z),
+            Scale = new Vector3(s, s, s),
+        };
+        shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"));
+
+        LoadIntoArena(shape);
+    }
+
+    private FoShape3D LoadIntoArena(FoShape3D shape)
+    {
+        var arena = Workspace.GetArena();
+        arena.AddShape<FoShape3D>(shape);  //this is what the world publish is doing
+
+        var stage = arena.EstablishStage<FoStage3D>("Main Stage");
+        stage.PreRender(arena);
+
+        var (found, scene) = GetCurrentScene();
+        if (found)
+            stage.RefreshScene(scene);
+
+        return shape;
+    }
 
     private void UpdateTextWithCurrentTime(object state)
     {

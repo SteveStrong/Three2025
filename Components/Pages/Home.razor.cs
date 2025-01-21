@@ -147,7 +147,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            stage.RenderToScene(scene);
+            stage.RefreshScene(scene);
     }
 
     
@@ -166,7 +166,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            stage.RenderToScene(scene);
+            stage.RefreshScene(scene);
     }
 
 
@@ -231,18 +231,6 @@ public partial class HomeBase : ComponentBase, IDisposable
             }
         };
         scene.AddChild(mesh);
-        // var spec = new ImportSettings
-        // {
-        //     Uuid = Uuid,
-        //     Format = Model3DFormats.Mesh,
-        // };
-
-        // spec.AddChild(mesh);
-        // Task.Run(async () => await scene.Request3DGeometry(spec, async (uuid) => {
-        //     scene.AddChild(mesh);
-        //     StateHasChanged();
-        //     await Task.CompletedTask;
-        // }));
     }
 
     public void DoAddBoxToScene()
@@ -272,8 +260,6 @@ public partial class HomeBase : ComponentBase, IDisposable
                     Color = "magenta"
                 }
             });
-
-        
     }
 
 
@@ -345,7 +331,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            stage.RenderToScene(scene);
+            stage.RefreshScene(scene);
 
         return shape;
     }
@@ -371,7 +357,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
         var (found, scene) = GetCurrentScene();
         if (found)
-            stage.RenderToScene(scene);
+            stage.RefreshScene(scene);
     }
 
 
@@ -451,7 +437,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var (found, scene) = GetCurrentScene();
         if (found)
-            stage.RenderToScene(scene);
+            stage.RefreshScene(scene);
     }
 
     public Node3D AddBox(string name, double x=0, double z=0)
@@ -503,9 +489,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         var (found, scene) = GetCurrentScene();
         if (!found) return;
 
-        stage.RenderToScene(scene);
-        // await scene.SetCameraPosition(new Vector3(15f, 15f, 15f),box.Position);
-        // await scene.UpdateScene();
+        stage.RefreshScene(scene);
     }
 
     public void AddConeToArena()
@@ -519,8 +503,6 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         arena.EstablishStage<FoStage3D>("Main Stage");
         arena.AddShape<Node3D>(box);
-        
-        arena.UpdateArena();
     }
 
 
@@ -544,39 +526,13 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         await scene.Request3DModel(model, async (uuid) => {
 
-            var ( isdirty, _) = scene.AddChild(model);
-            if ( !isdirty) return;
-            $"Axis added to scene in callback".WriteSuccess();
-            StateHasChanged();
+            scene.AddChild(model);
             await Task.CompletedTask;
         });
     }
 
 
-    // public request3DTextLabel(spec: string): Text | null {
-    //     const options = JSON.parse(spec);
-    //     console.log('request3DTextLabel modelOptions=', options);
 
-    //     const label = new Text();
-
-    //     label.text = options.text;
-    //     label.fontSize = options.fontSize;
-    //     label.userData = {
-    //         isTextLabel: true,
-    //     };
-
-    //     const { position: pos } = options;
-    //     label.position.x = pos.x;
-    //     label.position.y = pos.y;
-    //     label.position.z = pos.z;
-    //     label.color = options.color;
-
-    //     // Update the rendering:
-    //     label.uuid = options.uuid;
-    //     label.sync();
-    //     ObjectLookup.addLabel(label.uuid, label);
-    //     return label;
-    // }
 
     public void DoRequestAddTextToScene()
     {
@@ -599,19 +555,6 @@ public partial class HomeBase : ComponentBase, IDisposable
             },
         };
         scene.AddChild(text3d);
-
-        // var spec = new ImportSettings
-        // {
-        //     Uuid = Uuid,
-        //     Format = Model3DFormats.Text,
-        // };
-        // spec.AddChild(text3d);
-        // Task.Run(async () => await scene.Request3DLabel(spec, async (uuid) => {
-
-        //     scene.AddChild(text3d);
-        //     StateHasChanged();
-        //     await Task.CompletedTask;
-        // }));
     }
 
 
