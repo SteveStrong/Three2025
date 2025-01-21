@@ -1,18 +1,59 @@
 {
-  "uuid": "8405",
+  "uuid": "5",
   "type": "ImportSettings",
   "name": "",
   "children": [
     {
-      "url": "http://localhost:5228/storage/staticfiles/T_Rex.glb",
-      "runAnimation": true,
-      "format": "Gltf",
-      "uuid": "fc3af4b1-fe4a-40bb-a79c-e38051f0c462",
+      "title": "Home3D",
+      "backGroundColor": "#505050",
+      "camera": {
+        "animateRotationSettings": {
+          "animateRotation": false,
+          "thetaX": 0.1,
+          "thetaY": 0.1,
+          "thetaZ": 0.1,
+          "radius": 5,
+          "stopAnimationOnOrbitControlMove": false
+        },
+        "lookAt": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "uuid": "1",
+        "transform": {
+          "position": {
+            "x": 10,
+            "y": 10,
+            "z": 10
+          },
+          "pivot": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "order": "XYZ"
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "type": "PerspectiveCamera",
+        "name": "",
+        "children": []
+      },
+      "uuid": "2",
       "transform": {
         "position": {
-          "x": 4.103957524479183,
+          "x": 0,
           "y": 0,
-          "z": -0.6228872827458822
+          "z": 0
         },
         "pivot": {
           "x": 0,
@@ -21,7 +62,7 @@
         },
         "rotation": {
           "x": 0,
-          "y": 3.141592653589793,
+          "y": 0,
           "z": 0,
           "order": "XYZ"
         },
@@ -31,8 +72,137 @@
           "z": 1
         }
       },
-      "type": "Model3D",
-      "name": "TRex",
+      "type": "Scene3D",
+      "name": "home3d",
+      "children": [
+        {
+          "color": "white",
+          "intensity": 0.6,
+          "uuid": "818a6c7c-dd70-4201-8b0e-383140f9b6ef",
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "pivot": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "order": "XYZ"
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          },
+          "type": "AmbientLight",
+          "name": "Ambient Light",
+          "children": []
+        },
+        {
+          "distance": 0,
+          "decay": 1,
+          "color": "white",
+          "intensity": 1,
+          "uuid": "daea7b02-3b6b-4e72-9693-fe2b153a592e",
+          "transform": {
+            "position": {
+              "x": 1,
+              "y": 3,
+              "z": 0
+            },
+            "pivot": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "order": "XYZ"
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          },
+          "type": "PointLight",
+          "name": "Point Light",
+          "children": []
+        }
+      ]
+    },
+    {
+      "color": "white",
+      "intensity": 0.6,
+      "uuid": "818a6c7c-dd70-4201-8b0e-383140f9b6ef",
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "type": "AmbientLight",
+      "name": "Ambient Light",
+      "children": []
+    },
+    {
+      "distance": 0,
+      "decay": 1,
+      "color": "white",
+      "intensity": 1,
+      "uuid": "daea7b02-3b6b-4e72-9693-fe2b153a592e",
+      "transform": {
+        "position": {
+          "x": 1,
+          "y": 3,
+          "z": 0
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "type": "PointLight",
+      "name": "Point Light",
       "children": []
     }
   ]
