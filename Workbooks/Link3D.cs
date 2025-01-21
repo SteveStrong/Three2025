@@ -31,7 +31,7 @@ public class Link3D : FoShape3D
 
     public Link3D SetPosition(double x, double y, double z)
     {
-        Position = new Vector3(x, y, z);
+        GetTransform().Position = new Vector3(x, y, z);
         return this;
     }
     public Link3D Reposition(double dx, double dy, double dz)
@@ -40,7 +40,7 @@ public class Link3D : FoShape3D
         var x = pos.X + dx;
         var y = pos.Y + dy;
         var z = pos.Z + dz;
-        Position = new Vector3(x, y, z);
+        GetTransform().Position = new Vector3(x, y, z);
         return this;
     }
 

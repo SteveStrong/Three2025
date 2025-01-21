@@ -60,7 +60,10 @@ public class CableChannels : FoComponent
             var name = $"{groupName}:{x:F1}:{y:F1}:{z:F1}";
             var shape = new Node3D(name, "blue")
             {
-                Position = new Vector3(x, y, z),
+                Transform = new Transform3()
+                {
+                    Position = new Vector3(x, y, z),
+                }
             };
             shape.CreateBox(name, .05, .03, .05);
             columns.Add(shape);

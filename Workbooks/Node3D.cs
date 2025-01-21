@@ -41,7 +41,7 @@ public class Node3D : FoShape3D
 
     public Node3D SetPosition(double x, double y, double z)
     {
-        Position = new Vector3(x, y, z);
+        GetTransform().Position = new Vector3(x, y, z);
         return this;
     }
     public Node3D Reposition(double dx, double dy, double dz)
@@ -50,13 +50,14 @@ public class Node3D : FoShape3D
         var x = pos.X + dx;
         var y = pos.Y + dy;
         var z = pos.Z + dz;
-        Position = new Vector3(x, y, z);
+        GetTransform().Position = new Vector3(x, y, z);
         return this;
     }
 
     public override string GetTreeNodeTitle()
     {
-        return $"{base.GetTreeNodeTitle()} POS: {Position?.X:F1} {Position?.Y:F1} {Position?.Z:F1}";
+        var pos = GetPosition();
+        return $"{base.GetTreeNodeTitle()} POS: {pos.X:F1} {pos.Y:F1} {pos.Z:F1}";
     }
 
 }

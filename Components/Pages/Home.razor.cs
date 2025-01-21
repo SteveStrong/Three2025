@@ -216,7 +216,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Name = DataGenerator.GenerateWord(),
             Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
-            Transform = new Transform3D()
+            Transform = new Transform3()
             {
                 Position = new Vector3(x, y, z),
                 Rotation = new Euler(0, 0, 0),
@@ -249,7 +249,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             {
                 Uuid = Guid.NewGuid().ToString(),
                 Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
-                Transform = new Transform3D()
+                Transform = new Transform3()
                 {
                     Position = pos,
                     Rotation = rot,
@@ -274,7 +274,10 @@ public partial class HomeBase : ComponentBase, IDisposable
         var arena = Workspace.GetArena();
         var shape = new FoModel3D("T-Rex " + name)
         {
-            Position = new Vector3(x, 0, z),
+            Transform = new Transform3()
+            {
+                Position = new Vector3(x, 0, z),
+            },
         };
         shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"));
 
@@ -290,7 +293,10 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var shape = new FoModel3D("Porsche " + name)
         {
-            Position = new Vector3(x, 0, z),
+            Transform = new Transform3()
+            {
+                Position = new Vector3(x, 0, z),
+            },
         };
         shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/Porsche_911.glb"));
 
@@ -311,10 +317,13 @@ public partial class HomeBase : ComponentBase, IDisposable
         {
             Name = name,
             GlyphId = Guid.NewGuid().ToString(),
-            Position = new Vector3(0, 0, 0),
             BoundingBox = new Vector3(bx, by, bz),
-            Scale = new Vector3(scale, scale, scale),
+            Transform = new Transform3()
+            {
+                 Scale = new Vector3(scale, scale, scale),
+            }
         };
+        
         shape.CreateGlb(url);
         World3D.AddGlyph3D<FoShape3D>(shape);
 
@@ -349,7 +358,10 @@ public partial class HomeBase : ComponentBase, IDisposable
         var shape = new FoText3D(name,color)
         {
             Text = DataGenerator.GenerateText(),
-            Position = new Vector3(x, y, z),
+            Transform = new Transform3()
+            {
+                Position = new Vector3(x, y, z),
+            }
         };
 
         arena.AddShape<FoText3D>(shape);
@@ -370,8 +382,11 @@ public partial class HomeBase : ComponentBase, IDisposable
         //var arena = Workspace.GetArena();
         var shape = new FoModel3D("TRISOC " + name)
         {
-            Position = new Vector3(x, 0, z),
-            Scale = new Vector3(30, 30, 30),
+            Transform = new Transform3()
+            {
+                Position = new Vector3(x, 0, z),
+                Scale = new Vector3(30, 30, 30),
+            }
         };
         shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"));
 
@@ -390,7 +405,10 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var shape = new FoShape3D(name,color)
         {
-            Position = new Vector3(x, y, z),
+            Transform = new Transform3()
+            {
+                Position = new Vector3(x, y, z),
+            }
         };
 
         var w = DataGenerator.GenerateDouble(1, 10);
@@ -428,7 +446,10 @@ public partial class HomeBase : ComponentBase, IDisposable
         var shape = new FoText3D(name,color)
         {
             Text = DataGenerator.GenerateText(),
-            Position = new Vector3(x, y, z),
+            Transform = new Transform3()
+            {
+                Position = new Vector3(x, y, z),
+            }
         };
 
 
@@ -445,15 +466,19 @@ public partial class HomeBase : ComponentBase, IDisposable
         var color = DataGenerator.GenerateColor();
         var label = $"{name} {color}";
 
+        var height = DataGenerator.GenerateDouble(1, 10);
         var box = new Node3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
-            Position = new Vector3(x, 0, z),
+            Transform = new Transform3()
+            {
+                Position = new Vector3(x, 0, z),
+                Pivot = new Vector3(0, height/2, 0)
+            }
 
         };
-        var height = DataGenerator.GenerateDouble(1, 10);
         box.CreateBox(label, .5, height, .5);
-        box.Pivot = new Vector3(0, height/2, 0);
+
         return box;
     }
 
@@ -462,15 +487,19 @@ public partial class HomeBase : ComponentBase, IDisposable
         var color = DataGenerator.GenerateColor();
         var label = $"{name} {color}";
 
+        var height = DataGenerator.GenerateDouble(1, 10);
         var box = new Node3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
-            Position = new Vector3(x, 0, z),
+            Transform = new Transform3()
+            {
+                Position = new Vector3(x, 0, z),
+                Pivot = new Vector3(0, height/2, 0)
+            }
 
         };
-        var height = DataGenerator.GenerateDouble(1, 10);
         box.CreateCone(label, .75, height, .75);
-        box.Pivot = new Vector3(0, height/2, 0);
+
         return box;
     }
 
@@ -549,7 +578,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Text = DataGenerator.GenerateText(),
             Color = DataGenerator.GenerateColor(),
-            Transform = new Transform3D()
+            Transform = new Transform3()
             {
                 Position = new Vector3(x, y, z),
             },
@@ -573,7 +602,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
-            Transform = new Transform3D()
+            Transform = new Transform3()
             {
                 Position = new Vector3(x, y, z),
             },

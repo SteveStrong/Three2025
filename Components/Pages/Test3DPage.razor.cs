@@ -102,7 +102,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Format = Model3DFormats.Gltf,
-            Transform = new Transform3D()
+            Transform = new Transform3()
             {
                 Position = new Vector3(2, 0, 2)
             },
@@ -127,7 +127,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
-            Transform = new Transform3D()
+            Transform = new Transform3()
             {
                 Position = new Vector3(x, y, z),
             },
@@ -168,7 +168,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
 
         TestText = new Text3D("My First Text") 
         { 
-            Transform = new Transform3D() 
+            Transform = new Transform3() 
             { 
                 Position = new Vector3(x, y, z), 
                 Pivot = new Vector3(0, 0, 0), 

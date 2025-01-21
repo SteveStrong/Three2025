@@ -97,8 +97,11 @@ public partial class ClockBase : ComponentBase, IDisposable
 
         var shape = new FoModel3D("TRISOC " + name)
         {
-            Position = new Vector3(x, 0, z),
-            Scale = new Vector3(s, s, s),
+            Transform = new Transform3()
+            {
+                Position = new Vector3(x, 0, z),
+                Scale = new Vector3(s, s, s),
+            }
         };
         shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"));
 
@@ -153,7 +156,7 @@ public partial class ClockBase : ComponentBase, IDisposable
                 Text = currentTime,
                 Color = DataGenerator.GenerateColor(),
                 FontSize = 3.0,
-                Transform = new Transform3D()
+                Transform = new Transform3()
                 {
                     Position = new Vector3(x, y, z),
                 },
@@ -163,7 +166,7 @@ public partial class ClockBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                 Name = "CenterPost",
                 Geometry = new BoxGeometry(width: 0.5, depth: 0.5, height: 2.5),
-                Transform = new Transform3D()
+                Transform = new Transform3()
                 {
                     Position = new Vector3(0, 0, 0),
                     Rotation = new Euler(0, -angle, 0),
@@ -175,7 +178,7 @@ public partial class ClockBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                 Name = "Second Hand",
                 Geometry = new BoxGeometry(width: 1.2 * radius, depth: 0.1, height: 2),
-                Transform = new Transform3D()
+                Transform = new Transform3()
                 {
                     Position = new Vector3(0.5 * radius, 1, 0),
                     Rotation = new Euler(0, 0, 0),
@@ -206,7 +209,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             Text = text,
             Color = "white",
             FontSize = size,
-            Transform = new Transform3D()
+            Transform = new Transform3()
             {
                 Position = new Vector3(x, y, z),
             },
@@ -247,7 +250,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Name = "Clock Face",
             Geometry = new CylinderGeometry(radiusTop: radius-1.0, radiusBottom: radius, height: height,  radialSegments: 36),
-            Transform = new Transform3D()
+            Transform = new Transform3()
             {
                 Position = new Vector3(0, 0, 0),
             },
@@ -309,7 +312,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             Text = text,
             Color = color,
             FontSize = 1.0,
-            Transform = new Transform3D()
+            Transform = new Transform3()
             {
                 Position = new Vector3(x, y, z),
             },
@@ -335,7 +338,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
             Format = Model3DFormats.Gltf,
-            Transform = new Transform3D()
+            Transform = new Transform3()
             {
                 Position = new Vector3(x, y, z),
             },
@@ -388,7 +391,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/staticfiles/T_Rex.glb"),
             Format = Model3DFormats.Gltf,
-            Transform = new Transform3D()
+            Transform = new Transform3()
             {
                 Position = new Vector3(x, 0, z),
             },
@@ -453,7 +456,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Name = DataGenerator.GenerateWord(),
             Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
-            Transform = new Transform3D()
+            Transform = new Transform3()
             {
                 Position = new Vector3(x, y, z),
                 Rotation = new Euler(rx, ry, rz),
@@ -491,7 +494,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
-            Transform = new Transform3D()
+            Transform = new Transform3()
             {
                 Position = new Vector3(x, y, z),
                 Rotation = new Euler(rx, ry, rz),

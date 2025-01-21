@@ -51,7 +51,10 @@ public class TriSocGeometry : FoComponent
 
         var shape = new FoText3D(text, "green")
         {
-            Position = point.AsVector3(),
+            Transform = new Transform3()
+            {
+                Position = point.AsVector3(),
+            },
             Text = text
         };
         group.Add<FoText3D>(shape);
@@ -64,7 +67,10 @@ public class TriSocGeometry : FoComponent
 
         var shape = new FoShape3D(text, "green")
         {
-            Position = point.AsVector3(),
+            Transform = new Transform3()
+            {
+                Position = point.AsVector3(),
+            }
         };
         shape.CreateSphere(text, .1, .1, .1);
         group.Add<FoShape3D>(shape);
@@ -117,7 +123,10 @@ public class TriSocGeometry : FoComponent
             var name = $"{groupName}:{x:F1}:{y:F1}:{z:F1}";
             var shape = new Node3D(name, "blue")
             {
-                Position = new Vector3(x, y, z),
+                Transform = new Transform3()
+                {
+                    Position = new Vector3(x, y, z),
+                }
             };
             shape.CreateBox(name, .05, .03, .05);
             columns.Add(shape);
