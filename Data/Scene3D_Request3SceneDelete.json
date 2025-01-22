@@ -1,0 +1,74 @@
+{
+  "uuid": "31",
+  "runAnimation": true,
+  "type": "ImportSettings",
+  "name": "",
+  "children": [
+    {
+      "material": {
+        "color": "RosyBrown",
+        "flatShading": false,
+        "metalness": 0,
+        "roughness": 1,
+        "wireframe": false,
+        "map": {
+          "type": "Texture",
+          "name": "",
+          "textureUrl": "",
+          "wrapS": 1001,
+          "wrapT": 1001,
+          "repeat": {
+            "x": 1,
+            "y": 1
+          },
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "center": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0
+        },
+        "uuid": "fc9536c3-979e-4968-ab23-22b8c82952d0",
+        "type": "MeshStandardMaterial",
+        "name": "Nathan_Fire RosyBrown"
+      },
+      "geometry": {
+        "radius": 4.0437717512499844,
+        "detail": 0,
+        "name": "",
+        "type": "TetrahedronGeometry"
+      },
+      "uuid": "1e7efbc5-7a20-4f3c-9cad-a36e9ae4e36b",
+      "runAnimation": true,
+      "transform": {
+        "position": {
+          "x": 1.6732691195384994,
+          "y": 7.999659468107215,
+          "z": 9.553057410975036
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "type": "Mesh3D",
+      "name": "Nathan_Fire",
+      "children": []
+    }
+  ]
+}

@@ -144,6 +144,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         world.AddAction("Render Tube", "btn-primary", () =>
         {
             var (found, scene) = arena.CurrentScene();
+            if ( !found ) return;
 
 
             var capsuleRadius = 0.15f;
@@ -154,47 +155,17 @@ public partial class DrawingBase : ComponentBase, IDisposable
                 new Vector3(4, 4, -4)
             };
 
-            if (found)
-                scene.AddChild(new Mesh3D
-                {
-                    Uuid = Guid.NewGuid().ToString(),
-                    Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
-                    Material = new MeshStandardMaterial()
-                    {
-                        Color = "yellow"
-                    }
-                });
+
+            scene.AddChild(new Mesh3D
+            {
+                Uuid = Guid.NewGuid().ToString(),
+                Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+              
+                Material = new MeshStandardMaterial("yellow")
+            });
 
         });
 
-        world.AddAction("Draw Box", "btn-primary", () =>
-        {
-            var height = 4;
-
-            var piv = new Vector3(-1, -height / 2, -3);
-            var pos = new Vector3(0, height, 0);
-            var rot = new Euler(0, Math.PI * 45 / 180, 0);
-
-            var (found, scene) = arena.CurrentScene();
-            if (found)
-                scene.AddChild(new Mesh3D
-                {
-                    Uuid = Guid.NewGuid().ToString(),
-                    Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
-                    Transform = new Transform3()
-                    {
-                        Position = pos,
-                        Rotation = rot,
-                        Pivot = piv,
-                    },
-  
-                    Material = new MeshStandardMaterial()
-                    {
-                        Color = "magenta"
-                    }
-                });
-
-        });
     }
 
 
