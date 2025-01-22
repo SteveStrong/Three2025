@@ -1,12 +1,12 @@
 {
-  "uuid": "31",
+  "uuid": "61",
   "runAnimation": true,
   "type": "ImportSettings",
   "name": "",
   "children": [
     {
       "material": {
-        "color": "RosyBrown",
+        "color": "DarkMagenta",
         "flatShading": false,
         "metalness": 0,
         "roughness": 1,
@@ -31,23 +31,27 @@
           },
           "rotation": 0
         },
-        "uuid": "fc9536c3-979e-4968-ab23-22b8c82952d0",
+        "uuid": "d9a8e9d6-1e2f-45fc-ab4a-f3a0d4a6e348",
         "type": "MeshStandardMaterial",
-        "name": "Nathan_Fire RosyBrown"
+        "name": "Casen_West DarkMagenta"
       },
       "geometry": {
-        "radius": 4.0437717512499844,
-        "detail": 0,
+        "radius": 3.4016220728474025,
+        "tube": 0.4,
+        "radialSegments": 8,
+        "tubularSegments": 64,
+        "p": 2,
+        "q": 3,
         "name": "",
-        "type": "TetrahedronGeometry"
+        "type": "TorusKnotGeometry"
       },
-      "uuid": "1e7efbc5-7a20-4f3c-9cad-a36e9ae4e36b",
+      "uuid": "7345a5fb-b18b-42d7-b0c9-6c91e21f1c74",
       "runAnimation": true,
       "transform": {
         "position": {
-          "x": 1.6732691195384994,
-          "y": 7.999659468107215,
-          "z": 9.553057410975036
+          "x": 9.797318774790561,
+          "y": 6.536081726752862,
+          "z": -2.9396599968399055
         },
         "pivot": {
           "x": 0,
@@ -67,7 +71,7 @@
         }
       },
       "type": "Mesh3D",
-      "name": "Nathan_Fire",
+      "name": "Casen_West",
       "children": []
     }
   ]
