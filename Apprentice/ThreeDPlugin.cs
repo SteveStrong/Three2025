@@ -19,6 +19,22 @@ public class ThreeDPlugin
       Foundry = service;
    }
 
+   private FoShape3D LoadIntoArena(FoShape3D shape)
+   {
+      var arena = Foundry.Arena();
+      var stage = arena.EstablishStage<FoStage3D>("Main Stage");
+
+      arena.AddShape<FoShape3D>(shape);  //this is what the world publish is doing
+
+      //stage.PreRender(arena);
+
+      var (found, scene) = arena.CurrentScene();
+      if (found)
+         stage.RefreshScene(scene);
+
+      return shape;
+   }
+
    [KernelFunction("CreateBlockShape")]
    [Description("Create a block shape with a random color")]
    public void CreateBlockShape(string Color)
@@ -26,7 +42,7 @@ public class ThreeDPlugin
 
       $"Creating block".WriteSuccess();
 
-      var Arena = Foundry.Arena();
+
       var block = new FoShape3D("Block")
       {
          Color = Color
@@ -37,8 +53,8 @@ public class ThreeDPlugin
       var h = DataGenerator.GenerateDouble(2, 10);
       var d = DataGenerator.GenerateDouble(2, 10);
       block.CreateBox(name,w,h,d);
-      Arena.AddShape<FoShape3D>(block);
-      Arena.UpdateArena();
+
+      LoadIntoArena(block);
    }
 
    [KernelFunction("PickARandomColor")]
