@@ -231,7 +231,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
         arena.AddShape<FoShape3D>(shape);
-        stage.PreRender(arena);
+        //stage.PreRender(arena);
 
         var (found, scene) = GetCurrentScene();
         if (found)

@@ -68,8 +68,8 @@ public partial class HomeBase : ComponentBase, IDisposable
             if (found)
                 arena.SetScene(scene);
 
-            CreateMenus(Workspace);
-            CreateServices(FoundryService, arena, World3D);
+            //CreateMenus(Workspace);
+            //CreateServices(FoundryService, arena, World3D);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -142,9 +142,10 @@ public partial class HomeBase : ComponentBase, IDisposable
         cables.GenerateGeometry();
 
         var arena = Workspace.GetArena() as FoArena3D;
-        var stage = arena.EstablishStage<FoStage3D>("The Cage");
+        //var stage = arena.EstablishStage<FoStage3D>("The Cage");
         World3D.PublishToArena(arena);
 
+        var stage = arena.CurrentStage();
         var (found, scene) = GetCurrentScene();
         if (found)
             stage.RefreshScene(scene);
@@ -157,13 +158,14 @@ public partial class HomeBase : ComponentBase, IDisposable
         var shape = DoLoad3dModelToWorld(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"), 0, 0, 0, 30);
 
         var trisoc = new TriSocGeometry(World3D);
-        //trisoc.GenerateLabels();
+        trisoc.GenerateLabels();
         //trisoc.GenerateMarkers();
 
         var arena = Workspace.GetArena() as FoArena3D;
-        var stage = arena.EstablishStage<FoStage3D>("TriSoc");
+        //var stage = arena.EstablishStage<FoStage3D>("TriSoc");
         World3D.PublishToArena(arena);
 
+        var stage = arena.CurrentStage();
         var (found, scene) = GetCurrentScene();
         if (found)
             stage.RefreshScene(scene);
@@ -174,6 +176,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         var arena = Workspace.GetArena();
         var (found, scene) = arena.CurrentScene();
+        if ( !found ) return;
 
 
         var capsuleRadius = 0.15f;
@@ -184,16 +187,14 @@ public partial class HomeBase : ComponentBase, IDisposable
             new Vector3(4, 4, -4)
         };
 
-        if (found)
-            scene.AddChild(new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "yellow"
-                }
-            });
+        var mesh = new Mesh3D
+        {
+            Uuid = Guid.NewGuid().ToString(),
+            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+            Material = new MeshStandardMaterial("yellow")
+
+        };
+        scene.AddChild(mesh);
 
     }
 
@@ -201,6 +202,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         var arena = Workspace.GetArena();
         var (found, scene) = arena.CurrentScene();
+        if ( !found ) return;
 
         var x = DataGenerator.GenerateDouble(-10, 10);
         var y = DataGenerator.GenerateDouble(-10, 10);
@@ -219,8 +221,6 @@ public partial class HomeBase : ComponentBase, IDisposable
             Transform = new Transform3()
             {
                 Position = new Vector3(x, y, z),
-                Rotation = new Euler(0, 0, 0),
-                Scale = new Vector3(1, 1, 1)
             },
             Material = new MeshStandardMaterial()
             {
@@ -237,29 +237,31 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         var arena = Workspace.GetArena();
         var (found, scene) = arena.CurrentScene();
-        var height = 4;
-
-        var piv = new Vector3(-1, -height / 2, -3);
-        var pos = new Vector3(0, height, 0);
-        var rot = new Euler(0, Math.PI * 45 / 180, 0);
+        if (!found) return;
 
 
-        if ( found)
-            scene.AddChild(new Mesh3D
+        var height = DataGenerator.GenerateDouble(4, 10);
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var y = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+        var color = DataGenerator.GenerateColor();
+
+        $"Creating box {height} {color}".WriteSuccess();
+
+        var mesh = new Mesh3D
+        {
+            Uuid = Guid.NewGuid().ToString(),
+            Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
+            Transform = new Transform3()
             {
-                Uuid = Guid.NewGuid().ToString(),
-                Geometry = new BoxGeometry(width: 2, height: height, depth: 6),
-                Transform = new Transform3()
-                {
-                    Position = pos,
-                    Rotation = rot,
-                    Pivot = piv,
-                },
-                Material = new MeshStandardMaterial()
-                {
-                    Color = "magenta"
-                }
-            });
+                Position = new Vector3(x, height, z),
+                Rotation = new Euler(0, Math.PI * 45 / 180, 0),
+                //Pivot = new Vector3(-1, -height / 2, -3),
+            },
+            Material = new MeshStandardMaterial(color)
+        };
+
+        scene.AddChild(mesh);
     }
 
 
@@ -336,7 +338,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         arena.AddShape<FoShape3D>(shape);  //this is what the world publish is doing
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        stage.PreRender(arena);
+        //stage.PreRender(arena);
 
         var (found, scene) = GetCurrentScene();
         if (found)

@@ -114,7 +114,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         arena.AddShape<FoShape3D>(shape);  //this is what the world publish is doing
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        stage.PreRender(arena);
+        //stage.PreRender(arena);
 
         var (found, scene) = GetCurrentScene();
         if (found)
@@ -435,6 +435,7 @@ public partial class ClockBase : ComponentBase, IDisposable
     {
         var arena = Workspace.GetArena();
         var (found, scene) = arena.CurrentScene();
+        if (!found) return;
 
         var x = DataGenerator.GenerateDouble(-10, 10);
         var y = DataGenerator.GenerateDouble(-10, 10);
@@ -449,6 +450,8 @@ public partial class ClockBase : ComponentBase, IDisposable
         //var Uuid = Guid.NewGuid().ToString();
         //var text = DataGenerator.GenerateText();
         var color = DataGenerator.GenerateColor();
+
+        $"Cone {color} {x} {y} {z}".WriteSuccess();
 
 
         var mesh = new Mesh3D
