@@ -302,6 +302,8 @@ public partial class HomeBase : ComponentBase, IDisposable
         if (found)
             stage.RefreshScene(scene);
 
+
+
         return shape;
     }
 
@@ -332,6 +334,58 @@ public partial class HomeBase : ComponentBase, IDisposable
         //     stage.RefreshScene(scene);
     }
 
+    public void DoAddRacksArena()
+    {
+        var width = 3.0;
+        var height = 10;
+        var depth = 2.0;
+
+        var list1 = new List<FoShape3D>()
+        {
+            AddEquipment(0, 1.5),
+            AddEquipment(3, 2.5),
+            AddEquipment(6, 3.5),
+            AddEquipment(10, 1.5),
+        };
+
+        var group1 = new FoShape3D("Rack 1")
+        {
+            Transform = new Transform3()
+            {
+                Position = new Vector3(5, height/2, 5),
+            }
+        };
+        group1.CreateBoundary("g1", width, height, depth); //try to have three.js compute the bounding box
+
+        foreach (var box in list1)
+            group1.Add<FoShape3D>(box);
+
+        AddIntoArena(group1);
+
+//......................................
+        var list2 = new List<FoShape3D>()
+        {
+            AddEquipment(1, 2.5),
+            AddEquipment(3, 2.0),
+            AddEquipment(6, 1.5),
+            AddEquipment(10, 4.5),
+        };
+
+        var group2 = new FoShape3D("Rack 2")
+        {
+            Transform = new Transform3()
+            {
+                Position = new Vector3(0, height/2, 5),
+            }
+        };
+        group2.CreateBoundary("g2", width, height, depth); 
+
+        foreach (var box in list2)
+            group2.Add<FoShape3D>(box);
+
+        AddIntoArena(group2);        
+    }
+
     public void DoAddEquipmentArena()
     {
         var list = new List<FoShape3D>()
@@ -341,11 +395,11 @@ public partial class HomeBase : ComponentBase, IDisposable
             AddEquipment(6, 3.5),
             AddEquipment(10, 1.5),
         };
-        
+
         foreach (var box in list)
             AddIntoArena(box);
-
     }
+
     public FoShape3D AddEquipment(double Y, double height)
     {
         var name = DataGenerator.GenerateWord();

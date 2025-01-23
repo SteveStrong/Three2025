@@ -18,7 +18,7 @@ public class Link3D : FoShape3D
         Start = start;
         Finish = finish;
 
-        var bb = start.Boundry(finish);
+        var bb = start.Boundary(finish);
         var pos = start.Center(finish);
 
         SetPosition(pos .X, pos.Y, pos.Z);

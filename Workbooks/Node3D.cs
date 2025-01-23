@@ -18,7 +18,7 @@ public class Node3D : FoShape3D
         return link;
     }
 
-    public Vector3 Boundry(Node3D target)
+    public Vector3 Boundary(Node3D target)
     {
         var a = GetPosition()!;
         var b = target.GetPosition()!;
