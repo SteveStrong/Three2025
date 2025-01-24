@@ -1,13 +1,51 @@
 {
-  "url": "http://localhost:5228/storage/StaticFiles/Porsche_911.glb",
-  "format": "Gltf",
-  "uuid": "ce3c8cf8-6ea6-4d49-99dc-a6a0d06e9344",
+  "material": {
+    "color": "Red",
+    "flatShading": false,
+    "metalness": 0,
+    "roughness": 1,
+    "wireframe": false,
+    "map": {
+      "type": "Texture",
+      "name": "",
+      "textureUrl": "",
+      "wrapS": 1001,
+      "wrapT": 1001,
+      "repeat": {
+        "x": 1,
+        "y": 1
+      },
+      "offset": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "rotation": 0
+    },
+    "uuid": "de0bd390-3ef6-4cba-8b07-15030827db2d",
+    "type": "MeshStandardMaterial",
+    "name": "cn3"
+  },
+  "geometry": {
+    "width": 0.2,
+    "height": 0.2,
+    "depth": 0.2,
+    "widthSegments": 1,
+    "heightSegments": 1,
+    "depthSegments": 1,
+    "name": "",
+    "type": "BoxGeometry"
+  },
+  "uuid": "251f83c8-f15e-4f48-8a5d-331b8e652756",
   "runAnimation": true,
   "transform": {
     "position": {
-      "x": 2.7496264135985466,
+      "x": 1.125,
       "y": 0,
-      "z": 8.172974666621812
+      "z": 1
     },
     "pivot": {
       "x": 0,
@@ -26,7 +64,7 @@
       "z": 1
     }
   },
-  "type": "Model3D",
-  "name": "Porsche vehicula",
+  "type": "Mesh3D",
+  "name": "cn3",
   "children": []
 }

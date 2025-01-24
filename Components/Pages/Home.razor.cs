@@ -383,6 +383,63 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     }
 
+    public string GeneratePath()
+    {
+        var rack = $"rack{DataGenerator.GenerateInt(0, 7)}";
+        var box = $"box{DataGenerator.GenerateInt(0, 7)}";
+        var cn = $"cn{DataGenerator.GenerateInt(0, 7)}";
+        return $"{rack}.{box}.{cn}";
+    }
+
+    public void DoAddRoutesArena()
+    {
+        for (int i = 0; i < 20; i++)
+        {
+            TryAddRoutesArena();
+        }
+    }
+
+    public void TryAddRoutesArena()
+    {
+        var arena = Workspace.GetArena();
+        var (found, scene) = arena.CurrentScene();
+        if ( !found ) return;
+
+        var stage = arena.CurrentStage();
+        var members = stage.GetShapes3D().ToList();
+        
+
+        var (p1, cn1) = stage.FindMemberByPath(GeneratePath());
+        var (p2, cn2) = stage.FindMemberByPath(GeneratePath());
+
+        if (cn1 == null || cn2 == null) return;
+
+
+        var obj1 = cn1.GeometryParameter3D.GetValue3D();
+        var obj2 = cn2.GeometryParameter3D.GetValue3D();
+        if ( obj1 == null || obj2 == null) return;
+
+        if ( obj1.HitBoundary == null || obj2.HitBoundary == null) return;
+
+        var v1 = obj1.HitBoundary.GetPosition();
+        var v2 = obj2.HitBoundary.GetPosition();
+        
+        $"Connecting {p1} @ {v1.X:F1},{v1.Y:F1},{v1.Z:F1} to {p2} @ {v2.X:F1},{v2.Y:F1},{v2.Z:F1}".WriteSuccess();
+
+        var capsuleRadius = 0.15f;
+        var capsulePositions = new List<Vector3>() { v1, v2 };
+
+        var mesh = new Mesh3D
+        {
+            Uuid = Guid.NewGuid().ToString(),
+            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+            Material = new MeshStandardMaterial("yellow")
+        };
+        scene.AddChild(mesh);
+
+
+    }
+
     public void DoAddWiresArena()
     {
         for (int i = 0; i < 20; i++)
@@ -391,6 +448,17 @@ public partial class HomeBase : ComponentBase, IDisposable
         }
     }
 
+    // private FoPipe3D AddPipe(string name, Vector3 start, Vector3 end, string color)
+    // {
+    //     var pipe = new FoPipe3D(name, color)
+    //     {
+    //         Start = start,
+    //         End = end,
+    //         Radius = 0.15f,
+    //     };
+    //     return pipe;
+    // }
+
     public void TryAddWiresArena()
     {
         var arena = Workspace.GetArena();
@@ -398,37 +466,26 @@ public partial class HomeBase : ComponentBase, IDisposable
         if ( !found ) return;
 
         var stage = arena.CurrentStage();
+    
         
-        var rack1 = $"rack{DataGenerator.GenerateInt(0, 7)}" ;
-        var rack2 = $"rack{DataGenerator.GenerateInt(0, 7)}" ;
 
-        var rackFrom = stage.GetShapes3D().FirstOrDefault(x => x.GetName().Matches(rack1));
-        var rackTo = stage.GetShapes3D().FirstOrDefault(x => x.GetName().Matches(rack2));
-        if ( rackFrom == null || rackTo == null) return;
+        var (p1, cn1) = stage.FindMemberByPath(GeneratePath());
+        var (p2, cn2) = stage.FindMemberByPath(GeneratePath());
 
-        var box1 = $"box{DataGenerator.GenerateInt(0, 6)}" ;
-        var box2 = $"box{DataGenerator.GenerateInt(0, 6)}" ;
+        if (cn1 == null || cn2 == null) return;
 
-        var boxFrom = rackFrom.GetMembers<FoShape3D>().FirstOrDefault(x => x.GetName().Matches(box1));
-        var boxTo = rackTo.GetMembers<FoShape3D>().FirstOrDefault(x => x.GetName().Matches(box2));
-        if ( boxFrom == null || boxTo == null) return;
 
-        var cn1 = $"cn{DataGenerator.GenerateInt(0, 6)}" ;
-        var cn2 = $"cn{DataGenerator.GenerateInt(0, 6)}" ;
+        var obj1 = cn1.GeometryParameter3D.GetValue3D();
+        var obj2 = cn2.GeometryParameter3D.GetValue3D();
+        if ( obj1 == null || obj2 == null) return;
 
-        var cnFrom = boxFrom.GetMembers<FoShape3D>().FirstOrDefault(x => x.GetName().Matches(cn1));
-        var cnTo = boxTo.GetMembers<FoShape3D>().FirstOrDefault(x => x.GetName().Matches(cn2));
-        if ( cnFrom == null || cnTo == null) return;
-
-        var obj1 = cnFrom.GeometryParameter3D.GetValue3D();
-        var obj6 = cnTo.GeometryParameter3D.GetValue3D();
-        if ( obj1 == null || obj6 == null) return;
-        if ( obj1.HitBoundary == null || obj6.HitBoundary == null) return;
+        if ( obj1.HitBoundary == null || obj2.HitBoundary == null) return;
 
         var v1 = obj1.HitBoundary.GetPosition();
-        var v2 = obj6.HitBoundary.GetPosition();
+        var v2 = obj2.HitBoundary.GetPosition();
         
-        $"Connecting {rack1}.{box1}.{cn1} @ {v1.X:F1},{v1.Y:F1},{v1.Z:F1}  to {rack2}.{box2}.{cn2} @ {v2.X:F1},{v2.Y:F1},{v2.Z:F1}".WriteSuccess();
+        $"Connecting {p1} @ {v1.X:F1},{v1.Y:F1},{v1.Z:F1} to {p2} @ {v2.X:F1},{v2.Y:F1},{v2.Z:F1}".WriteSuccess();
+        
 
         var capsuleRadius = 0.15f;
         var capsulePositions = new List<Vector3>() { v1, v2 };
