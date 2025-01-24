@@ -327,88 +327,146 @@ public partial class HomeBase : ComponentBase, IDisposable
         };
 
         arena.AddShape<FoText3D>(shape);
-
-        // var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        // var (found, scene) = GetCurrentScene();
-        // if (found)
-        //     stage.RefreshScene(scene);
     }
 
-    public void DoAddRacksArena()
+    public FoShape3D AddRacksArena(string name, double x, double z, double height = 10, double angle = 0)
     {
         var width = 3.0;
-        var height = 10;
         var depth = 2.0;
 
         var list1 = new List<FoShape3D>()
         {
-            AddEquipment(0, 1.5),
-            AddEquipment(3, 2.5),
-            AddEquipment(6, 3.5),
-            AddEquipment(10, 1.5),
+            AddEquipment("box1", 0, 1.5),
+            AddEquipment("box2", 3, 2.5),
+            AddEquipment("box3", 6, 3.5),
+            AddEquipment("box4", 10, 1.5),
         };
 
-        var group1 = new FoShape3D("Rack 1")
+        var group = new FoShape3D(name)
         {
             Transform = new Transform3()
             {
-                Position = new Vector3(5, height/2, 5),
+                Position = new Vector3(x, height/2, z),
+                Rotation = new Euler(0, angle, 0),
             }
         };
-        group1.CreateBoundary("g1", width, height, depth); //try to have three.js compute the bounding box
+        group.CreateBoundary(name, width, height, depth); //try to have three.js compute the bounding box
 
         foreach (var box in list1)
-            group1.Add<FoShape3D>(box);
+            group.Add<FoShape3D>(box);
 
-        AddIntoArena(group1);
+        return group;
+    }
 
-//......................................
-        var list2 = new List<FoShape3D>()
+    public void DoAddRacksArena()
+    {
+
+        var height = 10;
+
+
+        var r1 = AddRacksArena("rack1", 10, 5, height, 0);
+        var r2 = AddRacksArena("rack2",  7, 5, height, 0);
+
+        var r3 = AddRacksArena("rack3", 5, 0, height, 0);
+        var r4 = AddRacksArena("rack4", 0, 0, height, 0);
+
+        var r5 = AddRacksArena("rack5", 10, 10, height, -Math.PI/2);
+        var r6 = AddRacksArena("rack6", 10, 15, height, -Math.PI/2);
+
+        var list = new List<FoShape3D>() { r1, r2, r3, r4, r5, r6 };
+
+        foreach (var item in list)
         {
-            AddEquipment(1, 2.5),
-            AddEquipment(3, 2.0),
-            AddEquipment(6, 1.5),
-            AddEquipment(10, 4.5),
-        };
+            AddIntoArena(item);    
+        }
 
-        var group2 = new FoShape3D("Rack 2")
+
+    }
+
+    public void DoAddWiresArena()
+    {
+        for (int i = 0; i < 20; i++)
         {
-            Transform = new Transform3()
-            {
-                Position = new Vector3(0, height/2, 5),
-            }
+            TryAddWiresArena();
+        }
+    }
+
+    public void TryAddWiresArena()
+    {
+        var arena = Workspace.GetArena();
+        var (found, scene) = arena.CurrentScene();
+        if ( !found ) return;
+
+        var stage = arena.CurrentStage();
+        
+        var rack1 = $"rack{DataGenerator.GenerateInt(0, 7)}" ;
+        var rack2 = $"rack{DataGenerator.GenerateInt(0, 7)}" ;
+
+        var rackFrom = stage.GetShapes3D().FirstOrDefault(x => x.GetName().Matches(rack1));
+        var rackTo = stage.GetShapes3D().FirstOrDefault(x => x.GetName().Matches(rack2));
+        if ( rackFrom == null || rackTo == null) return;
+
+        var box1 = $"box{DataGenerator.GenerateInt(0, 6)}" ;
+        var box2 = $"box{DataGenerator.GenerateInt(0, 6)}" ;
+
+        var boxFrom = rackFrom.GetMembers<FoShape3D>().FirstOrDefault(x => x.GetName().Matches(box1));
+        var boxTo = rackTo.GetMembers<FoShape3D>().FirstOrDefault(x => x.GetName().Matches(box2));
+        if ( boxFrom == null || boxTo == null) return;
+
+        var cn1 = $"cn{DataGenerator.GenerateInt(0, 6)}" ;
+        var cn2 = $"cn{DataGenerator.GenerateInt(0, 6)}" ;
+
+        var cnFrom = boxFrom.GetMembers<FoShape3D>().FirstOrDefault(x => x.GetName().Matches(cn1));
+        var cnTo = boxTo.GetMembers<FoShape3D>().FirstOrDefault(x => x.GetName().Matches(cn2));
+        if ( cnFrom == null || cnTo == null) return;
+
+        var obj1 = cnFrom.GeometryParameter3D.GetValue3D();
+        var obj6 = cnTo.GeometryParameter3D.GetValue3D();
+        if ( obj1 == null || obj6 == null) return;
+        if ( obj1.HitBoundary == null || obj6.HitBoundary == null) return;
+
+        var v1 = obj1.HitBoundary.GetPosition();
+        var v2 = obj6.HitBoundary.GetPosition();
+        
+        $"Connecting {rack1}.{box1}.{cn1} @ {v1.X:F1},{v1.Y:F1},{v1.Z:F1}  to {rack2}.{box2}.{cn2} @ {v2.X:F1},{v2.Y:F1},{v2.Z:F1}".WriteSuccess();
+
+        var capsuleRadius = 0.15f;
+        var capsulePositions = new List<Vector3>() { v1, v2 };
+
+
+        var mesh = new Mesh3D
+        {
+            Uuid = Guid.NewGuid().ToString(),
+            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+            Material = new MeshStandardMaterial("yellow")
         };
-        group2.CreateBoundary("g2", width, height, depth); 
+        scene.AddChild(mesh);
 
-        foreach (var box in list2)
-            group2.Add<FoShape3D>(box);
 
-        AddIntoArena(group2);        
     }
 
     public void DoAddEquipmentArena()
     {
         var list = new List<FoShape3D>()
         {
-            AddEquipment(0, 1.5),
-            AddEquipment(3, 2.5),
-            AddEquipment(6, 3.5),
-            AddEquipment(10, 1.5),
+            AddEquipment("x1", 0, 1.5),
+            AddEquipment("x2", 3, 2.5),
+            AddEquipment("x3", 6, 3.5),
+            AddEquipment("x4", 10, 1.5),
         };
 
         foreach (var box in list)
             AddIntoArena(box);
     }
 
-    public FoShape3D AddEquipment(double Y, double height)
+    public FoShape3D AddEquipment(string name, double Y, double height)
     {
-        var name = DataGenerator.GenerateWord();
         var color = DataGenerator.GenerateColor();
 
         var width = 3.0;
         var depth = 2.0;
 
-        var box = new FoShape3D($"Box:{name}",color)
+        var box = new FoShape3D(name,color)
         {
             Transform = new Transform3()
             {
@@ -417,11 +475,11 @@ public partial class HomeBase : ComponentBase, IDisposable
         };
         box.CreateBox(name, width, height, depth);
 
-        var count = DataGenerator.GenerateInt(1, 7);
+        var count = DataGenerator.GenerateInt(3, 6);
         for( int i=0; i<count; i++)
         {
             var x = i * width/(1.0 *count) - width/2.0 + width/(2.0 * count);
-            var cnn = $"cnn{i}";
+            var cnn = $"cn{i}";
             var connect = new FoShape3D(cnn,"Red")
             {
                 Transform = new Transform3()
