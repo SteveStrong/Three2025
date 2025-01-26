@@ -41,9 +41,6 @@ public partial class ClockBase : ComponentBase, IDisposable
     private CableWorld World3D { get; set; } = null!;
 
     private Timer _timer = null!;
-    private Text3D GlobalText = null!;
-
-    private Mesh3D CenterPost = null!;
 
     public (bool, Scene3D) GetCurrentScene()
     {
@@ -86,6 +83,14 @@ public partial class ClockBase : ComponentBase, IDisposable
         return path;
     }
     
+    public void DoClockFace()
+    {
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
+
+        var mesh = Tech.CreateClockFaceMesh();
+        scene.AddChild(mesh);
+    }
     
     public void DoAddTRISOCToArena()
     {
@@ -111,110 +116,13 @@ public partial class ClockBase : ComponentBase, IDisposable
 
 
 
-    private void UpdateTextWithCurrentTime(object state)
-    {
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
-
-        var time = DateTime.Now;
-        var angle = time.Second * (2 * Math.PI / 60) - Math.PI / 2; // Convert seconds to radians
-        var radius = 10.0;
-        var x = radius * Math.Cos(angle);
-        var y = 2;
-        var z = radius * Math.Sin(angle);
-
-        var currentTime = time.ToString("HH:mm:ss");
-        //var x = DataGenerator.GenerateDouble(-1, 1);
-        //var z = DataGenerator.GenerateDouble(-1, 1);
-
-        if (GlobalText != null)
-        {
-            GlobalText.Text = currentTime;
-            GlobalText.Transform.Position = new Vector3(x, y, z);
-            GlobalText.SetDirty(true);
-
-            CenterPost.Transform.Rotation = new Euler(0, -angle, 0);
-            CenterPost.SetDirty(true);
-        }
-        else 
-        {
-            GlobalText = new Text3D()
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                Text = currentTime,
-                Color = DataGenerator.GenerateColor(),
-                FontSize = 3.0,
-                Transform = new Transform3()
-                {
-                    Position = new Vector3(x, y, z),
-                },
-            };
-            CenterPost = new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                Name = "CenterPost",
-                Geometry = new BoxGeometry(width: 0.5, depth: 0.5, height: 2.5),
-                Transform = new Transform3()
-                {
-                    Position = new Vector3(0, 0, 0),
-                    Rotation = new Euler(0, -angle, 0),
-                },
-                Material = new MeshStandardMaterial("red")
-            };
-            var secondHand = new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                Name = "Second Hand",
-                Geometry = new BoxGeometry(width: 1.2 * radius, depth: 0.1, height: 2),
-                Transform = new Transform3()
-                {
-                    Position = new Vector3(0.5 * radius, 1, 0),
-                    Rotation = new Euler(0, 0, 0),
-                },
-                Material = new MeshStandardMaterial("green")
-            };
-            CenterPost.AddChild(secondHand);
-            
-            scene.AddChild(GlobalText);
-            scene.AddChild(CenterPost);
-        }
-
-    }
-
-    public void PlaceTextAtPosition(Object3D parent, double angle, double radius, double height, double size,  string text)
-    {
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
-
-        var x = radius * Math.Cos(angle);
-        var y = height;
-        var z = radius * Math.Sin(angle);
-
-        var letter = new Text3D()
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Name = text,
-            Text = text,
-            Color = "white",
-            FontSize = size,
-            Transform = new Transform3()
-            {
-                Position = new Vector3(x, y, z),
-            },
-        };
-
-        //or this could be the scene if the text is not a child of the parent
-
-        parent.AddChild(letter);     
-
-    }
  
 
     public void DoLabelAutoRefresh()
     {
         if (_timer == null)
         {
-            _timer = new Timer(UpdateTextWithCurrentTime, null, 0, 1000);
+            _timer = new Timer(Tech.UpdateTextWithCurrentTime, null, 0, 1000);
         }
         else
         {
@@ -223,39 +131,6 @@ public partial class ClockBase : ComponentBase, IDisposable
         }
     }
 
-
-    public void DoClockFace()
-    {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
-        if ( !found) return;
-
-        var radius = 10.0f;
-        var height = 0.1f;
-
-        var mesh = new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Name = "Clock Face",
-            Geometry = new CylinderGeometry(radiusTop: radius-1.0, radiusBottom: radius, height: height,  radialSegments: 36),
-            Transform = new Transform3()
-            {
-                Position = new Vector3(0, 0, 0),
-            },
-            Material = new MeshStandardMaterial("blue")
-        };
-
-        scene.AddChild(mesh);
-
-        for (int i = 1; i <= 12; i++)
-        {
-            var letter = $"{i}";
-            var angle = i * (2 * Math.PI / 12) - Math.PI / 2;
-
-            PlaceTextAtPosition(mesh, angle, radius-1.0, height + 1.0, 1.2, letter);
-        }
-
-    }
 
 
 
@@ -290,7 +165,6 @@ public partial class ClockBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var Uuid = Guid.NewGuid().ToString();
 
         var text3d = new FoText3D()
         {
@@ -310,18 +184,13 @@ public partial class ClockBase : ComponentBase, IDisposable
             bool move = tick % 10 == 0;
             if (!move) return;
 
-            $"Moving {text3d.Text}".WriteSuccess();
-
             var loc = self.Transform.Position.Z;
             loc += delta;
             if ( loc > 10 || loc < -10)
             {
                 delta = -delta;
             }
-
-
             self.Transform.Position.Z = loc;
-
             self.SetDirty(true);
         });
     }
