@@ -20,6 +20,17 @@ using BlazorThreeJS.Core;
 
 namespace Three2025.Components.Pages;
 
+public class FoRack : FoShape3D
+{
+    public FoRack(string name) : base(name)
+    {
+    }
+
+    public FoRack(string name, string color) : base(name, color)
+    {
+    }
+}
+
 public partial class HomeBase : ComponentBase, IDisposable
 {
     public Canvas3DComponentBase Canvas3DReference = null;
@@ -37,11 +48,11 @@ public partial class HomeBase : ComponentBase, IDisposable
     protected MockDataGenerator DataGenerator { get; set; } = new();
     private CableWorld World3D { get; set; } = null!;
 
-    private (bool, Scene3D) GetCurrentScene()
-    {
-        var arena = Workspace.GetArena();
-        return arena.CurrentScene();
-    }
+    // private (bool, Scene3D) GetCurrentScene()
+    // {
+    //     var arena = Workspace.GetArena();
+    //     return arena.CurrentScene();
+    // }
     private FoShape3D DoLoad3dModelToWorld(string url, double bx, double by, double bz, double scale = 1)
     {
         var name = url.Split('\\').Last();
@@ -82,9 +93,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             World3D = FoundryService.WorldManager().CreateWorld<CableWorld>("Cables");
 
             var arena = Workspace.GetArena();
-            arena.EstablishStage<FoStage3D>("Main Stage");
-            if (found)
-                arena.SetScene(scene);
+            arena.SetScene(scene);
 
 
             CreateServices(FoundryService, arena, World3D);
@@ -294,15 +303,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     private T AddIntoArena<T>(T shape) where T : FoGlyph3D
     {
         var arena = Workspace.GetArena();
-        var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-
-        arena.AddShape<T>(shape);  //this is what the world publish is doing
-
-        var (found, scene) = GetCurrentScene();
-        if (found)
-            stage.RefreshScene(scene);
-
-
+        arena.AddShapeToStage<T>(shape);  //this is what the world publish is doing
 
         return shape;
     }
@@ -326,7 +327,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             }
         };
 
-        arena.AddShape<FoText3D>(shape);
+        arena.AddShapeToStage<FoText3D>(shape);
     }
 
     public FoShape3D AddRacksArena(string name, double x, double z, double height = 10, double angle = 0)
@@ -342,7 +343,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             AddEquipment("box4", 10, 1.5),
         };
 
-        var group = new FoShape3D(name)
+        var group = new FoRack(name)
         {
             Transform = new Transform3()
             {
@@ -399,44 +400,48 @@ public partial class HomeBase : ComponentBase, IDisposable
         }
     }
 
-    public void TryAddRoutesArena()
+    public (bool success, FoPipe3D pipe) TryCreatePipe(string from, string to)
     {
         var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
-        if ( !found ) return;
-
         var stage = arena.CurrentStage();
-        var members = stage.GetShapes3D().ToList();
-        
 
-        var (p1, cn1) = stage.FindMemberByPath(GeneratePath());
-        var (p2, cn2) = stage.FindMemberByPath(GeneratePath());
+        var (s1, p1, cn1) = stage.FindUsingPath<FoRack, FoShape3D>(from);
+        var (s2, p2, cn2) = stage.FindUsingPath<FoRack, FoShape3D>(to);
 
-        if (cn1 == null || cn2 == null) return;
-
+        if (!s1 || !s2) return (false, null);
 
         var obj1 = cn1.GeometryParameter3D.GetValue3D();
         var obj2 = cn2.GeometryParameter3D.GetValue3D();
-        if ( obj1 == null || obj2 == null) return;
+        if ( obj1 == null || obj2 == null) 
+            return (false, null);
 
-        if ( obj1.HitBoundary == null || obj2.HitBoundary == null) return;
+        if ( obj1.HitBoundary == null || obj2.HitBoundary == null) 
+            return (false, null);
 
         var v1 = obj1.HitBoundary.GetPosition();
         var v2 = obj2.HitBoundary.GetPosition();
         
         $"Connecting {p1} @ {v1.X:F1},{v1.Y:F1},{v1.Z:F1} to {p2} @ {v2.X:F1},{v2.Y:F1},{v2.Z:F1}".WriteSuccess();
 
-        var capsuleRadius = 0.15f;
-        var capsulePositions = new List<Vector3>() { v1, v2 };
-
-        var mesh = new Mesh3D
+        var result = new FoPipe3D("pipe", "red")
         {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
-            Material = new MeshStandardMaterial("yellow")
-        };
-        scene.AddChild(mesh);
+            Key = $"{from}->{to}",
+            FromShape3D = cn1,
+            ToShape3D = cn2,
 
+            Radius = 0.15f,
+        };
+        return (true, result);
+    }
+
+    public void TryAddRoutesArena()
+    {
+        var arena = Workspace.GetArena();
+
+        var (success, pipe) = TryCreatePipe(GeneratePath(), GeneratePath());
+        
+        if ( success ) 
+            arena.AddShapeToStage<FoPipe3D>(pipe);
 
     }
 
@@ -448,16 +453,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         }
     }
 
-    // private FoPipe3D AddPipe(string name, Vector3 start, Vector3 end, string color)
-    // {
-    //     var pipe = new FoPipe3D(name, color)
-    //     {
-    //         Start = start,
-    //         End = end,
-    //         Radius = 0.15f,
-    //     };
-    //     return pipe;
-    // }
+
 
     public void TryAddWiresArena()
     {
@@ -469,10 +465,10 @@ public partial class HomeBase : ComponentBase, IDisposable
     
         
 
-        var (p1, cn1) = stage.FindMemberByPath(GeneratePath());
-        var (p2, cn2) = stage.FindMemberByPath(GeneratePath());
+        var (s1, p1, cn1) = stage.FindUsingPath<FoRack, FoShape3D>(GeneratePath());
+        var (s2, p2, cn2) = stage.FindUsingPath<FoRack, FoShape3D>(GeneratePath());
 
-        if (cn1 == null || cn2 == null) return;
+        if (!s1 || !s2) return;
 
 
         var obj1 = cn1.GeometryParameter3D.GetValue3D();
@@ -573,7 +569,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         AddIntoArena(shape);
     }
     
-    public void DoAddGeomToStage()
+    public void DoAddGeomToArena()
     {
         var name = DataGenerator.GenerateName();
         var color = DataGenerator.GenerateColor();
@@ -695,10 +691,10 @@ public partial class HomeBase : ComponentBase, IDisposable
         var box = AddBox(name,x,z);
         stage.AddShape<Node3D>(box);
         
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
+        // var (found, scene) = GetCurrentScene();
+        // if (!found) return;
 
-        stage.RefreshScene(scene);
+        // stage.RefreshScene(scene);
     }
 
     // public void AddConeToArena()
@@ -720,9 +716,9 @@ public partial class HomeBase : ComponentBase, IDisposable
 
    public async Task DoAddAxisToScene()
     {
-        var (found, scene) = GetCurrentScene();
+        var arena = Workspace.GetArena();
+        var (found, scene) = arena.CurrentScene();
         if (!found) return;
-
 
         var model = new Model3D()
         {
@@ -745,7 +741,8 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void DoRequestAddTextToScene()
     {
-        var (found, scene) = GetCurrentScene();
+        var arena = Workspace.GetArena();
+        var (found, scene) = arena.CurrentScene();
         if (!found) return;
 
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -769,7 +766,8 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public async Task DoRequestAddJetToScene()
     {
-        var (found, scene) = GetCurrentScene();
+        var arena = Workspace.GetArena();
+        var (found, scene) = arena.CurrentScene();
         if (!found) return;
 
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -791,7 +789,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         await scene.Request3DModel(model, async (uuid) => {
             scene.AddChild(model);
-            StateHasChanged();
+            //StateHasChanged();
             await Task.CompletedTask;
         });
     }

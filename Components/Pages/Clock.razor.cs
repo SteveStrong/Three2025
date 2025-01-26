@@ -111,14 +111,14 @@ public partial class ClockBase : ComponentBase, IDisposable
     private FoShape3D LoadIntoArena(FoShape3D shape)
     {
         var arena = Workspace.GetArena();
-        arena.AddShape<FoShape3D>(shape);  //this is what the world publish is doing
+        arena.AddShapeToStage<FoShape3D>(shape);  //this is what the world publish is doing
 
-        var stage = arena.EstablishStage<FoStage3D>("Main Stage");
+        //var stage = arena.EstablishStage<FoStage3D>("Main Stage");
         //stage.PreRender(arena);
 
-        var (found, scene) = GetCurrentScene();
-        if (found)
-            stage.RefreshScene(scene);
+        // var (found, scene) = GetCurrentScene();
+        // if (found)
+        //     stage.RefreshScene(scene);
 
         return shape;
     }

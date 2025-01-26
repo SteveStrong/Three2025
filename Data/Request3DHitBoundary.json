@@ -25,7 +25,7 @@
       },
       "rotation": 0
     },
-    "uuid": "de0bd390-3ef6-4cba-8b07-15030827db2d",
+    "uuid": "affd0774-07bc-4fea-9ab2-a6ee76bfac71",
     "type": "MeshStandardMaterial",
     "name": "cn3"
   },
@@ -39,7 +39,7 @@
     "name": "",
     "type": "BoxGeometry"
   },
-  "uuid": "251f83c8-f15e-4f48-8a5d-331b8e652756",
+  "uuid": "d7ef59f0-28fc-4811-bd66-cfcf46b7abcb",
   "runAnimation": true,
   "transform": {
     "position": {

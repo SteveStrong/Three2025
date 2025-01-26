@@ -24,13 +24,13 @@ public class ThreeDPlugin
       var arena = Foundry.Arena();
       var stage = arena.EstablishStage<FoStage3D>("Main Stage");
 
-      arena.AddShape<FoShape3D>(shape);  //this is what the world publish is doing
+      arena.AddShapeToStage<FoShape3D>(shape);  //this is what the world publish is doing
 
       //stage.PreRender(arena);
 
-      var (found, scene) = arena.CurrentScene();
-      if (found)
-         stage.RefreshScene(scene);
+      // var (found, scene) = arena.CurrentScene();
+      // if (found)
+      //    stage.RefreshScene(scene);
 
       return shape;
    }
@@ -73,8 +73,8 @@ public class ThreeDPlugin
    {
       var Arena = Foundry.Arena();
       var Stage = Arena.CurrentStage();
-      var Block = Stage.GetShapes3D().FirstOrDefault(x => x.Name == name);
-      return Block;
+      var result = Stage.FindShape<FoShape3D>(name);
+      return result.success ? result.found : null;
    }
 
    [KernelFunction("FindShapeByColor")]
@@ -84,7 +84,7 @@ public class ThreeDPlugin
    {
       var Arena = Foundry.Arena();
       var Stage = Arena.CurrentStage();
-      var shapes = Stage.GetShapes3D().Where(x => x.Color == color).ToList();
+      var shapes = Stage.Members<FoShape3D>().Where(x => x.Color == color).ToList();
       return shapes;
    }
 
@@ -95,7 +95,7 @@ public class ThreeDPlugin
     {
         var Arena = Foundry.Arena();
         var Stage = Arena.CurrentStage();
-        var shapes = Stage.GetShapes3D().ToList();
+        var shapes = Stage.Members<FoShape3D>();
 
         foreach (var item in shapes)
         {

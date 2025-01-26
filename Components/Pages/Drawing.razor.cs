@@ -124,21 +124,21 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
             var box = AddBox(DataGenerator.GenerateName());
             World3D.AddGlyph3D<FoShape3D>(box);
-            arena.AddShape<FoShape3D>(box);
+            arena.AddShapeToStage<FoShape3D>(box);
         });
 
         world.AddAction("TRex", "btn-primary", () =>
         {
             var url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb");
             var shape = DoLoad3dModel(url, -2, 6, -2);
-            arena.AddShape<FoShape3D>(shape);
+            arena.AddShapeToStage<FoShape3D>(shape);
         });
 
         world.AddAction("Porsche", "btn-primary", () =>
         {
             var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
             var shape = DoLoad3dModel(url, 2, 6, 2);
-            arena.AddShape<FoShape3D>(shape);
+            arena.AddShapeToStage<FoShape3D>(shape);
         });
         
         world.AddAction("Render Tube", "btn-primary", () =>
@@ -178,9 +178,9 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var stage = arena.EstablishStage<FoStage3D>("The Cage");
         World3D.PublishToArena(arena);
 
-        var (found, scene) = GetCurrentScene();
-        if (found)
-            stage.RefreshScene(scene);
+        // var (found, scene) = GetCurrentScene();
+        // if (found)
+        //     stage.RefreshScene(scene);
     }
 
     public void OnAddTRex()
@@ -201,12 +201,12 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShape<FoShape3D>(shape);
+        arena.AddShapeToStage<FoShape3D>(shape);
         //stage.PreRender(arena);
 
-        var (found, scene) = GetCurrentScene();
-        if (found)
-            stage.RefreshScene(scene);
+        // var (found, scene) = GetCurrentScene();
+        // if (found)
+        //     stage.RefreshScene(scene);
     }
 
     
@@ -253,11 +253,11 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShape<FoShape3D>(shape);
+        arena.AddShapeToStage<FoShape3D>(shape);
 
-        var (found, scene) = GetCurrentScene();
-        if (found)
-            stage.RefreshScene(scene);
+        // var (found, scene) = GetCurrentScene();
+        // if (found)
+        //     stage.RefreshScene(scene);
     }
 
     public void OnAddText()
@@ -280,11 +280,11 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShape<FoText3D>(shape);
+        arena.AddShapeToStage<FoText3D>(shape);
 
-        var (found, scene) = GetCurrentScene();
-        if (found)
-            stage.RefreshScene(scene);
+        // var (found, scene) = GetCurrentScene();
+        // if (found)
+        //     stage.RefreshScene(scene);
     }
 
     public Node3D AddBox(string name, double x=0, double z=0)
@@ -340,9 +340,9 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var box = AddBox(name,x,z);
         stage.AddShape<Node3D>(box);
         
-        var (found, scene) = GetCurrentScene();
-        if ( found )
-            stage.RefreshScene(scene);
+        // var (found, scene) = GetCurrentScene();
+        // if ( found )
+        //     stage.RefreshScene(scene);
         //await scene.SetCameraPosition(new Vector3(9f, 9f, 9f),box.Position);
     }
 
@@ -357,7 +357,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var arena = Workspace.GetArena();
 
         arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShape<Node3D>(box);
+        arena.AddShapeToStage<Node3D>(box);
         arena.UpdateArena();
     }
 
