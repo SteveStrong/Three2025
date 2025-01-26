@@ -25,9 +25,9 @@
       },
       "rotation": 0
     },
-    "uuid": "affd0774-07bc-4fea-9ab2-a6ee76bfac71",
+    "uuid": "aaef44b8-0c40-4090-8e3e-d5498717dd8b",
     "type": "MeshStandardMaterial",
-    "name": "cn3"
+    "name": "cn4"
   },
   "geometry": {
     "width": 0.2,
@@ -39,11 +39,11 @@
     "name": "",
     "type": "BoxGeometry"
   },
-  "uuid": "d7ef59f0-28fc-4811-bd66-cfcf46b7abcb",
+  "uuid": "917e7801-87b1-48ac-9619-d46f0649fc97",
   "runAnimation": true,
   "transform": {
     "position": {
-      "x": 1.125,
+      "x": 1.2,
       "y": 0,
       "z": 1
     },
@@ -65,6 +65,6 @@
     }
   },
   "type": "Mesh3D",
-  "name": "cn3",
+  "name": "cn4",
   "children": []
 }

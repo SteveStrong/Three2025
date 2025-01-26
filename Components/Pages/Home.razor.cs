@@ -20,16 +20,7 @@ using BlazorThreeJS.Core;
 
 namespace Three2025.Components.Pages;
 
-public class FoRack : FoShape3D
-{
-    public FoRack(string name) : base(name)
-    {
-    }
 
-    public FoRack(string name, string color) : base(name, color)
-    {
-    }
-}
 
 public partial class HomeBase : ComponentBase, IDisposable
 {
@@ -39,6 +30,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     [Inject] protected IJSRuntime JsRuntime { get; set; }
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
+    [Inject] public IRackTech Technician { get; init; }
 
 
     [Parameter] public int CanvasWidth { get; set; } = 1000;
@@ -48,11 +40,8 @@ public partial class HomeBase : ComponentBase, IDisposable
     protected MockDataGenerator DataGenerator { get; set; } = new();
     private CableWorld World3D { get; set; } = null!;
 
-    // private (bool, Scene3D) GetCurrentScene()
-    // {
-    //     var arena = Workspace.GetArena();
-    //     return arena.CurrentScene();
-    // }
+
+
     private FoShape3D DoLoad3dModelToWorld(string url, double bx, double by, double bz, double scale = 1)
     {
         var name = url.Split('\\').Last();
@@ -137,10 +126,6 @@ public partial class HomeBase : ComponentBase, IDisposable
         //var stage = arena.EstablishStage<FoStage3D>("The Cage");
         World3D.PublishToArena(arena);
 
-        // var stage = arena.CurrentStage();
-        // var (found, scene) = GetCurrentScene();
-        // if (found)
-        //     stage.RefreshScene(scene);
     }
 
     
@@ -156,10 +141,6 @@ public partial class HomeBase : ComponentBase, IDisposable
         var arena = Workspace.GetArena() as FoArena3D;
         World3D.PublishToArena(arena);
 
-        // var stage = arena.CurrentStage();
-        // var (found, scene) = GetCurrentScene();
-        // if (found)
-        //     stage.RefreshScene(scene);
     }
 
 
@@ -169,24 +150,36 @@ public partial class HomeBase : ComponentBase, IDisposable
         var (found, scene) = arena.CurrentScene();
         if ( !found ) return;
 
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var y = DataGenerator.GenerateDouble(10, 20);
+        var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var capsuleRadius = 0.15f;
-        var capsulePositions = new List<Vector3>() {
+        var ax = DataGenerator.GenerateDouble(-Math.PI, Math.PI);
+        var ay = DataGenerator.GenerateDouble(-Math.PI, Math.PI);
+        var az = DataGenerator.GenerateDouble(-Math.PI, Math.PI);
+
+
+        var text = DataGenerator.GenerateText();
+        var color = DataGenerator.GenerateColor();
+
+        var shape = new FoShape3D("Tube", color)
+        {
+            Transform = new Transform3()
+            {
+                Position = new Vector3(x, y, z),
+                Rotation = new Euler(ax, ay, az),
+            }
+        };
+                
+        var path = new List<Vector3>() {
             new Vector3(0, 0, 0),
             new Vector3(4, 0, 0),
             new Vector3(4, 4, 0),
             new Vector3(4, 4, -4)
         };
 
-        var mesh = new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
-            Material = new MeshStandardMaterial("yellow")
-
-        };
-        scene.AddChild(mesh);
-
+        shape.CreateTube(text, 0.15f, path);
+        shape.RefreshToScene(scene);
     }
 
     public void DoAddConeToScene()
@@ -237,7 +230,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         var z = DataGenerator.GenerateDouble(-10, 10);
         var color = DataGenerator.GenerateColor();
 
-        $"Creating box {height} {color}".WriteSuccess();
+        //$"Creating box {height} {color}".WriteSuccess();
 
         var mesh = new Mesh3D
         {
@@ -330,34 +323,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         arena.AddShapeToStage<FoText3D>(shape);
     }
 
-    public FoShape3D AddRacksArena(string name, double x, double z, double height = 10, double angle = 0)
-    {
-        var width = 3.0;
-        var depth = 2.0;
 
-        var list1 = new List<FoShape3D>()
-        {
-            AddEquipment("box1", 0, 1.5),
-            AddEquipment("box2", 3, 2.5),
-            AddEquipment("box3", 6, 3.5),
-            AddEquipment("box4", 10, 1.5),
-        };
-
-        var group = new FoRack(name)
-        {
-            Transform = new Transform3()
-            {
-                Position = new Vector3(x, height/2, z),
-                Rotation = new Euler(0, angle, 0),
-            }
-        };
-        group.CreateBoundary(name, width, height, depth); //try to have three.js compute the bounding box
-
-        foreach (var box in list1)
-            group.Add<FoShape3D>(box);
-
-        return group;
-    }
 
     public void DoAddRacksArena()
     {
@@ -365,14 +331,14 @@ public partial class HomeBase : ComponentBase, IDisposable
         var height = 10;
 
 
-        var r1 = AddRacksArena("rack1", 10, 5, height, 0);
-        var r2 = AddRacksArena("rack2",  7, 5, height, 0);
+        var r1 = Technician.CreateRack("rack1", -10, 5, height, 0);
+        var r2 = Technician.CreateRack("rack2",  -6, 5, height, 0);
 
-        var r3 = AddRacksArena("rack3", 5, 0, height, 0);
-        var r4 = AddRacksArena("rack4", 0, 0, height, 0);
+        var r3 = Technician.CreateRack("rack3", -2, 5, height, 0);
+        var r4 = Technician.CreateRack("rack4", 3, 5, height, 0);
 
-        var r5 = AddRacksArena("rack5", 10, 10, height, -Math.PI/2);
-        var r6 = AddRacksArena("rack6", 10, 15, height, -Math.PI/2);
+        var r5 = Technician.CreateRack("rack5", 13, 10, height, -Math.PI/2);
+        var r6 = Technician.CreateRack("rack6", 13, 15, height, -Math.PI/2);
 
         var list = new List<FoShape3D>() { r1, r2, r3, r4, r5, r6 };
 
@@ -400,45 +366,13 @@ public partial class HomeBase : ComponentBase, IDisposable
         }
     }
 
-    public (bool success, FoPipe3D pipe) TryCreatePipe(string from, string to)
-    {
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
-
-        var (s1, p1, cn1) = stage.FindUsingPath<FoRack, FoShape3D>(from);
-        var (s2, p2, cn2) = stage.FindUsingPath<FoRack, FoShape3D>(to);
-
-        if (!s1 || !s2) return (false, null);
-
-        var obj1 = cn1.GeometryParameter3D.GetValue3D();
-        var obj2 = cn2.GeometryParameter3D.GetValue3D();
-        if ( obj1 == null || obj2 == null) 
-            return (false, null);
-
-        if ( obj1.HitBoundary == null || obj2.HitBoundary == null) 
-            return (false, null);
-
-        var v1 = obj1.HitBoundary.GetPosition();
-        var v2 = obj2.HitBoundary.GetPosition();
-        
-        $"Connecting {p1} @ {v1.X:F1},{v1.Y:F1},{v1.Z:F1} to {p2} @ {v2.X:F1},{v2.Y:F1},{v2.Z:F1}".WriteSuccess();
-
-        var result = new FoPipe3D("pipe", "red")
-        {
-            Key = $"{from}->{to}",
-            FromShape3D = cn1,
-            ToShape3D = cn2,
-
-            Radius = 0.15f,
-        };
-        return (true, result);
-    }
+ 
 
     public void TryAddRoutesArena()
     {
         var arena = Workspace.GetArena();
 
-        var (success, pipe) = TryCreatePipe(GeneratePath(), GeneratePath());
+        var (success, pipe) = Technician.TryCreatePipe(GeneratePath(), GeneratePath());
         
         if ( success ) 
             arena.AddShapeToStage<FoPipe3D>(pipe);
@@ -464,25 +398,12 @@ public partial class HomeBase : ComponentBase, IDisposable
         var stage = arena.CurrentStage();
     
         
-
-        var (s1, p1, cn1) = stage.FindUsingPath<FoRack, FoShape3D>(GeneratePath());
-        var (s2, p2, cn2) = stage.FindUsingPath<FoRack, FoShape3D>(GeneratePath());
+        var (s1, cn1, v1) = Technician.TryFindHitPosition(GeneratePath());
+        var (s2, cn2, v2) = Technician.TryFindHitPosition(GeneratePath());
 
         if (!s1 || !s2) return;
 
-
-        var obj1 = cn1.GeometryParameter3D.GetValue3D();
-        var obj2 = cn2.GeometryParameter3D.GetValue3D();
-        if ( obj1 == null || obj2 == null) return;
-
-        if ( obj1.HitBoundary == null || obj2.HitBoundary == null) return;
-
-        var v1 = obj1.HitBoundary.GetPosition();
-        var v2 = obj2.HitBoundary.GetPosition();
         
-        $"Connecting {p1} @ {v1.X:F1},{v1.Y:F1},{v1.Z:F1} to {p2} @ {v2.X:F1},{v2.Y:F1},{v2.Z:F1}".WriteSuccess();
-        
-
         var capsuleRadius = 0.15f;
         var capsulePositions = new List<Vector3>() { v1, v2 };
 
@@ -502,51 +423,17 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         var list = new List<FoShape3D>()
         {
-            AddEquipment("x1", 0, 1.5),
-            AddEquipment("x2", 3, 2.5),
-            AddEquipment("x3", 6, 3.5),
-            AddEquipment("x4", 10, 1.5),
+            Technician.CreateEquipment("x1", 0, 1.5),
+            Technician.CreateEquipment("x2", 3, 2.5),
+            Technician.CreateEquipment("x3", 6, 3.5),
+            Technician.CreateEquipment("x4", 10, 1.5),
         };
 
         foreach (var box in list)
             AddIntoArena(box);
     }
 
-    public FoShape3D AddEquipment(string name, double Y, double height)
-    {
-        var color = DataGenerator.GenerateColor();
-
-        var width = 3.0;
-        var depth = 2.0;
-
-        var box = new FoShape3D(name,color)
-        {
-            Transform = new Transform3()
-            {
-                Position = new Vector3(0, Y + height/2, 0),
-            }
-        };
-        box.CreateBox(name, width, height, depth);
-
-        var count = DataGenerator.GenerateInt(3, 6);
-        for( int i=0; i<count; i++)
-        {
-            var x = i * width/(1.0 *count) - width/2.0 + width/(2.0 * count);
-            var cnn = $"cn{i}";
-            var connect = new FoShape3D(cnn,"Red")
-            {
-                Transform = new Transform3()
-                {
-                    Position = new Vector3(x, 0, depth/2),
-                }
-            };
-            connect.CreateBox(cnn, 0.2, 0.2, 0.2);
-            box.Add<FoShape3D>(connect);
-        }
-
-
-        return box;
-    }
+ 
 
 
     public void DoAddTRISOCToArena()
@@ -629,12 +516,6 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         AddIntoArena(shape);
 
-        // var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        // arena.AddShape<FoText3D>(shape);
-
-        // var (found, scene) = GetCurrentScene();
-        // if (found)
-        //     stage.RefreshScene(scene);
     }
 
     public Node3D AddBox(string name, double x=0, double z=0)
@@ -691,26 +572,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         var box = AddBox(name,x,z);
         stage.AddShape<Node3D>(box);
         
-        // var (found, scene) = GetCurrentScene();
-        // if (!found) return;
-
-        // stage.RefreshScene(scene);
     }
-
-    // public void AddConeToArena()
-    // {
-    //     var name = DataGenerator.GenerateName();
-    //     var x = DataGenerator.GenerateDouble(-10, 10);
-    //     var z = DataGenerator.GenerateDouble(-10, 10);
-
-    //     var box = AddCone(name,x,z);
-    //     var arena = Workspace.GetArena();
-
-    //     arena.EstablishStage<FoStage3D>("Main Stage");
-    //     arena.AddShape<Node3D>(box);
-    // }
-
-
 
 
 
