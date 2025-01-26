@@ -360,10 +360,13 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void DoAddRoutesArena()
     {
-        for (int i = 0; i < 20; i++)
-        {
-            TryAddRoutesArena();
-        }
+        Technician.ComputeHitBoundaries(() => {
+            for (int i = 0; i < 20; i++)
+            {
+                TryAddRoutesArena();
+            }
+        });
+
     }
 
  

@@ -1,6 +1,6 @@
 {
   "material": {
-    "color": "Red",
+    "color": "Green",
     "flatShading": false,
     "metalness": 0,
     "roughness": 1,
@@ -25,27 +25,46 @@
       },
       "rotation": 0
     },
-    "uuid": "aaef44b8-0c40-4090-8e3e-d5498717dd8b",
+    "uuid": "53f337e2-d397-4a80-aba6-e0c7d7167c64",
     "type": "MeshStandardMaterial",
-    "name": "cn4"
+    "name": "rack6.box2.cn0-\u003Erack4.box2.cn1"
   },
   "geometry": {
-    "width": 0.2,
-    "height": 0.2,
-    "depth": 0.2,
-    "widthSegments": 1,
-    "heightSegments": 1,
-    "depthSegments": 1,
+    "radius": 0.15000000596046448,
+    "path": [
+      {
+        "x": 12,
+        "y": 9.25,
+        "z": 14
+      },
+      {
+        "x": 12,
+        "y": 9.25,
+        "z": 6
+      },
+      {
+        "x": 3,
+        "y": 9.25,
+        "z": 6
+      },
+      {
+        "x": 3,
+        "y": 9.25,
+        "z": 6
+      }
+    ],
+    "tubularSegments": 10,
+    "radialSegments": 8,
     "name": "",
-    "type": "BoxGeometry"
+    "type": "TubeGeometry"
   },
-  "uuid": "917e7801-87b1-48ac-9619-d46f0649fc97",
+  "uuid": "53f337e2-d397-4a80-aba6-e0c7d7167c64",
   "runAnimation": true,
   "transform": {
     "position": {
-      "x": 1.2,
+      "x": 0,
       "y": 0,
-      "z": 1
+      "z": 0
     },
     "pivot": {
       "x": 0,
@@ -65,6 +84,6 @@
     }
   },
   "type": "Mesh3D",
-  "name": "cn4",
+  "name": "rack6.box2.cn0-\u003Erack4.box2.cn1",
   "children": []
 }
