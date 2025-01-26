@@ -30,6 +30,7 @@ public partial class ClockBase : ComponentBase, IDisposable
     [Inject] protected IJSRuntime JsRuntime { get; set; }
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
+    [Inject] public IClockTech Tech { get; init; }
 
 
     [Parameter] public int CanvasWidth { get; set; } = 1000;
@@ -71,7 +72,6 @@ public partial class ClockBase : ComponentBase, IDisposable
             World3D = FoundryService.WorldManager().CreateWorld<CableWorld>("Clocks");
 
             var arena = Workspace.GetArena();
-            arena.EstablishStage<FoStage3D>("Main Stage");
             if (found)
                 arena.SetScene(scene!);
         }
@@ -81,7 +81,7 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public string GetReferenceTo(string filename)
     {
-        var path = string.Intern(Path.Combine(Navigation.BaseUri, filename));
+        var path = Path.Combine(Navigation.BaseUri, filename);
         //path.WriteSuccess();
         return path;
     }
@@ -105,23 +105,11 @@ public partial class ClockBase : ComponentBase, IDisposable
         };
         shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"));
 
-        LoadIntoArena(shape);
-    }
-
-    private FoShape3D LoadIntoArena(FoShape3D shape)
-    {
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage<FoShape3D>(shape);  //this is what the world publish is doing
-
-        //var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        //stage.PreRender(arena);
-
-        // var (found, scene) = GetCurrentScene();
-        // if (found)
-        //     stage.RefreshScene(scene);
-
-        return shape;
+        arena.AddShapeToStage<FoModel3D>(shape);
     }
+
+
 
     private void UpdateTextWithCurrentTime(object state)
     {
@@ -272,11 +260,10 @@ public partial class ClockBase : ComponentBase, IDisposable
 
 
 
-    public async Task DoRequestAxisToScene()
+    public void DoRequestAxisToScene()
     {
         var (found, scene) = GetCurrentScene();
         if (!found) return;
-
 
         var model = new Model3D()
         {
@@ -287,40 +274,59 @@ public partial class ClockBase : ComponentBase, IDisposable
         };
 
         scene.AddChild(model);
-        await scene.Request3DModel(model);
     }
 
 
 
 
-    public void DoRequestAddTextToScene()
+    public void DoRequestAddTextToArena()
     {
+        var arena = Workspace.GetArena();
         var (found, scene) = GetCurrentScene();
         if (!found) return;
 
+        var delta = 0.5;
         var x = DataGenerator.GenerateDouble(-10, 10);
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
         var Uuid = Guid.NewGuid().ToString();
-        var text = DataGenerator.GenerateText();
-        var color = DataGenerator.GenerateColor();
 
-        var text3d = new Text3D()
+        var text3d = new FoText3D()
         {
-            Uuid = Uuid,
-            Text = text,
-            Color = color,
-            FontSize = 1.0,
+            Text = DataGenerator.GenerateText(),
+            Color = DataGenerator.GenerateColor(),
+            FontSize =  DataGenerator.GenerateDouble(.5, 5.0),
             Transform = new Transform3()
             {
                 Position = new Vector3(x, y, z),
             },
         };
-        scene.AddChild(text3d);
+        arena.AddShapeToStage<FoText3D>(text3d);
+
+        //can we do some animation here?
+        text3d.SetAnimationUpdate((self, tick, fps) =>
+        {
+            bool move = tick % 10 == 0;
+            if (!move) return;
+
+            $"Moving {text3d.Text}".WriteSuccess();
+
+            var loc = self.Transform.Position.Z;
+            loc += delta;
+            if ( loc > 10 || loc < -10)
+            {
+                delta = -delta;
+            }
+
+
+            self.Transform.Position.Z = loc;
+
+            self.SetDirty(true);
+        });
     }
 
-    public async Task DoRequestAddBoxGLBToScene()
+    public async Task DoRequestAddBoxGLBToArena()
     {
         var (found, scene) = GetCurrentScene();
         if (!found) return;
@@ -349,7 +355,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             bool move = tick % 10 == 0;
             if (!move) return;
 
-            var loc = self.Transform.Position.Z;
+            var loc = self.Transform.Position.X;
             loc += delta;
             if ( loc > 10 || loc < -10)
             {
@@ -359,13 +365,11 @@ public partial class ClockBase : ComponentBase, IDisposable
             }
 
 
-            self.Transform.Position.Z = loc;
+            self.Transform.Position.X = loc;
             self.Transform.Rotation.Y = angle;
             self.SetDirty(true);
-
         });
 
-        //ModelsInMotion.Add(model);
 
         await scene.Request3DModel(model, async (uuid) =>
         {
@@ -416,7 +420,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             self.Transform.Rotation.Y = angle;
             self.SetDirty(true);
 
-            // FoGlyph2D.Animations.Tween<FoShape2D>(s1, new { PinX = s1.PinX - 150, }, 2, 2.2F);
+            //FoGlyph2D.Animations.Tween<FoShape2D>(s1, new { PinX = s1.PinX - 150, }, 2, 2.2F);
             // FoGlyph2D.Animations.Tween<FoShape2D>(s2, new { PinX = s2.PinX + 150, PinY = s2.PinY + 50, }, 2, 2.4f).OnComplete(() =>
             // {
             //     service.ClearAll();
@@ -431,82 +435,6 @@ public partial class ClockBase : ComponentBase, IDisposable
     }
 
 
-   public void DoRequestConeToScene()
-    {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
-        if (!found) return;
-
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
-
-        var rx = DataGenerator.GenerateDouble(0, 2 * Math.PI);
-        var ry = DataGenerator.GenerateDouble(0, 2 * Math.PI);
-        var rz = DataGenerator.GenerateDouble(0, 2 * Math.PI);
-
-        var s = DataGenerator.GenerateDouble(0.1, 5);
-
-        //var Uuid = Guid.NewGuid().ToString();
-        //var text = DataGenerator.GenerateText();
-        var color = DataGenerator.GenerateColor();
-
-        $"Cone {color} {x} {y} {z}".WriteSuccess();
-
-
-        var mesh = new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Name = DataGenerator.GenerateWord(),
-            Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
-            Transform = new Transform3()
-            {
-                Position = new Vector3(x, y, z),
-                Rotation = new Euler(rx, ry, rz),
-                Scale = new Vector3(s, s, s)
-            },
-            Material = new MeshStandardMaterial()
-            {
-                Color = color,
-                FlatShading = true,
-                Metalness = 0.5f,
-                Roughness = 0.5f
-            }
-        };
-
-        scene.AddChild(mesh);
-    }
-
-    public async Task  DoRequestAddJetToScene()
-    {
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
-
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
-
-        var rx = DataGenerator.GenerateDouble(0, 2 * Math.PI);
-        var ry = DataGenerator.GenerateDouble(0, 2 * Math.PI);
-        var rz = DataGenerator.GenerateDouble(0, 2 * Math.PI);
-
-
-        var model = new Model3D()
-        {
-            Name = "jet", //$"JET:{DataGenerator.GenerateWord()}",
-            Uuid = Guid.NewGuid().ToString(),
-            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
-            Format = Model3DFormats.Gltf,
-            Transform = new Transform3()
-            {
-                Position = new Vector3(x, y, z),
-                Rotation = new Euler(rx, ry, rz),
-            },
-        };
-
-        scene.AddChild(model);
-        await scene.Request3DModel(model);
-    }
 
     public void Dispose()
     {

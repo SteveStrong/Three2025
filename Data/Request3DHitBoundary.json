@@ -1,6 +1,6 @@
 {
   "material": {
-    "color": "Green",
+    "color": "DarkSlateGray",
     "flatShading": false,
     "metalness": 0,
     "roughness": 1,
@@ -25,9 +25,9 @@
       },
       "rotation": 0
     },
-    "uuid": "53f337e2-d397-4a80-aba6-e0c7d7167c64",
+    "uuid": "6417468e-e219-4ba1-a274-45062e175063",
     "type": "MeshStandardMaterial",
-    "name": "rack6.box2.cn0-\u003Erack4.box2.cn1"
+    "name": "rack5.box2.cn0-\u003Erack3.box2.cn4"
   },
   "geometry": {
     "radius": 0.15000000596046448,
@@ -35,7 +35,7 @@
       {
         "x": 12,
         "y": 9.25,
-        "z": 14
+        "z": 8.875
       },
       {
         "x": 12,
@@ -43,12 +43,12 @@
         "z": 6
       },
       {
-        "x": 3,
+        "x": -0.8,
         "y": 9.25,
         "z": 6
       },
       {
-        "x": 3,
+        "x": -0.8,
         "y": 9.25,
         "z": 6
       }
@@ -58,7 +58,7 @@
     "name": "",
     "type": "TubeGeometry"
   },
-  "uuid": "53f337e2-d397-4a80-aba6-e0c7d7167c64",
+  "uuid": "6417468e-e219-4ba1-a274-45062e175063",
   "runAnimation": true,
   "transform": {
     "position": {
@@ -84,6 +84,6 @@
     }
   },
   "type": "Mesh3D",
-  "name": "rack6.box2.cn0-\u003Erack4.box2.cn1",
+  "name": "rack5.box2.cn0-\u003Erack3.box2.cn4",
   "children": []
 }

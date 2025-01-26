@@ -1,4 +1,4 @@
-
+@page "/"
 @page "/clock"
 
 @using FoundryBlazor.Shared
@@ -22,10 +22,8 @@
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">
         <h4>Testing the API's</h4>
         <button class="btn btn-primary" @onclick="DoRequestAxisToScene">Request Axis to Scene</button>
-        <button class="btn btn-primary" @onclick="DoRequestConeToScene">Request Cone to Scene</button>
-        <button class="btn btn-primary" @onclick="DoRequestAddTextToScene">Request Text to Scene</button>
-        <button class="btn btn-primary" @onclick="DoRequestAddJetToScene">Request Jet to Scene</button>
-        <button class="btn btn-primary" @onclick="DoRequestAddBoxGLBToScene">Request BoxAnimated to Scene</button>
+        <button class="btn btn-primary" @onclick="DoRequestAddTextToArena">Request Text to Arena</button>
+        <button class="btn btn-primary" @onclick="DoRequestAddBoxGLBToArena">Request BoxAnimated to Arena</button>
 
         <h4>Testing the Clock Elements</h4>
         <button class="btn btn-primary" @onclick="DoClockFace">Clock Face to Scene</button>
