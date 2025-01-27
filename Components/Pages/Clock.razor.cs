@@ -19,10 +19,9 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc;
 
 
-
 namespace Three2025.Components.Pages;
 
-public partial class ClockBase : ComponentBase, IDisposable
+public partial class ClockBase : ComponentBase
 {
     public Canvas3DComponentBase Canvas3DReference = null;
 
@@ -38,9 +37,7 @@ public partial class ClockBase : ComponentBase, IDisposable
 
 
     protected MockDataGenerator DataGenerator { get; set; } = new();
-    private CableWorld World3D { get; set; } = null!;
-
-    private Timer _timer = null!;
+ 
 
     public (bool, Scene3D) GetCurrentScene()
     {
@@ -66,8 +63,6 @@ public partial class ClockBase : ComponentBase, IDisposable
                 FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
             });
 
-            World3D = FoundryService.WorldManager().CreateWorld<CableWorld>("Clocks");
-
             var arena = Workspace.GetArena();
             if (found)
                 arena.SetScene(scene!);
@@ -83,14 +78,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         return path;
     }
     
-    public void DoClockFace()
-    {
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
 
-        var mesh = Tech.CreateClockFaceMesh();
-        scene.AddChild(mesh);
-    }
     
     public void DoAddTRISOCToArena()
     {
@@ -115,24 +103,24 @@ public partial class ClockBase : ComponentBase, IDisposable
     }
 
 
-
- 
-
-    public void DoLabelAutoRefresh()
+    public void DoClockFaceOnScene()
     {
-        if (_timer == null)
-        {
-            _timer = new Timer(Tech.UpdateTextWithCurrentTime, null, 0, 1000);
-        }
-        else
-        {
-            _timer?.Dispose();
-            _timer = null;
-        }
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
+
+        var mesh = Tech.CreateClockFaceMesh();
+        scene.AddChild(mesh);
     }
 
+    public void DoRunClockOnScene()
+    {
+        Tech.RunClockOnScene();
+    }
 
-
+    public void DoRunClockOnArena()
+    {
+        Tech.RunClockOnArena();
+    }
 
 
     public void DoRequestAxisToScene()
@@ -268,8 +256,8 @@ public partial class ClockBase : ComponentBase, IDisposable
             {
                 Position = new Vector3(x, 0, z),
             },
-
         };
+
         model.SetAnimationUpdate((self, tick, fps) =>
         {
             bool move = tick % 10 == 0;
@@ -304,12 +292,6 @@ public partial class ClockBase : ComponentBase, IDisposable
     }
 
 
-
-    public void Dispose()
-    {
-        _timer?.Dispose();
-        _timer = null;
-    }
 }
 
 
