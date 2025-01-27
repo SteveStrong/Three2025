@@ -1,69 +1,14 @@
 {
-  "material": {
-    "color": "DarkSlateGray",
-    "flatShading": false,
-    "metalness": 0,
-    "roughness": 1,
-    "wireframe": false,
-    "map": {
-      "type": "Texture",
-      "name": "",
-      "textureUrl": "",
-      "wrapS": 1001,
-      "wrapT": 1001,
-      "repeat": {
-        "x": 1,
-        "y": 1
-      },
-      "offset": {
-        "x": 0,
-        "y": 0
-      },
-      "center": {
-        "x": 0,
-        "y": 0
-      },
-      "rotation": 0
-    },
-    "uuid": "6417468e-e219-4ba1-a274-45062e175063",
-    "type": "MeshStandardMaterial",
-    "name": "rack5.box2.cn0-\u003Erack3.box2.cn4"
-  },
-  "geometry": {
-    "radius": 0.15000000596046448,
-    "path": [
-      {
-        "x": 12,
-        "y": 9.25,
-        "z": 8.875
-      },
-      {
-        "x": 12,
-        "y": 9.25,
-        "z": 6
-      },
-      {
-        "x": -0.8,
-        "y": 9.25,
-        "z": 6
-      },
-      {
-        "x": -0.8,
-        "y": 9.25,
-        "z": 6
-      }
-    ],
-    "tubularSegments": 10,
-    "radialSegments": 8,
-    "name": "",
-    "type": "TubeGeometry"
-  },
-  "uuid": "6417468e-e219-4ba1-a274-45062e175063",
+  "distance": 0,
+  "decay": 1,
+  "color": "white",
+  "intensity": 1,
+  "uuid": "52e4c2b7-62b6-4d84-ae50-7bf1e3af1b5f",
   "runAnimation": true,
   "transform": {
     "position": {
-      "x": 0,
-      "y": 0,
+      "x": 1,
+      "y": 3,
       "z": 0
     },
     "pivot": {
@@ -83,7 +28,7 @@
       "z": 1
     }
   },
-  "type": "Mesh3D",
-  "name": "rack5.box2.cn0-\u003Erack3.box2.cn4",
+  "type": "PointLight",
+  "name": "Point Light",
   "children": []
 }

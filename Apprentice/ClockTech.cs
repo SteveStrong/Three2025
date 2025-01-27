@@ -139,13 +139,12 @@ public class ClockTech : IClockTech
         {
             Text = DateTime.Now.ToString("HH:mm:ss"),
             FontSize = 5.0,
-            
             Transform = new Transform3()
             {
                 Position = new Vector3(0, 2, 0),
             }
         };
-        shape.Add<FoShape3D>(globalText);
+        shape.Add<FoText3D>(globalText);
 
         //now lets add the center post
         var centerPost = new FoShape3D("CenterPost", "red")
@@ -182,15 +181,33 @@ public class ClockTech : IClockTech
         var time = DateTime.Now;
         var angle = time.Second * (2 * Math.PI / 60) - Math.PI / 2; // Convert seconds to radians
         var radius = 10.0;
-        // var x = radius * Math.Cos(angle);
-        // var y = 2;
-        // var z = radius * Math.Sin(angle);
+        var x = radius * Math.Cos(angle);
+        var y = 2;
+        var z = radius * Math.Sin(angle);
 
-        // var currentTime = time.ToString("HH:mm:ss");
+        var currentTime = time.ToString("HH:mm:ss");
 
   
         if (Clock != null)
         {
+            $"UpdateArenaClock: {currentTime}".WriteInfo();
+            var post = Clock.Find<FoShape3D>("CenterPost");
+            if (post != null)
+            {
+                post.Transform.Rotation = new Euler(0, angle, 0);
+                post.SetDirty(true);
+                $"UpdateArenaClock: {post.Name} isDirty".WriteInfo();
+            }
+
+
+            var globalText = Clock.Find<FoText3D>("GlobalText");
+            if (globalText != null)
+            {
+                globalText.Text = time.ToString("HH:mm:ss");
+                globalText.SetDirty(true);
+                $"UpdateArenaClock: {globalText.Text} isDirty".WriteInfo();
+            }
+
         }
         else
         {
