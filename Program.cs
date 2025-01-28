@@ -51,7 +51,6 @@ builder.Services.Configure<StaticFileOptions>(options =>
 
 var envConfig = new EnvConfig("./.env");
 builder.Services.AddFoundryBlazorServices(envConfig);
-builder.Services.AddBlazorThreeJSServices();
 builder.Services.AddScoped<IApprenticeAI, ApprenticeAI>();
 builder.Services.AddScoped<IRackTech, RackTech>();
 builder.Services.AddScoped<IClockTech, ClockTech>();
