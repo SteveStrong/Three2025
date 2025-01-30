@@ -25,7 +25,7 @@ public interface IRackTech : ITechnician
 
     bool ComputeHitBoundaries(Action OnComplete);
     (bool success, FoPipe3D pipe) TryCreatePipe(string from, string to);
-    (bool success, FoShape3D obj, Vector3 vector) TryFindHitPosition(string path);
+    (bool success, T obj, Vector3 vector) TryFindHitPosition<T>(string path) where T: FoGlyph3D;
 }
 
 public class RackTech : IRackTech
@@ -113,12 +113,12 @@ public class RackTech : IRackTech
         return group;
     }
 
-    public (bool success, FoShape3D obj, Vector3 vector) TryFindHitPosition(string path)
+    public (bool success, T obj, Vector3 vector) TryFindHitPosition<T>(string path) where T: FoGlyph3D
     {
         var arena = FoundryService.Arena();
         var stage = arena.CurrentStage();
 
-        var (s1, p1, cn1) = stage.FindUsingPath<FoRack, FoShape3D>(path);
+        var (s1, p1, cn1) = stage.FindUsingPath<FoRack, T>(path);
         if (!s1) return (false, cn1, null);
 
         var (f1, v1) = cn1.HitPosition();
@@ -132,8 +132,8 @@ public class RackTech : IRackTech
         var arena = FoundryService.Arena();
         var stage = arena.CurrentStage();
 
-        var (s1, p1, v1) = TryFindHitPosition(from);
-        var (s2, p2, v2) = TryFindHitPosition(to);
+        var (s1, p1, v1) = TryFindHitPosition<FoGlyph3D>(from);
+        var (s2, p2, v2) = TryFindHitPosition<FoGlyph3D>(to);
 
         if (!s1 || !s2) return (false, null);
 
@@ -144,8 +144,8 @@ public class RackTech : IRackTech
         var result = new FoPipe3D("pipe", color)
         {
             Key = $"{from}->{to}",
-            FromShape3D = p1,
-            ToShape3D = p2,
+            FromShape3D = p1 as FoShape3D,
+            ToShape3D = p2 as FoShape3D,
 
             Radius = 0.15f,
         };

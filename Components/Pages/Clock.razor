@@ -1,4 +1,4 @@
-
+@page "/"
 @page "/clock"
 
 @using FoundryBlazor.Shared
@@ -28,10 +28,10 @@
         <button class="btn btn-primary" @onclick="DoRequestAxisToScene">Request Axis to Scene</button>
         <button class="btn btn-primary" @onclick="DoRequestAddBoxGLBToScene">Request BoxAnimated to Scene</button>
         <button class="btn btn-primary" @onclick="DoClockFaceOnScene">Clock Face to Scene</button>
-        <button class="btn btn-primary" @onclick="DoRunClockOnScene">Label Auto Refresh to Scene</button>
+
                 
         <h4>Add to Arena</h4>
-        <button class="btn btn-primary" @onclick="DoRunClockOnArena">Arena Clock</button>
+        <button class="btn btn-primary" @onclick="DoRunClock">Arena Clock</button>
         <button class="btn btn-primary" @onclick="DoAddTRISOCToArena">TRISOC to Arena</button>
        @* 
         <button class="btn btn-primary" @onclick="DoAddBoxToScene">Box to Scene</button>

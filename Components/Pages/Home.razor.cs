@@ -402,8 +402,8 @@ public partial class HomeBase : ComponentBase, IDisposable
         var stage = arena.CurrentStage();
     
         
-        var (s1, cn1, v1) = Technician.TryFindHitPosition(GeneratePath());
-        var (s2, cn2, v2) = Technician.TryFindHitPosition(GeneratePath());
+        var (s1, cn1, v1) = Technician.TryFindHitPosition<FoGlyph3D>(GeneratePath());
+        var (s2, cn2, v2) = Technician.TryFindHitPosition<FoGlyph3D>(GeneratePath());
 
         if (!s1 || !s2) return;
 

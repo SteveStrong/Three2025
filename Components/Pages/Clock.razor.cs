@@ -113,15 +113,11 @@ public partial class ClockBase : ComponentBase
         scene.AddChild(mesh);
     }
 
-    public void DoRunClockOnScene()
+    public void DoRunClock()
     {
-        Tech.RunClockOnScene();
+        Tech.RunClock();
     }
 
-    public void DoRunClockOnArena()
-    {
-        Tech.RunClockOnArena();
-    }
 
 
     public void DoRequestAxisToScene()

@@ -6,6 +6,7 @@ using BlazorThreeJS.Geometires;
 using BlazorThreeJS.Materials;
 using BlazorThreeJS.Maths;
 using BlazorThreeJS.Objects;
+using BlazorThreeJS.Solutions;
 using FoundryBlazor.Shape;
 using FoundryBlazor.Solutions;
 using FoundryRulesAndUnits.Extensions;
@@ -27,13 +28,13 @@ public interface IClockTech : ITechnician
 {
     Mesh3D CreateClockFaceMesh();
     FoShape3D CreateClockOnArena();
-    void RunClockOnScene();
-    void RunClockOnArena();
+    void RunClock();
 }
 
 public class ClockTech : IClockTech
 {
     public IFoundryService FoundryService { get; init; }
+    public IThreeDService Render3dService { get; set; }
     protected MockDataGenerator DataGenerator { get; set; } = new();
 
     private Timer _timer = null!;
@@ -44,9 +45,10 @@ public class ClockTech : IClockTech
 
     private FoShape3D Clock = null!;
 
-    public ClockTech(IFoundryService foundry)
+    public ClockTech(IFoundryService foundry, IThreeDService render3d)
     {
         FoundryService = foundry;
+        Render3dService = render3d;
     }
 
     public bool ComputeHitBoundaries(Action OnComplete)
@@ -59,24 +61,19 @@ public class ClockTech : IClockTech
         return true;
     } 
 
-    public void RunClockOnScene()
+    public void UpdateClock(object state)
     {
-        if (_timer == null)
-        {
-            _timer = new Timer(UpdateSceneClock, null, 0, 1000);
-        }
-        else
-        {
-            _timer?.Dispose();
-            _timer = null;
-        }
+        UpdateArenaClock(state);
+        //UpdateClock(state);
     }
 
-    public void RunClockOnArena()
+
+
+    public void RunClock()
     {
         if (_timer == null)
         {
-            _timer = new Timer(UpdateArenaClock, null, 0, 1000);
+            _timer = new Timer(UpdateClock, null, 0, 1000);
         }
         else
         {
@@ -110,13 +107,13 @@ public class ClockTech : IClockTech
 
     public FoShape3D CreateClockOnArena()
     {
-        var radius = 10.0f;
+        var radius = 12.0f;
         var height = 0.2;
         var fontSize = 1.2;
         var diameter = 2 * radius;
 
         var color = DataGenerator.GenerateColor();
-        var clock = new FoShape3D("Clock", color)
+        var clock = new FoShape3D("ArenaClock", "Red")
         {
             Transform = new Transform3()
             {
@@ -130,11 +127,11 @@ public class ClockTech : IClockTech
         {
             var letter = $"{i}";
             var angle = i * (2 * Math.PI / 12) - Math.PI / 2;
-            LetterText3D(clock, angle, radius-1.0, height + 1.0, fontSize, letter);
+            LetterText3D(clock, angle, radius - 1.0, height + 1.0, fontSize, letter);
         }
 
         //now lets add the trailing text
-        var globalText = new FoText3D("GlobalText", "white")
+        var globalText = new FoText3D("TimeText", "white")
         {
             Text = "Ready",
             FontSize = 5.0,
@@ -146,26 +143,26 @@ public class ClockTech : IClockTech
         clock.AddSubGlyph3D(globalText);
 
         //now lets add the center post
-        var centerPost = new FoShape3D("CenterPost", "red")
+        var centerPost = new FoShape3D("Post", "red")
         {
             Transform = new Transform3()
             {
                 Position = new Vector3(0, 0, 0),
                 Rotation = new Euler(0, 0, 0),
             }
-        }.CreateBox("CenterPost", 0.2, 1.0, .2);
+        }.CreateBox("Post", 0.2, 1.0, .2);
 
         clock.AddSubGlyph3D(centerPost);
 
         //now lets add the secondHand
-        var secondHand = new FoShape3D("Second Hand", "green")
+        var secondHand = new FoShape3D("Hand", "green")
         {
             Transform = new Transform3()
             {
                 Position = new Vector3(0.5 * radius, 1, 0),
                 Rotation = new Euler(0, 0, 0),
             }
-        }.CreateBox("Second Hand", 1.2 * radius, 2.0, .1);
+        }.CreateBox("Hand", 1.2 * radius, 2.0, .1);
 
         centerPost.AddSubGlyph3D(secondHand);
 
@@ -181,7 +178,7 @@ public class ClockTech : IClockTech
         var angle = time.Second * (2 * Math.PI / 60) - Math.PI / 2; // Convert seconds to radians
         var radius = 10.0;
         var x = radius * Math.Cos(angle);
-        //var y = 2;
+        var y = 2;
         var z = radius * Math.Sin(angle);
 
         var currentTime = time.ToString("HH:mm:ss");
@@ -189,24 +186,31 @@ public class ClockTech : IClockTech
   
         if (Clock != null)
         {
-            $"UpdateArenaClock: {currentTime}".WriteInfo();
-            var post = Clock.FindSubGlyph3D<FoShape3D>("CenterPost");
+            //RunClockOnArena(); //stop the clock for debugging
+
+            //$"UpdateArenaClock: {currentTime}".WriteInfo();
+            var post = Clock.FindSubGlyph3D<FoShape3D>("Post");
             if (post != null)
             {
-                post.Transform.Rotation = new Euler(0, angle, 0);
+                post.Transform.Rotation = new Euler(0, -angle, 0);
                 post.SetDirty(true);
-                $"CenterPost UpdateArenaClock: {post.Name} isDirty".WriteInfo();
+                //$"CenterPost UpdateArenaClock: {post.Name} isDirty".WriteInfo();
             }
 
-
-            var globalText = Clock.FindSubGlyph3D<FoText3D>("GlobalText");
+            var globalText = Clock.FindSubGlyph3D<FoText3D>("TimeText");
             if (globalText != null)
             {
                 globalText.Text = currentTime;
-                globalText.SetDirty(true);
-                $"GlobalText UpdateArenaClock: {globalText.Text} isDirty".WriteInfo();
+                globalText.Transform.Position = new Vector3(x, y, z);
+
+                //$"GlobalText UpdateArenaClock: {globalText.Text} isDirty".WriteInfo();
             }
-            //Clock.SetDirty(true);
+
+            Clock.SetDirty(true);
+            Clock.Transform = new Transform3()
+            {
+                Rotation = new Euler(Math.PI / 2, 0, angle),
+            };
 
         }
         else
@@ -226,7 +230,7 @@ public class ClockTech : IClockTech
 
         var time = DateTime.Now;
         var angle = time.Second * (2 * Math.PI / 60) - Math.PI / 2; // Convert seconds to radians
-        var radius = 10.0;
+        var radius = 18.0;
         var x = radius * Math.Cos(angle);
         var y = 2;
         var z = radius * Math.Sin(angle);
@@ -317,7 +321,7 @@ public class ClockTech : IClockTech
     public Mesh3D CreateClockFaceMesh()
     {
 
-        var radius = 10.0f;
+        var radius = 18.0f;
         var height = 0.1f;
 
         var mesh = new Mesh3D
