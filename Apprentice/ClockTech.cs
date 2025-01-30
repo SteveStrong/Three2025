@@ -104,7 +104,7 @@ public class ClockTech : IClockTech
             },
         };
 
-        parent.Add<FoShape3D>(letter);
+        parent.AddSubGlyph3D(letter);
         return letter;
     }
 
@@ -116,35 +116,34 @@ public class ClockTech : IClockTech
         var diameter = 2 * radius;
 
         var color = DataGenerator.GenerateColor();
-        var shape = new FoShape3D("Clock", color)
+        var clock = new FoShape3D("Clock", color)
         {
             Transform = new Transform3()
             {
                 Position = new Vector3(0, 0, 0),
                 Rotation = new Euler(Math.PI / 2, 0, 0),
             }
-        };
-        shape.CreateCylinder("Clock", diameter, height, diameter);
+        }.CreateCylinder("Clock", diameter, height, diameter);
 
         //now add all the numbers as children
         for (int i = 1; i <= 12; i++)
         {
             var letter = $"{i}";
             var angle = i * (2 * Math.PI / 12) - Math.PI / 2;
-            LetterText3D(shape, angle, radius-1.0, height + 1.0, fontSize, letter);
+            LetterText3D(clock, angle, radius-1.0, height + 1.0, fontSize, letter);
         }
 
         //now lets add the trailing text
         var globalText = new FoText3D("GlobalText", "white")
         {
-            Text = DateTime.Now.ToString("HH:mm:ss"),
+            Text = "Ready",
             FontSize = 5.0,
             Transform = new Transform3()
             {
                 Position = new Vector3(0, 2, 0),
             }
         };
-        shape.Add<FoText3D>(globalText);
+        clock.AddSubGlyph3D(globalText);
 
         //now lets add the center post
         var centerPost = new FoShape3D("CenterPost", "red")
@@ -154,9 +153,9 @@ public class ClockTech : IClockTech
                 Position = new Vector3(0, 0, 0),
                 Rotation = new Euler(0, 0, 0),
             }
-        };
-        centerPost.CreateBox("CenterPost", 0.2, 1.0, .2);
-        shape.Add<FoShape3D>(centerPost);
+        }.CreateBox("CenterPost", 0.2, 1.0, .2);
+
+        clock.AddSubGlyph3D(centerPost);
 
         //now lets add the secondHand
         var secondHand = new FoShape3D("Second Hand", "green")
@@ -166,11 +165,11 @@ public class ClockTech : IClockTech
                 Position = new Vector3(0.5 * radius, 1, 0),
                 Rotation = new Euler(0, 0, 0),
             }
-        };
-        secondHand.CreateBox("Second Hand", 1.2 * radius, 2.0, .1);
-        centerPost.Add<FoShape3D>(secondHand);
+        }.CreateBox("Second Hand", 1.2 * radius, 2.0, .1);
 
-        return shape;
+        centerPost.AddSubGlyph3D(secondHand);
+
+        return clock;
     }
 
     public void UpdateArenaClock(object state)
@@ -182,7 +181,7 @@ public class ClockTech : IClockTech
         var angle = time.Second * (2 * Math.PI / 60) - Math.PI / 2; // Convert seconds to radians
         var radius = 10.0;
         var x = radius * Math.Cos(angle);
-        var y = 2;
+        //var y = 2;
         var z = radius * Math.Sin(angle);
 
         var currentTime = time.ToString("HH:mm:ss");
@@ -191,22 +190,23 @@ public class ClockTech : IClockTech
         if (Clock != null)
         {
             $"UpdateArenaClock: {currentTime}".WriteInfo();
-            var post = Clock.Find<FoShape3D>("CenterPost");
+            var post = Clock.FindSubGlyph3D<FoShape3D>("CenterPost");
             if (post != null)
             {
                 post.Transform.Rotation = new Euler(0, angle, 0);
                 post.SetDirty(true);
-                $"UpdateArenaClock: {post.Name} isDirty".WriteInfo();
+                $"CenterPost UpdateArenaClock: {post.Name} isDirty".WriteInfo();
             }
 
 
-            var globalText = Clock.Find<FoText3D>("GlobalText");
+            var globalText = Clock.FindSubGlyph3D<FoText3D>("GlobalText");
             if (globalText != null)
             {
-                globalText.Text = time.ToString("HH:mm:ss");
+                globalText.Text = currentTime;
                 globalText.SetDirty(true);
-                $"UpdateArenaClock: {globalText.Text} isDirty".WriteInfo();
+                $"GlobalText UpdateArenaClock: {globalText.Text} isDirty".WriteInfo();
             }
+            //Clock.SetDirty(true);
 
         }
         else

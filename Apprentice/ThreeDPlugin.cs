@@ -128,7 +128,7 @@ public class ThreeDPlugin
    {
       var pos = Block.GetTransform().Position;
       pos.X += dx;
-      Block.MoveTo(pos.X, pos.Y, pos.Z);
+      //Block.MoveTo(pos.X, pos.Y, pos.Z);
       return Block;
    }
   

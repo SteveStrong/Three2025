@@ -90,13 +90,14 @@ public partial class ClockBase : ComponentBase
 
         var shape = new FoModel3D("TRISOC " + name)
         {
+            Url = GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"),
             Transform = new Transform3()
             {
                 Position = new Vector3(x, 0, z),
                 Scale = new Vector3(s, s, s),
             }
         };
-        shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"));
+
 
         var arena = Workspace.GetArena();
         arena.AddShapeToStage<FoModel3D>(shape);
@@ -142,7 +143,7 @@ public partial class ClockBase : ComponentBase
 
 
 
-    public void DoRequestAddTextToArena()
+    public void DoAddTextToArena()
     {
         var arena = Workspace.GetArena();
         var (found, scene) = GetCurrentScene();
@@ -164,6 +165,17 @@ public partial class ClockBase : ComponentBase
                 Position = new Vector3(x, y, z),
             },
         };
+
+        var label = new FoText3D()
+        {
+            Text = "Extra Text",
+            Color = "White",
+            Transform = new Transform3()
+            {
+                Position = new Vector3(0, 3, 0),
+            },
+        };
+        text3d.AddSubGlyph3D(label);
         arena.AddShapeToStage<FoText3D>(text3d);
 
         //can we do some animation here?
@@ -183,7 +195,67 @@ public partial class ClockBase : ComponentBase
         });
     }
 
-    public async Task DoRequestAddBoxGLBToArena()
+    
+    public void DoAddBoxGLBToArena()
+    {
+        var arena = Workspace.GetArena();
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
+
+        var x = DataGenerator.GenerateDouble(-10, 10);
+        var y = DataGenerator.GenerateDouble(-10, 10);
+        var z = DataGenerator.GenerateDouble(-10, 10);
+
+        var angle = 0.0;
+        var delta = 0.5;
+
+        var model3d = new FoModel3D()
+        {
+            Name = "Box Animated",
+            Url =  GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
+            Transform = new Transform3()
+            {
+                Position = new Vector3(x, y, z),
+            },
+        };
+
+        var label = new FoText3D()
+        {
+            Text = "This is a Box",
+            Color = "White",
+            Transform = new Transform3()
+            {
+                Position = new Vector3(0, 3, 0),
+            },
+        };
+        model3d.AddSubGlyph3D(label);
+
+
+        arena.AddShapeToStage<FoModel3D>(model3d);
+
+        model3d.SetAnimationUpdate((self, tick, fps) =>
+        {
+            bool move = tick % 10 == 0;
+            if (!move) return;
+
+            var loc = self.Transform.Position.X;
+            loc += delta;
+            if ( loc > 10 || loc < -10)
+            {
+                delta = -delta;
+                if (loc > 10) angle = Math.PI;
+                else angle = 0.0;
+            }
+
+
+            self.Transform.Position.X = loc;
+            self.Transform.Rotation.Y = angle;
+            self.SetDirty(true);
+        });
+
+    }
+
+    public async Task DoRequestAddBoxGLBToScene()
     {
         var (found, scene) = GetCurrentScene();
         if (!found) return;
@@ -235,7 +307,7 @@ public partial class ClockBase : ComponentBase
         });
     }
 
-    public async Task DoAddTRexToArena()
+    public async Task DoAddTRexToScene()
     {
         var (found, scene) = GetCurrentScene();
         if (!found) return;

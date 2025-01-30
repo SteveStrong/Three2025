@@ -77,7 +77,7 @@ public class RackTech : IRackTech
                 }
             };
             connect.CreateBox(cnn, 0.2, 0.2, 0.2);
-            box.Add<FoShape3D>(connect);
+            box.AddSubGlyph3D<FoShape3D>(connect);
         }
 
 
@@ -108,7 +108,7 @@ public class RackTech : IRackTech
         group.CreateBoundary(name, width, height, depth); //try to have three.js compute the bounding box
 
         foreach (var box in list1)
-            group.Add<FoShape3D>(box);
+            group.AddSubGlyph3D<FoShape3D>(box);
 
         return group;
     }

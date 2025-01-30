@@ -73,10 +73,11 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var shape = new FoModel3D(name,"blue")
         {
             Name = name,
+            Url = url,
             GlyphId = Guid.NewGuid().ToString(),
-            BoundingBox = new Vector3(bx, by, bz),
+            //BoundingBox = new Vector3(bx, by, bz),
         };
-        shape.CreateGlb(url);
+
         World3D.AddGlyph3D<FoShape3D>(shape);
         return shape;
     }
@@ -192,12 +193,12 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var arena = Workspace.GetArena();
         var shape = new FoModel3D("T-Rex " + name)
         {
+            Url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Transform = new Transform3()
             {
                 Position = new Vector3(x, 0, z),
             }
         };
-        shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"));
 
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");

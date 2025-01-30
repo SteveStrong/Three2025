@@ -48,15 +48,16 @@ public partial class HomeBase : ComponentBase, IDisposable
         var shape = new FoModel3D(name, "blue")
         {
             Name = name,
+            Url = url,
             GlyphId = Guid.NewGuid().ToString(),
-            BoundingBox = new Vector3(bx, by, bz),
+            //BoundingBox = new Vector3(bx, by, bz),
             Transform = new Transform3()
             {
                  Scale = new Vector3(scale, scale, scale),
             }
         };
         
-        shape.CreateGlb(url);
+
         World3D.AddGlyph3D<FoShape3D>(shape);
 
         return AddIntoArena(shape);
@@ -178,7 +179,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             new Vector3(4, 4, -4)
         };
 
-        shape.CreateTube(text, 0.15f, path);
+        //shape.CreateTube(text, 0.15f, path);
         shape.RefreshToScene(scene);
     }
 
@@ -259,12 +260,12 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var shape = new FoModel3D("T-Rex " + name)
         {
+            Url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Transform = new Transform3()
             {
                 Position = new Vector3(x, 0, z),
             },
         };
-        shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"));
 
 
         AddIntoArena(shape);
@@ -279,12 +280,12 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var shape = new FoModel3D("Porsche " + name)
         {
+            Url = GetReferenceTo(@"storage/StaticFiles/Porsche_911.glb"),
             Transform = new Transform3()
             {
                 Position = new Vector3(x, 0, z),
             },
         };
-        shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/Porsche_911.glb"));
 
         AddIntoArena(shape);
     }
@@ -448,13 +449,13 @@ public partial class HomeBase : ComponentBase, IDisposable
         //var arena = Workspace.GetArena();
         var shape = new FoModel3D("TRISOC " + name)
         {
+            Url = GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"),
             Transform = new Transform3()
             {
                 Position = new Vector3(x, 0, z),
                 Scale = new Vector3(30, 30, 30),
             }
         };
-        shape.CreateGlb(GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"));
 
         AddIntoArena(shape);
     }
