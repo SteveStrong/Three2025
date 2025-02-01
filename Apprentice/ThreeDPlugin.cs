@@ -126,7 +126,7 @@ public class ThreeDPlugin
    [return: Description("Return a block that was moved")]
    public FoShape3D MoveBlockLeftOrRight(FoShape3D Block, int dx)
    {
-      var pos = Block.GetTransform().Position;
+      var pos = Block.Transform.Position;
       pos.X += dx;
       //Block.MoveTo(pos.X, pos.Y, pos.Z);
       return Block;

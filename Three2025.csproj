@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- <PackageReference Include="ApprenticeFoundryBlazor" Version="17.1.2" /> -->
+    <!-- <PackageReference Include="ApprenticeFoundryBlazor" Version="17.3.1" /> -->
     <PackageReference Include="ApprenticeFoundryRulesAndUnits" Version="5.2.0" />
     <PackageReference Include="System.Text.Json" Version="9.0.0" />
     <PackageReference Include="Radzen.Blazor" Version="5.0.2" />

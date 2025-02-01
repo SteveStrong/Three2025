@@ -171,8 +171,6 @@ public class ClockTech : IClockTech
 
     public void UpdateArenaClock(object state)
     {
-        var arena = FoundryService.Arena();
-
 
         var time = DateTime.Now;
         var angle = time.Second * (2 * Math.PI / 60) - Math.PI / 2; // Convert seconds to radians
@@ -181,41 +179,32 @@ public class ClockTech : IClockTech
         var y = 2;
         var z = radius * Math.Sin(angle);
 
-        var currentTime = time.ToString("HH:mm:ss");
-
   
         if (Clock != null)
         {
             //RunClockOnArena(); //stop the clock for debugging
 
-            //$"UpdateArenaClock: {currentTime}".WriteInfo();
             var post = Clock.FindSubGlyph3D<FoShape3D>("Post");
             if (post != null)
             {
                 post.Transform.Rotation = new Euler(0, -angle, 0);
-                post.SetDirty(true);
-                //$"CenterPost UpdateArenaClock: {post.Name} isDirty".WriteInfo();
             }
 
             var globalText = Clock.FindSubGlyph3D<FoText3D>("TimeText");
             if (globalText != null)
             {
+                var currentTime = time.ToString("HH:mm:ss");
                 globalText.Text = currentTime;
                 globalText.Transform.Position = new Vector3(x, y, z);
-
-                //$"GlobalText UpdateArenaClock: {globalText.Text} isDirty".WriteInfo();
             }
 
-            Clock.SetDirty(true);
-            Clock.Transform = new Transform3()
-            {
-                Rotation = new Euler(Math.PI / 2, 0, angle),
-            };
+            Clock.Transform.Rotation = new Euler(Math.PI / 2, 0, angle);
 
         }
         else
         {
             Clock = CreateClockOnArena();
+            var arena = FoundryService.Arena();
             arena.AddShapeToStage<FoShape3D>(Clock);
         }
 

@@ -20,22 +20,22 @@ public class Node3D : FoShape3D
 
     public Vector3 Boundary(Node3D target)
     {
-        var a = GetPosition()!;
-        var b = target.GetPosition()!;
+        var a = Transform.Position;
+        var b = target.Transform.Position;
         return a.BoundingBox(b);
     }
 
     public Vector3 Center(Node3D target)
     {
-        var a = GetPosition()!;
-        var b = target.GetPosition()!;
+        var a = Transform.Position;
+        var b = target.Transform.Position;
         return a.Center(b);
     }
 
     public double Distance(Node3D target)
     {
-        var a = GetPosition()!;
-        var b = target.GetPosition()!;
+        var a = Transform.Position;
+        var b = target.Transform.Position;
         return a.Distance(b);
     }
 
@@ -56,7 +56,7 @@ public class Node3D : FoShape3D
 
     public override string GetTreeNodeTitle()
     {
-        var pos = GetPosition();
+        var pos = Transform.Position;
         return $"{base.GetTreeNodeTitle()} POS: {pos.X:F1} {pos.Y:F1} {pos.Z:F1}";
     }
 

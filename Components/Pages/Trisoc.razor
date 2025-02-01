@@ -1,0 +1,38 @@
+@page "/"
+@page "/trisoc"
+
+@using FoundryBlazor.Shared
+@using FoundryRulesAndUnits.Extensions
+@using BlazorThreeJS.Viewers
+
+@namespace Three2025.Components.Pages
+@inherits TrisocBase
+@rendermode InteractiveServer
+
+<PageTitle>Trisoc</PageTitle>
+
+
+
+<div class="d-flex">
+
+    <Canvas3DComponent SceneName="Trisoc" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+        <RadzenTabs>
+        <Tabs>
+            <RadzenTabsItem Text="Command View">
+                <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">   
+                    <h4>Trisoc</h4>
+                    <button class="btn btn-primary" @onclick="DoAddTRISOCToArena">Add TRISOC</button>
+                    <button class="btn btn-primary" @onclick="DoAddBoxArena">Add Box</button>
+                </RadzenStack>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Chat View">
+                <AIChat/>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Shape View">
+                <ShapeTreeView/>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+
+
+</div>

@@ -31,16 +31,13 @@ public class Link3D : FoShape3D
 
     public Link3D SetPosition(double x, double y, double z)
     {
-        GetTransform().Position = new Vector3(x, y, z);
+        Transform.Position = new Vector3(x, y, z);
         return this;
     }
     public Link3D Reposition(double dx, double dy, double dz)
     {
-        var pos = GetPosition()!;
-        var x = pos.X + dx;
-        var y = pos.Y + dy;
-        var z = pos.Z + dz;
-        GetTransform().Position = new Vector3(x, y, z);
+        var pos = Transform.Position.CreatePlus(dx, dy, dz);
+        Transform.Position = pos;
         return this;
     }
 
