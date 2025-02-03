@@ -60,11 +60,31 @@ public partial class TrisocBase : ComponentBase
 
             var arena = Workspace.GetArena();
             if (found)
+            {
                 arena.SetScene(scene!);
+                DoRequestAxisToScene(scene!);
+            }
+                
         }
 
         await base.OnAfterRenderAsync(firstRender);
     }
+
+    public void DoRequestAxisToScene(Scene3D scene)
+    {
+
+
+        var model = new Model3D()
+        {
+            Name = "Axis",
+            Uuid = Guid.NewGuid().ToString(),
+            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Format = Model3DFormats.Gltf,
+        };
+
+        scene.AddChild(model);
+    }
+
 
     public string GetReferenceTo(string filename)
     {
@@ -87,13 +107,28 @@ public partial class TrisocBase : ComponentBase
     public void DoAddBoxArena()
     {
 
-        var root = Tech.GetSpacialBox();
+        var (c, center) = Tech.GetSpacialBox("Center", 0, "C");
+
+
+        var (t,top) = Tech.GetSpacialBox("Top",c, "T");
+        top.Transform.Position = center.Transform.Position.CreatePlus(0, -10, 0);
+
+
+        var (f,front) = Tech.GetSpacialBox("Front",t, "F");
+        front.Transform.Position = center.Transform.Position.CreatePlus(0, 0, 10);
+
 
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage(root);
-        
+        arena.AddShapeToStage(center);
+        arena.AddShapeToStage(top);        
+        arena.AddShapeToStage(front);       
 
 
+    }
+
+    public void DoStartStopTimer()
+    {
+        Tech.StartStopTimer();
     }
 
 

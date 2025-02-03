@@ -32,15 +32,15 @@ public class TriSocGeometry : FoComponent
 
         GenerateText(root, box.Center, "Center");
 
-        GenerateText(root, box.TopLeftFront, "TopLeftFront");
-        GenerateText(root, box.TopRightFront, "TopRightFront");
-        GenerateText(root, box.BottomLeftFront, "BottomLeftFront");
-        GenerateText(root, box.BottomRightFront, "BottomRightFront");
+        GenerateText(root, box.LeftTopFront, "TopLeftFront");
+        GenerateText(root, box.RightTopFront, "TopRightFront");
+        GenerateText(root, box.LeftBottomFront, "BottomLeftFront");
+        GenerateText(root, box.RightBottomFront, "BottomRightFront");
 
-        GenerateText(root, box.TopLeftBack, "TopLeftBack");
-        GenerateText(root, box.TopRightBack, "TopRightBack");
-        GenerateText(root, box.BottomLeftBack, "BottomLeftBack");
-        GenerateText(root, box.BottomRightBack, "BottomRightBack");
+        GenerateText(root, box.LeftTopBack, "TopLeftBack");
+        GenerateText(root, box.RightTopBack, "TopRightBack");
+        GenerateText(root, box.LeftBottomBack, "BottomLeftBack");
+        GenerateText(root, box.RightBottomBack, "BottomRightBack");
 
 
         return root.GetSlot<FoText3D>().Values();
@@ -92,15 +92,15 @@ public class TriSocGeometry : FoComponent
 
         GenerateMarker(root, box.Center, "Center");
 
-        GenerateMarker(root, box.TopLeftFront, "TopLeftFront");
-        GenerateMarker(root, box.TopRightFront, "TopRightFront");
-        GenerateMarker(root, box.BottomLeftFront, "BottomLeftFront");
-        GenerateMarker(root, box.BottomRightFront, "BottomRightFront");
+        GenerateMarker(root, box.LeftTopFront, "TopLeftFront");
+        GenerateMarker(root, box.RightTopFront, "TopRightFront");
+        GenerateMarker(root, box.LeftBottomFront, "BottomLeftFront");
+        GenerateMarker(root, box.RightBottomFront, "BottomRightFront");
 
-        GenerateMarker(root, box.TopLeftBack, "TopLeftBack");
-        GenerateMarker(root, box.TopRightBack, "TopRightBack");
-        GenerateMarker(root, box.BottomLeftBack, "BottomLeftBack");
-        GenerateMarker(root, box.BottomRightBack, "BottomRightBack");
+        GenerateMarker(root, box.LeftTopBack, "TopLeftBack");
+        GenerateMarker(root, box.RightTopBack, "TopRightBack");
+        GenerateMarker(root, box.LeftBottomBack, "BottomLeftBack");
+        GenerateMarker(root, box.RightBottomBack, "BottomRightBack");
 
 
         return root.GetSlot<FoShape3D>().Values();

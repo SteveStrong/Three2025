@@ -162,7 +162,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                 Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
               
-                Material = new MeshStandardMaterial("yellow")
+                Material = new MeshStandardMaterial("yellow", 1.0)
             });
 
         });

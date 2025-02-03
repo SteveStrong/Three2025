@@ -34,6 +34,19 @@ else
         if ( string.IsNullOrEmpty(endpoint))
             CanRun = false;
 
+        var client = new HttpClient();
+        client.BaseAddress = new Uri(endpoint);
+        client.GetAsync("ping").ContinueWith(response =>
+        {
+            if (response.IsFaulted)
+            {
+                CanRun = false;
+            }
+        });
+
+
+  
+
         base.OnInitialized();
     }
 }

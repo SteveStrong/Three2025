@@ -23,16 +23,17 @@
                     <h4>Trisoc</h4>
                     <button class="btn btn-primary" @onclick="DoAddTRISOCToArena">Add TRISOC</button>
                     <button class="btn btn-primary" @onclick="DoAddBoxArena">Add Box</button>
+                    <button class="btn btn-primary" @onclick="DoStartStopTimer">Start Stop Timer</button>
                 </RadzenStack>
             </RadzenTabsItem>
-            <RadzenTabsItem Text="Chat View">
+            @* <RadzenTabsItem Text="Chat View">
                 <AIChat/>
-            </RadzenTabsItem>
+            </RadzenTabsItem> *@
             <RadzenTabsItem Text="Shape View">
                 <ShapeTreeView/>
             </RadzenTabsItem>
         </Tabs>
     </RadzenTabs>
-
+    <AIChat/>
 
 </div>

@@ -85,12 +85,22 @@ public class ApprenticeAI : IApprenticeAI
 
         chatHistory.AddUserMessage(userMessage);
 
-        var result = await chatCompletionService.GetChatMessageContentAsync(
-            chatHistory,
-            executionSettings: openAIPromptExecutionSettings,
-            kernel: kernel);
+        var result = new ChatMessageContent(AuthorRole.Assistant, "I'm sorry, I don't understand that.");
+        try
+        {
+            result = await chatCompletionService.GetChatMessageContentAsync(
+                chatHistory,
+                executionSettings: openAIPromptExecutionSettings,
+                kernel: kernel);
 
-        chatHistory.AddMessage(result.Role, result.Content ?? string.Empty);
+            chatHistory.AddMessage(result.Role, result.Content ?? string.Empty);
+        }
+        catch (System.Exception ex)
+        {
+            result = new ChatMessageContent(AuthorRole.Assistant, ex.Message);
+            $"Error: {ex.Message}".WriteError();
+
+        }
         return result;
     }
 

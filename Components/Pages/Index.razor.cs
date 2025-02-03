@@ -436,7 +436,7 @@ public class IndexBase : ComponentBase, IDisposable
             Name = "Group2",
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-            Material = new MeshStandardMaterial("red"),
+            Material = new MeshStandardMaterial("red", 1.0),
         };
 
         group.AddChild(new Mesh3D
@@ -450,7 +450,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Rotation = new Euler(0, 0, 0),
                 Scale = new Vector3(1, 1, 1)
             },
-            Material = new MeshStandardMaterial("magenta")
+            Material = new MeshStandardMaterial("magenta", 1.0)
         });
 
         group.AddChild(new Mesh3D
@@ -464,7 +464,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Rotation = new Euler(0, 0, 0),
                 Scale = new Vector3(1, 1, 1)
             },
-            Material = new MeshStandardMaterial("green")
+            Material = new MeshStandardMaterial("green", 1.0)
         });
         scene.AddChild(group);
         await Task.CompletedTask;
@@ -486,7 +486,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial("magenta")
+                Material = new MeshStandardMaterial("magenta", 1.0)
             },
             new Mesh3D
             {
@@ -499,7 +499,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 0.75f, 1),
                 },
-                Material = new MeshStandardMaterial("#98AFC7")
+                Material = new MeshStandardMaterial("#98AFC7", 1.0)
             },
             new Mesh3D
             {
@@ -512,7 +512,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial("darkgreen")
+                Material = new MeshStandardMaterial("darkgreen", 1.0)
             },
             new Mesh3D
             {
@@ -561,9 +561,8 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial()
+                Material = new MeshStandardMaterial("darkviolet", 1.0)
                 {
-                    Color = "darkviolet",
                     Metalness = 0.5f,
                     Roughness = 0.5f
                 }
@@ -579,7 +578,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial("violet")
+                Material = new MeshStandardMaterial("violet", 1.0)
             },
             new Mesh3D
             {
@@ -592,7 +591,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial("aqua")
+                Material = new MeshStandardMaterial("aqua", 1.0)
             },
             new Mesh3D
             {
@@ -605,7 +604,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial("purple")
+                Material = new MeshStandardMaterial("purple", 1.0)
             },
             new Mesh3D
             {
@@ -618,7 +617,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial("DodgerBlue")
+                Material = new MeshStandardMaterial("DodgerBlue", 1.0)
             },
             new Mesh3D
             {
@@ -631,7 +630,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial("darkgreen")
+                Material = new MeshStandardMaterial("darkgreen", 1.0)
             },
             new Mesh3D
             {
@@ -644,7 +643,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial("lightblue")
+                Material = new MeshStandardMaterial("lightblue", 1.0)
             },
             new Mesh3D
             {
@@ -657,7 +656,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
-                Material = new MeshStandardMaterial("lightgreen")
+                Material = new MeshStandardMaterial("lightgreen", 1.0)
             },
             new Mesh3D
             {
@@ -671,7 +670,7 @@ public class IndexBase : ComponentBase, IDisposable
                     Scale = new Vector3(1, 1, 1)
                 },
             
-                Material = new MeshStandardMaterial("RosyBrown")
+                Material = new MeshStandardMaterial("RosyBrown", 1.0)
             }
         };
 

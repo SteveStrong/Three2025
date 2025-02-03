@@ -1,3 +1,4 @@
+using FoundryRulesAndUnits.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Radzen;
@@ -28,6 +29,15 @@ public partial class AIChatBase: ComponentBase, IDisposable
 
     protected string newMessage;
     protected List<ChatMessage> messages = new List<ChatMessage>();
+    protected List<string> messageBuffer = new List<string>();
+    protected int bufferIndex = -1;
+
+    protected override void OnInitialized()
+    {
+        var endpoint = Environment.GetEnvironmentVariable("OPENAI_ENDPOINT",EnvironmentVariableTarget.User);
+        if ( string.IsNullOrEmpty(endpoint))
+             messages.Add(new ChatMessage { User = "Chat", Text = "OPENAI_ENDPOINT is not an EnvironmentVariable" });
+    }
 
     protected async Task SendMessage()
     {
@@ -43,13 +53,52 @@ public partial class AIChatBase: ComponentBase, IDisposable
     {
         if (e.Key == "Enter")
         {
+            if (!string.IsNullOrWhiteSpace(newMessage))
+            {
+                messageBuffer.Add(newMessage);
+                bufferIndex = messageBuffer.Count;
+            }
             await SendMessage();
+        }
+        else if (e.Key == "ArrowUp")
+        {
+            if (bufferIndex > 0)
+            {
+                bufferIndex--;
+                newMessage = messageBuffer[bufferIndex];
+            }
+        }
+        else if (e.Key == "ArrowDown")
+        {
+            if (bufferIndex < messageBuffer.Count - 1)
+            {
+                bufferIndex++;
+                newMessage = messageBuffer[bufferIndex];
+            }
+            else
+            {
+                bufferIndex = messageBuffer.Count;
+                newMessage = string.Empty;
+            }
+        }
+        else
+        {
+            $"{e.Key}".WriteInfo();
         }
     }
     protected async Task<string> GetAIResponse(string userMessage)
     {
         var result = await AI.GetAIResponse(userMessage);
         return result.Content ?? "I'm sorry, I don't understand that.";
+    }
+
+    protected async Task ExecuteBufferCommand(int index)
+    {
+        if (index >= 0 && index < messageBuffer.Count)
+        {
+            newMessage = messageBuffer[index];
+            await SendMessage();
+        }
     }
 
     public void Dispose()

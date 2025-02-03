@@ -259,7 +259,7 @@ public class ClockTech : IClockTech
                     Position = new Vector3(0, 0, 0),
                     Rotation = new Euler(0, -angle, 0),
                 },
-                Material = new MeshStandardMaterial("red")
+                Material = new MeshStandardMaterial("red", .5)
             };
             var secondHand = new Mesh3D
             {
@@ -271,7 +271,7 @@ public class ClockTech : IClockTech
                     Position = new Vector3(0.5 * radius, 1, 0),
                     Rotation = new Euler(0, 0, 0),
                 },
-                Material = new MeshStandardMaterial("green")
+                Material = new MeshStandardMaterial("green", .5)
             };
             CenterPost.AddChild(secondHand);
             
@@ -322,7 +322,7 @@ public class ClockTech : IClockTech
             {
                 Position = new Vector3(0, 0, 0),
             },
-            Material = new MeshStandardMaterial("blue")
+            Material = new MeshStandardMaterial("blue", .3)
         };
 
 
