@@ -23,6 +23,7 @@ using Three2025.Apprentice;
 //     {
 //     }
 // }
+namespace Three2025.Apprentice;
 
 public interface IClockTech : ITechnician
 {
@@ -112,7 +113,7 @@ public class ClockTech : IClockTech
         var fontSize = 1.2;
         var diameter = 2 * radius;
 
-        var color = DataGenerator.GenerateColor();
+
         var clock = new FoShape3D("ArenaClock", "Red")
         {
             Transform = new Transform3()
@@ -120,7 +121,10 @@ public class ClockTech : IClockTech
                 Position = new Vector3(0, 0, 0),
                 Rotation = new Euler(Math.PI / 2, 0, 0),
             }
-        }.CreateCylinder("Clock", diameter, height, diameter);
+        };
+        clock.CreateCylinder("Clock", diameter, height, diameter);
+
+
 
         //now add all the numbers as children
         for (int i = 1; i <= 12; i++)

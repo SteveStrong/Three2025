@@ -17,6 +17,7 @@ using FoundryRulesAndUnits.Models;
 using BlazorThreeJS.Core;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc;
+using Three2025.Apprentice;
 
 
 namespace Three2025.Components.Pages;

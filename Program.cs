@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using FoundryBlazor;
 using Microsoft.Extensions.FileProviders;
 using Three2025.Apprentice;
-using BlazorThreeJS;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +51,7 @@ builder.Services.Configure<StaticFileOptions>(options =>
 
 var envConfig = new EnvConfig("./.env");
 builder.Services.AddFoundryBlazorServices(envConfig);
+
 builder.Services.AddScoped<IApprenticeAI, ApprenticeAI>();
 builder.Services.AddScoped<IRackTech, RackTech>();
 builder.Services.AddScoped<IClockTech, ClockTech>();

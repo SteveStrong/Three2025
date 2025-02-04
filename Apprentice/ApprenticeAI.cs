@@ -37,7 +37,7 @@ public class ApprenticeAI : IApprenticeAI
     private IChatCompletionService chatCompletionService;
     private OpenAIPromptExecutionSettings openAIPromptExecutionSettings;
 
-    public ApprenticeAI(IFoundryService foundry)
+    public ApprenticeAI(IWorkspace workspace, IFoundryService FoundryService)
     {
         //export OPENAI_KEY="your_openai_api_key"
         //export OPENAI_ENDPOINT="https://your-openai-endpoint.com"
@@ -54,6 +54,8 @@ public class ApprenticeAI : IApprenticeAI
         if (string.IsNullOrWhiteSpace(apiKey))
             return;
 
+        $"Building Kernel for {modelId}...".WriteSuccess();
+        "........................................".WriteSuccess();
         // Create a kernel with Azure OpenAI chat completion
         var builder = Kernel.CreateBuilder().AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
 
@@ -64,8 +66,10 @@ public class ApprenticeAI : IApprenticeAI
         kernel = builder.Build();
         chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
-        var plug3D = new ThreeDPlugin(foundry);
-        kernel.Plugins.AddFromObject(plug3D,"3DBuilder");
+        //var plug3D = new ThreeDPlugin(foundry);
+        //kernel.Plugins.AddFromObject(plug3D,"3DBuilder");
+        var lights = new LightingShapes(workspace, FoundryService);
+        kernel.Plugins.AddFromObject(lights,"Lighting");
         //kernel.Plugins.AddFromType<LightsPlugin>("Lights");
         
 

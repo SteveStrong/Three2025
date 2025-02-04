@@ -8,7 +8,7 @@
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 500px;
+    height: 900px;
     width: 100%;
     border: 1px solid #ccc;
     padding: 10px;
@@ -57,13 +57,6 @@ button {
             <RadzenTextBox @bind-Value="newMessage" Placeholder="Type your message..." Style="width: 100%;" @onkeypress="HandleKeyPress" />
             <RadzenButton Text="Send" Click="SendMessage" Style="margin-left: 10px;" />
         </div>
-        <div>
-            <RadzenStackPanel Orientation="StackOrientation.Vertical">
-                @for (int i = messageBuffer.Count - 1; i >= 0 && i >= messageBuffer.Count - 5; i--)
-                {
-                    <RadzenButton Text="@(messageBuffer[i])" Click="@(async () => await ExecuteBufferCommand(i))" Style="margin: 5px;" />
-                }
-            </RadzenStackPanel>
-        </div>
+
     </div>
 </RadzenCard>

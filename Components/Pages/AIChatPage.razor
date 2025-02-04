@@ -41,12 +41,16 @@ else
             if (response.IsFaulted)
             {
                 CanRun = false;
+                UpdateStatus();
             }
         });
 
 
-  
-
         base.OnInitialized();
+    }
+
+    protected void UpdateStatus()
+    {
+        StateHasChanged();
     }
 }

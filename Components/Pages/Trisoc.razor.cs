@@ -12,6 +12,7 @@ using FoundryRulesAndUnits.Extensions;
 using BlazorThreeJS.Objects;
 using BlazorThreeJS.Geometires;
 using BlazorThreeJS.Materials;
+
 using FoundryBlazor.PubSub;
 using FoundryRulesAndUnits.Models;
 using BlazorThreeJS.Core;
@@ -32,8 +33,8 @@ public partial class TrisocBase : ComponentBase
     [Inject] public ITrisocTech Tech { get; init; }
 
 
-    [Parameter] public int CanvasWidth { get; set; } = 1600;
-    [Parameter] public int CanvasHeight { get; set; } = 1100;
+    [Parameter] public int CanvasWidth { get; set; } = 1200;
+    [Parameter] public int CanvasHeight { get; set; } = 1000;
 
 
     protected MockDataGenerator DataGenerator { get; set; } = new();

@@ -2,6 +2,7 @@
 @page "/trisoc"
 
 @using FoundryBlazor.Shared
+
 @using FoundryRulesAndUnits.Extensions
 @using BlazorThreeJS.Viewers
 
@@ -16,8 +17,14 @@
 <div class="d-flex">
 
     <Canvas3DComponent SceneName="Trisoc" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
-        <RadzenTabs>
+        <RadzenTabs style="min-width: 600px;">
         <Tabs>
+            <RadzenTabsItem Text="Chat View">
+                <AIChat/>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Shape View">
+                <ShapeTreeView/>
+            </RadzenTabsItem>
             <RadzenTabsItem Text="Command View">
                 <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">   
                     <h4>Trisoc</h4>
@@ -26,14 +33,8 @@
                     <button class="btn btn-primary" @onclick="DoStartStopTimer">Start Stop Timer</button>
                 </RadzenStack>
             </RadzenTabsItem>
-            @* <RadzenTabsItem Text="Chat View">
-                <AIChat/>
-            </RadzenTabsItem> *@
-            <RadzenTabsItem Text="Shape View">
-                <ShapeTreeView/>
-            </RadzenTabsItem>
         </Tabs>
     </RadzenTabs>
-    <AIChat/>
+
 
 </div>
