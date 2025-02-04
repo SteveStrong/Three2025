@@ -37,7 +37,7 @@ public class ApprenticeAI : IApprenticeAI
     private IChatCompletionService chatCompletionService;
     private OpenAIPromptExecutionSettings openAIPromptExecutionSettings;
 
-    public ApprenticeAI(IWorkspace workspace, IFoundryService FoundryService)
+    public ApprenticeAI(IWorkspace workspace, ILightingTech lighting)
     {
         //export OPENAI_KEY="your_openai_api_key"
         //export OPENAI_ENDPOINT="https://your-openai-endpoint.com"
@@ -68,8 +68,8 @@ public class ApprenticeAI : IApprenticeAI
 
         //var plug3D = new ThreeDPlugin(foundry);
         //kernel.Plugins.AddFromObject(plug3D,"3DBuilder");
-        var lights = new LightingShapes(workspace, FoundryService);
-        kernel.Plugins.AddFromObject(lights,"Lighting");
+        //var lights = new LightingShapes(workspace);
+        kernel.Plugins.AddFromObject(lighting,"Lighting");
         //kernel.Plugins.AddFromType<LightsPlugin>("Lights");
         
 

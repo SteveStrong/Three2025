@@ -56,6 +56,7 @@ builder.Services.AddScoped<IApprenticeAI, ApprenticeAI>();
 builder.Services.AddScoped<IRackTech, RackTech>();
 builder.Services.AddScoped<IClockTech, ClockTech>();
 builder.Services.AddScoped<ITrisocTech, TrisocTech>();
+builder.Services.AddScoped<ILightingTech, LightingTech>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

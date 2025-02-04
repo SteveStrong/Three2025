@@ -15,10 +15,34 @@ namespace Three2025.Apprentice;
 #nullable enable
 
 
-
-public class LightingShapes
+public interface ILightingTech : ITechnician
 {
-   private IFoundryService FoundryServices;
+   FoStage3D EstablishLightingStage();
+
+   void ClearLights();
+
+   void SaveLights();
+
+   void RestoreLights();
+
+   string PickARandomColor();
+
+   List<LightingComponent> GetLights();
+
+   List<LightingComponent> AddLight(string name, bool isOn, string color);
+
+   LightingComponent? DeleteLight(string name);
+
+   LightingComponent? RepositionLight(string name, double x, double y, double z);
+
+   LightingComponent? ChangeState(string name, bool isOn);
+
+   LightingComponent? ChangeColor(string name, string color);
+}
+
+public class LightingTech :ILightingTech
+{
+
    private IWorkspace Workspace;
 
    private FoStage3D? Stage { get; set; }
@@ -28,10 +52,9 @@ public class LightingShapes
 
 
 
-   public LightingShapes(IWorkspace workspace, IFoundryService mentor)
+   public LightingTech(IWorkspace workspace)
    {
       Workspace = workspace;
-      FoundryServices = mentor;
    }
 
    [KernelFunction("RefreshUI")]
@@ -55,17 +78,17 @@ public class LightingShapes
 
 
 
-      var lights = new List<LightingComponent>()
-      {
-         new LightingComponent("Table Lamp") { IsOn = false, Color = DataGenerator.GenerateColor() },
-         new LightingComponent("Porch light") { IsOn = false, Color = DataGenerator.GenerateColor() },
-         new LightingComponent("Chandelier") { IsOn = true, Color = DataGenerator.GenerateColor() }
-      };
+      // var lights = new List<LightingComponent>()
+      // {
+      //    new LightingComponent("Table Lamp") { IsOn = false, Color = DataGenerator.GenerateColor() },
+      //    new LightingComponent("Porch light") { IsOn = false, Color = DataGenerator.GenerateColor() },
+      //    new LightingComponent("Chandelier") { IsOn = true, Color = DataGenerator.GenerateColor() }
+      // };
 
-      foreach (var light in lights)
-      {
-         arena.AddShapeToStage<LightingComponent>(light);
-      }
+      // foreach (var light in lights)
+      // {
+      //    arena.AddShapeToStage<LightingComponent>(light);
+      // }
 
 
       RefreshUI();
@@ -182,8 +205,8 @@ public class LightingShapes
       if ( light != null)
       {
          light.Transform.Position = new Vector3(x, y, z);
+         //light.SetDirty(true);
          $"Light {name} repositioned to {x}, {y}, {z}".WriteSuccess();
-         light.SetDirty(true);
       }
 
 
@@ -194,7 +217,7 @@ public class LightingShapes
    [KernelFunction("change_state")]
    [Description("Changes the state of the light")]
    [return: Description("The updated state of the light; will return null if the light does not exist")]
-   public LightingComponent? ChangeStateAsync(string name, bool isOn)
+   public LightingComponent? ChangeState(string name, bool isOn)
    {
       var list = GetLights();
       var light = list.FirstOrDefault(light => light.GetName().Matches(name));
@@ -209,7 +232,7 @@ public class LightingShapes
    [KernelFunction("change_color")]
    [Description("Changes the color of the light")]
    [return: Description("The updated color of the light; will return null if the light does not exist")]
-   public LightingComponent? ChangeColorAsync(string name, string color)
+   public LightingComponent? ChangeColor(string name, string color)
    {
       var list = GetLights();
       var light = list.FirstOrDefault(light => light.GetName().Matches(name));
@@ -233,7 +256,7 @@ public class LightingComponent : FoShape3D
    {
       var gen = new MockDataGenerator();
 
-      CreateBox(name, gen.GenerateDouble(1,5), gen.GenerateDouble(1,5), gen.GenerateDouble(1,5));
+      CreateBox(name, 2, gen.GenerateDouble(1,5), gen.GenerateDouble(1,5));
 
       var tag = new FoText3D("tag")
       {
@@ -241,7 +264,7 @@ public class LightingComponent : FoShape3D
          FontSize = 0.5,
          Transform = new Transform3()
          {
-            Position = new Vector3(1, 0, 0),
+            Position = new Vector3(3, 0, 0),
          },
          Color = "black"
       };
@@ -251,6 +274,7 @@ public class LightingComponent : FoShape3D
 
    public override string GetTreeNodeTitle()
    {
-      return $"{GetName()} {Color} is {Status()}";
+      var pos = Transform.Position;
+      return $"{GetName()} {Color} is {Status()} @ {pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0}";
    }
 }

@@ -18,6 +18,7 @@ using FoundryRulesAndUnits.Models;
 using BlazorThreeJS.Core;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc;
+using Three2025.Apprentice;
 
 
 namespace Three2025.Components.Pages;
@@ -31,6 +32,7 @@ public partial class TrisocBase : ComponentBase
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public ITrisocTech Tech { get; init; }
+    [Inject] public ILightingTech LightTech { get; init; }
 
 
     [Parameter] public int CanvasWidth { get; set; } = 1200;
@@ -133,7 +135,17 @@ public partial class TrisocBase : ComponentBase
     }
 
 
+    public void DoReposition()
+    {
+        var list = LightTech.GetLights();
+        for(int i=0; i<list.Count-1; i++)
+        {
+            var pos1 = list[i].Transform.Position;
+            var light = list[i+1].GetName();
+            LightTech.RepositionLight(light, pos1.X +5, pos1.Y +5, 0);
+        }
 
+    }
 
 
 }

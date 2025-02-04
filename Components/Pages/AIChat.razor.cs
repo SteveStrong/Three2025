@@ -83,7 +83,7 @@ public partial class AIChatBase: ComponentBase, IDisposable
         }
         else
         {
-            $"{e.Key}".WriteInfo();
+            //$"{e.Key}".WriteInfo();
         }
     }
     protected async Task<string> GetAIResponse(string userMessage)
