@@ -75,8 +75,6 @@ public partial class TrisocBase : ComponentBase
 
     public void DoRequestAxisToScene(Scene3D scene)
     {
-
-
         var model = new Model3D()
         {
             Name = "Axis",

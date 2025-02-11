@@ -1,0 +1,100 @@
+{
+  "runAnimation": true,
+  "type": "ImportSettings",
+  "name": "",
+  "children": [
+    {
+      "material": {
+        "flatShading": false,
+        "metalness": 0,
+        "roughness": 1,
+        "map": {
+          "type": "Texture",
+          "name": "",
+          "textureUrl": "",
+          "wrapS": 1001,
+          "wrapT": 1001,
+          "repeat": {
+            "x": 1,
+            "y": 1
+          },
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "center": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0
+        },
+        "uuid": "17df99e9-936c-4cf5-b2fa-4c3f96bc0de5",
+        "type": "MeshStandardMaterial",
+        "name": "TheTube",
+        "color": "Red",
+        "opacity": 1,
+        "wireframe": false
+      },
+      "geometry": {
+        "radius": 0.15000000596046448,
+        "path": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "z": 0
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "z": 0
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "z": -4
+          }
+        ],
+        "tubularSegments": 10,
+        "radialSegments": 8,
+        "name": "",
+        "type": "TubeGeometry"
+      },
+      "uuid": "17df99e9-936c-4cf5-b2fa-4c3f96bc0de5",
+      "runAnimation": true,
+      "transform": {
+        "position": {
+          "x": 3.354435901047241,
+          "y": 15.18573678927328,
+          "z": -9.029866337100398
+        },
+        "pivot": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": -1.0453118951782852,
+          "y": 0.4848218916802929,
+          "z": -2.1422460314634417,
+          "order": "XYZ"
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "isDirty": true
+      },
+      "type": "Mesh3D",
+      "name": "TheTube",
+      "children": [],
+      "isDirty": false
+    }
+  ],
+  "isDirty": true
+}

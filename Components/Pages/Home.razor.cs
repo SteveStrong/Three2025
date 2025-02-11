@@ -160,10 +160,10 @@ public partial class HomeBase : ComponentBase, IDisposable
         var az = DataGenerator.GenerateDouble(-Math.PI, Math.PI);
 
 
-        var text = DataGenerator.GenerateText();
+        //var text = DataGenerator.GenerateText();
         var color = DataGenerator.GenerateColor();
 
-        var shape = new FoShape3D("Tube", color)
+        var shape = new FoPipe3D("Tube", color)
         {
             Transform = new Transform3()
             {
@@ -179,7 +179,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             new Vector3(4, 4, -4)
         };
 
-        //shape.CreateTube(text, 0.15f, path);
+        shape.CreateTube("TheTube", 0.15f, path);
         shape.RefreshToScene(scene);
     }
 
@@ -383,6 +383,27 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     }
 
+    public void DoAddPipeToArena()
+    {
+        var v1 = new Vector3 (0, 0, 0);
+        var v2 = new Vector3(3, 5, 7);
+
+        var path = new List<Vector3>()
+        {
+            v1,
+            new(v1.X, v1.Y, v2.Z),
+            new(v2.X, v1.Y, v2.Z),
+            v2
+        };
+        var shape = new FoPipe3D("test", "Red")
+        {
+
+        };
+        shape.CreateTube("hello", 0.25, path);
+
+        AddIntoArena<FoPipe3D>(shape);
+
+    }
     public void DoAddWiresArena()
     {
         for (int i = 0; i < 20; i++)
