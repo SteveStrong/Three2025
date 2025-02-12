@@ -20,30 +20,30 @@
     <ShapeTreeView/>
 
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">
-        <h4>Add to Scene</h4>
+        <p>Add to Scene</p>
         <button class="btn btn-primary" @onclick="DoAddAxisToScene">Axis to Scene</button>
-        <button class="btn btn-primary" @onclick="DoRequestAddJetToScene">Request Jet to Scene</button>
+        @* <button class="btn btn-primary" @onclick="DoRequestAddJetToScene">Request Jet to Scene</button>
         <button class="btn btn-primary" @onclick="DoAddBoxToScene">Box to Scene</button>
         <button class="btn btn-primary" @onclick="DoAddTubeToScene">Tube to Scene</button>
         <button class="btn btn-primary" @onclick="DoAddConeToScene">Cone to Scene</button>
-        <button class="btn btn-primary" @onclick="DoRequestAddTextToScene">Request Text to Scene</button>
+        <button class="btn btn-primary" @onclick="DoRequestAddTextToScene">Request Text to Scene</button> *@
         
 
-        <h4>Add to Arena</h4>
-                <button class="btn btn-primary" @onclick="DoAddPipeToArena">Pipe to Arena</button>
-
-        <button class="btn btn-primary" @onclick="DoAddGeomToArena">Geometry to Arena</button>
+        <p>Add to Arena</p>
+        <button class="btn btn-primary" @onclick="DoAddPipeToArena">Pipe to Arena</button>
+        @* <button class="btn btn-primary" @onclick="DoAddGeomToArena">Geometry to Arena</button>
         <button class="btn btn-primary" @onclick="DoAddTRexToArena">T-Rex to Arena</button>
         <button class="btn btn-primary" @onclick="DoAddTRISOCToArena">TRISOC to Arena</button>
         <button class="btn btn-primary" @onclick="DoAddTextArena">Add Text</button>
-        <button class="btn btn-primary" @onclick="DoAddPorscheToArena">Porsche</button>
+        <button class="btn btn-primary" @onclick="DoAddPorscheToArena">Porsche</button> *@
         <button class="btn btn-primary" @onclick="DoAddEquipmentArena">Equipment</button>
         <button class="btn btn-primary" @onclick="DoAddRacksArena">Racks</button>
+        <button class="btn btn-primary" @onclick="OnAddCageToRacks">Add Cage</button>
         <button class="btn btn-primary" @onclick="DoAddRoutesArena">Routes</button>
         
-        <h4>Add to World</h4>
+        @* <h4>Add to World</h4>
         <button class="btn btn-primary" @onclick="OnAddCage">Add Cage</button>
-        <button class="btn btn-primary" @onclick="DoAddTriSocGeometry">TriSoc</button>
+        <button class="btn btn-primary" @onclick="DoAddTriSocGeometry">TriSoc</button> *@
     </RadzenStack>
     <AIChat/>
 </div>

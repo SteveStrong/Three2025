@@ -30,11 +30,13 @@ public interface IRackTech : ITechnician
 
 public class RackTech : IRackTech
 {
-    public IFoundryService FoundryService { get; init; }
+    protected IWorkspace Workspace { get; init; }
+    protected IFoundryService FoundryService { get; init; }
     protected MockDataGenerator DataGenerator { get; set; } = new();
 
-    public RackTech(IFoundryService foundry)
+    public RackTech(IWorkspace space, IFoundryService foundry)
     {
+        Workspace = space;
         FoundryService = foundry;
     }
 
@@ -50,12 +52,12 @@ public class RackTech : IRackTech
 
     public FoShape3D CreateEquipment(string name, double Y, double height)
     {
-        var color = DataGenerator.GenerateColor();
+        //var color = DataGenerator.GenerateColor();
 
         var width = 3.0;
         var depth = 2.0;
 
-        var box = new FoShape3D(name,color)
+        var box = new FoShape3D(name,"Orange")
         {
             Transform = new Transform3()
             {
@@ -64,7 +66,17 @@ public class RackTech : IRackTech
         };
         box.CreateBox(name, width, height, depth);
 
-        var count = DataGenerator.GenerateInt(3, 6);
+        var boxName = new FoText3D("Name", "white")
+        {
+            Text = name,
+            Transform = new Transform3()
+            {
+                Position = new Vector3(width, 0, 0),
+            }
+        };
+        box.AddSubGlyph3D<FoText3D>(boxName);
+
+        var count = DataGenerator.GenerateInt(2, 5);
         for( int i=0; i<count; i++)
         {
             var x = i * width/(1.0 *count) - width/2.0 + width/(2.0 * count);
@@ -73,10 +85,20 @@ public class RackTech : IRackTech
             {
                 Transform = new Transform3()
                 {
-                    Position = new Vector3(x, 0, depth/2),
+                    Position = new Vector3(x, 0, -depth/2),
                 }
             };
             connect.CreateBox(cnn, 0.2, 0.2, 0.2);
+            var connName = new FoText3D("Name", "black")
+            {
+                Text = cnn,
+                Transform = new Transform3()
+                {
+                    Position = new Vector3(0, 0, -.2),
+                }
+            };
+            connect.AddSubGlyph3D<FoText3D>(connName);
+
             box.AddSubGlyph3D<FoShape3D>(connect);
         }
 
@@ -84,31 +106,58 @@ public class RackTech : IRackTech
         return box;
     }
 
+
+
+
     public FoShape3D CreateRack(string name, double x, double z, double height = 10, double angle = 0)
     {
         var width = 3.0;
         var depth = 2.0;
+        var drop = height/2;
 
         var list1 = new List<FoShape3D>()
         {
-            CreateEquipment("box1", 0, 1.5),
-            CreateEquipment("box2", 3, 2.5),
-            CreateEquipment("box3", 6, 3.5),
-            CreateEquipment("box4", 10, 1.5),
+            CreateEquipment("box1", 0-drop, 1.0),
+            CreateEquipment("box2", 3-drop, 2.5),
+            CreateEquipment("box3", 6-drop, 3.5),
+            CreateEquipment("box4", 10-drop, 1.5),
         };
+
+        var list2 = new List<FoShape3D>()
+        {
+            CreateEquipment("box1", 1-drop, 1.5),
+            CreateEquipment("box2", 4-drop, 2.5),
+            CreateEquipment("box3", 10-drop, 1.0),
+        };
+
+        var list = name.EndsWith("1") ? list1 : list2;
 
         var group = new FoRack(name)
         {
             Transform = new Transform3()
             {
                 Position = new Vector3(x, height/2, z),
+                //Pivot = new Vector3(0, -height/2, 0),
                 Rotation = new Euler(0, angle, 0),
             }
         };
         group.CreateBoundary(name, width, height, depth); //try to have three.js compute the bounding box
 
-        foreach (var box in list1)
+        var rackName = new FoText3D("Name", "White")
+        {
+            Text = name,
+            Transform = new Transform3()
+            {
+                Position = new Vector3(0, -1 - height/2, 0),
+            }
+        };
+        group.AddSubGlyph3D<FoText3D>(rackName);       
+
+        foreach (var box in list)
             group.AddSubGlyph3D<FoShape3D>(box);
+
+        var arena = Workspace.GetArena();
+        arena.AddShapeToStage(group);  //this is what the world publish is doing
 
         return group;
     }
@@ -143,7 +192,7 @@ public class RackTech : IRackTech
         var color = DataGenerator.GenerateColor();
         var result = new FoPipe3D("pipe", color)
         {
-            Key = $"{from}->{to}",
+            Key = $"PIPE: {from}->{to}",
             FromShape3D = p1 as FoShape3D,
             ToShape3D = p2 as FoShape3D,
 
