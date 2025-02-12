@@ -4,7 +4,7 @@
 using BlazorThreeJS.Maths;
 using FoundryBlazor.Shape;
 
-namespace Three2025.Model;
+namespace Three2025.Apprentice;
 public class Link3D : FoShape3D
 {
     public Node3D Start { get; set; }

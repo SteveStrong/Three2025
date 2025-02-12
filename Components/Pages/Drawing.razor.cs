@@ -15,6 +15,7 @@ using BlazorThreeJS.Materials;
 using FoundryBlazor.PubSub;
 using FoundryRulesAndUnits.Models;
 using BlazorThreeJS.Core;
+using Three2025.Apprentice;
 
 
 
@@ -35,7 +36,6 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
 
     protected MockDataGenerator DataGenerator { get; set; } = new();
-    private CableWorld World3D { get; set; } = null!;
 
     public (bool, Scene3D) GetCurrentScene()
     {
@@ -77,8 +77,8 @@ public partial class DrawingBase : ComponentBase, IDisposable
             GlyphId = Guid.NewGuid().ToString(),
             //BoundingBox = new Vector3(bx, by, bz),
         };
-
-        World3D.AddGlyph3D<FoShape3D>(shape);
+        var arena = Workspace.GetArena();
+        arena.AddShapeToStage<FoShape3D>(shape);
         return shape;
     }
 
@@ -124,7 +124,6 @@ public partial class DrawingBase : ComponentBase, IDisposable
         {
 
             var box = AddBox(DataGenerator.GenerateName());
-            World3D.AddGlyph3D<FoShape3D>(box);
             arena.AddShapeToStage<FoShape3D>(box);
         });
 
@@ -170,19 +169,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
     }
 
 
-    public void OnAddCage()
-    {
-        var cables = new CableChannels(World3D);
-        cables.GenerateGeometry();
 
-        var arena = Workspace.GetArena() as FoArena3D;
-        var stage = arena.EstablishStage<FoStage3D>("The Cage");
-        World3D.PublishToArena(arena);
-
-        // var (found, scene) = GetCurrentScene();
-        // if (found)
-        //     stage.RefreshScene(scene);
-    }
 
     public void OnAddTRex()
     {

@@ -1,11 +1,9 @@
 
-
-
 using BlazorThreeJS.Maths;
 using FoundryBlazor.Shape;
 using FoundryBlazor.Extensions;
 
-namespace Three2025.Model;
+namespace Three2025.Apprentice;
 public class Node3D : FoShape3D
 {
     public Node3D(string name, string color): base(name, color)
@@ -39,20 +37,7 @@ public class Node3D : FoShape3D
         return a.Distance(b);
     }
 
-    // public Node3D SetPosition(double x, double y, double z)
-    // {
-    //     GetTransform().Position = new Vector3(x, y, z);
-    //     return this;
-    // }
-    // public Node3D Reposition(double dx, double dy, double dz)
-    // {
-    //     var pos = GetPosition()!;
-    //     var x = pos.X + dx;
-    //     var y = pos.Y + dy;
-    //     var z = pos.Z + dz;
-    //     GetTransform().Position = new Vector3(x, y, z);
-    //     return this;
-    // }
+
 
     public override string GetTreeNodeTitle()
     {

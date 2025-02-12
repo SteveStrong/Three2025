@@ -15,6 +15,7 @@ using BlazorThreeJS.Materials;
 using FoundryBlazor.PubSub;
 using FoundryRulesAndUnits.Models;
 using BlazorThreeJS.Core;
+using Three2025.Apprentice;
 
 
 

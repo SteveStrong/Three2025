@@ -9,11 +9,9 @@ namespace Three2025.Model;
 public class TriSocGeometry : FoComponent
 {
 
-    protected CableWorld _world;
 
-    public TriSocGeometry(CableWorld world)
+    public TriSocGeometry()
     {
-        _world = world;
 
     }
 
@@ -26,7 +24,7 @@ public class TriSocGeometry : FoComponent
         var depth = new Length(.1, "m");
 
         var root = new FoGroup3D("Labels");
-        _world.AddGlyph3D<FoGroup3D>(root);
+        //_world.AddGlyph3D<FoGroup3D>(root);
 
         var box = new SpacialBox3D(width.Value(), height.Value(), depth.Value(), "m");
 
@@ -79,14 +77,14 @@ public class TriSocGeometry : FoComponent
     }
 
 
-    public List<FoShape3D> GenerateMarkers()
+    public (FoGroup3D root, List<FoShape3D> list) GenerateMarkers()
     {
         var width = new Length(.1, "m");
         var height = new Length(.1, "m");
         var depth = new Length(.1, "m");
 
         var root = new FoGroup3D("Labels");
-        _world.AddGlyph3D<FoGroup3D>(root);
+        //_world.AddGlyph3D<FoGroup3D>(root);
 
         var box = new SpacialBox3D(width.Value(), height.Value(), depth.Value(), "m");
 
@@ -103,62 +101,8 @@ public class TriSocGeometry : FoComponent
         GenerateMarker(root, box.RightBottomBack, "BottomRightBack");
 
 
-        return root.GetSlot<FoShape3D>().Values();
+        return (root, root.GetSlot<FoShape3D>().Values());
     }
-
-    public List<Node3D> GenerateColumn(string groupName, double x, double z, Length Height, Length Step)
-    {
-
-        var h = Height.Value();
-        var s = Step.Value();
-
-        var columns = new List<Node3D>();
-        var y = 0.0;
-
-        var root = new FoGroup3D(groupName);
-        _world.AddGlyph3D<FoGroup3D>(root);
-
-        while (y <= h)
-        {
-            var name = $"{groupName}:{x:F1}:{y:F1}:{z:F1}";
-            var shape = new Node3D(name, "blue")
-            {
-                Transform = new Transform3()
-                {
-                    Position = new Vector3(x, y, z),
-                }
-            };
-            shape.CreateBox(name, .05, .03, .05);
-            columns.Add(shape);
-            root.AddShape<FoShape3D>(shape);
-            y += s;
-        }
-
-        for (int i = 1; i < columns.Count; i++)
-        {
-            var start = columns[i - 1];
-            var finish = columns[i];
-            var link = new Link3D($"Link::{x:F1}:{z:F1}{i}", "blue", start, finish, 0.01);
-            root.AddShape<FoShape3D>(link);
-        }
-        return columns;
-    }
-
-    //create a method to link together 2 columns of List<Node3D>
-    public void LinkColumns(string name, List<Node3D> start, List<Node3D> finish)
-    {
-        var root = new FoGroup3D(name);
-        _world.AddGlyph3D<FoGroup3D>(root);
-
-        for (int i = 0; i < start.Count(); i++)
-        {
-            var s = start[i];
-            var f = finish[i];
-            var link = new Link3D($"{name}:{i}", "blue", s, f, 0.01);
-            root.AddShape<FoShape3D>(link);
-        }
-    }
-
 
 
 }
