@@ -9,7 +9,7 @@ using Three2025.Apprentice;
 
 public interface IRackTech : ITechnician
 {
-    FoEquipment CreateEquipment(string name, double Y, double height);
+    void DoAddEquipmentArena();
     FoRack CreateRack(string name, double x, double z, double height = 10, double angle = 0);
 
     bool ComputeHitBoundaries(Action OnComplete);
@@ -39,116 +39,35 @@ public class RackTech : IRackTech
         return true;
     } 
 
-    public FoEquipment CreateEquipment(string name, double Y, double height)
+ 
+    public void DoAddEquipmentArena()
     {
-        //var color = DataGenerator.GenerateColor();
-
-        var width = 3.0;
-        var depth = 2.0;
-
-        var box = new FoEquipment(name,"Orange")
+        var list = new List<FoEquipment>()
         {
-            Transform = new Transform3()
-            {
-                Position = new Vector3(0, Y + height/2, 0),
-            }
+            FoEquipment.CreateEquipment("x1", 0, 1.5, DataGenerator.GenerateInt(2, 5)),
+            FoEquipment.CreateEquipment("x2", 3, 2.5, DataGenerator.GenerateInt(2, 5)),
+            FoEquipment.CreateEquipment("x3", 6, 3.5, DataGenerator.GenerateInt(2, 5)),
+            FoEquipment.CreateEquipment("x4", 10, 1.5, DataGenerator.GenerateInt(2, 5)),
         };
-        box.CreateBox(name, width, height, depth);
 
-        var boxName = new FoText3D("Name", "white")
+        var arena = Workspace.GetArena();
+        foreach (var box in list)
         {
-            Text = name,
-            Transform = new Transform3()
-            {
-                Position = new Vector3(width, 0, 0),
-            }
-        };
-        box.AddSubGlyph3D<FoText3D>(boxName);
-
-        var count = DataGenerator.GenerateInt(2, 5);
-        for( int i=0; i<count; i++)
-        {
-            var x = i * width/(1.0 *count) - width/2.0 + width/(2.0 * count);
-            var cnn = $"cn{i}";
-            var connect = new FoConnector(cnn,"Red")
-            {
-                Transform = new Transform3()
-                {
-                    Position = new Vector3(x, 0, -depth/2),
-                }
-            };
-            connect.CreateBox(cnn, 0.2, 0.2, 0.2);
-            var connName = new FoText3D("Name", "black")
-            {
-                Text = cnn,
-                Transform = new Transform3()
-                {
-                    Position = new Vector3(0, 0, -.2),
-                }
-            };
-            connect.AddSubGlyph3D<FoText3D>(connName);
-
-            box.AddSubGlyph3D<FoConnector>(connect);
+            arena.AddShapeToStage(box);
         }
 
-
-        return box;
     }
-
-
 
 
     public FoRack CreateRack(string name, double x, double z, double height = 10, double angle = 0)
     {
-        var width = 3.0;
-        var depth = 2.0;
-        var drop = height/2;
 
-        var list1 = new List<FoEquipment>()
-        {
-            CreateEquipment("box1", 0-drop, 1.0),
-            CreateEquipment("box2", 3-drop, 2.5),
-            CreateEquipment("box3", 6-drop, 3.5),
-            CreateEquipment("box4", 10-drop, 1.5),
-        };
-
-        var list2 = new List<FoEquipment>()
-        {
-            CreateEquipment("box1", 1-drop, 1.5),
-            CreateEquipment("box2", 4-drop, 2.5),
-            CreateEquipment("box3", 10-drop, 1.0),
-        };
-
-        var list = name.EndsWith("1") ? list1 : list2;
-
-        var group = new FoRack(name)
-        {
-            Transform = new Transform3()
-            {
-                Position = new Vector3(x, height/2, z),
-                //Pivot = new Vector3(0, -height/2, 0),
-                Rotation = new Euler(0, angle, 0),
-            }
-        };
-        group.CreateBoundary(name, width, height, depth); //try to have three.js compute the bounding box
-
-        var rackName = new FoText3D("Name", "White")
-        {
-            Text = name,
-            Transform = new Transform3()
-            {
-                Position = new Vector3(0, -1 - height/2, 0),
-            }
-        };
-        group.AddSubGlyph3D<FoText3D>(rackName);       
-
-        foreach (var box in list)
-            group.AddSubGlyph3D<FoEquipment>(box);
-
+        var rack = FoRack.CreateRack(name, x, z, height, angle);
+                
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage<FoRack>(group);  
-
-        return group;
+        arena.AddShapeToStage<FoRack>(rack);  
+  
+        return rack;
     }
 
     public (bool success, T obj, Vector3 vector) TryFindHitPosition<T>(string path) where T: FoGlyph3D

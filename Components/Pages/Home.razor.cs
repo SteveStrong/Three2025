@@ -1,13 +1,8 @@
 ﻿using FoundryBlazor.Shared;
 using FoundryBlazor.Solutions;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using FoundryBlazor.Shape;
-using Three2025.Model;
-using BlazorThreeJS.Viewers;
-using BlazorThreeJS.Settings;
 using BlazorThreeJS.Maths;
-using BlazorThreeJS.Enums;
 using FoundryRulesAndUnits.Extensions;
 using BlazorThreeJS.Objects;
 using BlazorThreeJS.Geometires;
@@ -28,7 +23,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     public Canvas3DComponentBase Canvas3DReference = null;
 
     [Inject] public NavigationManager Navigation { get; set; }
-    [Inject] protected IJSRuntime JsRuntime { get; set; }
+
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public IRackTech RackTech { get; init; }
@@ -39,10 +34,6 @@ public partial class HomeBase : ComponentBase, IDisposable
 
 
     protected MockDataGenerator DataGenerator { get; set; } = new();
-
-
-
-
 
 
     protected override void OnInitialized()
@@ -76,8 +67,6 @@ public partial class HomeBase : ComponentBase, IDisposable
         return path;
     }
     
-
-
 
 
 
@@ -163,6 +152,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         RackTech.ComputeHitBoundaries(() => {
             CageTech.CreateCageForRack("rack1");
+            CageTech.CreateCageForRack("rack2");
         });
     }
 
@@ -279,24 +269,8 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void DoAddEquipmentArena()
     {
-        var list = new List<FoShape3D>()
-        {
-            RackTech.CreateEquipment("x1", 0, 1.5),
-            RackTech.CreateEquipment("x2", 3, 2.5),
-            RackTech.CreateEquipment("x3", 6, 3.5),
-            RackTech.CreateEquipment("x4", 10, 1.5),
-        };
-
-        var arena = Workspace.GetArena();
-        foreach (var box in list)
-        {
-            arena.AddShapeToStage(box);
-        }
-
+        RackTech.DoAddEquipmentArena();
     }
-
- 
-
 
 
     

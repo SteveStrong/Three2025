@@ -45,6 +45,8 @@ public class CageTech : ICageTech
             return null;
         }
 
+        var equip = rack.GetEquipment();
+
         var cage = new FoShape3D(name, "Blue")
         {
             Transform = new Transform3()
