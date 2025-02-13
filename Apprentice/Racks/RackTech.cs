@@ -7,21 +7,10 @@ using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 using Three2025.Apprentice;
 
-public class FoRack : FoShape3D
-{
-    public FoRack(string name) : base(name)
-    {
-    }
-
-    public FoRack(string name, string color) : base(name, color)
-    {
-    }
-}
-
 public interface IRackTech : ITechnician
 {
-    FoShape3D CreateEquipment(string name, double Y, double height);
-    FoShape3D CreateRack(string name, double x, double z, double height = 10, double angle = 0);
+    FoEquipment CreateEquipment(string name, double Y, double height);
+    FoRack CreateRack(string name, double x, double z, double height = 10, double angle = 0);
 
     bool ComputeHitBoundaries(Action OnComplete);
     (bool success, FoPipe3D pipe) TryCreatePipe(string from, string to);
@@ -50,14 +39,14 @@ public class RackTech : IRackTech
         return true;
     } 
 
-    public FoShape3D CreateEquipment(string name, double Y, double height)
+    public FoEquipment CreateEquipment(string name, double Y, double height)
     {
         //var color = DataGenerator.GenerateColor();
 
         var width = 3.0;
         var depth = 2.0;
 
-        var box = new FoShape3D(name,"Orange")
+        var box = new FoEquipment(name,"Orange")
         {
             Transform = new Transform3()
             {
@@ -81,7 +70,7 @@ public class RackTech : IRackTech
         {
             var x = i * width/(1.0 *count) - width/2.0 + width/(2.0 * count);
             var cnn = $"cn{i}";
-            var connect = new FoShape3D(cnn,"Red")
+            var connect = new FoConnector(cnn,"Red")
             {
                 Transform = new Transform3()
                 {
@@ -99,7 +88,7 @@ public class RackTech : IRackTech
             };
             connect.AddSubGlyph3D<FoText3D>(connName);
 
-            box.AddSubGlyph3D<FoShape3D>(connect);
+            box.AddSubGlyph3D<FoConnector>(connect);
         }
 
 
@@ -109,13 +98,13 @@ public class RackTech : IRackTech
 
 
 
-    public FoShape3D CreateRack(string name, double x, double z, double height = 10, double angle = 0)
+    public FoRack CreateRack(string name, double x, double z, double height = 10, double angle = 0)
     {
         var width = 3.0;
         var depth = 2.0;
         var drop = height/2;
 
-        var list1 = new List<FoShape3D>()
+        var list1 = new List<FoEquipment>()
         {
             CreateEquipment("box1", 0-drop, 1.0),
             CreateEquipment("box2", 3-drop, 2.5),
@@ -123,7 +112,7 @@ public class RackTech : IRackTech
             CreateEquipment("box4", 10-drop, 1.5),
         };
 
-        var list2 = new List<FoShape3D>()
+        var list2 = new List<FoEquipment>()
         {
             CreateEquipment("box1", 1-drop, 1.5),
             CreateEquipment("box2", 4-drop, 2.5),
@@ -154,10 +143,10 @@ public class RackTech : IRackTech
         group.AddSubGlyph3D<FoText3D>(rackName);       
 
         foreach (var box in list)
-            group.AddSubGlyph3D<FoShape3D>(box);
+            group.AddSubGlyph3D<FoEquipment>(box);
 
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage(group);  //this is what the world publish is doing
+        arena.AddShapeToStage<FoRack>(group);  
 
         return group;
     }

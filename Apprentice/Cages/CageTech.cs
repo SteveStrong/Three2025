@@ -37,14 +37,22 @@ public class CageTech : ICageTech
     public FoShape3D CreateCageForRack(string name)
     {
         var arena = Workspace.GetArena();
+        var stage = arena.CurrentStage();
+
+        var (success, rack) = stage.FindMember<FoRack>(name);
+        if (!success) {
+            FoundryService.Toast().Error($"Rack {name} not found");
+            return null;
+        }
+
         var cage = new FoShape3D(name, "Blue")
         {
             Transform = new Transform3()
             {
-                Position = new Vector3(0, 0, 0),
+                Position = rack.GetTransform().Position,
             }
         };
-        cage.CreateBox(name, 1, 5, 1);
+        cage.CreateBox(name, 1, 15, 1);
         arena.AddShapeToStage<FoShape3D>(cage);
         return cage;
     }
