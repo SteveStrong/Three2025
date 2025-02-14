@@ -16,6 +16,7 @@ using Three2025.Apprentice;
 
 public interface ICageTech : ITechnician
 {
+    void CreateCage();
     void CreateCageForRack(string name);
     (int j, FoShape3D shape) GetSpacialBox(string name, int i, string section);
 }
@@ -34,8 +35,22 @@ public class CageTech : ICageTech
         FoundryService = foundry;
     }
 
+    public void CreateCage()
+    {
+        var arena = Workspace.GetArena();
+        var stage = arena.CurrentStage();
+
+        var racks = stage.GetMembers<FoRack>();
+        foreach (var rack in racks)
+        {
+            CreateCageForRack(rack);
+        }
+    }
+
     public void CreateCageForRack(string name)
     {
+        var trayNodes = new List<Node3D>();
+
         var arena = Workspace.GetArena();
         var stage = arena.CurrentStage();
 
@@ -44,8 +59,17 @@ public class CageTech : ICageTech
             FoundryService.Toast().Error($"Rack {name} not found");
             return;
         }
+        CreateCageForRack(rack);
+    }
 
+    public List<Node3D> CreateCageForRack(FoRack rack)
+    {
+        var trayNodes = new List<Node3D>();
         var allNodes = new List<Node3D>();
+
+        var arena = Workspace.GetArena();
+        var stage = arena.CurrentStage();
+
         
         var equip = rack.GetEquipment();
         foreach (var item in equip)
@@ -59,15 +83,19 @@ public class CageTech : ICageTech
         foreach (var item in trays)
         {
             var trayCage = CreateCageForTray(item);
-            allNodes.AddRange(trayCage);
+            trayNodes.AddRange(trayCage);
         }
+
+        allNodes.AddRange(trayNodes);
 
         //get the nodes for the rack left rail
         var leftRail = allNodes.Where(p => p.GetName().Matches("L")).OrderBy(p => p.GetPosition().Y).ToList();
-        AddLinksBetween(rack, arena, leftRail);
+        AddLinksBetween(rack, arena, leftRail, "Blue");
 
         var rightRail = allNodes.Where(p => p.GetName().Matches("R")).OrderBy(p => p.GetPosition().Y).ToList();
-        AddLinksBetween(rack, arena, rightRail);
+        AddLinksBetween(rack, arena, rightRail, "Blue");
+
+        return trayNodes;
 
     }
 
@@ -88,6 +116,7 @@ public class CageTech : ICageTech
 
             var cage = new Node3D(item.GetName(), "Blue")
             {
+                Title = $"{equip.GetName()}.{item.GetName()}",
                 Transform = new Transform3()
                 {
                     Position = loc,
@@ -98,7 +127,7 @@ public class CageTech : ICageTech
             nodes.Add(cage);
         }
 
-        AddLinksBetween(equip, arena, nodes);
+        AddLinksBetween(equip, arena, nodes, "Blue");
 
         return nodes;
     }
@@ -120,29 +149,35 @@ public class CageTech : ICageTech
 
             var cage = new Node3D(item.GetName(), "Blue")
             {
+                Title = $"{tray.GetName()}.{item.GetName()}",
                 Transform = new Transform3()
                 {
                     Position = loc,
                 }
             };
-            cage.CreateBox(item.GetName(), .2, .2, .3);
+            cage.CreateSphere(item.GetName(), 0.3, 0.3, 0.3);
             arena.AddShapeToStage<Node3D>(cage);
             nodes.Add(cage);
         }
 
-        AddLinksBetween(tray, arena, nodes);
+        AddLinksBetween(tray, arena, nodes, "Blue");
 
         return nodes;
     }
 
-    private void AddLinksBetween(FoShape3D parent, IArena arena, List<Node3D> nodes)
+    private void AddLinksBetween(FoShape3D parent, IArena arena, List<Node3D> nodes, string color)
     {
         for (int i = 1; i < nodes.Count; i++)
         {
             var start = nodes[i - 1];
             var finish = nodes[i];
-            var link = new Link3D($"Link:{parent.GetName()}:{start.GetName()}->{finish.GetName()}", "blue", start, finish);
+            var link = new Link3D($"Link:{parent.GetName()}:{start.Title}->{finish.Title}", color, start, finish);
             arena.AddShapeToStage<Link3D>(link);
+
+            start.AddLink(link);
+            finish.AddLink(link);
+
+            //$"{link.GetName()} distance {link.Distance()}".WriteSuccess();
         }
     }
 
@@ -213,95 +248,6 @@ public class CageTech : ICageTech
 
         root.AddSubGlyph3D(pipe);
         return pipe;
-    }
-
-    public void GenerateCage(double x, double z, Length Width, Length Height, Length Depth, Length Step)
-    {
-
-        var w = Width.Value();
-        var d = Depth.Value();
-
-        var (_,lf) = GenerateColumn("Left-Front", x, z, Height, Step);
-        var (_,lb) = GenerateColumn("Left-Back", x, z+d, Height, Step);
-        LinkColumns($"Left-Side", lf, lb);
-
-        var (_, cb) = GenerateColumn("Center-Back", x +w/2, z+d, Height, Step);
-        LinkColumns($"Left-Back-Side", lb, cb);
-
-        var (_, rb) = GenerateColumn("Right-Back", x +w, z+d, Height, Step);
-        LinkColumns($"Right-Back-Side", cb, rb);
-
-        var (_,rf) = GenerateColumn("Right-Front", x +w, z, Height, Step);
-        LinkColumns($"Right-Side", rb, rf);
-    }
-
-    
-    public FoGroup3D LinkColumns(string name, List<Node3D> start, List<Node3D> finish)
-    {
-        var root = new FoGroup3D(name);
-
-        for (int i = 0; i < start.Count(); i++)
-        {
-            var s = start[i];
-            var f = finish[i];
-            var link = new Link3D($"{name}:{i}", "blue", s, f);
-            root.AddShape<FoShape3D>(link);
-        }
-        return root;
-    }
-
-    public (FoGroup3D group, List<Node3D> nodes) GenerateColumn(string groupName, double x, double z, Length Height, Length Step)
-    {
-
-        var h = Height.Value();
-        var s = Step.Value();
-
-        var columns = new List<Node3D>();
-        var y = 0.0;
-
-        var root = new FoGroup3D(groupName);
-
-        while (y <= h)
-        {
-            var name = $"{groupName}:{x:F1}:{y:F1}:{z:F1}";
-            var shape = new Node3D(name, "blue")
-            {
-                Transform = new Transform3()
-                {
-                    Position = new Vector3(x, y, z),
-                }
-            };
-            shape.CreateBox(name, .05, .03, .05);
-            columns.Add(shape);
-            root.AddShape<FoShape3D>(shape);
-            y += s;
-        }
-
-        for (int i = 1; i < columns.Count; i++)
-        {
-            var start = columns[i - 1];
-            var finish = columns[i];
-            var link = new Link3D($"Link::{x:F1}:{z:F1}{i}", "blue", start, finish);
-            root.AddShape<FoShape3D>(link);
-        }
-        return (root, columns);
-    }
-
-    public void GenerateGeometry()
-    {
-        var width = new Length(1, "m");
-        var height = new Length(2.6, "m");
-        var depth = new Length(.8, "m");
-        var step = new Length(.2, "m");
-
-        var (x, z) = (5.0, 5.0);
-        GenerateCage(x, z, width, height, depth, step);
-        // x += width.Value() + 0.05;
-        // GenerateCage(x, z, width, height, depth, step);
-        // x += width.Value() + 0.05;
-        // GenerateCage(x, z, width, height, depth, step);
-        // x += width.Value() + 0.05;
-        // GenerateCage(x, z, width, height, depth, step);
     }
 
 

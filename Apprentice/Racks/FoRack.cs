@@ -58,7 +58,7 @@ public class FoRack : FoShape3D
                 Rotation = new Euler(0, angle, 0),
             }
         };
-        group.CreateBoundary(name, width, height, depth); //try to have three.js compute the bounding box
+        group.CreateBoundary(name, width, height, depth); 
 
         var rackName = new FoText3D("Name", "White")
         {
@@ -73,7 +73,7 @@ public class FoRack : FoShape3D
         foreach (var box in list)
             group.AddSubGlyph3D<FoEquipment>(box);
 
-        var tray = FoTray.CreateTray("Tray", height-2, .2);
+        var tray = FoTray.CreateTray("Tray", height-2, .05);
         group.AddSubGlyph3D<FoTray>(tray);
 
 
