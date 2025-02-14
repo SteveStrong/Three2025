@@ -136,13 +136,11 @@ public class CageTech : ICageTech
             var (success, data) = item.GetValue3D();
             if (!success || data.HitBoundary == null) continue;
 
-            var loc = data.HitBoundary.GetPosition();
-
             var node = new Node3D(item.GetName(), "Blue")
             {
                 Transform = new Transform3()
                 {
-                    Position = loc,
+                    Position = data.HitBoundary.GetPosition(),
                 }
             };
             node.CreateBox(item.GetName(), .2, .2, .3);
@@ -169,13 +167,11 @@ public class CageTech : ICageTech
             var (success, data) = item.GetValue3D();
             if (!success || data.HitBoundary == null) continue;
 
-            var loc = data.HitBoundary.GetPosition();
-
             var node = new Node3D(item.GetName(), "Blue")
             {
                 Transform = new Transform3()
                 {
-                    Position = loc,
+                    Position = data.HitBoundary.GetPosition(),
                 }
             };
             node.CreateSphere(item.GetName(), 0.3, 0.3, 0.3);
