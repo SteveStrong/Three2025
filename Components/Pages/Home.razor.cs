@@ -151,7 +151,7 @@ public partial class HomeBase : ComponentBase, IDisposable
     public void OnAddCageToRacks()
     {
         RackTech.ComputeHitBoundaries(() => {
-            CageTech.CreateCage();
+            CageTech.CreateRoutingCage();
         });
     }
 

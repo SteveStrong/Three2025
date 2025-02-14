@@ -9,12 +9,20 @@ using BlazorThreeJS.Core;
 namespace Three2025.Apprentice;
 public class Node3D : FoShape3D
 {
-    public string Title { get; set; }
+
     public List<Link3D> Links { get; set; } = new();
 
     public Node3D(string name, string color): base(name, color)
     {
-        Title = name;
+    }
+
+    public string GetTitle()
+    {
+        var parent = GetParent() as FoGlyph3D;
+        if (parent != null)
+            return $"{parent.GetName()}.{GetName()}";
+
+        return GetName();
     }
 
     public override (bool success, Vector3 path) HitPosition()
