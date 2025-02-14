@@ -1,25 +1,24 @@
 using BlazorThreeJS.Maths;
 using FoundryBlazor.Shape;
 
-public class FoEquipment : FoShape3D
+public class FoTray : FoShape3D
 {
 
-    public FoEquipment(string name) : base(name)
+    public FoTray(string name) : base(name)
     {
     }
 
-    public FoEquipment(string name, string color) : base(name, color)
+    public FoTray(string name, string color) : base(name, color)
     {
     }
 
-    public static FoEquipment CreateEquipment(string name, double Y, double height, int connectCount)
+    public static FoTray CreateTray(string name, double Y, double height)
     {
-        //var color = DataGenerator.GenerateColor();
 
         var width = 3.0;
         var depth = 2.0;
 
-        var box = new FoEquipment(name, "Orange")
+        var box = new FoTray(name, "aqua")
         {
             Transform = new Transform3()
             {
@@ -38,18 +37,7 @@ public class FoEquipment : FoShape3D
         };
         box.AddSubGlyph3D<FoText3D>(boxName);
 
-        box.AddSubGlyph3D<FoText3D>(new FoText3D("Front", "black")
-        {
-            Text = "Front",
-            Transform = new Transform3()
-            {
-                Position = new Vector3(-width / 3, 0, depth),
-            }
-        });
-
-        FoConnector.ForEquipment(connectCount, width, depth, box);
-
-
+        FoConnector.ForTray(width, depth, box);
         return box;
     }
 

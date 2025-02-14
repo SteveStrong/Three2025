@@ -3,9 +3,10 @@
 
 using BlazorThreeJS.Maths;
 using FoundryBlazor.Shape;
+using FoundryRulesAndUnits.Extensions;
 
 namespace Three2025.Apprentice;
-public class Link3D : FoShape3D
+public class Link3D : FoPipe3D
 {
     public Node3D Start { get; set; }
     public Node3D Finish { get; set; }
@@ -13,20 +14,15 @@ public class Link3D : FoShape3D
     {
     }
 
-    public Link3D(string name, string color, Node3D start, Node3D finish, double inflate=0.01): base(name, color)
+    public Link3D(string name, string color, Node3D start, Node3D finish): base(name, color)
     {
         Start = start;
         Finish = finish;
 
-        var bb = start.Boundary(finish);
-        var pos = start.Center(finish);
+        FromShape3D = Start;
+        ToShape3D = Finish;
 
-        SetPosition(pos .X, pos.Y, pos.Z);
-        bb.X = bb.X < inflate ? inflate : bb.X;
-        bb.Y = bb.Y < inflate ? inflate : bb.Y;
-        bb.Z = bb.Z < inflate ? inflate : bb.Z;
-
-        CreateBox(name, bb.X, bb.Y, bb.Z);
+        CreatePipe(name, 0.1);
     }
 
     public Link3D SetPosition(double x, double y, double z)

@@ -21,7 +21,7 @@ public class RackTech : IRackTech
 {
     protected IWorkspace Workspace { get; init; }
     protected IFoundryService FoundryService { get; init; }
-    protected MockDataGenerator DataGenerator { get; set; } = new();
+
 
     public RackTech(IWorkspace space, IFoundryService foundry)
     {
@@ -42,12 +42,14 @@ public class RackTech : IRackTech
  
     public void DoAddEquipmentArena()
     {
+        MockDataGenerator gen = new();
+
         var list = new List<FoEquipment>()
         {
-            FoEquipment.CreateEquipment("x1", 0, 1.5, DataGenerator.GenerateInt(2, 5)),
-            FoEquipment.CreateEquipment("x2", 3, 2.5, DataGenerator.GenerateInt(2, 5)),
-            FoEquipment.CreateEquipment("x3", 6, 3.5, DataGenerator.GenerateInt(2, 5)),
-            FoEquipment.CreateEquipment("x4", 10, 1.5, DataGenerator.GenerateInt(2, 5)),
+            FoEquipment.CreateEquipment("x1", 0, 1.5, gen.GenerateInt(2, 5)),
+            FoEquipment.CreateEquipment("x2", 3, 2.5, gen.GenerateInt(2, 5)),
+            FoEquipment.CreateEquipment("x3", 6, 3.5, gen.GenerateInt(2, 5)),
+            FoEquipment.CreateEquipment("x4", 10, 1.5, gen.GenerateInt(2, 5)),
         };
 
         var arena = Workspace.GetArena();
@@ -97,7 +99,7 @@ public class RackTech : IRackTech
 
         $"Connecting {p1} @ {v1.X:F1},{v1.Y:F1},{v1.Z:F1} to {p2} @ {v2.X:F1},{v2.Y:F1},{v2.Z:F1}".WriteSuccess();
 
-        var color = DataGenerator.GenerateColor();
+        var color = "Red";
         var result = new FoPipe3D("pipe", color)
         {
             Key = $"PIPE: {from}->{to}",

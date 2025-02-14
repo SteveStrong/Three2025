@@ -16,7 +16,14 @@ public class FoRack : FoShape3D
 
     public List<FoEquipment> GetEquipment()
     {
-        return Members<FoEquipment>().ToList();
+        var members = AllSubGlyph3Ds().Where(x => x is FoEquipment).Cast<FoEquipment>().ToList();
+        return members;
+    }
+    
+    public List<FoTray> GetTrays()
+    {
+        var members = AllSubGlyph3Ds().Where(x => x is FoTray).Cast<FoTray>().ToList();
+        return members;
     }
 
     public static FoRack CreateRack(string name, double x, double z, double height = 10, double angle = 0)
@@ -66,6 +73,8 @@ public class FoRack : FoShape3D
         foreach (var box in list)
             group.AddSubGlyph3D<FoEquipment>(box);
 
+        var tray = FoTray.CreateTray("Tray", height-2, .2);
+        group.AddSubGlyph3D<FoTray>(tray);
 
 
         return group;

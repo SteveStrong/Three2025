@@ -2,6 +2,9 @@
 using BlazorThreeJS.Maths;
 using FoundryBlazor.Shape;
 using FoundryBlazor.Extensions;
+using BlazorThreeJS.Core;
+
+#nullable enable
 
 namespace Three2025.Apprentice;
 public class Node3D : FoShape3D
@@ -10,10 +13,9 @@ public class Node3D : FoShape3D
     {
     }
 
-    public Link3D CreateLink(string name, string color, Node3D start, Node3D finish)
+    public override (bool success, Vector3 path) HitPosition()
     {
-        var link = new Link3D(name, color, start, finish);
-        return link;
+        return (true, GetTransform().Position);
     }
 
     public Vector3 Boundary(Node3D target)
