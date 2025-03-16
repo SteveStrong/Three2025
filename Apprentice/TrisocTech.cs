@@ -31,6 +31,8 @@ public class Label3D : FoText3D
 public interface ITrisocTech : ITechnician
 {
     FoModel3D GetTrisocModel(string url);
+    
+    FoModel3D CreateModel(string name, string url);
     (int j, FoShape3D shape) GetSpacialBox(string name, int i, string section);
 
     void StartStopTimer();
@@ -178,6 +180,29 @@ public class TrisocTech : ITrisocTech
         var arena = FoundryService.Arena();
         arena.AddShapeToStage<FoModel3D>(CurrentModel);
         return CurrentModel;
+    }
+
+    public FoModel3D CreateModel(string name, string url)
+    {
+        var s = 1.0;
+        var y = 0.0;
+
+
+        var model = new FoModel3D("Model"+name)
+        {
+            Url = url,
+            Transform = new Transform3()
+            {
+                Position = new Vector3(0, y, 0),
+                Scale = new Vector3(s, s, s),
+            }
+        };
+
+        CreateTextLabel3D(model, name, name, Text3DAlign.Left, 1.5);
+
+        var arena = FoundryService.Arena();
+        arena.AddShapeToStage<FoModel3D>(model);
+        return model;
     }
 
     public (int j, FoShape3D shape) GetSpacialBox(string name, int i, string section)

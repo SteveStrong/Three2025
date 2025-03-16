@@ -86,11 +86,14 @@ public partial class TrisocBase : ComponentBase
     
     public void DoAddTRISOCToArena()
     {
-
         var url = GetReferenceTo(@"storage/StaticFiles/TRISOC.glb");
-
         Tech.GetTrisocModel(url);
+    }
 
+    public void DoAddRackArena()
+    {
+        var url = GetReferenceTo(@"storage/StaticFiles/8625799.glb");
+        Tech.CreateModel("8625799", url);
     }
 
     public void DoAddBoxArena()
