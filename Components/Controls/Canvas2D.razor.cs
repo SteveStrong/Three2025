@@ -88,7 +88,7 @@ public class Canvas2DBase : ComponentBase, IAsyncDisposable
             if ( Ctx == null ) return;
             Ctx = null;
 
-            $"Canvas2D {SceneName} DisposeAsync".WriteInfo();
+           // $"Canvas2D {SceneName} DisposeAsync".WriteInfo();
             await DoStop();
                 
             PubSub?.UnSubscribeFrom<RefreshUIEvent>(OnRefreshUIEvent);

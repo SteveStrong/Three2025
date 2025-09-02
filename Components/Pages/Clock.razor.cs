@@ -3,20 +3,11 @@ using FoundryBlazor.Solutions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using FoundryBlazor.Shape;
-using Three2025.Model;
 using BlazorThreeJS.Viewers;
-using BlazorThreeJS.Settings;
 using BlazorThreeJS.Maths;
-using BlazorThreeJS.Enums;
-using FoundryRulesAndUnits.Extensions;
 using BlazorThreeJS.Objects;
-using BlazorThreeJS.Geometires;
-using BlazorThreeJS.Materials;
 using FoundryBlazor.PubSub;
 using FoundryRulesAndUnits.Models;
-using BlazorThreeJS.Core;
-using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Mvc;
 using Three2025.Apprentice;
 
 
