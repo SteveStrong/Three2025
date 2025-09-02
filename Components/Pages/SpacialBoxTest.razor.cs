@@ -345,6 +345,167 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
         StateHasChanged();
     }
 
+        // === VISUALIZATION TEST METHODS ===
+        public void ShowVertices()
+        {
+            if (CurrentBox == null)
+            {
+                StatusMessage = "No box created yet. Please create a box first.";
+                StateHasChanged();
+                return;
+            }
+            var arena = Workspace?.GetArena();
+            if (arena == null)
+            {
+                StatusMessage = "Arena not ready yet. Try again in a moment.";
+                StateHasChanged();
+                return;
+            }
+            arena.ClearArena();
+            int i = 0;
+            foreach (var v in CurrentBox.Vertices)
+            {
+                CreateMarkerSphere($"Vertex{i}", v, "#2196F3", 0.05);
+                i++;
+            }
+            StatusMessage = $"Showing {CurrentBox.Vertices.Count} vertices as spheres.";
+            StateHasChanged();
+        }
+
+        public void ShowEdges()
+        {
+            if (CurrentBox == null)
+            {
+                StatusMessage = "No box created yet. Please create a box first.";
+                StateHasChanged();
+                return;
+            }
+            var arena = Workspace?.GetArena();
+            if (arena == null)
+            {
+                StatusMessage = "Arena not ready yet. Try again in a moment.";
+                StateHasChanged();
+                return;
+            }
+            arena.ClearArena();
+            // Box edges: 12 unique pairs of vertices
+            var verts = CurrentBox.Vertices;
+            var edgePairs = new (int, int)[] {
+                (0,1),(1,3),(3,2),(2,0), // top face
+                (4,5),(5,7),(7,6),(6,4), // bottom face
+                (0,4),(1,5),(2,6),(3,7)  // verticals
+            };
+            int i = 0;
+            foreach (var (a, b) in edgePairs)
+            {
+                var start = verts[a];
+                var end = verts[b];
+                var mid = new Point3D((start.X+end.X)/2, (start.Y+end.Y)/2, (start.Z+end.Z)/2);
+                var length = Math.Sqrt(Math.Pow(end.X-start.X,2)+Math.Pow(end.Y-start.Y,2)+Math.Pow(end.Z-start.Z,2));
+                var edge = new FoShape3D()
+                    .CreateCylinder($"Edge{i}", 0.03, length, 0.03);
+                edge.Color = "#333";
+                edge.Transform.Position = new Vector3(mid.X, mid.Y, mid.Z);
+                arena.AddShapeToStage<FoShape3D>(edge);
+                i++;
+            }
+            StatusMessage = $"Showing {edgePairs.Length} edges as cylinders.";
+            StateHasChanged();
+        }
+
+        public void ShowFaces()
+        {
+            if (CurrentBox == null)
+            {
+                StatusMessage = "No box created yet. Please create a box first.";
+                StateHasChanged();
+                return;
+            }
+            var arena = Workspace?.GetArena();
+            if (arena == null)
+            {
+                StatusMessage = "Arena not ready yet. Try again in a moment.";
+                StateHasChanged();
+                return;
+            }
+            arena.ClearArena();
+            // Faces: 6, each as a thin box
+            var faces = new (List<Point3D> verts, string name)[] {
+                (CurrentBox.FrontFace, "Front"),
+                (CurrentBox.BackFace, "Back"),
+                (CurrentBox.LeftFace, "Left"),
+                (CurrentBox.RightFace, "Right"),
+                (CurrentBox.TopFace, "Top"),
+                (CurrentBox.BottomFace, "Bottom")
+            };
+            int i = 0;
+            foreach (var (verts, fname) in faces)
+            {
+                // Center of face
+                var cx = verts.Average(v=>v.X);
+                var cy = verts.Average(v=>v.Y);
+                var cz = verts.Average(v=>v.Z);
+                // Face dimensions
+                var w = Math.Sqrt(Math.Pow(verts[0].X-verts[1].X,2)+Math.Pow(verts[0].Y-verts[1].Y,2)+Math.Pow(verts[0].Z-verts[1].Z,2));
+                var h = Math.Sqrt(Math.Pow(verts[1].X-verts[2].X,2)+Math.Pow(verts[1].Y-verts[2].Y,2)+Math.Pow(verts[1].Z-verts[2].Z,2));
+                var faceShape = new FoShape3D()
+                    .CreateBox($"Face{fname}", w, h, 0.02);
+                faceShape.Color = "#4CAF50";
+                faceShape.Opacity = 0.4;
+                faceShape.Transform.Position = new Vector3(cx, cy, cz);
+                arena.AddShapeToStage<FoShape3D>(faceShape);
+                i++;
+            }
+            StatusMessage = $"Showing 6 faces as thin boxes.";
+            StateHasChanged();
+        }
+
+        public void ShowNormals()
+        {
+            if (CurrentBox == null)
+            {
+                StatusMessage = "No box created yet. Please create a box first.";
+                StateHasChanged();
+                return;
+            }
+            var arena = Workspace?.GetArena();
+            if (arena == null)
+            {
+                StatusMessage = "Arena not ready yet. Try again in a moment.";
+                StateHasChanged();
+                return;
+            }
+            arena.ClearArena();
+            // Normals: for each face, draw a cylinder from face center in normal direction
+            var faceData = new (List<Point3D> verts, Vector3 normal, string name)[] {
+                (CurrentBox.FrontFace, new Vector3(0,0,1), "Front"),
+                (CurrentBox.BackFace, new Vector3(0,0,-1), "Back"),
+                (CurrentBox.LeftFace, new Vector3(-1,0,0), "Left"),
+                (CurrentBox.RightFace, new Vector3(1,0,0), "Right"),
+                (CurrentBox.TopFace, new Vector3(0,1,0), "Top"),
+                (CurrentBox.BottomFace, new Vector3(0,-1,0), "Bottom")
+            };
+            int i = 0;
+            foreach (var (verts, normal, fname) in faceData)
+            {
+                var cx = verts.Average(v=>v.X);
+                var cy = verts.Average(v=>v.Y);
+                var cz = verts.Average(v=>v.Z);
+                var start = new Point3D(cx, cy, cz);
+                var end = new Point3D(cx+normal.X*0.4, cy+normal.Y*0.4, cz+normal.Z*0.4);
+                var mid = new Point3D((start.X+end.X)/2, (start.Y+end.Y)/2, (start.Z+end.Z)/2);
+                var length = 0.4;
+                var normalShape = new FoShape3D()
+                    .CreateCylinder($"Normal{fname}", 0.015, length, 0.015);
+                normalShape.Color = "#F00";
+                normalShape.Transform.Position = new Vector3(mid.X, mid.Y, mid.Z);
+                arena.AddShapeToStage<FoShape3D>(normalShape);
+                i++;
+            }
+            StatusMessage = $"Showing 6 face normals as red cylinders.";
+            StateHasChanged();
+        }
+
     public void ShowDimensions()
     {
         if (CurrentBox == null)

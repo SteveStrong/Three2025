@@ -54,15 +54,21 @@
             <button class="btn btn-outline-info" @onclick="ShowQuadrants">Show Quadrants</button>
         </div>
         
- 
-        
-        <h4>Measurement Tools</h4>
-        <div class="measure-buttons">
-            <button class="btn btn-outline-primary" @onclick="MeasureDistances">Measure Distances</button>
-            <button class="btn btn-outline-primary" @onclick="ShowDimensions">Show Dimensions</button>
-            <button class="btn btn-outline-primary" @onclick="CalculateAngles">Calculate Angles</button>
-            <button class="btn btn-outline-primary" @onclick="ShowVolume3D">3D Volume Display</button>
-        </div>
+            <h4>Box Visualization</h4>
+            <div class="visual-buttons">
+                <button class="btn btn-outline-success" @onclick="ShowVertices">Show Vertices</button>
+                <button class="btn btn-outline-success" @onclick="ShowEdges">Show Edges</button>
+                <button class="btn btn-outline-success" @onclick="ShowFaces">Show Faces</button>
+                <button class="btn btn-outline-success" @onclick="ShowNormals">Show Normals</button>
+            </div>
+
+            <h4>Measurement Tools</h4>
+            <div class="measure-buttons">
+                <button class="btn btn-outline-primary" @onclick="MeasureDistances">Measure Distances</button>
+                <button class="btn btn-outline-primary" @onclick="ShowDimensions">Show Dimensions</button>
+                <button class="btn btn-outline-primary" @onclick="CalculateAngles">Calculate Angles</button>
+                <button class="btn btn-outline-primary" @onclick="ShowVolume3D">3D Volume Display</button>
+            </div>
         
         <h4>Scene Controls</h4>
         <div class="scene-buttons">
