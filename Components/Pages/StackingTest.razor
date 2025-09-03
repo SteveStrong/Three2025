@@ -1,0 +1,224 @@
+@page "/stackingtest"
+
+@using Blazor.Extensions
+@using Blazor.Extensions.Canvas
+@using Blazor.Extensions.Canvas.Canvas2D
+
+@using FoundryBlazor.Shared
+@using FoundryBlazor.Shape
+@using BlazorThreeJS.Viewers
+@using BlazorThreeJS.Maths
+@using Three2025.Shared
+@inherits StackingTestBase
+@rendermode InteractiveServer
+
+@namespace Three2025.Components.Pages
+
+<h3>LEGO-Style Stacking Test Page</h3>
+<p>Testing cylinder-on-block stacking with face-to-face snapping</p>
+
+<div class="d-flex">
+    <Canvas3DComponent SceneName="StackingTestScene" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+    <div class="controls-panel" style="margin-left: 10px; width: 350px; overflow-y: auto; max-height: 1000px;">
+        
+        <h4>Block Properties</h4>
+        <div class="control-group">
+            <label>Width:</label>
+            <input type="number" @bind="BlockWidth" min="0.5" max="5" step="0.1" />
+        </div>
+        <div class="control-group">
+            <label>Height:</label>
+            <input type="number" @bind="BlockHeight" min="0.5" max="5" step="0.1" />
+        </div>
+        <div class="control-group">
+            <label>Depth:</label>
+            <input type="number" @bind="BlockDepth" min="0.5" max="5" step="0.1" />
+        </div>
+        
+        <h4>Cylinder Properties</h4>
+        <div class="control-group">
+            <label>Radius:</label>
+            <input type="number" @bind="CylinderRadius" min="0.2" max="3" step="0.1" />
+        </div>
+        <div class="control-group">
+            <label>Height:</label>
+            <input type="number" @bind="CylinderHeight" min="0.2" max="3" step="0.1" />
+        </div>
+        
+        <h4>Creation Controls</h4>
+        <div class="creation-buttons">
+            <button class="btn btn-primary" @onclick="CreateBlock">Create Block</button>
+            <button class="btn btn-secondary" @onclick="CreateCylinder">Create Cylinder</button>
+            <button class="btn btn-success" @onclick="CreateBoth">Create Both</button>
+        </div>
+        
+        <h4>Stacking Controls</h4>
+        <div class="stacking-buttons">
+            <button class="btn btn-warning" @onclick="StackCylinderOnBlock" disabled="@(!CanStack)">
+                Stack Cylinder on Block
+            </button>
+            <button class="btn btn-info" @onclick="ShowStackingPreview" disabled="@(!CanStack)">
+                Show Preview
+            </button>
+            <button class="btn btn-outline-danger" @onclick="UnstackComponents" disabled="@(!IsStacked)">
+                Unstack
+            </button>
+        </div>
+        
+        <h4>Preset Configurations</h4>
+        <div class="preset-buttons">
+            <button class="btn btn-outline-primary" @onclick="CreateSmallStack">Small Stack</button>
+            <button class="btn btn-outline-primary" @onclick="CreateMediumStack">Medium Stack</button>
+            <button class="btn btn-outline-primary" @onclick="CreateLargeStack">Large Stack</button>
+            <button class="btn btn-outline-primary" @onclick="CreateTightFit">Tight Fit</button>
+            <button class="btn btn-outline-primary" @onclick="CreateOverhangDemo">Overhang Demo</button>
+        </div>
+        
+        <h4>Visualization Controls</h4>
+        <div class="visual-buttons">
+            <button class="btn btn-outline-success" @onclick="ShowBlockFaces">Block Faces</button>
+            <button class="btn btn-outline-success" @onclick="ShowCylinderFaces">Cylinder Faces</button>
+            <button class="btn btn-outline-success" @onclick="ShowContactArea">Contact Area</button>
+            <button class="btn btn-outline-success" @onclick="ShowSnapGuides">Snap Guides</button>
+            <button class="btn btn-outline-success" @onclick="ShowAll">Show All</button>
+        </div>
+        
+        <h4>Analysis Tools</h4>
+        <div class="analysis-buttons">
+            <button class="btn btn-outline-info" @onclick="AnalyzeStability">Analyze Stability</button>
+            <button class="btn btn-outline-info" @onclick="CheckAlignment">Check Alignment</button>
+            <button class="btn btn-outline-info" @onclick="MeasureOverhang">Measure Overhang</button>
+            <button class="btn btn-outline-info" @onclick="ValidateConstraints">Validate Constraints</button>
+        </div>
+        
+        <h4>Scene Controls</h4>
+        <div class="scene-buttons">
+            <button class="btn btn-danger" @onclick="ClearAll">Clear All</button>
+            <button class="btn btn-outline-secondary" @onclick="ResetPositions">Reset Positions</button>
+        </div>
+        
+        <h4>Component Information</h4>
+        @if (BlockComponent != null)
+        {
+            <div class="info-panel">
+                <h5>Block</h5>
+                <p><strong>Dimensions:</strong> @BlockWidth × @BlockHeight × @BlockDepth</p>
+                <p><strong>Top Face Area:</strong> @((BlockWidth * BlockDepth).ToString("F2")) units²</p>
+                <p><strong>Top Face Center:</strong> (@BlockComponent.Transform.Position.X.ToString("F2"), @(BlockComponent.Transform.Position.Y + BlockHeight/2).ToString("F2"), @BlockComponent.Transform.Position.Z.ToString("F2"))</p>
+            </div>
+        }
+        
+        @if (CylinderComponent != null)
+        {
+            <div class="info-panel">
+                <h5>Cylinder</h5>
+                <p><strong>Dimensions:</strong> R=@CylinderRadius, H=@CylinderHeight</p>
+                <p><strong>Bottom Face Area:</strong> @((Math.PI * CylinderRadius * CylinderRadius).ToString("F2")) units²</p>
+                <p><strong>Bottom Face Center:</strong> (@CylinderComponent.Transform.Position.X.ToString("F2"), @(CylinderComponent.Transform.Position.Y - CylinderHeight/2).ToString("F2"), @CylinderComponent.Transform.Position.Z.ToString("F2"))</p>
+            </div>
+        }
+        
+        @if (IsStacked)
+        {
+            <div class="info-panel stacked-info">
+                <h5>Stack Status</h5>
+                <p><strong>Status:</strong> ✅ Stacked</p>
+                <p><strong>Contact Type:</strong> @ContactType</p>
+                <p><strong>Stability:</strong> @StabilityStatus</p>
+                <p><strong>Overhang:</strong> @OverhangDistance.ToString("F2") units</p>
+            </div>
+        }
+        
+        @if (!string.IsNullOrEmpty(StatusMessage))
+        {
+            <div class="alert alert-info">
+                @StatusMessage
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .control-group {
+        margin: 5px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .control-group label {
+        min-width: 60px;
+    }
+    
+    .info-panel {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+        border-left: 4px solid #007bff;
+    }
+    
+    .stacked-info {
+        border-left-color: #28a745;
+        background: #f8fff9;
+    }
+    
+    .info-panel p {
+        margin: 5px 0;
+    }
+    
+    .info-panel h5 {
+        margin: 0 0 10px 0;
+        color: #495057;
+    }
+    
+    .btn {
+        margin: 2px 0;
+        width: 100%;
+        font-size: 12px;
+        padding: 5px 8px;
+    }
+    
+    .controls-panel {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .controls-panel h4 {
+        margin: 15px 0 10px 0;
+        font-size: 14px;
+        color: #495057;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 5px;
+    }
+    
+    .controls-panel h4:first-child {
+        margin-top: 0;
+    }
+    
+    .creation-buttons, .stacking-buttons, .preset-buttons, .visual-buttons, 
+    .analysis-buttons, .scene-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-bottom: 10px;
+    }
+    
+    .d-flex {
+        gap: 20px;
+    }
+    
+    .alert {
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    
+    .alert-info {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+    }
+</style>
