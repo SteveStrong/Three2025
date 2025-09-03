@@ -426,44 +426,16 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
             var faces = CurrentBox.GetFacesWithNormals();
             foreach (var face in faces)
             {
-                double w = face.Width;
-                double h = face.Height;
-                var cx = face.Center.X;
-                var cy = face.Center.Y;
-                var cz = face.Center.Z;
-
-                // Align local Z axis (0,0,1) to face.Normal
-                var localZ = new BlazorThreeJS.Maths.Vector3(0, 0, 1);
-                var normal = new BlazorThreeJS.Maths.Vector3(face.Normal.X, face.Normal.Y, face.Normal.Z).Normalize();
-                var axis = localZ.Cross(normal);
-                var axisLength = axis.Length();
-                double angle = 0;
-                if (axisLength > 1e-6)
-                {
-                    axis = axis.Normalize();
-                    angle = Math.Acos(Math.Max(-1.0, Math.Min(1.0, localZ.Dot(normal))));
-                }
-                else
-                {
-                    angle = localZ.Dot(normal) > 0 ? 0 : Math.PI;
-                    axis = new BlazorThreeJS.Maths.Vector3(1, 0, 0); // Arbitrary axis
-                }
-
-                // Convert axis/angle to Euler angles (approximate for axis-aligned faces)
-                double ex = 0, ey = 0, ez = 0;
-                if (Math.Abs(axis.X) > 0.9) ex = angle;
-                else if (Math.Abs(axis.Y) > 0.9) ey = angle;
-                else if (Math.Abs(axis.Z) > 0.9) ez = angle;
-
+                var (center, euler) = face.GetTransformForVisualization();
                 var faceShape = new FoShape3D {
                     Name = $"Face_{face.Name}",
                     Color = "#4CAF50",
                     Opacity = 0.4,
                     Transform = new Transform3 {
-                        Position = new BlazorThreeJS.Maths.Vector3(cx, cy, cz),
-                        Rotation = new BlazorThreeJS.Maths.Euler(ex, ey, ez, "XYZ")
+                        Position = center.AsVector3(),
+                        Rotation = new BlazorThreeJS.Maths.Euler(euler.X, euler.Y, euler.Z, "XYZ")
                     }
-                }.CreateBox($"Face_{face.Name}", w, h, 0.02);
+                }.CreateBox($"Face_{face.Name}", face.Width, face.Height, 0.02);
                 arena.AddShapeToStage<FoShape3D>(faceShape);
             }
             StatusMessage = $"Showing {faces.Count} faces as thin boxes, oriented along normals.";
@@ -485,53 +457,42 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 StateHasChanged();
                 return;
             }
-            arena.ClearArena();
+            //arena.ClearArena();
             var faces = CurrentBox.GetFacesWithNormals();
             foreach (var face in faces)
             {
-                var start = face.Center;
-                var normal = face.Normal;
-                var length = 0.4;
-                var end = new BlazorThreeJS.Maths.Vector3(
-                    start.X + normal.X * length,
-                    start.Y + normal.Y * length,
-                    start.Z + normal.Z * length);
-                var mid = new BlazorThreeJS.Maths.Vector3(
-                    (start.X + end.X) / 2,
-                    (start.Y + end.Y) / 2,
-                    (start.Z + end.Z) / 2);
-
-                // Align local Y axis (0,1,0) to normal
-                var up = new BlazorThreeJS.Maths.Vector3(0, 1, 0);
-                var dir = new BlazorThreeJS.Maths.Vector3(normal.X, normal.Y, normal.Z).Normalize();
-                var axis = up.Cross(dir);
-                var axisLength = axis.Length();
-                double angle = 0;
-                if (axisLength > 1e-6)
-                {
-                    axis = axis.Normalize();
-                    angle = Math.Acos(Math.Max(-1.0, Math.Min(1.0, up.Dot(dir))));
-                }
-                else
-                {
-                    angle = up.Dot(dir) > 0 ? 0 : Math.PI;
-                    axis = new BlazorThreeJS.Maths.Vector3(1, 0, 0); // Arbitrary axis
-                }
-
-                // Convert axis/angle to Euler angles (approximate for axis-aligned normals)
-                double ex = 0, ey = 0, ez = 0;
-                if (Math.Abs(axis.X) > 0.9) ex = angle;
-                else if (Math.Abs(axis.Y) > 0.9) ey = angle;
-                else if (Math.Abs(axis.Z) > 0.9) ez = angle;
-
+                var (mid, n, euler, length) = face.GetNormalVisualizationTransform(0.4);
                 var normalShape = new FoShape3D {
                     Name = $"Normal_{face.Name}",
                     Color = "#F00",
                     Transform = new Transform3 {
-                        Position = mid,
-                        Rotation = new BlazorThreeJS.Maths.Euler(ex, ey, ez, "XYZ")
+                        Position = mid.AsVector3(),
+                        Rotation = new BlazorThreeJS.Maths.Euler(euler.X, euler.Y, euler.Z, "XYZ")
                     }
                 }.CreateCylinder($"Normal_{face.Name}", 0.015, length, 0.015);
+
+                var cone = new FoShape3D
+                {
+                    Name = $"NormalCone_{face.Name}",
+                    Color = "#F00",
+                    Transform = new Transform3()
+                    {
+                        Position = new Vector3(0, length/2, 0),
+                    }
+                }.CreateCone($"NormalCone_{face.Name}", 0.1, 0.2, 0.1);
+                normalShape.AddSubGlyph3D<FoShape3D>(cone);
+
+                var LabelName = new FoText3D("Name", "White")
+                {
+                    Text = $"{face.Name} {n.X}, {n.Y}, {n.Z}",
+                    Transform = new Transform3()
+                    {
+                        Position = new Vector3(0, 0, 0),
+                    }
+                };
+                normalShape.AddSubGlyph3D<FoText3D>(LabelName);   
+                LabelName.Text.WriteSuccess();
+
                 arena.AddShapeToStage<FoShape3D>(normalShape);
             }
             StatusMessage = $"Showing {faces.Count} face normals as red cylinders, aligned with normals.";
