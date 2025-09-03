@@ -387,7 +387,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
 
             var edges = CurrentBox.GetEdgesWithNames();
             VisualizationService.ShowLabeledEdges(arena, edges);
-            StatusMessage = $"Showing {edges.Count} edges as labeled cylinders.";
+            StatusMessage = $"Showing {edges.Count} edges as labeled tubes.";
             StateHasChanged();
         }
 

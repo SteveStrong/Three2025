@@ -105,7 +105,7 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
         
         var edges = CurrentFrame.GetEdgesWithNames();
         VisualizationService.ShowLabeledEdges(arena, edges);
-        StatusMessage = $"Showing {edges.Count} edges as labeled cylinders.";
+        StatusMessage = $"Showing {edges.Count} edges as labeled tubes.";
         StateHasChanged();
     }
 

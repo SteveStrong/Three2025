@@ -45,28 +45,30 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         arena.ClearArena();
         foreach (var edge in edges)
         {
-            var edgeShape = new FoShape3D {
-                Name = $"Edge_{edge.Name}",
-                Color = "#333",
+            // Create path from edge start to end points for tube geometry
+            var edgePath = new List<Vector3>
+            {
+                new Vector3(edge.Start.X, edge.Start.Y, edge.Start.Z),
+                new Vector3(edge.End.X, edge.End.Y, edge.End.Z)
+            };
+
+            var edgeShape = new FoPipe3D($"Edge_{edge.Name}", "#333")
+            {
                 GlyphId = Guid.NewGuid().ToString(),
-                Transform = new Transform3 {
-                    Position = new Vector3(edge.Midpoint.X, edge.Midpoint.Y, edge.Midpoint.Z),
-                    Rotation = edge.EulerRotation
-                }
-            }.CreateCylinder(edge.Name, 0.03, edge.Length, 0.03);
+            }.CreateTube(edge.Name, 0.03, edgePath);
 
             var label = new FoText3D("EdgeLabel", "Yellow")
             {
                 Text = $"{edge.Name}: L={edge.Length:F2}",
                 Transform = new Transform3()
                 {
-                    Position = new Vector3(0, 0.1, 0),
+                    Position = new Vector3(edge.Midpoint.X, edge.Midpoint.Y, edge.Midpoint.Z + 0.1),
                 }
             };
             edgeShape.AddSubGlyph3D<FoText3D>(label);
             label.Text.WriteSuccess();
 
-            arena.AddShapeToStage<FoShape3D>(edgeShape);
+            arena.AddShapeToStage<FoPipe3D>(edgeShape);
         }
     }
 
@@ -247,28 +249,30 @@ public class GeometryVisualizationService : IGeometryVisualizationService
     {
         foreach (var edge in edges)
         {
-            var edgeShape = new FoShape3D {
-                Name = $"Edge_{edge.Name}",
-                Color = "#333",
+            // Create path from edge start to end points for tube geometry
+            var edgePath = new List<Vector3>
+            {
+                new Vector3(edge.Start.X, edge.Start.Y, edge.Start.Z),
+                new Vector3(edge.End.X, edge.End.Y, edge.End.Z)
+            };
+
+            var edgeShape = new FoPipe3D($"Edge_{edge.Name}", "#333")
+            {
                 GlyphId = Guid.NewGuid().ToString(),
-                Transform = new Transform3 {
-                    Position = new Vector3(edge.Midpoint.X, edge.Midpoint.Y, edge.Midpoint.Z),
-                    Rotation = edge.EulerRotation
-                }
-            }.CreateCylinder(edge.Name, 0.03, edge.Length, 0.03);
+            }.CreateTube(edge.Name, 0.03, edgePath);
 
             var label = new FoText3D("EdgeLabel", "Yellow")
             {
                 Text = $"{edge.Name}: L={edge.Length:F2}",
                 Transform = new Transform3()
                 {
-                    Position = new Vector3(0, 0.1, 0),
+                    Position = new Vector3(edge.Midpoint.X, edge.Midpoint.Y, edge.Midpoint.Z + 0.1),
                 }
             };
             edgeShape.AddSubGlyph3D<FoText3D>(label);
             label.Text.WriteSuccess();
 
-            arena.AddShapeToStage<FoShape3D>(edgeShape);
+            arena.AddShapeToStage<FoPipe3D>(edgeShape);
         }
     }
 
