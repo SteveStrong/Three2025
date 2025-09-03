@@ -1,0 +1,217 @@
+@page "/legosnaptest"
+
+@using FoundryBlazor.Shared
+@using FoundryBlazor.Shape
+@using BlazorThreeJS.Viewers
+@using BlazorThreeJS.Maths
+@using Three2025.Shared
+@using Three2025.Apprentice.Snapping
+@inherits LegoSnappingTestBase
+@rendermode InteractiveServer
+
+@namespace Three2025.Components.Pages
+
+<h3>LEGO Snapping & Constraint Test Page</h3>
+
+<div class="d-flex">
+    <Canvas3DComponent SceneName="LegoSnappingScene" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+    <div class="controls-panel" style="margin-left: 10px; width: 400px; overflow-y: auto; max-height: 1000px;">
+        
+        <h4>Component Creation</h4>
+        <div class="control-group">
+            <label>Width:</label>
+            <input type="number" @bind="BoxWidth" min="0.5" max="5" step="0.1" />
+        </div>
+        <div class="control-group">
+            <label>Height:</label>
+            <input type="number" @bind="BoxHeight" min="0.5" max="5" step="0.1" />
+        </div>
+        <div class="control-group">
+            <label>Depth:</label>
+            <input type="number" @bind="BoxDepth" min="0.5" max="5" step="0.1" />
+        </div>
+        <div class="control-group">
+            <button class="btn btn-primary" @onclick="CreateComponentA">Create Component A (Blue)</button>
+            <button class="btn btn-success" @onclick="CreateComponentB">Create Component B (Green)</button>
+        </div>
+
+        <h4>Component Positioning</h4>
+        <div class="component-controls">
+            <h5>Component A Position</h5>
+            <div class="control-group">
+                <label>X:</label>
+                <input type="number" @bind="ComponentAPosX" step="0.1" />
+            </div>
+            <div class="control-group">
+                <label>Y:</label>
+                <input type="number" @bind="ComponentAPosY" step="0.1" />
+            </div>
+            <div class="control-group">
+                <label>Z:</label>
+                <input type="number" @bind="ComponentAPosZ" step="0.1" />
+            </div>
+            <button class="btn btn-outline-primary btn-sm" @onclick="UpdateComponentAPosition">Update A Position</button>
+        </div>
+
+        <div class="component-controls">
+            <h5>Component B Position</h5>
+            <div class="control-group">
+                <label>X:</label>
+                <input type="number" @bind="ComponentBPosX" step="0.1" />
+            </div>
+            <div class="control-group">
+                <label>Y:</label>
+                <input type="number" @bind="ComponentBPosY" step="0.1" />
+            </div>
+            <div class="control-group">
+                <label>Z:</label>
+                <input type="number" @bind="ComponentBPosZ" step="0.1" />
+            </div>
+            <button class="btn btn-outline-success btn-sm" @onclick="UpdateComponentBPosition">Update B Position</button>
+        </div>
+
+        <h4>Face-to-Face Constraints</h4>
+        <div class="constraint-controls">
+            <div class="control-group">
+                <label>Component A Face:</label>
+                <select @bind="SelectedFaceA">
+                    <option value="Top">Top</option>
+                    <option value="Bottom">Bottom</option>
+                    <option value="Front">Front</option>
+                    <option value="Back">Back</option>
+                    <option value="Left">Left</option>
+                    <option value="Right">Right</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Component B Face:</label>
+                <select @bind="SelectedFaceB">
+                    <option value="Top">Top</option>
+                    <option value="Bottom">Bottom</option>
+                    <option value="Front">Front</option>
+                    <option value="Back">Back</option>
+                    <option value="Left">Left</option>
+                    <option value="Right">Right</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <button class="btn btn-warning" @onclick="CreateConstraint">Create Constraint</button>
+                <button class="btn btn-danger" @onclick="ExecuteConstraint">Apply Constraint</button>
+            </div>
+        </div>
+
+        <h4>Quick Presets</h4>
+        <div class="preset-buttons">
+            <button class="btn btn-outline-primary btn-sm" @onclick="StackAOnTopOfB">Stack A on B</button>
+            <button class="btn btn-outline-primary btn-sm" @onclick="PlaceASideBySideWithB">A beside B</button>
+            <button class="btn btn-outline-primary btn-sm" @onclick="AttachAToFrontOfB">A in front of B</button>
+            <button class="btn btn-outline-primary btn-sm" @onclick="AttachAToBackOfB">A behind B</button>
+        </div>
+
+        <h4>Visualization Controls</h4>
+        <div class="visual-buttons">
+            <button class="btn btn-outline-info" @onclick="ShowFaces">Show Faces</button>
+            <button class="btn btn-outline-info" @onclick="ShowNormals">Show Normals</button>
+            <button class="btn btn-outline-info" @onclick="ShowSnapPoints">Show Snap Points</button>
+            <button class="btn btn-warning" @onclick="ShowAll">Show All</button>
+            <button class="btn btn-danger" @onclick="ClearVisualization">Clear Scene</button>
+        </div>
+
+        <h4>System Status</h4>
+        <div class="info-panel">
+            @if (ComponentA != null)
+            {
+                <p><strong>Component A:</strong> @BoxWidth × @BoxHeight × @BoxDepth</p>
+                <p><strong>A Position:</strong> (@ComponentAPosX, @ComponentAPosY, @ComponentAPosZ)</p>
+                <p><strong>A Faces:</strong> @ComponentA.Faces.Count</p>
+                <p><strong>A Constraints:</strong> @ComponentA.Constraints.Count</p>
+            }
+            @if (ComponentB != null)
+            {
+                <p><strong>Component B:</strong> @BoxWidth × @BoxHeight × @BoxDepth</p>
+                <p><strong>B Position:</strong> (@ComponentBPosX, @ComponentBPosY, @ComponentBPosZ)</p>
+                <p><strong>B Faces:</strong> @ComponentB.Faces.Count</p>
+                <p><strong>B Constraints:</strong> @ComponentB.Constraints.Count</p>
+            }
+            @if (CurrentConstraint != null)
+            {
+                <p><strong>Current Constraint:</strong> @SelectedFaceA → @SelectedFaceB</p>
+                <p><strong>Constraint Active:</strong> @CurrentConstraint.IsActive</p>
+                <p><strong>Priority:</strong> @CurrentConstraint.Priority</p>
+            }
+        </div>
+
+        <div class="status-message">
+            <strong>Status:</strong> @StatusMessage
+        </div>
+    </div>
+</div>
+
+<style>
+    .controls-panel {
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+    
+    .control-group {
+        margin-bottom: 10px;
+    }
+    
+    .control-group label {
+        display: inline-block;
+        width: 80px;
+        font-weight: bold;
+    }
+    
+    .control-group input, .control-group select {
+        width: 150px;
+        padding: 2px 5px;
+        margin-left: 5px;
+    }
+    
+    .component-controls {
+        border: 1px solid #ccc;
+        padding: 8px;
+        margin: 5px 0;
+        border-radius: 3px;
+        background-color: #f5f5f5;
+    }
+    
+    .constraint-controls {
+        border: 1px solid #ff9800;
+        padding: 8px;
+        margin: 5px 0;
+        border-radius: 3px;
+        background-color: #fff3e0;
+    }
+    
+    .preset-buttons button {
+        margin: 2px;
+    }
+    
+    .visual-buttons button {
+        margin: 2px;
+        font-size: 12px;
+    }
+    
+    .info-panel {
+        border: 1px solid #2196F3;
+        padding: 8px;
+        margin: 5px 0;
+        border-radius: 3px;
+        background-color: #e3f2fd;
+        font-size: 12px;
+    }
+    
+    .status-message {
+        border: 1px solid #4CAF50;
+        padding: 8px;
+        margin: 5px 0;
+        border-radius: 3px;
+        background-color: #e8f5e8;
+        font-size: 12px;
+        font-weight: bold;
+    }
+</style>
