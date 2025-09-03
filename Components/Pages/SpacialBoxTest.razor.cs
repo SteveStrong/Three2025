@@ -461,7 +461,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
             var faces = CurrentBox.GetFacesWithNormals();
             foreach (var face in faces)
             {
-                var (mid, n, euler, length) = face.GetNormalVisualizationTransform(0.4);
+                var (mid, n, euler, length) = face.GetNormalCylinderTransform(0.4);
                 var normalShape = new FoShape3D {
                     Name = $"Normal_{face.Name}",
                     Color = "#F00",
@@ -480,6 +480,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                         Position = new Vector3(0, length/2, 0),
                     }
                 }.CreateCone($"NormalCone_{face.Name}", 0.1, 0.2, 0.1);
+
                 normalShape.AddSubGlyph3D<FoShape3D>(cone);
 
                 var LabelName = new FoText3D("Name", "White")
@@ -487,7 +488,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                     Text = $"{face.Name} {n.X}, {n.Y}, {n.Z}",
                     Transform = new Transform3()
                     {
-                        Position = new Vector3(0, 0, 0),
+                        Position = new Vector3(0, length, 0),
                     }
                 };
                 normalShape.AddSubGlyph3D<FoText3D>(LabelName);   
