@@ -4,11 +4,13 @@ using BlazorThreeJS.Maths;
 using BlazorThreeJS.Viewers;
 using BlazorThreeJS.Geometires;
 using FoundryBlazor.Shape;
+using FoundryRulesAndUnits.Extensions;
 using Microsoft.AspNetCore.Components;
 using Three2025.Shared;
 using FoundryBlazor.Shared;
 using FoundryBlazor.Solutions;
 using FoundryBlazor.PubSub;
+using Three2025.Services.Visualization;
 
 namespace Three2025.Components.Pages;
 
@@ -17,6 +19,7 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] public IWorkspace Workspace { get; set; }
     [Inject] public IFoundryService FoundryService { get; init; }
+    [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
     public Canvas3DComponentBase Canvas3DReference = null;
     protected SpacialFrame3D CurrentFrame;
@@ -88,14 +91,9 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
         if (CurrentFrame == null) return;
         var arena = Workspace?.GetArena();
         if (arena == null) return;
-        arena.ClearArena();
-        int i = 0;
-        foreach (var v in CurrentFrame.Vertices)
-        {
-            CreateMarkerSphere($"Vertex{i}", v, "#2196F3", 0.05);
-            i++;
-        }
-        StatusMessage = $"Showing {CurrentFrame.Vertices.Count} vertices as spheres.";
+        
+        VisualizationService.ShowLabeledVertices(arena, CurrentFrame.Vertices);
+        StatusMessage = $"Showing {CurrentFrame.Vertices.Count} vertices as labeled spheres.";
         StateHasChanged();
     }
 
@@ -104,22 +102,10 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
         if (CurrentFrame == null) return;
         var arena = Workspace?.GetArena();
         if (arena == null) return;
-        arena.ClearArena();
+        
         var edges = CurrentFrame.GetEdgesWithNames();
-        foreach (var edge in edges)
-        {
-            var edgeShape = new FoShape3D {
-                Name = $"Edge_{edge.Name}",
-                Color = "#333",
-                GlyphId = Guid.NewGuid().ToString(),
-                Transform = new Transform3 {
-                    Position = new Vector3(edge.Midpoint.X, edge.Midpoint.Y, edge.Midpoint.Z),
-                    Rotation = edge.EulerRotation
-                }
-            }.CreateCylinder(edge.Name, 0.03, edge.Length, 0.03);
-            arena.AddShapeToStage<FoShape3D>(edgeShape);
-        }
-        StatusMessage = $"Showing {edges.Count} edges as cylinders.";
+        VisualizationService.ShowLabeledEdges(arena, edges);
+        StatusMessage = $"Showing {edges.Count} edges as labeled cylinders.";
         StateHasChanged();
     }
 
@@ -128,23 +114,10 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
         if (CurrentFrame == null) return;
         var arena = Workspace?.GetArena();
         if (arena == null) return;
-        arena.ClearArena();
+        
         var faces = CurrentFrame.GetFacesWithNormals();
-        foreach (var face in faces)
-        {
-            var (center, euler) = face.GetTransformForVisualization();
-            var faceShape = new FoShape3D {
-                Name = $"Face_{face.Name}",
-                Color = "#4CAF50",
-                Opacity = 0.4,
-                Transform = new Transform3 {
-                    Position = center.AsVector3(),
-                    Rotation = new Euler(euler.X, euler.Y, euler.Z, "XYZ")
-                }
-            }.CreateBox($"Face_{face.Name}", face.Width, face.Height, 0.02);
-            arena.AddShapeToStage<FoShape3D>(faceShape);
-        }
-        StatusMessage = $"Showing {faces.Count} faces as thin boxes, oriented along normals.";
+        VisualizationService.ShowWireframeFaces(arena, faces);
+        StatusMessage = $"Showing {faces.Count} faces as wireframe outlines with labels.";
         StateHasChanged();
     }
 
@@ -153,21 +126,21 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
         if (CurrentFrame == null) return;
         var arena = Workspace?.GetArena();
         if (arena == null) return;
+        
         var faces = CurrentFrame.GetFacesWithNormals();
-        foreach (var face in faces)
-        {
-            var (position, n, euler, length) = face.GetNormalCylinderTransform(0.4);
-            var normalShape = new FoShape3D {
-                Name = $"Normal_{face.Name}",
-                Color = "#F00",
-                Transform = new Transform3 {
-                    Position = position.AsVector3(),
-                    Rotation = new Euler(euler.X, euler.Y, euler.Z, "XYZ")
-                }
-            }.CreateCylinder($"Normal_{face.Name}", 0.015, length, 0.015);
-            arena.AddShapeToStage<FoShape3D>(normalShape);
-        }
-        StatusMessage = $"Showing {faces.Count} face normals as red cylinders, aligned with normals.";
+        VisualizationService.ShowLabeledNormals(arena, faces);
+        StatusMessage = $"Showing {faces.Count} face normals as red cylinders with cones and labels, aligned with normals.";
+        StateHasChanged();
+    }
+
+    public void ShowAxes()
+    {
+        if (CurrentFrame == null) return;
+        var arena = Workspace?.GetArena();
+        if (arena == null) return;
+        
+        VisualizationService.ShowCoordinateAxes(arena, CurrentFrame.Transform);
+        StatusMessage = "Showing coordinate axes: Red=X, Green=Y, Blue=Z";
         StateHasChanged();
     }
 
@@ -176,6 +149,81 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
         var arena = Workspace?.GetArena();
         if (arena == null) return;
         arena.ClearArena();
+        StateHasChanged();
+    }
+
+    public void ShowAll()
+    {
+        if (CurrentFrame == null) return;
+        ClearAll();
+        
+        // Show the main frame with transparency
+        CreateSpacialFrame();
+        
+        // Add vertices as small spheres
+        var arena = Workspace?.GetArena();
+        if (arena == null) return;
+        
+        int i = 0;
+        foreach (var v in CurrentFrame.Vertices)
+        {
+            CreateMarkerSphere($"Vertex{i}", v, "#2196F3", 0.03);
+            i++;
+        }
+        
+        // Add coordinate axes
+        ShowAxes();
+        
+        StatusMessage = $"Showing complete frame analysis: {CurrentFrame.Vertices.Count} vertices + axes";
+        StateHasChanged();
+    }
+
+    public void ShowAllDetailed()
+    {
+        if (CurrentFrame == null) return;
+        var arena = Workspace?.GetArena();
+        if (arena == null) return;
+        
+        var vertices = CurrentFrame.Vertices;
+        var edges = CurrentFrame.GetEdgesWithNames();
+        var faces = CurrentFrame.GetFacesWithNormals();
+        
+        VisualizationService.ShowAll(arena, vertices, edges, faces);
+        StatusMessage = $"Showing comprehensive view: {vertices.Count} vertices, {edges.Count} edges, {faces.Count} faces with labels and normals";
+        StateHasChanged();
+    }
+
+    // Preset rotation tests for validation
+    public void SetRotationPreset(string preset)
+    {
+        switch (preset.ToLower())
+        {
+            case "identity":
+                FrameRx = FrameRy = FrameRz = 0;
+                break;
+            case "45x":
+                FrameRx = 45; FrameRy = FrameRz = 0;
+                break;
+            case "45y":
+                FrameRy = 45; FrameRx = FrameRz = 0;
+                break;
+            case "45z":
+                FrameRz = 45; FrameRx = FrameRy = 0;
+                break;
+            case "45xyz":
+                FrameRx = FrameRy = FrameRz = 45;
+                break;
+            case "90x":
+                FrameRx = 90; FrameRy = FrameRz = 0;
+                break;
+            case "90y":
+                FrameRy = 90; FrameRx = FrameRz = 0;
+                break;
+            case "90z":
+                FrameRz = 90; FrameRx = FrameRy = 0;
+                break;
+        }
+        CreateSpacialFrame();
         StateHasChanged();
     }
 

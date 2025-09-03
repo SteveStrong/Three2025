@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using FoundryBlazor;
 using Microsoft.Extensions.FileProviders;
 using Three2025.Apprentice;
+using Three2025.Services.Visualization;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -58,6 +59,9 @@ builder.Services.AddScoped<ICageTech, CageTech>();
 builder.Services.AddScoped<IClockTech, ClockTech>();
 builder.Services.AddScoped<ITrisocTech, TrisocTech>();
 builder.Services.AddScoped<ILightingTech, LightingTech>();
+
+// Register geometry visualization service
+builder.Services.AddScoped<IGeometryVisualizationService, GeometryVisualizationService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

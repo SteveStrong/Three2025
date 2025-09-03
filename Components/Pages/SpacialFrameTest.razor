@@ -54,12 +54,27 @@
         </div>
         <button class="btn btn-primary" @onclick="CreateSpacialFrame">Create SpacialFrame</button>
 
+        <h4>Rotation Presets</h4>
+        <div class="preset-buttons">
+            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("identity")'>Identity</button>
+            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("45x")'>45° X</button>
+            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("45y")'>45° Y</button>
+            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("45z")'>45° Z</button>
+            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("45xyz")'>45° XYZ</button>
+            <br style="margin: 5px;" />
+            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("90x")'>90° X</button>
+            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("90y")'>90° Y</button>
+            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("90z")'>90° Z</button>
+        </div>
+
         <h4>Frame Visualization</h4>
         <div class="visual-buttons">
             <button class="btn btn-outline-success" @onclick="ShowVertices">Show Vertices</button>
             <button class="btn btn-outline-success" @onclick="ShowEdges">Show Edges</button>
             <button class="btn btn-outline-success" @onclick="ShowFaces">Show Faces</button>
             <button class="btn btn-outline-success" @onclick="ShowNormals">Show Normals</button>
+            <button class="btn btn-outline-info" @onclick="ShowAxes">Show Axes</button>
+            <button class="btn btn-warning" @onclick="ShowAll">Show All</button>
         </div>
 
         <h4>Scene Controls</h4>

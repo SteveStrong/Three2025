@@ -11,6 +11,7 @@ using FoundryBlazor.Solutions;
 using BlazorThreeJS.Core;
 using FoundryBlazor.Shared;
 using FoundryBlazor.PubSub;
+using Three2025.Services.Visualization;
 
 namespace Three2025.Components.Pages;
 
@@ -19,6 +20,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] public IWorkspace Workspace { get; set; }
     [Inject] public IFoundryService FoundryService { get; init; }
+    [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
     public Canvas3DComponentBase Canvas3DReference = null;
     protected SpacialBox3D CurrentBox;
@@ -361,14 +363,9 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 StateHasChanged();
                 return;
             }
-            arena.ClearArena();
-            int i = 0;
-            foreach (var v in CurrentBox.Vertices)
-            {
-                CreateMarkerSphere($"Vertex{i}", v, "#2196F3", 0.05);
-                i++;
-            }
-            StatusMessage = $"Showing {CurrentBox.Vertices.Count} vertices as spheres.";
+            
+            VisualizationService.ShowLabeledVertices(arena, CurrentBox.Vertices);
+            StatusMessage = $"Showing {CurrentBox.Vertices.Count} vertices as labeled spheres.";
             StateHasChanged();
         }
 
@@ -387,23 +384,10 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 StateHasChanged();
                 return;
             }
-            arena.ClearArena();
 
             var edges = CurrentBox.GetEdgesWithNames();
-            foreach (var edge in edges)
-            {
-                var edgeShape = new FoShape3D {
-                    Name = $"Edge_{edge.Name}",
-                    Color = "#333",
-                    GlyphId = Guid.NewGuid().ToString(),
-                    Transform = new Transform3 {
-                        Position = new BlazorThreeJS.Maths.Vector3(edge.Midpoint.X, edge.Midpoint.Y, edge.Midpoint.Z),
-                        Rotation = edge.EulerRotation
-                    }
-                }.CreateCylinder(edge.Name, 0.03, edge.Length, 0.03);
-                arena.AddShapeToStage<FoShape3D>(edgeShape);
-            }
-            StatusMessage = $"Showing {edges.Count} edges as cylinders.";
+            VisualizationService.ShowLabeledEdges(arena, edges);
+            StatusMessage = $"Showing {edges.Count} edges as labeled cylinders.";
             StateHasChanged();
         }
 
@@ -422,23 +406,10 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 StateHasChanged();
                 return;
             }
-            arena.ClearArena();
+            
             var faces = CurrentBox.GetFacesWithNormals();
-            foreach (var face in faces)
-            {
-                var (center, euler) = face.GetTransformForVisualization();
-                var faceShape = new FoShape3D {
-                    Name = $"Face_{face.Name}",
-                    Color = "#4CAF50",
-                    Opacity = 0.4,
-                    Transform = new Transform3 {
-                        Position = center.AsVector3(),
-                        Rotation = new BlazorThreeJS.Maths.Euler(euler.X, euler.Y, euler.Z, "XYZ")
-                    }
-                }.CreateBox($"Face_{face.Name}", face.Width, face.Height, 0.02);
-                arena.AddShapeToStage<FoShape3D>(faceShape);
-            }
-            StatusMessage = $"Showing {faces.Count} faces as thin boxes, oriented along normals.";
+            VisualizationService.ShowWireframeFaces(arena, faces);
+            StatusMessage = $"Showing {faces.Count} faces as wireframe outlines with labels.";
             StateHasChanged();
         }
 
@@ -457,45 +428,9 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 StateHasChanged();
                 return;
             }
-            //arena.ClearArena();
+            
             var faces = CurrentBox.GetFacesWithNormals();
-            foreach (var face in faces)
-            {
-                var (mid, n, euler, length) = face.GetNormalCylinderTransform(0.4);
-                var normalShape = new FoShape3D {
-                    Name = $"Normal_{face.Name}",
-                    Color = "#F00",
-                    Transform = new Transform3 {
-                        Position = mid.AsVector3(),
-                        Rotation = new BlazorThreeJS.Maths.Euler(euler.X, euler.Y, euler.Z, "XYZ")
-                    }
-                }.CreateCylinder($"Normal_{face.Name}", 0.015, length, 0.015);
-
-                var cone = new FoShape3D
-                {
-                    Name = $"NormalCone_{face.Name}",
-                    Color = "#F00",
-                    Transform = new Transform3()
-                    {
-                        Position = new Vector3(0, length/2, 0),
-                    }
-                }.CreateCone($"NormalCone_{face.Name}", 0.1, 0.2, 0.1);
-
-                normalShape.AddSubGlyph3D<FoShape3D>(cone);
-
-                var LabelName = new FoText3D("Name", "White")
-                {
-                    Text = $"{face.Name} {n.X}, {n.Y}, {n.Z}",
-                    Transform = new Transform3()
-                    {
-                        Position = new Vector3(0, length, 0),
-                    }
-                };
-                normalShape.AddSubGlyph3D<FoText3D>(LabelName);   
-                LabelName.Text.WriteSuccess();
-
-                arena.AddShapeToStage<FoShape3D>(normalShape);
-            }
+            VisualizationService.ShowLabeledNormals(arena, faces);
             StatusMessage = $"Showing {faces.Count} face normals as red cylinders, aligned with normals.";
             StateHasChanged();
         }
@@ -579,5 +514,30 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
 
         var arena = Workspace?.GetArena();
         arena?.AddShapeToStage<FoShape3D>(shape);
+    }
+
+    public void ShowAllDetailed()
+    {
+        if (CurrentBox == null)
+        {
+            StatusMessage = "No box created yet. Please create a box first.";
+            StateHasChanged();
+            return;
+        }
+        var arena = Workspace?.GetArena();
+        if (arena == null)
+        {
+            StatusMessage = "Arena not ready yet. Try again in a moment.";
+            StateHasChanged();
+            return;
+        }
+        
+        var vertices = CurrentBox.Vertices;
+        var edges = CurrentBox.GetEdgesWithNames();
+        var faces = CurrentBox.GetFacesWithNormals();
+        
+        VisualizationService.ShowAll(arena, vertices, edges, faces);
+        StatusMessage = $"Showing comprehensive view: {vertices.Count} vertices, {edges.Count} edges, {faces.Count} faces with labels and normals";
+        StateHasChanged();
     }
 }
