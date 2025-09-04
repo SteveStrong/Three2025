@@ -55,6 +55,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
             if (found)
             {
                 arena.SetScene(scene!);
+                DoRequestAxisToScene(scene!);
                 CreateSpacialBox();
             }
         }
@@ -78,8 +79,6 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
     {
         try
         {
-
-
             var arena = FoundryService.Arena();
             if (arena == null)
             {
@@ -90,6 +89,10 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
 
             arena.ClearArena();
 
+            //ok you need to remember that for spacialbox it is in a local coord system with 0,0,0 being the 
+            // left , bottom, back corner
+            //we should test by drawing the axis and then drawing the box
+            //then we can see where the box is in relation to the axis
 
             var boxShape = new FoShape3D()
             {
@@ -99,7 +102,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 Opacity = 0.8,
                 Transform = new Transform3()
                 {
-                    Position = new Vector3(0, 0, 0)
+                    Position = new Vector3(BoxWidth/2, BoxHeight/2, BoxDepth/2)
                 }
             }.CreateBox("SpacialBoxMain", BoxWidth, BoxHeight, BoxDepth);
 
@@ -135,29 +138,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
 
 
 
-    public void AddAxisToScene(Scene3D scene)
-    {
-        var model = new Model3D()
-        {
-            Name = "Axis",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
-            Format = Model3DFormats.Gltf,
-        };
 
-        Task.Run(async () => await scene.Request3DModel(model, async (uuid) =>
-        {
-            var group = new Group3D()
-            {
-                Name = "Axis",
-                Uuid = uuid,
-            };
-            scene.AddChild(group);
-            StatusMessage = "Axis added to scene";
-            StateHasChanged();
-            await Task.CompletedTask;
-        }));
-    }
 
     public void Dispose()
     {

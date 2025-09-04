@@ -3,6 +3,7 @@ using FoundryBlazor.Shape;
 using FoundryBlazor.Solutions;
 using FoundryBlazor.Shared;
 using FoundryRulesAndUnits.Extensions;
+using BlazorThreeJS.Core;
 
 namespace Three2025.Services.Visualization;
 
@@ -93,10 +94,8 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             var LabelName = new FoText3D("Name", "White")
             {
                 Text = $"{face.Name} {center.X:F2}, {center.Y:F2}, {center.Z:F2}",
-                Transform = new Transform3()
-                {
-                    Position = center.AsVector3(),
-                }
+                Transform = new Transform3(),
+                TextAlign = Text3DAlign.Center,
             };
             normalShape.AddSubGlyph3D<FoText3D>(LabelName);
             LabelName.Text.WriteSuccess();
