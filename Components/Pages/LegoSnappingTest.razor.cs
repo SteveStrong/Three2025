@@ -1,6 +1,7 @@
 using BlazorThreeJS.Maths;
 using BlazorThreeJS.Viewers;
 using FoundryBlazor.Shape;
+using FoundryBlazor.Shapes3D.SpacialFrame;
 using FoundryRulesAndUnits.Extensions;
 using Microsoft.AspNetCore.Components;
 using Three2025.Shared;
@@ -8,7 +9,7 @@ using FoundryBlazor.Shared;
 using FoundryBlazor.Solutions;
 using FoundryBlazor.PubSub;
 using Three2025.Services.Visualization;
-using Three2025.Apprentice.Snapping;
+using Three2025.Apprentice;
 
 namespace Three2025.Components.Pages;
 
@@ -21,10 +22,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
 
     public Canvas3DComponentBase Canvas3DReference = null;
     
-    // Snapping components
-    protected SnapBox ComponentA;
-    protected SnapBox ComponentB;
-    protected FaceToFaceConstraint CurrentConstraint;
+    // Universal geometry snapping components - work with any FoShape3D
+    protected FoShape3D ComponentA;
+    protected FoShape3D ComponentB;
     
     // Component dimensions
     protected double BoxWidth { get; set; } = 2.0;
@@ -47,33 +47,20 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     [Parameter] public int CanvasWidth { get; set; } = 1400;
     [Parameter] public int CanvasHeight { get; set; } = 1000;
 
-    protected string StatusMessage { get; set; } = "Ready to create LEGO-style snapping components.";
-
-    // Visual tracking
-    private FoShape3D ComponentAVisual;
-    private FoShape3D ComponentBVisual;
+    protected string StatusMessage { get; set; } = "Ready to test Universal Geometry Snapping - works with any FoShape3D objects!";
 
     public void CreateComponentA()
     {
         try
         {
-            var spec = new FoSpec3D
-            {
-                W = BoxWidth,
-                H = BoxHeight,
-                D = BoxDepth,
-                Px = BoxWidth / 2,
-                Py = BoxHeight / 2,
-                Pz = BoxDepth / 2,
-                X = ComponentAPosX,
-                Y = ComponentAPosY,
-                Z = ComponentAPosZ
-            };
+            // Create standard FoShape3D box - any geometry becomes snappable
+            ComponentA = new FoShape3D("ComponentA", "#2196F3");
+            ComponentA.CreateBox("ComponentA", BoxWidth, BoxHeight, BoxDepth);
             
-            var spatialBox = new SpacialFrame3D(spec, "m");
-            ComponentA = new SnapBox(spatialBox);
+            // Set position using standard Transform3
+            ComponentA.Transform.Position = new Vector3(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
 
-            // Create visual representation
+            // Add to arena as standard FoShape3D
             var arena = Workspace?.GetArena();
             if (arena == null)
             {
@@ -82,17 +69,11 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
                 return;
             }
 
-            ComponentAVisual = new FoShape3D()
-            {
-                Name = "ComponentA",
-                Color = "#2196F3", // Blue
-                Opacity = 0.7,
-                Transform = new Transform3() { Position = new Vector3(ComponentAPosX, ComponentAPosY, ComponentAPosZ) },
-                GlyphId = Guid.NewGuid().ToString()
-            }.CreateBox("ComponentA", BoxWidth, BoxHeight, BoxDepth);
-
-            arena.AddShapeToStage<FoShape3D>(ComponentAVisual);
-            StatusMessage = $"Created Component A: {BoxWidth}×{BoxHeight}×{BoxDepth} at ({ComponentAPosX},{ComponentAPosY},{ComponentAPosZ})";
+            arena.AddShapeToStage<FoShape3D>(ComponentA);
+            
+            // Get face count using the new universal engine
+            var faceCount = UniversalSnapEngine.GetAllFaces(ComponentA).Count;
+            StatusMessage = $"✅ Created Component A using Universal Snapping: {faceCount} faces available at ({ComponentAPosX},{ComponentAPosY},{ComponentAPosZ})";
             StateHasChanged();
         }
         catch (Exception ex)
@@ -106,23 +87,14 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     {
         try
         {
-            var spec = new FoSpec3D
-            {
-                W = BoxWidth,
-                H = BoxHeight,
-                D = BoxDepth,
-                Px = BoxWidth / 2,
-                Py = BoxHeight / 2,
-                Pz = BoxDepth / 2,
-                X = ComponentBPosX,
-                Y = ComponentBPosY,
-                Z = ComponentBPosZ
-            };
+            // Create standard FoShape3D box - any geometry becomes snappable
+            ComponentB = new FoShape3D("ComponentB", "#4CAF50");
+            ComponentB.CreateBox("ComponentB", BoxWidth, BoxHeight, BoxDepth);
             
-            var spatialBox = new SpacialFrame3D(spec, "m");
-            ComponentB = new SnapBox(spatialBox);
+            // Set position using standard Transform3
+            ComponentB.Transform.Position = new Vector3(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
 
-            // Create visual representation
+            // Add to arena as standard FoShape3D
             var arena = Workspace?.GetArena();
             if (arena == null)
             {
@@ -131,17 +103,11 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
                 return;
             }
 
-            ComponentBVisual = new FoShape3D()
-            {
-                Name = "ComponentB",
-                Color = "#4CAF50", // Green
-                Opacity = 0.7,
-                Transform = new Transform3() { Position = new Vector3(ComponentBPosX, ComponentBPosY, ComponentBPosZ) },
-                GlyphId = Guid.NewGuid().ToString()
-            }.CreateBox("ComponentB", BoxWidth, BoxHeight, BoxDepth);
-
-            arena.AddShapeToStage<FoShape3D>(ComponentBVisual);
-            StatusMessage = $"Created Component B: {BoxWidth}×{BoxHeight}×{BoxDepth} at ({ComponentBPosX},{ComponentBPosY},{ComponentBPosZ})";
+            arena.AddShapeToStage<FoShape3D>(ComponentB);
+            
+            // Get face count using the new universal engine
+            var faceCount = UniversalSnapEngine.GetAllFaces(ComponentB).Count;
+            StatusMessage = $"✅ Created Component B using Universal Snapping: {faceCount} faces available at ({ComponentBPosX},{ComponentBPosY},{ComponentBPosZ})";
             StateHasChanged();
         }
         catch (Exception ex)
@@ -153,35 +119,37 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
 
     public void UpdateComponentAPosition()
     {
-        if (ComponentA == null || ComponentAVisual == null) return;
+        if (ComponentA == null) return;
         
-        ComponentAVisual.Transform.Position = new Vector3(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
+        // Use standard Transform3 position update
+        ComponentA.Transform.Position = new Vector3(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
         
         var arena = Workspace?.GetArena();
         var (found, scene) = arena?.CurrentScene() ?? (false, null);
         if (found && scene != null)
         {
-            ComponentAVisual.RefreshToScene(scene);
+            ComponentA.RefreshToScene(scene);
         }
         
-        StatusMessage = $"Updated Component A position to ({ComponentAPosX},{ComponentAPosY},{ComponentAPosZ})";
+        StatusMessage = $"Updated Component A position to ({ComponentAPosX},{ComponentAPosY},{ComponentAPosZ}) using Universal Snapping";
         StateHasChanged();
     }
 
     public void UpdateComponentBPosition()
     {
-        if (ComponentB == null || ComponentBVisual == null) return;
+        if (ComponentB == null) return;
         
-        ComponentBVisual.Transform.Position = new Vector3(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
+        // Use standard Transform3 position update
+        ComponentB.Transform.Position = new Vector3(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
         
         var arena = Workspace?.GetArena();
         var (found, scene) = arena?.CurrentScene() ?? (false, null);
         if (found && scene != null)
         {
-            ComponentBVisual.RefreshToScene(scene);
+            ComponentB.RefreshToScene(scene);
         }
         
-        StatusMessage = $"Updated Component B position to ({ComponentBPosX},{ComponentBPosY},{ComponentBPosZ})";
+        StatusMessage = $"Updated Component B position to ({ComponentBPosX},{ComponentBPosY},{ComponentBPosZ}) using Universal Snapping";
         StateHasChanged();
     }
 
@@ -196,8 +164,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
 
         try
         {
-            var faceA = ComponentA.GetFace(SelectedFaceA);
-            var faceB = ComponentB.GetFace(SelectedFaceB);
+            // Use universal snapping engine to get face information
+            var faceA = UniversalSnapEngine.GetFaceInfo(ComponentA, SelectedFaceA);
+            var faceB = UniversalSnapEngine.GetFaceInfo(ComponentB, SelectedFaceB);
             
             if (faceA == null || faceB == null)
             {
@@ -206,86 +175,188 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
                 return;
             }
 
-            CurrentConstraint = new FaceToFaceConstraint(ComponentA, faceA, ComponentB, faceB, 1.0);
-            StatusMessage = $"Created constraint: A.{SelectedFaceA} → B.{SelectedFaceB}";
+            StatusMessage = $"Ready to snap: A.{SelectedFaceA} → B.{SelectedFaceB}";
             StateHasChanged();
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error creating constraint: {ex.Message}";
+            StatusMessage = $"Error preparing snap: {ex.Message}";
             StateHasChanged();
         }
     }
 
     public void ExecuteConstraint()
     {
-        if (CurrentConstraint == null)
+        if (ComponentA == null || ComponentB == null)
         {
-            StatusMessage = "No constraint to execute. Create a constraint first.";
+            StatusMessage = "Both components must be created before snapping.";
             StateHasChanged();
             return;
         }
 
         try
         {
-            var result = SnapEngine.ExecuteConstraint(CurrentConstraint);
+            // Use the new universal snapping engine
+            var result = UniversalSnapEngine.SnapObjects(ComponentA, SelectedFaceA, ComponentB, SelectedFaceB);
             
             if (result.Success)
             {
-                // Update visual position of Component A to match the constraint
-                var newTransform = result.FinalTransform;
-                ComponentAPosX = newTransform.Position.X;
-                ComponentAPosY = newTransform.Position.Y;
-                ComponentAPosZ = newTransform.Position.Z;
+                // Update local position values to match the snapped position
+                ComponentAPosX = ComponentA.Transform.Position.X;
+                ComponentAPosY = ComponentA.Transform.Position.Y;
+                ComponentAPosZ = ComponentA.Transform.Position.Z;
                 
-                UpdateComponentAPosition();
-                StatusMessage = $"✅ Constraint executed successfully! Applied {result.ConstraintsApplied} constraint(s).";
+                // Refresh the visual
+                var arena = Workspace?.GetArena();
+                var (found, scene) = arena?.CurrentScene() ?? (false, null);
+                if (found && scene != null)
+                {
+                    ComponentA.RefreshToScene(scene);
+                }
+                
+                StatusMessage = $"✅ Snap successful! {SelectedFaceA} of A aligned with {SelectedFaceB} of B.";
             }
             else
             {
-                StatusMessage = $"❌ Constraint execution failed: {result.ErrorMessage}";
+                StatusMessage = $"❌ Snap failed: {result.ErrorMessage}";
             }
             
             StateHasChanged();
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error executing constraint: {ex.Message}";
+            StatusMessage = $"Error executing snap: {ex.Message}";
             StateHasChanged();
         }
     }
 
-    // Quick preset methods
+    // Quick preset methods using universal snapping
     public void StackAOnTopOfB()
     {
-        SelectedFaceA = "Bottom";
-        SelectedFaceB = "Top";
-        CreateConstraint();
-        if (CurrentConstraint != null) ExecuteConstraint();
+        if (ComponentA == null || ComponentB == null)
+        {
+            StatusMessage = "Both components must be created first.";
+            StateHasChanged();
+            return;
+        }
+        
+        var result = UniversalSnapEngine.QuickSnap.StackOnTop(ComponentA, ComponentB);
+        if (result.Success)
+        {
+            ComponentAPosX = ComponentA.Transform.Position.X;
+            ComponentAPosY = ComponentA.Transform.Position.Y;
+            ComponentAPosZ = ComponentA.Transform.Position.Z;
+            
+            var arena = Workspace?.GetArena();
+            var (found, scene) = arena?.CurrentScene() ?? (false, null);
+            if (found && scene != null)
+            {
+                ComponentA.RefreshToScene(scene);
+            }
+            
+            StatusMessage = "✅ Stacked A on top of B successfully!";
+        }
+        else
+        {
+            StatusMessage = $"❌ Stack operation failed: {result.ErrorMessage}";
+        }
+        StateHasChanged();
     }
 
     public void PlaceASideBySideWithB()
     {
-        SelectedFaceA = "Left";
-        SelectedFaceB = "Right";
-        CreateConstraint();
-        if (CurrentConstraint != null) ExecuteConstraint();
+        if (ComponentA == null || ComponentB == null)
+        {
+            StatusMessage = "Both components must be created first.";
+            StateHasChanged();
+            return;
+        }
+        
+        var result = UniversalSnapEngine.QuickSnap.PlaceSideBySide(ComponentA, ComponentB);
+        if (result.Success)
+        {
+            ComponentAPosX = ComponentA.Transform.Position.X;
+            ComponentAPosY = ComponentA.Transform.Position.Y;
+            ComponentAPosZ = ComponentA.Transform.Position.Z;
+            
+            var arena = Workspace?.GetArena();
+            var (found, scene) = arena?.CurrentScene() ?? (false, null);
+            if (found && scene != null)
+            {
+                ComponentA.RefreshToScene(scene);
+            }
+            
+            StatusMessage = "✅ Placed A side-by-side with B successfully!";
+        }
+        else
+        {
+            StatusMessage = $"❌ Side-by-side operation failed: {result.ErrorMessage}";
+        }
+        StateHasChanged();
     }
 
     public void AttachAToFrontOfB()
     {
-        SelectedFaceA = "Back";
-        SelectedFaceB = "Front";
-        CreateConstraint();
-        if (CurrentConstraint != null) ExecuteConstraint();
+        if (ComponentA == null || ComponentB == null)
+        {
+            StatusMessage = "Both components must be created first.";
+            StateHasChanged();
+            return;
+        }
+        
+        var result = UniversalSnapEngine.QuickSnap.AttachToFront(ComponentA, ComponentB);
+        if (result.Success)
+        {
+            ComponentAPosX = ComponentA.Transform.Position.X;
+            ComponentAPosY = ComponentA.Transform.Position.Y;
+            ComponentAPosZ = ComponentA.Transform.Position.Z;
+            
+            var arena = Workspace?.GetArena();
+            var (found, scene) = arena?.CurrentScene() ?? (false, null);
+            if (found && scene != null)
+            {
+                ComponentA.RefreshToScene(scene);
+            }
+            
+            StatusMessage = "✅ Attached A to front of B successfully!";
+        }
+        else
+        {
+            StatusMessage = $"❌ Attach to front operation failed: {result.ErrorMessage}";
+        }
+        StateHasChanged();
     }
 
     public void AttachAToBackOfB()
     {
-        SelectedFaceA = "Front";
-        SelectedFaceB = "Back";
-        CreateConstraint();
-        if (CurrentConstraint != null) ExecuteConstraint();
+        if (ComponentA == null || ComponentB == null)
+        {
+            StatusMessage = "Both components must be created first.";
+            StateHasChanged();
+            return;
+        }
+        
+        var result = UniversalSnapEngine.QuickSnap.AttachToBack(ComponentA, ComponentB);
+        if (result.Success)
+        {
+            ComponentAPosX = ComponentA.Transform.Position.X;
+            ComponentAPosY = ComponentA.Transform.Position.Y;
+            ComponentAPosZ = ComponentA.Transform.Position.Z;
+            
+            var arena = Workspace?.GetArena();
+            var (found, scene) = arena?.CurrentScene() ?? (false, null);
+            if (found && scene != null)
+            {
+                ComponentA.RefreshToScene(scene);
+            }
+            
+            StatusMessage = "✅ Attached A to back of B successfully!";
+        }
+        else
+        {
+            StatusMessage = $"❌ Attach to back operation failed: {result.ErrorMessage}";
+        }
+        StateHasChanged();
     }
 
     public void ShowFaces()
@@ -297,23 +368,19 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
         
         if (ComponentA != null)
         {
-            foreach (var face in ComponentA.Faces.Values)
-            {
-                VisualizationService.ShowWireframeFaces(arena, new List<Face3D> { face });
-                faceCount++;
-            }
+            var faces = UniversalSnapEngine.GetAllFaces(ComponentA);
+            VisualizationService.ShowWireframeFaces(arena, faces);
+            faceCount += faces.Count;
         }
         
         if (ComponentB != null)
         {
-            foreach (var face in ComponentB.Faces.Values)
-            {
-                VisualizationService.ShowWireframeFaces(arena, new List<Face3D> { face });
-                faceCount++;
-            }
+            var faces = UniversalSnapEngine.GetAllFaces(ComponentB);
+            VisualizationService.ShowWireframeFaces(arena, faces);
+            faceCount += faces.Count;
         }
         
-        StatusMessage = $"Showing {faceCount} faces as wireframe outlines with labels.";
+        StatusMessage = $"Showing {faceCount} faces as wireframe outlines with labels using Universal Snapping.";
         StateHasChanged();
     }
 
@@ -326,19 +393,19 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
         
         if (ComponentA != null)
         {
-            var faces = ComponentA.Faces.Values.ToList();
+            var faces = UniversalSnapEngine.GetAllFaces(ComponentA);
             VisualizationService.ShowLabeledNormals(arena, faces);
             normalCount += faces.Count;
         }
         
         if (ComponentB != null)
         {
-            var faces = ComponentB.Faces.Values.ToList();
+            var faces = UniversalSnapEngine.GetAllFaces(ComponentB);
             VisualizationService.ShowLabeledNormals(arena, faces);
             normalCount += faces.Count;
         }
         
-        StatusMessage = $"Showing {normalCount} face normals as red cylinders with cones.";
+        StatusMessage = $"Showing {normalCount} face normals as red cylinders with cones using Universal Snapping.";
         StateHasChanged();
     }
 
@@ -351,31 +418,27 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
         
         if (ComponentA != null)
         {
-            foreach (var snapPoint in ComponentA.SnapPoints.Values)
+            var faces = UniversalSnapEngine.GetAllFaces(ComponentA);
+            foreach (var face in faces)
             {
-                CreateMarkerSphere($"SnapPointA_{snapPoint.Name}", 
-                    new Point3D(snapPoint.LocalPosition.X + ComponentAPosX, 
-                               snapPoint.LocalPosition.Y + ComponentAPosY, 
-                               snapPoint.LocalPosition.Z + ComponentAPosZ), 
-                    "#FF9800", 0.05);
+                VisualizationService.CreateMarkerSphere(arena, $"SnapPointA_{face.Name}", 
+                    face.Center, "#FF9800", 0.05);
                 pointCount++;
             }
         }
         
         if (ComponentB != null)
         {
-            foreach (var snapPoint in ComponentB.SnapPoints.Values)
+            var faces = UniversalSnapEngine.GetAllFaces(ComponentB);
+            foreach (var face in faces)
             {
-                CreateMarkerSphere($"SnapPointB_{snapPoint.Name}", 
-                    new Point3D(snapPoint.LocalPosition.X + ComponentBPosX, 
-                               snapPoint.LocalPosition.Y + ComponentBPosY, 
-                               snapPoint.LocalPosition.Z + ComponentBPosZ), 
-                    "#9C27B0", 0.05);
+                VisualizationService.CreateMarkerSphere(arena, $"SnapPointB_{face.Name}", 
+                    face.Center, "#9C27B0", 0.05);
                 pointCount++;
             }
         }
         
-        StatusMessage = $"Showing {pointCount} snap points as colored spheres.";
+        StatusMessage = $"Showing {pointCount} snap points (face centers) as colored spheres using Universal Snapping.";
         StateHasChanged();
     }
 
@@ -398,31 +461,12 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
         // Reset components
         ComponentA = null;
         ComponentB = null;
-        CurrentConstraint = null;
-        ComponentAVisual = null;
-        ComponentBVisual = null;
         
         StatusMessage = "Cleared all visualization and reset components.";
         StateHasChanged();
     }
 
-    private void CreateMarkerSphere(string name, Point3D position, string color, double radius)
-    {
-        var shape = new FoShape3D()
-        {
-            Name = name,
-            Color = color,
-            GlyphId = Guid.NewGuid().ToString(),
-            Transform = new Transform3() {
-                Position = new Vector3(position.X, position.Y, position.Z)
-            }
-        }.CreateSphere(name, radius, radius, radius);
-        
-        var arena = Workspace?.GetArena();
-        arena?.AddShapeToStage<FoShape3D>(shape);
-    }
-
-    public void Dispose() { }
+    public void Dispose() {}
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

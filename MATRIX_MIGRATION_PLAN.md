@@ -1163,4 +1163,44 @@ private Transform3 CalculateSnapTransformWithQuaternions(Face3D faceA, Face3D fa
 3. **Powerful**: Unlocks precise face alignment
 4. **Future-Ready**: Foundation for LEGO-style snapping
 
-This quaternion upgrade transforms our constraint system from "avoiding rotation" to "precise rotational control" while maintaining complete backward compatibility!
+## 🌐 **Future: Multi-Coordinate System Extension**
+
+### **Vision: Universal Assembly Language**
+
+The quaternion-based universal snapping foundation enables **coordinate-system-agnostic 3D assembly**. Future phases will extend beyond rectilinear coordinates:
+
+### **Coordinate System Roadmap**
+
+#### **Phase 1: Fundamental Extensions** (Future)
+```csharp
+// Spherical coordinate snapping
+public class SphericalFrame3D : SpacialFrame3D
+{
+    // Latitude/longitude face definitions for molecules, geodesics, planets
+    public override List<Face3D> GetFacesWithNormals() => sphericalFaces;
+}
+
+// Cylindrical coordinate snapping  
+public class CylindricalFrame3D : SpacialFrame3D
+{
+    // Radial/axial face definitions for pipes, rotary systems
+    public override List<Face3D> GetFacesWithNormals() => cylindricalFaces;
+}
+```
+
+#### **Phase 2: Advanced Systems** (Future)
+- **Toroidal coordinates**: Complex mechanical bearings
+- **Helical coordinates**: Threaded connections, DNA structures
+- **Hybrid assemblies**: Cross-coordinate system snapping
+
+### **Universal API Vision**
+```csharp
+// Same API across all coordinate systems
+SnapEngine.SnapObjects(sphericalMolecule, "North", boxCrystal, "Top");
+SnapEngine.SnapObjects(cylindricalPipe, "Radial_0", rectangularPanel, "Front");
+SnapEngine.SnapObjects(helicalThread, "Spiral_90", cylindricalBolt, "Axial_Top");
+```
+
+**Key Insight**: Quaternion mathematics remain **coordinate-system-independent**. Only face definitions change between coordinate systems, while core snapping calculations stay identical.
+
+This quaternion upgrade transforms our constraint system from "avoiding rotation" to "precise rotational control" while maintaining complete backward compatibility and enabling future multi-coordinate system expansion!

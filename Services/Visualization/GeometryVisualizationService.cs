@@ -354,4 +354,65 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             arena.AddShapeToStage<FoShape3D>(normalShape);
         }
     }
+    
+    // Marker creation utilities
+    public FoShape3D CreateMarkerSphere(IArena arena, string name, Point3D position, string color, double radius)
+    {
+        var shape = new FoShape3D()
+        {
+            Name = name,
+            Color = color,
+            GlyphId = Guid.NewGuid().ToString(),
+            Transform = new Transform3() {
+                Position = new Vector3(position.X, position.Y, position.Z)
+            }
+        }.CreateSphere(name, radius, radius, radius);
+        
+        arena?.AddShapeToStage<FoShape3D>(shape);
+        return shape;
+    }
+    
+    public FoShape3D CreateMarkerCylinder(IArena arena, string name, Point3D position, Vector3 rotation, string color, double radius, double height)
+    {
+        var shape = new FoShape3D()
+        {
+            Name = name,
+            Color = color,
+            GlyphId = Guid.NewGuid().ToString(),
+            Transform = new Transform3() {
+                Position = new Vector3(position.X, position.Y, position.Z),
+                Rotation = new Euler(rotation.X, rotation.Y, rotation.Z)
+            }
+        }.CreateCylinder(name, radius, height, radius);
+        
+        arena?.AddShapeToStage<FoShape3D>(shape);
+        return shape;
+    }
+    
+    public FoShape3D CreateMarkerPlane(IArena arena, string name, Point3D position, Vector3 rotation, string color, double width, double height, double depth, double opacity = 1.0)
+    {
+        var shape = new FoShape3D()
+        {
+            Name = name,
+            Color = color,
+            GlyphId = Guid.NewGuid().ToString(),
+            Transform = new Transform3() {
+                Position = new Vector3(position.X, position.Y, position.Z),
+                Rotation = new Euler(rotation.X, rotation.Y, rotation.Z)
+            },
+            Opacity = opacity
+        }.CreatePlane(name, width, height, depth);
+        
+        arena?.AddShapeToStage<FoShape3D>(shape);
+        return shape;
+    }
+    
+    public void CreateCoordinateMarker(IArena arena, string name, Point3D position, double size = 0.1)
+    {
+        // Create X, Y, Z axis markers as small colored spheres
+        CreateMarkerSphere(arena, $"{name}_X", new Point3D(position.X + size, position.Y, position.Z), "#FF0000", size * 0.3);
+        CreateMarkerSphere(arena, $"{name}_Y", new Point3D(position.X, position.Y + size, position.Z), "#00FF00", size * 0.3);
+        CreateMarkerSphere(arena, $"{name}_Z", new Point3D(position.X, position.Y, position.Z + size), "#0000FF", size * 0.3);
+        CreateMarkerSphere(arena, $"{name}_Origin", position, "#FFFFFF", size * 0.2);
+    }
 }

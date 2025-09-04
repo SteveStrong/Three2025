@@ -228,6 +228,9 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
             return;
         }
 
+        var arena = Workspace?.GetArena();
+        if (arena == null) return;
+
         // Show main diagonals connecting opposite corners
         var diagonalPairs = new[]
         {
@@ -241,8 +244,8 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
         foreach (var (start, end) in diagonalPairs)
         {
             // Create small spheres at diagonal endpoints
-            CreateMarkerSphere($"Diagonal{index}Start", start, "#E91E63", 0.03);
-            CreateMarkerSphere($"Diagonal{index}End", end, "#E91E63", 0.03);
+            VisualizationService.CreateMarkerSphere(arena, $"Diagonal{index}Start", start, "#E91E63", 0.03);
+            VisualizationService.CreateMarkerSphere(arena, $"Diagonal{index}End", end, "#E91E63", 0.03);
             index++;
         }
 
@@ -259,7 +262,8 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
             return;
         }
 
-
+        var arena = Workspace?.GetArena();
+        if (arena == null) return;
 
         var center = CurrentBox.Center;
         var halfW = CurrentBox.Width / 2;
@@ -277,11 +281,11 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
             new Point3D(center.X, center.Y, center.Z - halfD)  // Back
         };
 
-        CreateMarkerSphere("CenterPoint", center, "#FF0000", 0.08);
+        VisualizationService.CreateMarkerSphere(arena, "CenterPoint", center, "#FF0000", 0.08);
 
         for (int i = 0; i < crossPoints.Length; i++)
         {
-            CreateMarkerSphere($"CrossPoint{i}", crossPoints[i], "#FF5722", 0.05);
+            VisualizationService.CreateMarkerSphere(arena, $"CrossPoint{i}", crossPoints[i], "#FF5722", 0.05);
         }
 
         StatusMessage = "Showing center cross with 6 directional points";
@@ -297,7 +301,8 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
             return;
         }
 
-
+        var arena = Workspace?.GetArena();
+        if (arena == null) return;
 
         var center = CurrentBox.Center;
         var quadrantSize = 0.2;
@@ -318,7 +323,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
 
         for (int i = 0; i < quadrants.Length; i++)
         {
-            CreateMarkerSphere($"Quadrant{i}", quadrants[i], colors[i], 0.04);
+            VisualizationService.CreateMarkerSphere(arena, $"Quadrant{i}", quadrants[i], colors[i], 0.04);
         }
 
         StatusMessage = "Showing 8 3D quadrants around center";
@@ -364,8 +369,8 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 return;
             }
             
-            VisualizationService.ShowLabeledVertices(arena, CurrentBox.Vertices);
-            StatusMessage = $"Showing {CurrentBox.Vertices.Count} vertices as labeled spheres.";
+            VisualizationService.ShowLabeledVertices(arena, CurrentBox.GetLocalVertices());
+            StatusMessage = $"Showing {CurrentBox.GetLocalVertices().Count} vertices as labeled spheres.";
             StateHasChanged();
         }
 
@@ -385,7 +390,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 return;
             }
 
-            var edges = CurrentBox.GetEdgesWithNames();
+            var edges = CurrentBox.GetLocalEdgesWithNames();
             VisualizationService.ShowLabeledEdges(arena, edges);
             StatusMessage = $"Showing {edges.Count} edges as labeled tubes.";
             StateHasChanged();
@@ -407,7 +412,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 return;
             }
             
-            var faces = CurrentBox.GetFacesWithNormals();
+            var faces = CurrentBox.GetLocalFacesWithNormals();
             VisualizationService.ShowWireframeFaces(arena, faces);
             StatusMessage = $"Showing {faces.Count} faces as wireframe outlines with labels.";
             StateHasChanged();
@@ -429,7 +434,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 return;
             }
             
-            var faces = CurrentBox.GetFacesWithNormals();
+            var faces = CurrentBox.GetLocalFacesWithNormals();
             VisualizationService.ShowLabeledNormals(arena, faces);
             StatusMessage = $"Showing {faces.Count} face normals as red cylinders, aligned with normals.";
             StateHasChanged();
@@ -444,14 +449,16 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
             return;
         }
 
+        var arena = Workspace?.GetArena();
+        if (arena == null) return;
 
         // Create dimension indicators (simplified - would need line drawing capability)
         var center = CurrentBox.Center;
-        CreateMarkerSphere("DimCenter", center, "#FFFF00", 0.05);
+        VisualizationService.CreateMarkerSphere(arena, "DimCenter", center, "#FFFF00", 0.05);
 
         // Show dimension endpoints
-        CreateMarkerSphere("WidthEnd1", new Point3D(center.X - CurrentBox.Width / 2, center.Y, center.Z), "#FF0000", 0.03);
-        CreateMarkerSphere("WidthEnd2", new Point3D(center.X + CurrentBox.Width / 2, center.Y, center.Z), "#FF0000", 0.03);
+        VisualizationService.CreateMarkerSphere(arena, "WidthEnd1", new Point3D(center.X - CurrentBox.Width / 2, center.Y, center.Z), "#FF0000", 0.03);
+        VisualizationService.CreateMarkerSphere(arena, "WidthEnd2", new Point3D(center.X + CurrentBox.Width / 2, center.Y, center.Z), "#FF0000", 0.03);
 
         StatusMessage = $"Dimensions: W={CurrentBox.Width:F2}, H={CurrentBox.Height:F2}, D={CurrentBox.Depth:F2}";
         StateHasChanged();
@@ -499,23 +506,6 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
         StateHasChanged();
     }
 
-    private void CreateMarkerSphere(string name, Point3D position, string color, double radius)
-    {
-        var shape = new FoShape3D()
-        {
-            Name = name,
-            Color = color,
-            GlyphId = Guid.NewGuid().ToString(),
-            Transform = new Transform3() {
-                Position = new Vector3(position.X, position.Y, position.Z)
-            }
-        }.CreateSphere(name, radius, radius, radius);
-
-
-        var arena = Workspace?.GetArena();
-        arena?.AddShapeToStage<FoShape3D>(shape);
-    }
-
     public void ShowAllDetailed()
     {
         if (CurrentBox == null)
@@ -532,9 +522,9 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
             return;
         }
         
-        var vertices = CurrentBox.Vertices;
-        var edges = CurrentBox.GetEdgesWithNames();
-        var faces = CurrentBox.GetFacesWithNormals();
+        var vertices = CurrentBox.GetLocalVertices();
+        var edges = CurrentBox.GetLocalEdgesWithNames();
+        var faces = CurrentBox.GetLocalFacesWithNormals();
         
         VisualizationService.ShowAll(arena, vertices, edges, faces);
         StatusMessage = $"Showing comprehensive view: {vertices.Count} vertices, {edges.Count} edges, {faces.Count} faces with labels and normals";

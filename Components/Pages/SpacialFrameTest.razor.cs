@@ -92,8 +92,8 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
         var arena = Workspace?.GetArena();
         if (arena == null) return;
         
-        VisualizationService.ShowLabeledVertices(arena, CurrentFrame.Vertices);
-        StatusMessage = $"Showing {CurrentFrame.Vertices.Count} vertices as labeled spheres.";
+        VisualizationService.ShowLabeledVertices(arena, CurrentFrame.GetVertices());
+        StatusMessage = $"Showing {CurrentFrame.GetVertices().Count} vertices as labeled spheres.";
         StateHasChanged();
     }
 
@@ -165,16 +165,16 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
         if (arena == null) return;
         
         int i = 0;
-        foreach (var v in CurrentFrame.Vertices)
+        foreach (var v in CurrentFrame.GetVertices())
         {
-            CreateMarkerSphere($"Vertex{i}", v, "#2196F3", 0.03);
+            VisualizationService.CreateMarkerSphere(arena, $"Vertex{i}", v, "#2196F3", 0.03);
             i++;
         }
         
         // Add coordinate axes
         ShowAxes();
         
-        StatusMessage = $"Showing complete frame analysis: {CurrentFrame.Vertices.Count} vertices + axes";
+        StatusMessage = $"Showing complete frame analysis: {CurrentFrame.GetVertices().Count} vertices + axes";
         StateHasChanged();
     }
 
@@ -184,7 +184,7 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
         var arena = Workspace?.GetArena();
         if (arena == null) return;
         
-        var vertices = CurrentFrame.Vertices;
+        var vertices = CurrentFrame.GetVertices();
         var edges = CurrentFrame.GetEdgesWithNames();
         var faces = CurrentFrame.GetFacesWithNormals();
         
@@ -228,21 +228,6 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
     }
 
     public void Dispose() { }
-
-    private void CreateMarkerSphere(string name, Point3D position, string color, double radius)
-    {
-        var shape = new FoShape3D()
-        {
-            Name = name,
-            Color = color,
-            GlyphId = Guid.NewGuid().ToString(),
-            Transform = new Transform3() {
-                Position = new Vector3(position.X, position.Y, position.Z)
-            }
-        }.CreateSphere(name, radius, radius, radius);
-        var arena = Workspace?.GetArena();
-        arena?.AddShapeToStage<FoShape3D>(shape);
-    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

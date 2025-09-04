@@ -2,40 +2,71 @@
 
 ## Overview
 
-This document explains the technical implementation of the LEGO-style snapping system built for the Three2025 application. The system enables precise face-to-face alignment of 3D components through a constraint-based approach that mimics real-world LEGO block assembly.
+This document explains the technical implementation of the LEGO-style snapping system built for the Three2025 application. The system enables precise face-to-face alignment of any 3D geometry through a constraint-based approach that uses `SpacialFrame3D` as a mathematical workspace for constraint calculations.
 
 ## Core Philosophy
 
-### Face-to-Face Snapping Strategy
+### Universal Geometry Snapping Strategy
 
-The snapping system is built around the concept of **face-to-face alignment**, where components connect by aligning their named faces (Top, Bottom, Front, Back, Left, Right) in precise opposition. This approach provides:
+The snapping system works directly with existing `FoShape3D` objects through a elegant 4-step process:
 
-1. **Predictable Assembly**: Users think in terms of "attach the bottom of A to the top of B"
-2. **Local Naming Convention**: Face names remain consistent regardless of component orientation
-3. **Precise Alignment**: Mathematical calculation ensures perfect face contact
-4. **Constraint Persistence**: Relationships are maintained as constraint objects
+1. **Accept Any FoShape3D**: Work with spheres, cylinders, complex meshes, imported models - any 3D geometry
+2. **Wrap in Spatial Frame**: Create temporary `SpacialFrame3D` around object's bounding dimensions
+3. **Calculate Constraints**: Use spatial frame's standardized face system for mathematical alignment
+4. **Project Back**: Apply calculated transforms to the original `FoShape3D` object
+
+This approach provides:
+
+1. **Universal Geometry Support**: Any 3D content becomes instantly snappable
+2. **Predictable Assembly**: Users think in terms of "attach the bottom of A to the top of B"
+3. **Local Naming Convention**: Face names (Top, Bottom, Front, Back, Left, Right) remain consistent
+4. **Precise Alignment**: Mathematical calculation ensures perfect face contact
+5. **Non-Invasive Integration**: Existing objects require no modification to become snappable
 
 ## System Architecture
 
 ### Key Components
 
-#### 1. ISnappable3D Interface
-The foundation interface that any snappable component must implement:
+#### 1. Universal Snapping Engine
+The core function that works with any `FoShape3D` objects:
 
 ```csharp
-public interface ISnappable3D
+public static class SnapEngine
 {
-    Dictionary<string, Face3D> Faces { get; }           // Named faces (Top, Bottom, etc.)
-    Dictionary<string, SnapPoint> SnapPoints { get; }   // Precise snap locations
-    List<SnapConstraint> Constraints { get; }           // Active relationships
+    public static SnapResult SnapObjects(FoShape3D objectA, string faceA, 
+                                        FoShape3D objectB, string faceB)
+    {
+        // 1. WRAP: Create spatial frame workspace
+        var frameA = CreateSpatialFrameWrapper(objectA);
+        var frameB = CreateSpatialFrameWrapper(objectB);
+        
+        // 2. CALCULATE: Constraint math on spatial frames
+        var faceInfoA = frameA.GetFacesWithNormals().First(f => f.Name == faceA);
+        var faceInfoB = frameB.GetFacesWithNormals().First(f => f.Name == faceB);
+        var newTransform = CalculateSnapTransform(faceInfoA, faceInfoB);
+        
+        // 3. PROJECT BACK: Apply to original FoShape3D
+        objectA.Transform.Position = newTransform.Position;
+        objectA.Transform.Rotation = newTransform.Rotation;
+        
+        return SnapResult.Success();
+    }
     
-    Face3D GetFace(string faceName);                    // Retrieve specific face
-    bool CanSnapTo(ISnappable3D other, string myFace, string otherFace);
-    Transform3 CalculateSnapTransform(string myFace, string otherFace, ISnappable3D other);
+    private static SpacialFrame3D CreateSpatialFrameWrapper(FoShape3D shape)
+    {
+        var bounds = shape.GetBoundingBox();
+        var spec = new FoSpec3D { 
+            W = bounds.Width, H = bounds.Height, D = bounds.Depth,
+            X = shape.Transform.Position.X,
+            Y = shape.Transform.Position.Y, 
+            Z = shape.Transform.Position.Z
+        };
+        return new SpacialFrame3D(spec);
+    }
 }
 ```
 
-#### 2. Face3D Structure
+#### 2. Face3D Structure (from SpacialFrame3D)
 Represents a geometric face with all necessary alignment data:
 
 ```csharp
@@ -50,47 +81,59 @@ public class Face3D
 }
 ```
 
-#### 3. SnapBox Implementation
-Concrete implementation wrapping SpacialFrame3D geometry:
+#### 3. Spatial Frame Wrapper Creation
+Creates a mathematical workspace around any `FoShape3D` geometry:
 
 ```csharp
-public class SnapBox : ISnappable3D
+private static SpacialFrame3D CreateSpatialFrameWrapper(FoShape3D shape)
 {
-    private SpacialFrame3D spatial;           // Underlying geometry
-    private FoShape3D visualComponent;       // Visual representation
+    // Extract bounding dimensions from any geometry type
+    var bounds = shape.GetBoundingBox();
     
-    // Automatically generates faces from SpacialFrame3D geometry
-    private void CreateFacesFromGeometry()
-    {
-        var facesWithNormals = spatial.GetFacesWithNormals();
-        foreach (var face in facesWithNormals)
-        {
-            Faces[face.Name] = face;
-        }
-    }
+    // Create spatial frame specification
+    var spec = new FoSpec3D 
+    { 
+        W = bounds.Width,  H = bounds.Height,  D = bounds.Depth,
+        X = shape.Transform.Position.X,
+        Y = shape.Transform.Position.Y, 
+        Z = shape.Transform.Position.Z,
+        Rx = shape.Transform.Rotation.X,
+        Ry = shape.Transform.Rotation.Y,
+        Rz = shape.Transform.Rotation.Z
+    };
+    
+    // Return spatial frame with standardized face definitions
+    return new SpacialFrame3D(spec);
 }
 ```
 
 ## Constraint System
 
-### Constraint Creation Process
+### Simplified Constraint Process
 
-#### Step 1: Face Selection
+#### Step 1: Object and Face Selection
 ```csharp
-// User selects faces through UI
-string selectedFaceA = "Bottom";  // Component A's face
-string selectedFaceB = "Top";     // Component B's face
+// Works with any FoShape3D objects
+FoShape3D shapeA = CreateSphere("sphere", 1.0, "blue");     // Sphere geometry
+FoShape3D shapeB = CreateBox("box", 2, 2, 2, "red");        // Box geometry
+
+// Select faces using standardized names
+string selectedFaceA = "Bottom";  // Sphere's bottom face (from spatial frame)
+string selectedFaceB = "Top";     // Box's top face (from spatial frame)
 ```
 
-#### Step 2: Constraint Object Creation
+#### Step 2: Direct Constraint Execution
 ```csharp
-public void CreateConstraint()
+public void SnapObjects()
 {
-    var faceA = ComponentA.GetFace(SelectedFaceA);
-    var faceB = ComponentB.GetFace(SelectedFaceB);
+    // Single function call - no special interfaces or wrapper classes needed
+    var result = SnapEngine.SnapObjects(shapeA, selectedFaceA, shapeB, selectedFaceB);
     
-    // Create constraint linking the two faces
-    CurrentConstraint = new FaceToFaceConstraint(ComponentA, faceA, ComponentB, faceB, 1.0);
+    if (result.Success)
+    {
+        // shapeA is now positioned to align its bottom face with shapeB's top face
+        Console.WriteLine("Objects snapped successfully!");
+    }
 }
 ```
 
