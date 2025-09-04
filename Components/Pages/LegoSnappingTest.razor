@@ -5,7 +5,7 @@
 @using BlazorThreeJS.Viewers
 @using BlazorThreeJS.Maths
 @using Three2025.Shared
-@using Three2025.Apprentice.Snapping
+
 @inherits LegoSnappingTestBase
 @rendermode InteractiveServer
 
@@ -118,29 +118,7 @@
         </div>
 
         <h4>System Status</h4>
-        <div class="info-panel">
-            @if (ComponentA != null)
-            {
-                <p><strong>Component A:</strong> @BoxWidth × @BoxHeight × @BoxDepth</p>
-                <p><strong>A Position:</strong> (@ComponentAPosX, @ComponentAPosY, @ComponentAPosZ)</p>
-                <p><strong>A Faces:</strong> @ComponentA.Faces.Count</p>
-                <p><strong>A Constraints:</strong> @ComponentA.Constraints.Count</p>
-            }
-            @if (ComponentB != null)
-            {
-                <p><strong>Component B:</strong> @BoxWidth × @BoxHeight × @BoxDepth</p>
-                <p><strong>B Position:</strong> (@ComponentBPosX, @ComponentBPosY, @ComponentBPosZ)</p>
-                <p><strong>B Faces:</strong> @ComponentB.Faces.Count</p>
-                <p><strong>B Constraints:</strong> @ComponentB.Constraints.Count</p>
-            }
-            @if (CurrentConstraint != null)
-            {
-                <p><strong>Current Constraint:</strong> @SelectedFaceA → @SelectedFaceB</p>
-                <p><strong>Constraint Active:</strong> @CurrentConstraint.IsActive</p>
-                <p><strong>Priority:</strong> @CurrentConstraint.Priority</p>
-            }
-        </div>
-
+ 
         <div class="status-message">
             <strong>Status:</strong> @StatusMessage
         </div>

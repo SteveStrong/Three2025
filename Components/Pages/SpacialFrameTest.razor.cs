@@ -1,12 +1,5 @@
-using BlazorThreeJS.Objects;
-using BlazorThreeJS.Materials;
-using BlazorThreeJS.Maths;
-using BlazorThreeJS.Viewers;
-using BlazorThreeJS.Geometires;
 using FoundryBlazor.Shape;
-using FoundryRulesAndUnits.Extensions;
 using Microsoft.AspNetCore.Components;
-using Three2025.Shared;
 using FoundryBlazor.Shared;
 using FoundryBlazor.Solutions;
 using FoundryBlazor.PubSub;
@@ -17,7 +10,7 @@ namespace Three2025.Components.Pages;
 public class SpacialFrameTestBase : ComponentBase, IDisposable
 {
     [Inject] public NavigationManager Navigation { get; set; }
-    [Inject] public IWorkspace Workspace { get; set; }
+    //[Inject] public IWorkspace Workspace { get; set; }
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
@@ -38,6 +31,8 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
     [Parameter] public int CanvasHeight { get; set; } = 1000;
 
     protected string StatusMessage { get; set; } = string.Empty;
+    private List<FoShape3D> CurrentShapes = new();
+    private List<SpacialFrame3D> CurrentFrames = new();
 
     public void CreateSpacialFrame()
     {
@@ -59,7 +54,7 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
         CurrentFrame = new SpacialFrame3D(spec, "m");
         CurrentFrame.UpdateTransform();
 
-        var arena = Workspace?.GetArena();
+        var arena = FoundryService.Arena();
         if (arena == null)
         {
             StatusMessage = "Arena not ready yet. Try again in a moment.";
@@ -81,53 +76,64 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
 
         arena.AddShapeToStage<FoShape3D>(boxShape);
  
-
         StatusMessage = $"Created SpacialFrame3D: {FrameWidth}×{FrameHeight}×{FrameDepth} at ({FrameX},{FrameY},{FrameZ})";
         StateHasChanged();
     }
 
+ 
+
     public void ShowVertices()
     {
-        if (CurrentFrame == null) return;
-        var arena = Workspace?.GetArena();
+
+        var arena = FoundryService.Arena();
         if (arena == null) return;
-        
-        VisualizationService.ShowLabeledVertices(arena, CurrentFrame.GetVertices());
-        StatusMessage = $"Showing {CurrentFrame.GetVertices().Count} vertices as labeled spheres.";
+
+        foreach( var frame in CurrentFrames)
+        {
+            VisualizationService.ShowLabeledVertices(arena, frame.GetVertices());
+        }
+
+        StatusMessage = $"Showing {CurrentFrames.Sum(f => f.GetVertices().Count)} vertices as labeled spheres.";
         StateHasChanged();
     }
 
     public void ShowEdges()
     {
-        if (CurrentFrame == null) return;
-        var arena = Workspace?.GetArena();
+        var arena = FoundryService.Arena();
         if (arena == null) return;
-        
-        var edges = CurrentFrame.GetEdgesWithNames();
-        VisualizationService.ShowLabeledEdges(arena, edges);
-        StatusMessage = $"Showing {edges.Count} edges as labeled tubes.";
+
+        foreach( var frame in CurrentFrames)
+        {
+            var edges = frame.GetEdges();
+            VisualizationService.ShowLabeledEdges(arena, edges);
+        }
+
+        StatusMessage = $"Showing {CurrentFrames.Sum(f => f.GetEdges().Count)} edges as labeled tubes.";
         StateHasChanged();
     }
 
     public void ShowFaces()
     {
-        if (CurrentFrame == null) return;
-        var arena = Workspace?.GetArena();
+        var arena = FoundryService.Arena();
         if (arena == null) return;
-        
-        var faces = CurrentFrame.GetFacesWithNormals();
-        VisualizationService.ShowWireframeFaces(arena, faces);
-        StatusMessage = $"Showing {faces.Count} faces as wireframe outlines with labels.";
+
+        foreach( var frame in CurrentFrames)
+        {
+            var faces = frame.GetFaces();
+            //VisualizationService.ShowWireframeFaces(arena, faces);
+        }
+
+        StatusMessage = $"Showing {CurrentFrames.Sum(f => f.GetFaces().Count)} faces as wireframe outlines with labels.";
         StateHasChanged();
     }
 
     public void ShowNormals()
     {
         if (CurrentFrame == null) return;
-        var arena = Workspace?.GetArena();
+        var arena = FoundryService.Arena();
         if (arena == null) return;
         
-        var faces = CurrentFrame.GetFacesWithNormals();
+        var faces = CurrentFrame.GetFaces();
         VisualizationService.ShowLabeledNormals(arena, faces);
         StatusMessage = $"Showing {faces.Count} face normals as red cylinders with cones and labels, aligned with normals.";
         StateHasChanged();
@@ -136,7 +142,7 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
     public void ShowAxes()
     {
         if (CurrentFrame == null) return;
-        var arena = Workspace?.GetArena();
+        var arena = FoundryService.Arena();
         if (arena == null) return;
         
         VisualizationService.ShowCoordinateAxes(arena, CurrentFrame.Transform);
@@ -146,7 +152,7 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
 
     public void ClearAll()
     {
-        var arena = Workspace?.GetArena();
+        var arena = FoundryService.Arena();
         if (arena == null) return;
         arena.ClearArena();
         StateHasChanged();
@@ -161,7 +167,7 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
         CreateSpacialFrame();
         
         // Add vertices as small spheres
-        var arena = Workspace?.GetArena();
+        var arena = FoundryService.Arena();
         if (arena == null) return;
         
         int i = 0;
@@ -181,12 +187,12 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
     public void ShowAllDetailed()
     {
         if (CurrentFrame == null) return;
-        var arena = Workspace?.GetArena();
+        var arena = FoundryService.Arena();
         if (arena == null) return;
         
         var vertices = CurrentFrame.GetVertices();
-        var edges = CurrentFrame.GetEdgesWithNames();
-        var faces = CurrentFrame.GetFacesWithNormals();
+        var edges = CurrentFrame.GetEdges();
+        var faces = CurrentFrame.GetFaces();
         
         VisualizationService.ShowAll(arena, vertices, edges, faces);
         StatusMessage = $"Showing comprehensive view: {vertices.Count} vertices, {edges.Count} edges, {faces.Count} faces with labels and normals";
@@ -223,7 +229,47 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
                 FrameRz = 90; FrameRx = FrameRy = 0;
                 break;
         }
+        
+        // DEBUG: Log the rotation values to verify units
+        StatusMessage = $"Setting rotation: Rx={FrameRx}°, Ry={FrameRy}°, Rz={FrameRz}° (degrees)";
+        
         CreateSpacialFrame();
+        StateHasChanged();
+    }
+    
+    public void TestRotationUnits()
+    {
+        if (CurrentFrame == null) return;
+        
+        // Test rotation conversion
+        var testMatrix = BlazorThreeJS.Maths.Matrix3.NewMatrix();
+        testMatrix.RotateEuler(90, 0, 0); // Should be 90 degrees around X
+        
+        var testPoint = new BlazorThreeJS.Maths.Vector3(0, 1, 0); // Point on Y axis
+        var transformedPoint = testMatrix.TransformPoint(testPoint);
+        
+        // After 90° rotation around X, Y should become Z
+        // (0,1,0) should become approximately (0,0,1)
+        StatusMessage = $"Rotation test: (0,1,0) -> ({transformedPoint.X:F3},{transformedPoint.Y:F3},{transformedPoint.Z:F3}) - Expected: (0,0,1)";
+        StateHasChanged();
+    }
+    
+    public void CompareRotationSystems()
+    {
+        if (CurrentFrame == null) return;
+        
+        // Test both rotation systems
+        var matrix3Rotation = BlazorThreeJS.Maths.Matrix3.NewMatrix().RotateEuler(90, 0, 0);
+        var transform3Rotation = new BlazorThreeJS.Maths.Transform3().RotateEuler(90, 0, 0).ToMatrix3();
+        
+        var testPoint = new BlazorThreeJS.Maths.Vector3(0, 1, 0);
+        
+        var matrix3Result = matrix3Rotation.TransformPoint(testPoint);
+        var transform3Result = transform3Rotation.TransformPoint(testPoint);
+        
+        StatusMessage = $"Matrix3: (0,1,0) -> ({matrix3Result.X:F3},{matrix3Result.Y:F3},{matrix3Result.Z:F3})\n" +
+                       $"Transform3: (0,1,0) -> ({transform3Result.X:F3},{transform3Result.Y:F3},{transform3Result.Z:F3})\n" +
+                       $"Expected: (0,0,1) for 90° X rotation";
         StateHasChanged();
     }
 
@@ -240,7 +286,7 @@ public class SpacialFrameTestBase : ComponentBase, IDisposable
                 FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
             });
 
-            var arena = Workspace.GetArena();
+            var arena = FoundryService.Arena();
             if (found)
             {
                 arena.SetScene(scene!);

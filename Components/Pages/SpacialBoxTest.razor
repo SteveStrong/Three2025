@@ -20,21 +20,11 @@
     <Canvas3DComponent SceneName="SpacialBoxScene" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
     <div class="controls-panel" style="margin-left: 10px; width: 300px; overflow-y: auto; max-height: 1000px;">
         
-        <h4>Box Creation</h4>
-        <div class="control-group">
-            <label>Width:</label>
-            <input type="number" @bind="BoxWidth" min="0.1" max="10" step="0.1" />
+        <h4>Scene Controls</h4>
+        <div class="scene-buttons">
+            <button class="btn btn-danger" @onclick="ClearAll">Clear</button>
         </div>
-        <div class="control-group">
-            <label>Height:</label>
-            <input type="number" @bind="BoxHeight" min="0.1" max="10" step="0.1" />
-        </div>
-        <div class="control-group">
-            <label>Depth:</label>
-            <input type="number" @bind="BoxDepth" min="0.1" max="10" step="0.1" />
-        </div>
-        
-        <button class="btn btn-primary" @onclick="CreateSpacialBox">Create SpacialBox</button>
+
         
         <h4>Preset Shapes</h4>
         <div class="preset-buttons">
@@ -44,43 +34,16 @@
             <button class="btn btn-outline-primary" @onclick="CreateWideBox">Wide Box (1×1×4)</button>
             <button class="btn btn-outline-primary" @onclick="CreateTinyBox">Tiny Box (0.5×0.5×0.5)</button>
         </div>
-        
 
-        
-        <h4>Geometric Analysis</h4>
-        <div class="analysis-buttons">
-            <button class="btn btn-outline-info" @onclick="ShowDiagonals">Show Diagonals</button>
-            <button class="btn btn-outline-info" @onclick="ShowCenterCross">Center Cross</button>
-            <button class="btn btn-outline-info" @onclick="ShowQuadrants">Show Quadrants</button>
+        <h4>Box Visualization</h4>
+        <div class="visual-buttons">
+            <button class="btn btn-outline-success" @onclick="ShowVertices">Show Vertices</button>
+            <button class="btn btn-outline-success" @onclick="ShowEdges">Show Edges</button>
+            <button class="btn btn-outline-success" @onclick="ShowFaces">Show Faces</button>
+            <button class="btn btn-outline-success" @onclick="ShowNormals">Show Normals</button>
+            <button class="btn btn-outline-success" @onclick="ShowQuadrants">Show Quadrants</button>
         </div>
-        
-            <h4>Box Visualization</h4>
-            <div class="visual-buttons">
-                <button class="btn btn-outline-success" @onclick="ShowVertices">Show Vertices</button>
-                <button class="btn btn-outline-success" @onclick="ShowEdges">Show Edges</button>
-                <button class="btn btn-outline-success" @onclick="ShowFaces">Show Faces</button>
-                <button class="btn btn-outline-success" @onclick="ShowNormals">Show Normals</button>
-            </div>
 
-        
-        <h4>Scene Controls</h4>
-        <div class="scene-buttons">
-            <button class="btn btn-danger" @onclick="ClearAll">Clear</button>
-        </div>
-        
-        <h4>Box Information</h4>
-        @if (CurrentBox != null)
-        {
-            <div class="info-panel">
-                <p><strong>Dimensions:</strong> @CurrentBox.Width × @CurrentBox.Height × @CurrentBox.Depth @CurrentBox.Units</p>
-                <p><strong>Volume:</strong> @CurrentBox.Volume.ToString("F2") @CurrentBox.Units³</p>
-                <p><strong>Surface Area:</strong> @CurrentBox.SurfaceArea.ToString("F2") @CurrentBox.Units²</p>
-                <p><strong>Center:</strong> (@CurrentBox.Center.X.ToString("F2"), @CurrentBox.Center.Y.ToString("F2"), @CurrentBox.Center.Z.ToString("F2"))</p>
-                <p><strong>Vertices Count:</strong> @CurrentBox.Vertices.Count</p>
-                <p><strong>Face Centers Count:</strong> @CurrentBox.FaceCenters.Count</p>
-                <p><strong>Edge Centers Count:</strong> @CurrentBox.EdgeCenters.Count</p>
-            </div>
-        }
         
         @if (!string.IsNullOrEmpty(StatusMessage))
         {
@@ -88,6 +51,9 @@
                 @StatusMessage
             </div>
         }
+    </div>
+    <div class="controls-panel" style="margin-left: 10px; width: 800px; overflow-y: auto; max-height: 1000px;">
+        <ShapeTreeView/>
     </div>
 </div>
 

@@ -1,17 +1,13 @@
 using BlazorThreeJS.Objects;
-using BlazorThreeJS.Materials;
-using BlazorThreeJS.Maths;
 using BlazorThreeJS.Viewers;
-using BlazorThreeJS.Geometires;
 using FoundryBlazor.Shape;
 using FoundryRulesAndUnits.Extensions;
 using Microsoft.AspNetCore.Components;
-using Three2025.Shared;
 using FoundryBlazor.Solutions;
-using BlazorThreeJS.Core;
 using FoundryBlazor.Shared;
 using FoundryBlazor.PubSub;
 using Three2025.Services.Visualization;
+using BlazorThreeJS.Maths;
 
 namespace Three2025.Components.Pages;
 
@@ -55,7 +51,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
             });
 
-            var arena = Workspace.GetArena();
+            var arena = FoundryService.Arena();
             if (found)
             {
                 arena.SetScene(scene!);
@@ -82,9 +78,9 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
     {
         try
         {
-            CurrentBox = new SpacialBox3D(BoxWidth, BoxHeight, BoxDepth, "m");
 
-            var arena = Workspace?.GetArena();
+
+            var arena = FoundryService.Arena();
             if (arena == null)
             {
                 StatusMessage = "Arena not ready yet. Try again in a moment.";
@@ -94,16 +90,24 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
 
             arena.ClearArena();
 
-            var boxShape = new FoShape3D()
-                .CreateBox("SpacialBoxMain", BoxWidth, BoxHeight, BoxDepth);
 
-            boxShape.Color = "#4CAF50";
-            boxShape.Opacity = 0.8;
-            boxShape.Transform.Position = new BlazorThreeJS.Maths.Vector3(CurrentBox.Center.X - BoxWidth / 2, CurrentBox.Center.Y - BoxHeight / 2, CurrentBox.Center.Z - BoxDepth / 2);
+            var boxShape = new FoShape3D()
+            {
+                Name = "SpacialBoxMain",
+                GlyphId = Guid.NewGuid().ToString(),
+                Color = "#4CAF50",
+                Opacity = 0.8,
+                Transform = new Transform3()
+                {
+                    Position = new Vector3(0, 0, 0)
+                }
+            }.CreateBox("SpacialBoxMain", BoxWidth, BoxHeight, BoxDepth);
 
             arena.AddShapeToStage<FoShape3D>(boxShape);
 
-            StatusMessage = $"Created SpacialBox3D (FoShape3D): {BoxWidth}×{BoxHeight}×{BoxDepth}m";
+            CurrentBox = new SpacialFrame3D(boxShape, "m");
+
+            StatusMessage = $"Created SpacialFrame3D (FoShape3D): {BoxWidth}×{BoxHeight}×{BoxDepth}m";
             StateHasChanged();
         }
         catch (Exception ex)
@@ -113,34 +117,10 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
         }
     }
 
-    // Removed: CreateBoxMesh. All box creation now uses FoShape3D and Arena.
-
-    public void ShowBoxInfo()
-    {
-        if (CurrentBox == null)
-        {
-            StatusMessage = "No box created yet. Please create a box first.";
-            StateHasChanged();
-            return;
-        }
-
-        var info = $"Box Info:\n" +
-                  $"Volume: {CurrentBox.Volume:F2} {CurrentBox.Units}³\n" +
-                  $"Surface Area: {CurrentBox.SurfaceArea:F2} {CurrentBox.Units}²\n" +
-                  $"Center: ({CurrentBox.Center.X:F2}, {CurrentBox.Center.Y:F2}, {CurrentBox.Center.Z:F2})";
-
-        StatusMessage = info;
-        StateHasChanged();
-    }
-
-
-
-
-
 
     public void ClearAll()
     {
-        var arena = Workspace?.GetArena();
+        var arena = FoundryService.Arena();
         if (arena == null)
         {
             StatusMessage = "Arena not ready yet. Try again in a moment.";
@@ -217,81 +197,6 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
 
 
 
-
-
-    public void ShowDiagonals()
-    {
-        if (CurrentBox == null)
-        {
-            StatusMessage = "No box created yet. Please create a box first.";
-            StateHasChanged();
-            return;
-        }
-
-        var arena = Workspace?.GetArena();
-        if (arena == null) return;
-
-        // Show main diagonals connecting opposite corners
-        var diagonalPairs = new[]
-        {
-            (CurrentBox.LeftTopFront, CurrentBox.RightBottomBack),
-            (CurrentBox.RightTopFront, CurrentBox.LeftBottomBack),
-            (CurrentBox.LeftBottomFront, CurrentBox.RightTopBack),
-            (CurrentBox.RightBottomFront, CurrentBox.LeftTopBack)
-        };
-
-        int index = 0;
-        foreach (var (start, end) in diagonalPairs)
-        {
-            // Create small spheres at diagonal endpoints
-            VisualizationService.CreateMarkerSphere(arena, $"Diagonal{index}Start", start, "#E91E63", 0.03);
-            VisualizationService.CreateMarkerSphere(arena, $"Diagonal{index}End", end, "#E91E63", 0.03);
-            index++;
-        }
-
-        StatusMessage = $"Showing {diagonalPairs.Length} main diagonals";
-        StateHasChanged();
-    }
-
-    public void ShowCenterCross()
-    {
-        if (CurrentBox == null)
-        {
-            StatusMessage = "No box created yet. Please create a box first.";
-            StateHasChanged();
-            return;
-        }
-
-        var arena = Workspace?.GetArena();
-        if (arena == null) return;
-
-        var center = CurrentBox.Center;
-        var halfW = CurrentBox.Width / 2;
-        var halfH = CurrentBox.Height / 2;
-        var halfD = CurrentBox.Depth / 2;
-
-        // Create cross points extending from center
-        var crossPoints = new[]
-        {
-            new Point3D(center.X + halfW, center.Y, center.Z), // Right
-            new Point3D(center.X - halfW, center.Y, center.Z), // Left
-            new Point3D(center.X, center.Y + halfH, center.Z), // Top
-            new Point3D(center.X, center.Y - halfH, center.Z), // Bottom
-            new Point3D(center.X, center.Y, center.Z + halfD), // Front
-            new Point3D(center.X, center.Y, center.Z - halfD)  // Back
-        };
-
-        VisualizationService.CreateMarkerSphere(arena, "CenterPoint", center, "#FF0000", 0.08);
-
-        for (int i = 0; i < crossPoints.Length; i++)
-        {
-            VisualizationService.CreateMarkerSphere(arena, $"CrossPoint{i}", crossPoints[i], "#FF5722", 0.05);
-        }
-
-        StatusMessage = "Showing center cross with 6 directional points";
-        StateHasChanged();
-    }
-
     public void ShowQuadrants()
     {
         if (CurrentBox == null)
@@ -301,7 +206,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
             return;
         }
 
-        var arena = Workspace?.GetArena();
+        var arena = FoundryService.Arena();
         if (arena == null) return;
 
         var center = CurrentBox.Center;
@@ -333,24 +238,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
  
 
 
-    // === MEASUREMENT TOOLS ===
-    public void MeasureDistances()
-    {
-        if (CurrentBox == null)
-        {
-            StatusMessage = "No box created yet. Please create a box first.";
-            StateHasChanged();
-            return;
-        }
 
-        var diagonal = Math.Sqrt(Math.Pow(CurrentBox.Width, 2) + Math.Pow(CurrentBox.Height, 2) + Math.Pow(CurrentBox.Depth, 2));
-        var faceDiagonal1 = Math.Sqrt(Math.Pow(CurrentBox.Width, 2) + Math.Pow(CurrentBox.Height, 2));
-        var faceDiagonal2 = Math.Sqrt(Math.Pow(CurrentBox.Height, 2) + Math.Pow(CurrentBox.Depth, 2));
-        var faceDiagonal3 = Math.Sqrt(Math.Pow(CurrentBox.Width, 2) + Math.Pow(CurrentBox.Depth, 2));
-
-        StatusMessage = $"Distances - Main diagonal: {diagonal:F2}, Face diagonals: {faceDiagonal1:F2}, {faceDiagonal2:F2}, {faceDiagonal3:F2}";
-        StateHasChanged();
-    }
 
         // === VISUALIZATION TEST METHODS ===
         public void ShowVertices()
@@ -361,7 +249,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 StateHasChanged();
                 return;
             }
-            var arena = Workspace?.GetArena();
+            var arena = FoundryService.Arena();
             if (arena == null)
             {
                 StatusMessage = "Arena not ready yet. Try again in a moment.";
@@ -369,8 +257,9 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 return;
             }
             
-            VisualizationService.ShowLabeledVertices(arena, CurrentBox.GetLocalVertices());
-            StatusMessage = $"Showing {CurrentBox.GetLocalVertices().Count} vertices as labeled spheres.";
+            var vertices = CurrentBox.GetLocalVertices();
+            VisualizationService.ShowLabeledVertices(arena, vertices);
+            StatusMessage = $"Showing {vertices.Count} vertices as labeled spheres.";
             StateHasChanged();
         }
 
@@ -382,7 +271,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 StateHasChanged();
                 return;
             }
-            var arena = Workspace?.GetArena();
+           var arena = FoundryService.Arena();
             if (arena == null)
             {
                 StatusMessage = "Arena not ready yet. Try again in a moment.";
@@ -390,7 +279,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 return;
             }
 
-            var edges = CurrentBox.GetLocalEdgesWithNames();
+            var edges = CurrentBox.GetLocalEdges();
             VisualizationService.ShowLabeledEdges(arena, edges);
             StatusMessage = $"Showing {edges.Count} edges as labeled tubes.";
             StateHasChanged();
@@ -404,7 +293,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 StateHasChanged();
                 return;
             }
-            var arena = Workspace?.GetArena();
+            var arena = FoundryService.Arena();
             if (arena == null)
             {
                 StatusMessage = "Arena not ready yet. Try again in a moment.";
@@ -412,8 +301,8 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 return;
             }
             
-            var faces = CurrentBox.GetLocalFacesWithNormals();
-            VisualizationService.ShowWireframeFaces(arena, faces);
+            var faces = CurrentBox.GetLocalFaces();
+            VisualizationService.ShowLabeledFaces(arena, faces);
             StatusMessage = $"Showing {faces.Count} faces as wireframe outlines with labels.";
             StateHasChanged();
         }
@@ -426,7 +315,7 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 StateHasChanged();
                 return;
             }
-            var arena = Workspace?.GetArena();
+            var arena = FoundryService.Arena();
             if (arena == null)
             {
                 StatusMessage = "Arena not ready yet. Try again in a moment.";
@@ -434,100 +323,12 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
                 return;
             }
             
-            var faces = CurrentBox.GetLocalFacesWithNormals();
+            var faces = CurrentBox.GetLocalFaces();
             VisualizationService.ShowLabeledNormals(arena, faces);
             StatusMessage = $"Showing {faces.Count} face normals as red cylinders, aligned with normals.";
             StateHasChanged();
         }
 
-    public void ShowDimensions()
-    {
-        if (CurrentBox == null)
-        {
-            StatusMessage = "No box created yet. Please create a box first.";
-            StateHasChanged();
-            return;
-        }
 
-        var arena = Workspace?.GetArena();
-        if (arena == null) return;
 
-        // Create dimension indicators (simplified - would need line drawing capability)
-        var center = CurrentBox.Center;
-        VisualizationService.CreateMarkerSphere(arena, "DimCenter", center, "#FFFF00", 0.05);
-
-        // Show dimension endpoints
-        VisualizationService.CreateMarkerSphere(arena, "WidthEnd1", new Point3D(center.X - CurrentBox.Width / 2, center.Y, center.Z), "#FF0000", 0.03);
-        VisualizationService.CreateMarkerSphere(arena, "WidthEnd2", new Point3D(center.X + CurrentBox.Width / 2, center.Y, center.Z), "#FF0000", 0.03);
-
-        StatusMessage = $"Dimensions: W={CurrentBox.Width:F2}, H={CurrentBox.Height:F2}, D={CurrentBox.Depth:F2}";
-        StateHasChanged();
-    }
-
-    public void CalculateAngles()
-    {
-        if (CurrentBox == null)
-        {
-            StatusMessage = "No box created yet. Please create a box first.";
-            StateHasChanged();
-            return;
-        }
-
-        // Calculate angles between diagonals and faces
-        var widthAngle = Math.Atan(CurrentBox.Height / CurrentBox.Width) * 180 / Math.PI;
-        var heightAngle = Math.Atan(CurrentBox.Width / CurrentBox.Height) * 180 / Math.PI;
-        var depthAngle = Math.Atan(CurrentBox.Depth / CurrentBox.Width) * 180 / Math.PI;
-
-        StatusMessage = $"Angles - Width/Height: {widthAngle:F1}°, Height/Width: {heightAngle:F1}°, Depth/Width: {depthAngle:F1}°";
-        StateHasChanged();
-    }
-
-    public void ShowVolume3D()
-    {
-        if (CurrentBox == null)
-        {
-            StatusMessage = "No box created yet. Please create a box first.";
-            StateHasChanged();
-            return;
-        }
-
-        var volume = CurrentBox.Volume;
-        var surfaceArea = CurrentBox.SurfaceArea;
-        var ratio = surfaceArea / volume;
-
-        StatusMessage = $"3D Metrics - Volume: {volume:F2} {CurrentBox.Units}³, Surface Area: {surfaceArea:F2} {CurrentBox.Units}², SA/V Ratio: {ratio:F2}";
-        StateHasChanged();
-    }
-
-    // === UTILITY METHODS ===
-    public void ResetView()
-    {
-        StatusMessage = "View reset (would require camera controls)";
-        StateHasChanged();
-    }
-
-    public void ShowAllDetailed()
-    {
-        if (CurrentBox == null)
-        {
-            StatusMessage = "No box created yet. Please create a box first.";
-            StateHasChanged();
-            return;
-        }
-        var arena = Workspace?.GetArena();
-        if (arena == null)
-        {
-            StatusMessage = "Arena not ready yet. Try again in a moment.";
-            StateHasChanged();
-            return;
-        }
-        
-        var vertices = CurrentBox.GetLocalVertices();
-        var edges = CurrentBox.GetLocalEdgesWithNames();
-        var faces = CurrentBox.GetLocalFacesWithNormals();
-        
-        VisualizationService.ShowAll(arena, vertices, edges, faces);
-        StatusMessage = $"Showing comprehensive view: {vertices.Count} vertices, {edges.Count} edges, {faces.Count} faces with labels and normals";
-        StateHasChanged();
-    }
 }

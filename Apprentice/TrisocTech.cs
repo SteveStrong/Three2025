@@ -220,21 +220,21 @@ public class TrisocTech : ITrisocTech
         var outerBox = new SpacialBox3D(10, 10, 10, "cm");
         var innerBox = new SpacialBox3D(10.5, 8, 8, "cm");
 
-        var leftFace = innerBox.FaceCenters.FirstOrDefault(p => p.Name.Matches("left"));
-        var rightFace = innerBox.FaceCenters.FirstOrDefault(p => p.Name.Matches("right"));
+        var leftFace = innerBox.GetLocalFaceCenters().FirstOrDefault(p => p.Name.Matches("left"));
+        var rightFace = innerBox.GetLocalFaceCenters().FirstOrDefault(p => p.Name.Matches("right"));
 
 
-        var leftList = new List<Point3D>(innerBox.LeftFace) { leftFace };
-        i = TagVertex(root, i, Text3DAlign.Left, leftList, (p,i) => $"{section}L{i}");
+        // var leftList = innerBox.LeftFace) { leftFace };
+        // i = TagVertex(root, i, Text3DAlign.Left, leftList, (p,i) => $"{section}L{i}");
 
-        var rightlist = new List<Point3D>(innerBox.RightFace) { rightFace };
-        i = TagVertex(root, i, Text3DAlign.Right, rightlist, (p,i) => $"{section}R{i}");
+        // var rightlist = new List<Point3D>(innerBox.RightFace) { rightFace };
+        // i = TagVertex(root, i, Text3DAlign.Right, rightlist, (p,i) => $"{section}R{i}");
 
-        GlobalPipe = DrawPipe(root, "leftedge", "red", innerBox.LeftFace);
-        DrawPipe(root, "rightedge", "green", innerBox.RightFace);
+        // GlobalPipe = DrawPipe(root, "leftedge", "red", innerBox.LeftFace);
+        // DrawPipe(root, "rightedge", "green", innerBox.RightFace);
 
-        DrawFace(root, "Left", outerBox.LeftFaceMesh(0.1, "blue"));
-        DrawFace(root, "Right", outerBox.RightFaceMesh(0.1, "yellow"));
+        // DrawFace(root, "Left", outerBox.LeftFaceMesh(0.1, "blue"));
+        // DrawFace(root, "Right", outerBox.RightFaceMesh(0.1, "yellow"));
 
         return (i,root);
     }

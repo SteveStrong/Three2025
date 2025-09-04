@@ -15,57 +15,8 @@
 <div class="d-flex">
     <Canvas3DComponent SceneName="SpacialFrameScene" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
     <div class="controls-panel" style="margin-left: 10px; width: 300px; overflow-y: auto; max-height: 1000px;">
-        <h4>Frame Creation</h4>
-        <div class="control-group">
-            <label>Width:</label>
-            <input type="number" @bind="FrameWidth" min="0.1" max="10" step="0.1" />
-        </div>
-        <div class="control-group">
-            <label>Height:</label>
-            <input type="number" @bind="FrameHeight" min="0.1" max="10" step="0.1" />
-        </div>
-        <div class="control-group">
-            <label>Depth:</label>
-            <input type="number" @bind="FrameDepth" min="0.1" max="10" step="0.1" />
-        </div>
-        <div class="control-group">
-            <label>Pos X:</label>
-            <input type="number" @bind="FrameX" step="0.1" />
-        </div>
-        <div class="control-group">
-            <label>Pos Y:</label>
-            <input type="number" @bind="FrameY" step="0.1" />
-        </div>
-        <div class="control-group">
-            <label>Pos Z:</label>
-            <input type="number" @bind="FrameZ" step="0.1" />
-        </div>
-        <div class="control-group">
-            <label>Rot X:</label>
-            <input type="number" @bind="FrameRx" step="0.1" />
-        </div>
-        <div class="control-group">
-            <label>Rot Y:</label>
-            <input type="number" @bind="FrameRy" step="0.1" />
-        </div>
-        <div class="control-group">
-            <label>Rot Z:</label>
-            <input type="number" @bind="FrameRz" step="0.1" />
-        </div>
-        <button class="btn btn-primary" @onclick="CreateSpacialFrame">Create SpacialFrame</button>
 
-        <h4>Rotation Presets</h4>
-        <div class="preset-buttons">
-            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("identity")'>Identity</button>
-            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("45x")'>45° X</button>
-            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("45y")'>45° Y</button>
-            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("45z")'>45° Z</button>
-            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("45xyz")'>45° XYZ</button>
-            <br style="margin: 5px;" />
-            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("90x")'>90° X</button>
-            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("90y")'>90° Y</button>
-            <button class="btn btn-outline-primary btn-sm" @onclick='() => SetRotationPreset("90z")'>90° Z</button>
-        </div>
+
 
         <h4>Frame Visualization</h4>
         <div class="visual-buttons">
@@ -82,21 +33,7 @@
             <button class="btn btn-danger" @onclick="ClearAll">Clear</button>
         </div>
 
-        <h4>Frame Information</h4>
-        @if (CurrentFrame != null)
-        {
-            <div class="info-panel">
-                <p><strong>Dimensions:</strong> @CurrentFrame.Width × @CurrentFrame.Height × @CurrentFrame.Depth @CurrentFrame.Units</p>
-                <p><strong>Position:</strong> (@CurrentFrame.X, @CurrentFrame.Y, @CurrentFrame.Z)</p>
-                <p><strong>Rotation:</strong> (@CurrentFrame.Rx, @CurrentFrame.Ry, @CurrentFrame.Rz)</p>
-                <p><strong>Volume:</strong> @CurrentFrame.Volume.ToString("F2") @CurrentFrame.Units³</p>
-                <p><strong>Surface Area:</strong> @CurrentFrame.SurfaceArea.ToString("F2") @CurrentFrame.Units²</p>
-                <p><strong>Center:</strong> (@CurrentFrame.Center.X.ToString("F2"), @CurrentFrame.Center.Y.ToString("F2"), @CurrentFrame.Center.Z.ToString("F2"))</p>
-                <p><strong>Vertices Count:</strong> @CurrentFrame.Vertices.Count</p>
-                <p><strong>Face Centers Count:</strong> @CurrentFrame.FaceCenters.Count</p>
-                <p><strong>Edge Centers Count:</strong> @CurrentFrame.EdgeCenters.Count</p>
-            </div>
-        }
+
         <div class="status-message">@StatusMessage</div>
     </div>
 </div>
