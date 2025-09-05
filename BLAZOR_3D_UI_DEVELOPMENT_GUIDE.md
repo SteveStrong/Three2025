@@ -162,6 +162,70 @@ public class SnapBox : FoShape3D, ISnappable3D
 }
 ```
 
+### Automatic Transform Refresh Pattern
+
+**✅ USE**: Event-driven automatic updates for responsive 3D controls
+```csharp
+// Set up automatic refresh when transform changes
+CurrentShape.Transform.OnChange = (isDirty) =>
+{
+    if (isDirty)
+    {
+        // Automatically refresh the shape when transform changes
+        AutoRefreshShape();
+    }
+};
+
+private void AutoRefreshShape()
+{
+    if (CurrentShape == null) return;
+    
+    try
+    {
+        // Mark shape as dirty and refresh efficiently
+        CurrentShape.SetDirty(true);
+        
+        var arena = FoundryService.Arena();
+        if (arena != null)
+        {
+            var (found, scene) = arena.CurrentScene();
+            if (found)
+            {
+                CurrentShape.RefreshToScene(scene);
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        StatusMessage = $"Error auto-refreshing: {ex.Message}";
+        StateHasChanged();
+    }
+}
+```
+
+**Benefits**:
+- ✅ Automatic synchronization between UI controls and 3D visuals
+- ✅ Efficient partial updates (no full scene rebuild)
+- ✅ Event-driven architecture (reactive pattern)
+- ✅ Separates UI logic from visual refresh logic
+
+**❌ DON'T**: Manual refresh calls after every transform change
+```csharp
+// Avoid this pattern - error-prone and inefficient
+private void UpdateTransform()
+{
+    transform.Position = new Vector3(x, y, z);
+    // Manual refresh call - easy to forget!
+    RefreshShape(); 
+}
+```
+
+**When to Use**:
+- Interactive transformation controls (position, rotation, scale)
+- Real-time 3D manipulation interfaces
+- Animation systems that modify transforms
+- Any UI that changes object transforms frequently
+
 ---
 
 ## Common Pitfalls & Solutions

@@ -11,7 +11,7 @@ using BlazorThreeJS.Maths;
 
 namespace Three2025.Components.Pages;
 
-public class SpacialBoxTestBase : ComponentBase, IDisposable
+public partial class SpacialBoxTest : ComponentBase, IDisposable
 {
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] public IWorkspace Workspace { get; set; }
@@ -108,9 +108,9 @@ public class SpacialBoxTestBase : ComponentBase, IDisposable
 
             arena.AddShapeToStage<FoShape3D>(boxShape);
 
-            CurrentBox = new SpacialFrame3D(boxShape, "m");
+            CurrentBox = new SpacialBox3D(boxShape, "m");
 
-            StatusMessage = $"Created SpacialFrame3D (FoShape3D): {BoxWidth}×{BoxHeight}×{BoxDepth}m";
+            StatusMessage = $"Created SpacialBox3D (FoShape3D): {BoxWidth}×{BoxHeight}×{BoxDepth}m";
             StateHasChanged();
         }
         catch (Exception ex)
