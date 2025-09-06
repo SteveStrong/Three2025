@@ -102,7 +102,7 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
                 Opacity = 0.8,
                 Transform = new Transform3()
                 {
-                    Position = new Vector3(BoxWidth/2, BoxHeight/2, BoxDepth/2)
+                    Position = new Vector3(0, 0, 0)
                 }
             }.CreateBox("SpacialBoxMain", BoxWidth, BoxHeight, BoxDepth);
 

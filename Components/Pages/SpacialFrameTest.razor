@@ -43,7 +43,7 @@
             <button class="btn btn-outline-success" @onclick="ShowNormals">Show Normals</button>
             <button class="btn btn-outline-success" @onclick="ShowQuadrants">Show Quadrants</button>
         </div>
-        
+
         <h4>Transformation Controls</h4>
         
         <!-- Position Controls -->
@@ -123,6 +123,15 @@
             <button class="btn btn-info" @onclick="LoadCurrentTransform">Load Current</button>
             <button class="btn btn-secondary" @onclick="ApplyRandomTransform">Random Transform</button>
             <button class="btn btn-dark" @onclick="ShowTransformMatrix">Show Matrix</button>
+        </div>
+
+        <h4>🔍 Transformation Debugging</h4>
+        <div class="debug-buttons">
+            <button class="btn btn-outline-warning" @onclick="DebugTransformationFlow">Debug Transform Flow</button>
+            <button class="btn btn-outline-info" @onclick="CompareBeforeAfterRotation">Test Rotation Change</button>
+            <button class="btn btn-outline-danger" @onclick="TestDirtyFlag">Test Dirty Flag</button>
+            <button class="btn btn-outline-primary" @onclick="TestTransformMatrix">Test Matrix Direct</button>
+            <button class="btn btn-outline-secondary" @onclick="ShowLocalVsTransformed">Local vs Transformed</button>
         </div>
 
 
@@ -225,7 +234,7 @@
     }
     
     .preset-buttons, .visual-buttons, .face-buttons, .edge-buttons, 
-    .analysis-buttons, .multi-buttons, .transform-buttons, .measure-buttons, .scene-buttons {
+    .analysis-buttons, .multi-buttons, .transform-buttons, .measure-buttons, .scene-buttons, .debug-buttons {
         display: flex;
         flex-direction: column;
         gap: 3px;

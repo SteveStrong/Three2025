@@ -117,7 +117,7 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
                 Transform = new Transform3()
                 {
                     Position = new Vector3(0, 0, 0),
-                    Pivot = new Vector3(0, 0, 0),
+                    Pivot = new Vector3(-BoxWidth/2, -BoxHeight/2, -BoxDepth/2),
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 }
@@ -506,6 +506,212 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
             VisualizationService.ShowLabeledNormals(arena, faces);
             StatusMessage = $"Showing {faces.Count} face normals as red cylinders, aligned with normals.";
             StateHasChanged();
+        }
+
+        // === DEBUGGING METHODS FOR TRANSFORMATION INVESTIGATION ===
+        
+        public void DebugTransformationFlow()
+        {
+            if (CurrentFrame == null)
+            {
+                StatusMessage = "No box created yet. Please create a box first.";
+                StateHasChanged();
+                return;
+            }
+
+            try
+            {
+                var transform = CurrentFrame.Source.Transform;
+                var matrix = transform.ToMatrix3();
+                
+                // Get first vertex to trace transformation
+                var localVertices = CurrentFrame.GetLocalVertices();
+                var transformedVertices = CurrentFrame.GetVertices();
+                
+                if (localVertices.Count > 0 && transformedVertices.Count > 0)
+                {
+                    var localV0 = localVertices[0];
+                    var transformedV0 = transformedVertices[0];
+                    
+                    // Use the debug method from SpacialFrame3D
+                    var debugInfo = CurrentFrame.DebugTransformation(localV0);
+                    
+                    StatusMessage = $"🔍 TRANSFORM DEBUG:\n{debugInfo}\n" +
+                                  $"Expected vs Actual:\n" +
+                                  $"Expected: ({transformedV0.X:F2}, {transformedV0.Y:F2}, {transformedV0.Z:F2})\n" +
+                                  $"Matrix working: {(Math.Abs(transformedV0.X - localV0.X) > 0.01 || Math.Abs(transformedV0.Y - localV0.Y) > 0.01 || Math.Abs(transformedV0.Z - localV0.Z) > 0.01 ? "YES" : "NO CHANGE")}";
+                }
+                else
+                {
+                    StatusMessage = "❌ No vertices found for debugging";
+                }
+                
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"❌ Debug error: {ex.Message}";
+                StateHasChanged();
+            }
+        }
+        
+        public void CompareBeforeAfterRotation()
+        {
+            if (CurrentFrame == null)
+            {
+                StatusMessage = "No box created yet. Please create a box first.";
+                StateHasChanged();
+                return;
+            }
+
+            try
+            {
+                // Store current vertices
+                var beforeVertices = CurrentFrame.GetVertices().Take(2).ToList();
+                var beforeStatus = $"BEFORE: V0({beforeVertices[0].X:F2},{beforeVertices[0].Y:F2},{beforeVertices[0].Z:F2}) " +
+                                 $"V1({beforeVertices[1].X:F2},{beforeVertices[1].Y:F2},{beforeVertices[1].Z:F2})";
+                
+                // Apply a 45° Y rotation
+                RotationY += 45;
+                UpdateTransform();
+                
+                // Get vertices after transformation
+                var afterVertices = CurrentFrame.GetVertices().Take(2).ToList();
+                var afterStatus = $"AFTER: V0({afterVertices[0].X:F2},{afterVertices[0].Y:F2},{afterVertices[0].Z:F2}) " +
+                                $"V1({afterVertices[1].X:F2},{afterVertices[1].Y:F2},{afterVertices[1].Z:F2})";
+                
+                StatusMessage = $"🔄 ROTATION TEST:\n{beforeStatus}\n{afterStatus}\n" +
+                               $"Rotation Applied: +45° Y (Total: {RotationY:F1}°)";
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"❌ Rotation test error: {ex.Message}";
+                StateHasChanged();
+            }
+        }
+        
+        public void TestDirtyFlag()
+        {
+            if (CurrentFrame?.Source?.Transform == null)
+            {
+                StatusMessage = "No box created yet. Please create a box first.";
+                StateHasChanged();
+                return;
+            }
+
+            try
+            {
+                var transform = CurrentFrame.Source.Transform;
+                
+                // Check initial dirty state
+                var initialDirty = transform.IsDirty;
+                
+                // Get vertices before any change
+                var beforeVertices = CurrentFrame.GetVertices();
+                var beforeV0 = beforeVertices.Count > 0 ? beforeVertices[0] : new Point3D(0, 0, 0);
+                var beforeV1 = beforeVertices.Count > 1 ? beforeVertices[1] : new Point3D(0, 0, 0);
+
+                // Modify rotation to trigger dirty flag naturally
+                var oldRotation = transform.Rotation;
+                transform.Rotation = new Euler(oldRotation.X + 0.1, oldRotation.Y + 0.1, oldRotation.Z + 0.1);
+                var afterRotationChange = transform.IsDirty;
+                
+                // Get vertices after rotation change
+                var afterVertices = CurrentFrame.GetVertices();
+                var afterV0 = afterVertices.Count > 0 ? afterVertices[0] : new Point3D(0, 0, 0);
+                
+                // Check if vertices actually moved
+                var moved = Math.Abs(beforeV0.X - afterV0.X) > 0.01 || 
+                           Math.Abs(beforeV0.Y - afterV0.Y) > 0.01 || 
+                           Math.Abs(beforeV0.Z - afterV0.Z) > 0.01;
+                
+                StatusMessage = $"🚩 DIRTY FLAG TEST:\n" +
+                              $"Initial dirty: {initialDirty}\n" +
+                              $"After rotation change: {afterRotationChange}\n" +
+                              $"Before V0: ({beforeV0.X:F2}, {beforeV0.Y:F2}, {beforeV0.Z:F2})\n" +
+                              $"After V0:  ({afterV0.X:F2}, {afterV0.Y:F2}, {afterV0.Z:F2})\n" +
+                              $"Vertices moved: {(moved ? "YES ✅" : "NO ❌")}\n" +
+                              $"Transform working: {(moved ? "CORRECT" : "PROBLEM DETECTED")}";
+                
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"❌ Dirty flag test error: {ex.Message}";
+                StateHasChanged();
+            }
+        }
+        
+        public void TestTransformMatrix()
+        {
+            if (CurrentFrame?.Source?.Transform == null)
+            {
+                StatusMessage = "No box created yet. Please create a box first.";
+                StateHasChanged();
+                return;
+            }
+
+            try
+            {
+                var transform = CurrentFrame.Source.Transform;
+                var matrix = transform.ToMatrix3();
+                
+                // Test transform a simple point manually
+                var testPoint = new Vector3(1, 0, 0); // Simple X-axis point
+                var transformedPoint = matrix.TransformPoint(testPoint);
+                
+                StatusMessage = $"🧪 MATRIX TEST:\n" +
+                              $"Input Point: (1, 0, 0)\n" +
+                              $"Transformed: ({transformedPoint.X:F3}, {transformedPoint.Y:F3}, {transformedPoint.Z:F3})\n" +
+                              $"Current Rotation: ({RotationX:F1}°, {RotationY:F1}°, {RotationZ:F1}°)\n" +
+                              $"Matrix working: {(transformedPoint.X != 1 || transformedPoint.Y != 0 ? "YES" : "NO CHANGE")}";
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"❌ Matrix test error: {ex.Message}";
+                StateHasChanged();
+            }
+        }
+        
+        public void ShowLocalVsTransformed()
+        {
+            if (CurrentFrame == null)
+            {
+                StatusMessage = "No box created yet. Please create a box first.";
+                StateHasChanged();
+                return;
+            }
+            
+            var arena = FoundryService.Arena();
+            if (arena == null) return;
+
+            try
+            {
+                // Show local vertices in green
+                var localVertices = CurrentFrame.GetLocalVertices();
+                foreach (var vertex in localVertices.Take(4)) // Show first 4 to avoid clutter
+                {
+                    VisualizationService.CreateMarkerSphere(arena, $"Local_{vertex.Name}", vertex, "#00FF00", 0.08);
+                }
+                
+                // Show transformed vertices in red
+                var transformedVertices = CurrentFrame.GetVertices();
+                foreach (var vertex in transformedVertices.Take(4))
+                {
+                    VisualizationService.CreateMarkerSphere(arena, $"Trans_{vertex.Name}", vertex, "#FF0000", 0.06);
+                }
+                
+                StatusMessage = $"🔄 GREEN = Local vertices, RED = Transformed vertices\n" +
+                               $"If they overlap, transformation isn't working!";
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"❌ Comparison error: {ex.Message}";
+                StateHasChanged();
+            }
         }
 
 
