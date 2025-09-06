@@ -9,6 +9,99 @@ namespace Three2025.Services.Visualization;
 
 public class GeometryVisualizationService : IGeometryVisualizationService
 {
+    public FoShape3D CreateMarkerAxis(IArena arena, string name, Transform3 transform)
+    {
+
+        var axisLength = 1.0;
+        var axisRadius = 0.05;
+        var headLength = 0.1;
+        var axisOffset = 0.8 * axisLength / 2;
+
+        // X axis - Red
+        var xAxis = new FoShape3D
+        {
+            Name = $"{name}_XAxis",
+            Color = "#FF0000",
+            Transform = new Transform3
+            {
+                Position = new Vector3(axisOffset, 0, 0)
+            }
+        }.CreateBox($"{name}_XAxis", axisLength, axisRadius, axisRadius);
+
+        var xHead = new FoShape3D
+        {
+            Name = $"head",
+            Color = "#FF0000",
+            Transform = new Transform3()
+            {
+                Position = new Vector3(axisOffset, 0, 0),
+            }
+        }.CreateBox($"head", headLength, headLength, headLength);
+        xAxis.AddSubGlyph3D<FoShape3D>(xHead);
+
+        // Y axis - Green  
+        var yAxis = new FoShape3D
+        {
+            Name = $"{name}_YAxis",
+            Color = "#00FF00",
+            Transform = new Transform3
+            {
+                Position = new Vector3(0, axisOffset, 0)
+            }
+        }.CreateBox($"{name}_YAxis", axisRadius, axisLength, axisRadius);
+
+        var yHead = new FoShape3D
+        {
+            Name = $"head",
+            Color = "#00FF00",
+            Transform = new Transform3()
+            {
+                Position = new Vector3(0, axisOffset, 0),
+            }
+        }.CreateBox($"head", headLength, headLength, headLength);
+        yAxis.AddSubGlyph3D<FoShape3D>(yHead);
+
+
+        // Z axis - Blue
+        var zAxis = new FoShape3D
+        {
+            Name = $"{name}_ZAxis",
+            Color = "#0000FF", 
+            Transform = new Transform3
+            {
+                Position = new Vector3(0, 0, axisOffset)
+            }
+        }.CreateBox($"{name}_ZAxis", axisRadius, axisRadius, axisLength);
+
+        var zHead = new FoShape3D
+        {
+            Name = $"head",
+            Color = "#0000FF",
+            Transform = new Transform3()
+            {
+                Position = new Vector3(0, 0, axisOffset),
+            }
+        }.CreateBox($"head", headLength, headLength, headLength);
+        zAxis.AddSubGlyph3D<FoShape3D>(zHead);
+
+        var group = new FoShape3D
+        {
+            Name = $"{name}_Axes",
+            Transform = new Transform3
+            {
+                Position = transform.Position,
+                Rotation = transform.Rotation,
+                Scale = transform.Scale
+            }
+        }.CreateGroup($"{name}_Axes", headLength, headLength, headLength);
+
+        group.AddSubGlyph3D<FoShape3D>(xAxis);
+        group.AddSubGlyph3D<FoShape3D>(yAxis);
+        group.AddSubGlyph3D<FoShape3D>(zAxis);
+
+        arena.AddShapeToStage<FoShape3D>(group);
+        return group;
+    }
     public void ShowLabeledVertices(IArena arena, IEnumerable<Point3D> points)
     {
         int i = 0;

@@ -14,6 +14,7 @@ public interface IGeometryVisualizationService
     void ShowAll(IArena arena, IEnumerable<Point3D> vertices, IEnumerable<Edge3D> edges, IEnumerable<Face3D> faces);
     
     // Marker creation utilities
+    FoShape3D CreateMarkerAxis(IArena arena, string name, Transform3 transform);
     FoShape3D CreateMarkerSphere(IArena arena, string name, Point3D position, string color, double radius);
     FoShape3D CreateMarkerCylinder(IArena arena, string name, Point3D position, Vector3 rotation, string color, double radius, double height);
     FoShape3D CreateMarkerPlane(IArena arena, string name, Point3D position, Vector3 rotation, string color, double width, double height, double depth, double opacity = 1.0);

@@ -55,24 +55,24 @@
                     <!-- Transform3 Controls -->
                     <div class="mb-3">
                         <label class="form-label"><strong>🔄 Transform3 Properties</strong></label>
-                        
+                        <br/>
                         <!-- Position -->
                         <label class="small">Position:</label>
                         <div class="row mb-2">
                             <div class="col">
                                 <input type="number" @bind="workingPosition.X" @bind:event="oninput" 
                                        @onchange="UpdateMatrixFromUIData"
-                                       class="form-control form-control-sm" step="0.5" placeholder="X" />
+                                       class="form-control form-control-sm" step="1.0" placeholder="X" />
                             </div>
                             <div class="col">
                                 <input type="number" @bind="workingPosition.Y" @bind:event="oninput" 
                                        @onchange="UpdateMatrixFromUIData"
-                                       class="form-control form-control-sm" step="0.5" placeholder="Y" />
+                                       class="form-control form-control-sm" step="1.0" placeholder="Y" />
                             </div>
                             <div class="col">
                                 <input type="number" @bind="workingPosition.Z" @bind:event="oninput" 
                                        @onchange="UpdateMatrixFromUIData"
-                                       class="form-control form-control-sm" step="0.5" placeholder="Z" />
+                                       class="form-control form-control-sm" step="1.0" placeholder="Z" />
                             </div>
                         </div>
 
@@ -82,17 +82,17 @@
                             <div class="col">
                                 <input type="number" @bind="rotationDegrees.X" @bind:event="oninput" 
                                        @onchange="UpdateMatrixFromUIData"
-                                       class="form-control form-control-sm" step="1" placeholder="X°" />
+                                       class="form-control form-control-sm" step="45" placeholder="X°" />
                             </div>
                             <div class="col">
                                 <input type="number" @bind="rotationDegrees.Y" @bind:event="oninput" 
                                        @onchange="UpdateMatrixFromUIData"
-                                       class="form-control form-control-sm" step="1" placeholder="Y°" />
+                                       class="form-control form-control-sm" step="45" placeholder="Y°" />
                             </div>
                             <div class="col">
                                 <input type="number" @bind="rotationDegrees.Z" @bind:event="oninput" 
                                        @onchange="UpdateMatrixFromUIData"
-                                       class="form-control form-control-sm" step="1" placeholder="Z°" />
+                                       class="form-control form-control-sm" step="45" placeholder="Z°" />
                             </div>
                         </div>
 
@@ -122,17 +122,17 @@
                             <div class="col">
                                 <input type="number" @bind="workingPivot.X" @bind:event="oninput" 
                                        @onchange="UpdateMatrixFromUIData"
-                                       class="form-control form-control-sm" step="0.5" placeholder="X" />
+                                       class="form-control form-control-sm" step="1" placeholder="X" />
                             </div>
                             <div class="col">
                                 <input type="number" @bind="workingPivot.Y" @bind:event="oninput" 
                                        @onchange="UpdateMatrixFromUIData"
-                                       class="form-control form-control-sm" step="0.5" placeholder="Y" />
+                                       class="form-control form-control-sm" step="1" placeholder="Y" />
                             </div>
                             <div class="col">
                                 <input type="number" @bind="workingPivot.Z" @bind:event="oninput" 
                                        @onchange="UpdateMatrixFromUIData"
-                                       class="form-control form-control-sm" step="0.5" placeholder="Z" />
+                                       class="form-control form-control-sm" step="1" placeholder="Z" />
                             </div>
                         </div>
                     </div>
@@ -148,6 +148,24 @@
                 </div>
             </div>
 
+            <!-- Matrix Display -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>📊 Current Transformation Matrix</h5>
+                </div>
+                <div class="card-body">
+                    <div class="font-monospace small" style="white-space: pre-line;">@currentMatrixDisplay</div>
+                    
+                    <!-- Matrix Properties -->
+                    <div class="row mt-3">
+                        <div class="col">
+                            <small class="text-muted">
+                                <strong>Matrix Status:</strong> @(MainTransform.IsDirty ? "🔄 Dirty (needs recalc)" : "✅ Clean (cached)")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
   
         </div>
 
@@ -205,62 +223,11 @@
                 </div>
             </div>
 
-            <!-- Matrix Display -->
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h5>📊 Current Transformation Matrix</h5>
-                </div>
-                <div class="card-body">
-                    <div class="font-monospace small" style="white-space: pre-line;">@currentMatrixDisplay</div>
-                    
-                    <!-- Matrix Properties -->
-                    <div class="row mt-3">
-                        <div class="col">
-                            <small class="text-muted">
-                                <strong>Matrix Status:</strong> @(MainTransform.IsDirty ? "🔄 Dirty (needs recalc)" : "✅ Clean (cached)")
-                            </small>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
         </div>
     </div>
 
-    <!-- Help Section -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5>❓ How to Use This Tool</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>🎯 Understanding Transformations:</h6>
-                            <ul class="small">
-                                <li><strong>Original Point (blue sphere):</strong> Your starting point in 3D space</li>
-                                <li><strong>Transformed Point (green sphere):</strong> Where the point ends up after applying the matrix</li>
-                                <li><strong>Pivot Point (red sphere):</strong> The center of rotation and scaling operations</li>
-                                <li><strong>Position:</strong> Moves the entire coordinate system</li>
-                                <li><strong>Rotation:</strong> Rotates around the pivot point</li>
-                                <li><strong>Scale:</strong> Stretches or shrinks along each axis around the pivot</li>
-                                <li><strong>Coordinate Axes:</strong> Shows world origin (0,0,0) for reference</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h6>🔍 Matrix Analysis:</h6>
-                            <ul class="small">
-                                <li><strong>Reverse Engineering:</strong> Extracts Position, Rotation, and Scale from any matrix</li>
-                                <li><strong>Matrix Display:</strong> Shows the raw 4x4 transformation matrix values</li>
-                                <li><strong>Dirty Flag:</strong> Indicates when matrix needs recalculation vs using cache</li>
-                                <li><strong>Test Known Matrix:</strong> Loads a complex transformation to analyze</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
 </div>
 
 <style>

@@ -132,6 +132,9 @@ public partial class MatrixTransformTest : ComponentBase, IDisposable
             if (!found || scene == null) return;
             DoRequestAxisToScene(scene);
 
+            var axis = VisualizationService.CreateMarkerAxis(arena, "MainTransformAxis", MainTransform);
+
+
             // Create original point sphere (blue)
             var originalPointSphere = new FoShape3D()
             {
