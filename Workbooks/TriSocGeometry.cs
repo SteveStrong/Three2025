@@ -65,7 +65,7 @@ public class TriSocGeometry : FoComponent
 
         var shape = new FoShape3D(text, "green")
         {
-            Transform = new Transform3()
+            Transform = new Transform3("MarkerTransform")
             {
                 Position = point.AsVector3(),
             }

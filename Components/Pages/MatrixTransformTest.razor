@@ -33,20 +33,17 @@
                         <div class="row">
                             <div class="col">
                                 <label>X:</label>
-                                <input type="number" @bind="originalPoint.X" @bind:event="oninput" 
-                                       @onchange="UpdateMatrixFromUIData"
+                                <input type="number" @bind="originalPoint.X" @bind:after="UpdateMatrixFromUIData"
                                        class="form-control form-control-sm" step="0.5" />
                             </div>
                             <div class="col">
                                 <label>Y:</label>
-                                <input type="number" @bind="originalPoint.Y" @bind:event="oninput" 
-                                       @onchange="UpdateMatrixFromUIData"
+                                <input type="number" @bind="originalPoint.Y" @bind:after="UpdateMatrixFromUIData"
                                        class="form-control form-control-sm" step="0.5" />
                             </div>
                             <div class="col">
                                 <label>Z:</label>
-                                <input type="number" @bind="originalPoint.Z" @bind:event="oninput" 
-                                       @onchange="UpdateMatrixFromUIData"
+                                <input type="number" @bind="originalPoint.Z" @bind:after="UpdateMatrixFromUIData"
                                        class="form-control form-control-sm" step="0.5" />
                             </div>
                         </div>
@@ -60,18 +57,15 @@
                         <label class="small">Position:</label>
                         <div class="row mb-2">
                             <div class="col">
-                                <input type="number" @bind="workingPosition.X" @bind:event="oninput" 
-                                       @onchange="UpdateMatrixFromUIData"
+                                <input type="number" @bind="workingPosition.X" @bind:after="UpdateMatrixFromUIData"
                                        class="form-control form-control-sm" step="1.0" placeholder="X" />
                             </div>
                             <div class="col">
-                                <input type="number" @bind="workingPosition.Y" @bind:event="oninput" 
-                                       @onchange="UpdateMatrixFromUIData"
+                                <input type="number" @bind="workingPosition.Y" @bind:after="UpdateMatrixFromUIData"
                                        class="form-control form-control-sm" step="1.0" placeholder="Y" />
                             </div>
                             <div class="col">
-                                <input type="number" @bind="workingPosition.Z" @bind:event="oninput" 
-                                       @onchange="UpdateMatrixFromUIData"
+                                <input type="number" @bind="workingPosition.Z" @bind:after="UpdateMatrixFromUIData"
                                        class="form-control form-control-sm" step="1.0" placeholder="Z" />
                             </div>
                         </div>
@@ -80,18 +74,15 @@
                         <label class="small">Rotation (degrees):</label>
                         <div class="row mb-2">
                             <div class="col">
-                                <input type="number" @bind="rotationDegrees.X" @bind:event="oninput" 
-                                       @onchange="UpdateMatrixFromUIData"
+                                <input type="number" @bind="workingRotation.X" @bind:after="UpdateMatrixFromUIData"
                                        class="form-control form-control-sm" step="45" placeholder="X°" />
                             </div>
                             <div class="col">
-                                <input type="number" @bind="rotationDegrees.Y" @bind:event="oninput" 
-                                       @onchange="UpdateMatrixFromUIData"
+                                <input type="number" @bind="workingRotation.Y" @bind:after="UpdateMatrixFromUIData"
                                        class="form-control form-control-sm" step="45" placeholder="Y°" />
                             </div>
                             <div class="col">
-                                <input type="number" @bind="rotationDegrees.Z" @bind:event="oninput" 
-                                       @onchange="UpdateMatrixFromUIData"
+                                <input type="number" @bind="workingRotation.Z" @bind:after="UpdateMatrixFromUIData"
                                        class="form-control form-control-sm" step="45" placeholder="Z°" />
                             </div>
                         </div>
@@ -100,18 +91,15 @@
                         @* <label class="small">Scale:</label>
                         <div class="row mb-2">
                             <div class="col">
-                                <input type="number" @bind="workingScale.X" @bind:event="oninput" 
-                                       @onchange="ApplyScaleChanges"
+                                <input type="number" @bind="workingScale.X" @bind:after="ApplyScaleChanges"
                                        class="form-control form-control-sm" step="0.1" placeholder="X" />
                             </div>
                             <div class="col">
-                                <input type="number" @bind="workingScale.Y" @bind:event="oninput" 
-                                       @onchange="ApplyScaleChanges"
+                                <input type="number" @bind="workingScale.Y" @bind:after="ApplyScaleChanges"
                                        class="form-control form-control-sm" step="0.1" placeholder="Y" />
                             </div>
                             <div class="col">
-                                <input type="number" @bind="workingScale.Z" @bind:event="oninput" 
-                                       @onchange="ApplyScaleChanges"
+                                <input type="number" @bind="workingScale.Z" @bind:after="ApplyScaleChanges"
                                        class="form-control form-control-sm" step="0.1" placeholder="Z" />
                             </div>
                         </div> *@
@@ -120,18 +108,15 @@
                         <label class="small">Pivot:</label>
                         <div class="row mb-2">
                             <div class="col">
-                                <input type="number" @bind="workingPivot.X" @bind:event="oninput" 
-                                       @onchange="UpdateMatrixFromUIData"
+                                <input type="number" @bind="workingPivot.X" @bind:after="UpdateMatrixFromUIData"
                                        class="form-control form-control-sm" step="1" placeholder="X" />
                             </div>
                             <div class="col">
-                                <input type="number" @bind="workingPivot.Y" @bind:event="oninput" 
-                                       @onchange="UpdateMatrixFromUIData"
+                                <input type="number" @bind="workingPivot.Y" @bind:after="UpdateMatrixFromUIData"
                                        class="form-control form-control-sm" step="1" placeholder="Y" />
                             </div>
                             <div class="col">
-                                <input type="number" @bind="workingPivot.Z" @bind:event="oninput" 
-                                       @onchange="UpdateMatrixFromUIData"
+                                <input type="number" @bind="workingPivot.Z" @bind:after="UpdateMatrixFromUIData"
                                        class="form-control form-control-sm" step="1" placeholder="Z" />
                             </div>
                         </div>

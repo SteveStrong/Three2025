@@ -4,6 +4,7 @@
 
 ## Table of Contents
 - [Essential Initialization Patterns](#essential-initialization-patterns)
+- [Modern Reactive Binding Patterns](#modern-reactive-binding-patterns)
 - [Canvas3DComponent Setup](#canvas3dcomponent-setup)
 - [Scene Management](#scene-management)
 - [Architecture Patterns](#architecture-patterns)
@@ -52,6 +53,99 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
 1. **Scene Connection**: Links Canvas3D to the 3D rendering engine
 2. **Arena Integration**: Connects workspace management to visual scene
 3. **Event Propagation**: Enables UI refresh and state synchronization
+
+---
+
+## Modern Reactive Binding Patterns
+
+### **✅ RECOMMENDED: @bind:after Pattern**
+
+**Use this modern pattern for all Transform3 reactive systems:**
+
+```razor
+<!-- Position Controls -->
+<input type="number" step="0.1" @bind="PositionX" @bind:after="ComputeTransform" />
+<input type="number" step="0.1" @bind="PositionY" @bind:after="ComputeTransform" />
+<input type="number" step="0.1" @bind="PositionZ" @bind:after="ComputeTransform" />
+
+<!-- Rotation Controls (degrees) -->
+<input type="number" step="1" @bind="RotationX" @bind:after="ComputeTransform" />
+<input type="number" step="1" @bind="RotationY" @bind:after="ComputeTransform" />
+<input type="number" step="1" @bind="RotationZ" @bind:after="ComputeTransform" />
+
+<!-- Pivot Controls -->
+<input type="number" step="0.1" @bind="PivotX" @bind:after="ComputeTransform" />
+<input type="number" step="0.1" @bind="PivotY" @bind:after="ComputeTransform" />
+<input type="number" step="0.1" @bind="PivotZ" @bind:after="ComputeTransform" />
+```
+
+### **❌ AVOID: Legacy Event-Driven Pattern**
+
+```razor
+<!-- Old Pattern - DO NOT USE -->
+<input type="number" @bind="PositionX" @bind:event="oninput" 
+       @onchange="ComputeTransform" />
+```
+
+### **Reactive Method Implementation**
+
+```csharp
+protected void ComputeTransform()
+{
+    if (CurrentShape?.Transform == null) return;
+    
+    try
+    {
+        var transform = CurrentShape.Transform;
+        
+        // Update transform properties - OnChange/OnComputed events fire automatically
+        transform.Position = new Vector3(PositionX, PositionY, PositionZ);
+        transform.Pivot = new Vector3(PivotX, PivotY, PivotZ);
+        transform.Rotation = new Euler(rotX, rotY, rotZ); //degs
+        transform.Scale = new Vector3(ScaleX, ScaleY, ScaleZ);
+        
+        StatusMessage = $"Transform updated: Pos({PositionX:F2},{PositionY:F2},{PositionZ:F2})";
+        StateHasChanged();
+    }
+    catch (Exception ex)
+    {
+        StatusMessage = $"Error updating transform: {ex.Message}";
+        StateHasChanged();
+    }
+}
+```
+
+### **Dual-Event Reactive Setup**
+
+```csharp
+// Set up automatic refresh when transform changes
+CurrentShape.Transform.OnChange = (isDirty) =>
+{
+    if (isDirty)
+    {
+        // Immediate UI feedback when transform becomes dirty
+        StatusMessage = "🔄 Transform updating...";
+        StateHasChanged();
+    }
+};
+
+// Set up completion notification when matrix computation finishes
+CurrentShape.Transform.OnComputed = (matrix) =>
+{
+    // Matrix is ready - safe to refresh the shape
+    AutoRefreshShape();
+    StatusMessage = "✅ Transform computed and shape refreshed";
+    StateHasChanged();
+};
+```
+
+### **Benefits of Modern Pattern**
+
+1. **Single Method Call**: `@bind:after` eliminates redundant event handling
+2. **Immediate Reactivity**: Transform fires immediately after user input completes
+3. **Non-blocking UI**: OnChange provides immediate feedback, OnComputed handles heavy operations
+4. **Consistent API**: Same pattern across SpacialFrameTest, MatrixTransformTest, etc.
+5. **Future-Ready**: Uses latest Blazor binding capabilities
 4. **Automatic Content**: Provides immediate visual feedback to users
 
 ---

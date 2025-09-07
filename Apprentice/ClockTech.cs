@@ -96,7 +96,7 @@ public class ClockTech : IClockTech
             Text = text,
             Color = "white",
             FontSize = size,
-            Transform = new Transform3()
+            Transform = new Transform3("Letter"+text)
             {
                 Position = new Vector3(x, y, z),
             },
@@ -116,7 +116,7 @@ public class ClockTech : IClockTech
 
         var clock = new FoShape3D("ArenaClock", "Red")
         {
-            Transform = new Transform3()
+            Transform = new Transform3("ClockTransform")
             {
                 Position = new Vector3(0, 0, 0),
                 Rotation = new Euler(Math.PI / 2, 0, 0),
@@ -139,7 +139,7 @@ public class ClockTech : IClockTech
         {
             Text = "Ready",
             FontSize = 5.0,
-            Transform = new Transform3()
+            Transform = new Transform3("GlobalTextTransform")
             {
                 Position = new Vector3(0, 2, 0),
             }
@@ -161,7 +161,7 @@ public class ClockTech : IClockTech
         //now lets add the secondHand
         var secondHand = new FoShape3D("Hand", "green")
         {
-            Transform = new Transform3()
+            Transform = new Transform3("HandTransform")
             {
                 Position = new Vector3(0.5 * radius, 1, 0),
                 Rotation = new Euler(0, 0, 0),
@@ -258,7 +258,7 @@ public class ClockTech : IClockTech
                 Uuid = Guid.NewGuid().ToString(),
                 Name = "CenterPost",
                 Geometry = new BoxGeometry(width: 0.5, depth: 0.5, height: 2.5),
-                Transform = new Transform3()
+                Transform = new Transform3("CenterPostTransform")
                 {
                     Position = new Vector3(0, 0, 0),
                     Rotation = new Euler(0, -angle, 0),
@@ -270,7 +270,7 @@ public class ClockTech : IClockTech
                 Uuid = Guid.NewGuid().ToString(),
                 Name = "Second Hand",
                 Geometry = new BoxGeometry(width: 1.2 * radius, depth: 0.1, height: 2),
-                Transform = new Transform3()
+                Transform = new Transform3("SecondHandTransform")
                 {
                     Position = new Vector3(0.5 * radius, 1, 0),
                     Rotation = new Euler(0, 0, 0),
@@ -302,7 +302,7 @@ public class ClockTech : IClockTech
             Text = text,
             Color = "white",
             FontSize = size,
-            Transform = new Transform3()
+            Transform = new Transform3("LetterTransform")
             {
                 Position = new Vector3(x, y, z),
             },

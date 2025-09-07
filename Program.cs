@@ -79,6 +79,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     var ser = options.JsonSerializerOptions;
     ser.IgnoreReadOnlyFields = true;
+
     ser.IncludeFields = true;
     ser.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     ser.WriteIndented = true;
@@ -143,7 +144,8 @@ app.UseStaticFiles(new StaticFileOptions
     }
 });
 
-
+// Run matrix rotation tests at startup
+Three2025.Matrix3RotationSimpleTest.Run();
 
 //this pull the 3d model files and others to the storage folder
 //envConfig.RefreshStaticFiles();

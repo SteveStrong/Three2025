@@ -51,15 +51,18 @@
             <h5>Position</h5>
             <div class="control-group">
                 <label>X:</label>
-                <input type="number" step="0.1" @bind="PositionX" @bind:after="UpdateTransform" />
+                <input type="number" step="0.1" @bind="PositionX" @bind:after="AutoRefreshShape" />
+                <button class="btn btn-sm btn-secondary" @onclick="IncrementPositionX">+1</button>
             </div>
             <div class="control-group">
                 <label>Y:</label>
-                <input type="number" step="0.1" @bind="PositionY" @bind:after="UpdateTransform" />
+                <input type="number" step="0.1" @bind="PositionY" @bind:after="AutoRefreshShape" />
+                <button class="btn btn-sm btn-secondary" @onclick="IncrementPositionY">+1</button>
             </div>
             <div class="control-group">
                 <label>Z:</label>
-                <input type="number" step="0.1" @bind="PositionZ" @bind:after="UpdateTransform" />
+                <input type="number" step="0.1" @bind="PositionZ" @bind:after="AutoRefreshShape" />
+                <button class="btn btn-sm btn-secondary" @onclick="IncrementPositionZ">+1</button>
             </div>
         </div>
 
@@ -68,17 +71,17 @@
             <h5>Rotation (degrees) <small class="text-muted">→ auto-converted to radians</small></h5>
             <div class="control-group">
                 <label>X:</label>
-                <input type="number" step="1" @bind="RotationX" @bind:after="UpdateTransform" />
+                <input type="number" step="1" @bind="RotationX" @bind:after="AutoRefreshShape" />
                 <button class="btn btn-sm btn-secondary" @onclick="ApplyQuickRotationX90">+90°</button>
             </div>
             <div class="control-group">
                 <label>Y:</label>
-                <input type="number" step="1" @bind="RotationY" @bind:after="UpdateTransform" />
+                <input type="number" step="1" @bind="RotationY" @bind:after="AutoRefreshShape" />
                 <button class="btn btn-sm btn-secondary" @onclick="ApplyQuickRotationY90">+90°</button>
             </div>
             <div class="control-group">
                 <label>Z:</label>
-                <input type="number" step="1" @bind="RotationZ" @bind:after="UpdateTransform" />
+                <input type="number" step="1" @bind="RotationZ" @bind:after="AutoRefreshShape" />
                 <button class="btn btn-sm btn-secondary" @onclick="ApplyQuickRotationZ90">+90°</button>
             </div>
         </div>
@@ -105,33 +108,29 @@
             <h5>Pivot Point</h5>
             <div class="control-group">
                 <label>X:</label>
-                <input type="number" step="0.1" @bind="PivotX" @bind:after="UpdateTransform" />
+                <input type="number" step="0.1" @bind="PivotX" @bind:after="AutoRefreshShape" />
+                <button class="btn btn-sm btn-secondary" @onclick="IncrementPivotX">+1</button>
             </div>
             <div class="control-group">
                 <label>Y:</label>
-                <input type="number" step="0.1" @bind="PivotY" @bind:after="UpdateTransform" />
+                <input type="number" step="0.1" @bind="PivotY" @bind:after="AutoRefreshShape" />
+                <button class="btn btn-sm btn-secondary" @onclick="IncrementPivotY">+1</button>
             </div>
             <div class="control-group">
                 <label>Z:</label>
-                <input type="number" step="0.1" @bind="PivotZ" @bind:after="UpdateTransform" />
+                <input type="number" step="0.1" @bind="PivotZ" @bind:after="AutoRefreshShape" />
+                <button class="btn btn-sm btn-secondary" @onclick="IncrementPivotZ">+1</button>
             </div>
         </div>
 
         <!-- Transform Buttons -->
         <div class="transform-buttons">
             <button class="btn btn-warning" @onclick="ResetTransform">Reset Transform</button>
-            <button class="btn btn-info" @onclick="LoadCurrentTransform">Load Current</button>
-            <button class="btn btn-secondary" @onclick="ApplyRandomTransform">Random Transform</button>
             <button class="btn btn-dark" @onclick="ShowTransformMatrix">Show Matrix</button>
         </div>
 
         <h4>🔍 Transformation Debugging</h4>
         <div class="debug-buttons">
-            <button class="btn btn-outline-warning" @onclick="DebugTransformationFlow">Debug Transform Flow</button>
-            <button class="btn btn-outline-info" @onclick="CompareBeforeAfterRotation">Test Rotation Change</button>
-            <button class="btn btn-outline-danger" @onclick="TestDirtyFlag">Test Dirty Flag</button>
-            <button class="btn btn-outline-primary" @onclick="TestTransformMatrix">Test Matrix Direct</button>
-            <button class="btn btn-outline-secondary" @onclick="ShowLocalVsTransformed">Local vs Transformed</button>
         </div>
 
 
@@ -144,8 +143,8 @@
             </div>
         }
     </div>
-    <div class="controls-panel" style="margin-left: 10px; width: 800px; overflow-y: auto; max-height: 1000px;">
-        <ShapeTreeView/>
+    <div class="controls-panel" style="margin-left: 10px; width: 350px; overflow: auto; max-height: 1000px;">
+        <RadzenShapeTreeView/>
     </div>
 </div>
 

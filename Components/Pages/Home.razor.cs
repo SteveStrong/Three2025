@@ -285,7 +285,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var shape = new FoShape3D(name,color)
         {
-            Transform = new Transform3()
+            Transform = new Transform3("ShapeTransform")
             {
                 Position = new Vector3(x, y, z),
             }
@@ -326,7 +326,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         var shape = new FoText3D(name,color)
         {
             Text = DataGenerator.GenerateText(),
-            Transform = new Transform3()
+            Transform = new Transform3("TextTransform")
             {
                 Position = new Vector3(x, y, z),
             }
@@ -345,7 +345,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         var box = new Node3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
-            Transform = new Transform3()
+            Transform = new Transform3("BoxTransform")
             {
                 Position = new Vector3(x, 0, z),
                 Pivot = new Vector3(0, height/2, 0)
@@ -366,7 +366,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         var box = new Node3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
-            Transform = new Transform3()
+            Transform = new Transform3("ConeTransform")
             {
                 Position = new Vector3(x, 0, z),
                 Pivot = new Vector3(0, height/2, 0)
@@ -435,7 +435,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Text = DataGenerator.GenerateText(),
             Color = DataGenerator.GenerateColor(),
-            Transform = new Transform3()
+            Transform = new Transform3("Text3DTransform")
             {
                 Position = new Vector3(x, y, z),
             },
@@ -460,9 +460,10 @@ public partial class HomeBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
-            Transform = new Transform3()
+            Transform = new Transform3("JetTransform")
             {
                 Position = new Vector3(x, y, z),
+                Scale = new Vector3(0.1, 0.1, 0.1)
             },
         };
 

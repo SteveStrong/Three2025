@@ -28,41 +28,38 @@ public partial class MatrixTransformTest : ComponentBase, IDisposable
 
     #region Fields and Properties
     
-    private Transform3 MainTransform = new Transform3();
+    private Transform3 MainTransform = new Transform3("MainTransform");
     private Vector3 originalPoint = new Vector3(1, 1, 0);
     private Vector3 transformedPoint = new Vector3(0, 0, 0);
-    private Vector3 rotationDegrees = new Vector3(0, 0, 0);
-    private string currentMatrixDisplay = "";
+
     
     public Canvas3DComponentBase Canvas3DReference = null!;
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
     
-    // Matrix analysis results
-    private (Vector3 Position, Vector3 Rotation, Vector3 Scale)? matrixAnalysis;
+
     
     // Intermediate variables for collecting changes before applying to Transform3
     private Vector3 workingPosition = new Vector3(0, 0, 0);
     private Vector3 workingScale = new Vector3(1, 1, 1);
     private Vector3 workingPivot = new Vector3(0, 0, 0);
-    // rotationDegrees already serves as working variable for rotation
-    
+    private Vector3 workingRotation = new Vector3(0, 0, 0);
+    private string currentMatrixDisplay = "";
 
-    
+
     #endregion
 
     #region Lifecycle Methods
-    
+
     protected override void OnInitialized()
     {
         ResetTransform();
-        // Set up change notification
+        // Set up change notification with dual-event reactive pattern
         MainTransform.OnChange = (isDirty) => {
-
             InvokeAsync(() => {
                 try
                 {
-                    RenderScene();
+                    // Immediate feedback when transform becomes dirty
                     StateHasChanged();
                 }
                 catch (Exception ex)
@@ -70,10 +67,23 @@ public partial class MatrixTransformTest : ComponentBase, IDisposable
                     Console.WriteLine($"Error in OnChange handler: {ex.Message}");
                 }
             });
-            
         };
-        
 
+        // Set up completion notification when matrix computation finishes
+        MainTransform.OnComputed = (matrix) => {
+            InvokeAsync(() => {
+                try
+                {
+                    // Matrix is ready - safe to render scene and update display
+                    RenderScene();
+                    StateHasChanged();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in OnComputed handler: {ex.Message}");
+                }
+            });
+        };
     }
     
     protected override Task OnAfterRenderAsync(bool firstRender)
@@ -142,7 +152,7 @@ public partial class MatrixTransformTest : ComponentBase, IDisposable
                 GlyphId = Guid.NewGuid().ToString(),
                 Color = "blue",
                 Opacity = 0.8,
-                Transform = new Transform3()
+                Transform = new Transform3("OriginalPoint")
                 {
                     Position = originalPoint
                 }
@@ -155,7 +165,7 @@ public partial class MatrixTransformTest : ComponentBase, IDisposable
                 GlyphId = Guid.NewGuid().ToString(),
                 Color = "green",
                 Opacity = 0.8,
-                Transform = new Transform3()
+                Transform = new Transform3("TransformedPoint")
                 {
                     Position = transformedPoint
                 }
@@ -168,7 +178,7 @@ public partial class MatrixTransformTest : ComponentBase, IDisposable
                 GlyphId = Guid.NewGuid().ToString(),
                 Color = "red",
                 Opacity = 1.0,
-                Transform = new Transform3()
+                Transform = new Transform3("PivotPoint")
                 {
                     Position = workingPivot
                 }
@@ -256,12 +266,8 @@ public partial class MatrixTransformTest : ComponentBase, IDisposable
             MainTransform.Pivot = workingPivot;
             
             // 4. Apply rotation converted from degrees to radians
-            var radians = new Euler(
-                rotationDegrees.X * Math.PI / 180.0,
-                rotationDegrees.Y * Math.PI / 180.0,
-                rotationDegrees.Z * Math.PI / 180.0
-            );
-            MainTransform.Rotation = radians;
+            MainTransform.Rotation = new Euler(workingRotation.X,workingRotation.Y,workingRotation.Z);
+
             
             // The Transform3.OnChange will fire automatically and handle the rest
         }
@@ -285,8 +291,8 @@ public partial class MatrixTransformTest : ComponentBase, IDisposable
         workingPosition = new Vector3(0, 0, 0);
         workingScale = new Vector3(1, 1, 1);
         workingPivot = new Vector3(0, 0, 0);
-        rotationDegrees = new Vector3(0, 0, 0);
-        matrixAnalysis = null;
+        workingRotation = new Vector3(0, 0, 0);
+
         
         // Apply everything through the centralized function
         UpdateMatrixFromUIData();

@@ -106,7 +106,7 @@ public class IndexBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Format = Model3DFormats.Gltf,
-            Transform = new Transform3()
+            Transform = new Transform3("T-Rex")
             {
                 Position = new Vector3(2, 0, 2),
             },
@@ -153,7 +153,7 @@ public class IndexBase : ComponentBase, IDisposable
     {
         TestText = new Text3D(DataGenerator.GenerateText())  
         { 
-            Transform = new Transform3()
+            Transform = new Transform3("Text")
             {   
                 Position = new Vector3(3, 2, 3), 
             },
@@ -192,7 +192,7 @@ public class IndexBase : ComponentBase, IDisposable
             textLines.Add(DataGenerator.GenerateText());
         }
         var panelPos = new Vector3(-1, 2, -2);
-        var panelRot = new Euler(-1 * Math.PI * 30 / 180, 0, 0);
+        var panelRot = new Euler(-30 * Matrix3.DEG_TO_RAD, 0, 0);
 
         var textPanel = new TextPanel3D
         {
@@ -200,7 +200,7 @@ public class IndexBase : ComponentBase, IDisposable
             // Width = 1,
             // Height = 1,
             TextLines = textLines,
-            Transform = new Transform3()
+            Transform = new Transform3("TextPanel")
             {
                 Position = panelPos,
                 Rotation = panelRot
@@ -243,7 +243,7 @@ public class IndexBase : ComponentBase, IDisposable
             new Button3D("BTN3","Button 3")
         };
         var menuPos = new Vector3(-4, 3, -2);
-        var menuRot = new Euler(-1 * Math.PI * 30 / 180, 0, 0);
+        var menuRot = new Euler(-30 * Matrix3.DEG_TO_RAD, 0, 0);
 
         var panel = new PanelMenu3D
         {
@@ -251,7 +251,7 @@ public class IndexBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Width = 1.0,
             Height = 3.0,
-            Transform = new Transform3()
+            Transform = new Transform3("Menu")
             {
                 Position = menuPos,
                 Rotation = menuRot
@@ -312,7 +312,7 @@ public class IndexBase : ComponentBase, IDisposable
         var mesh = new Mesh3D
         {
             Geometry = new DodecahedronGeometry(radius: 0.8f),
-            Transform = new Transform3()
+            Transform = new Transform3("Dodecahedron")
             {
                 Position = new Vector3(-2, 6, -2),
                 Rotation = new Euler(0, 0, 0),
@@ -335,7 +335,7 @@ public class IndexBase : ComponentBase, IDisposable
             "Lorem ipsum dolor sit amet."
         };
         var panelPos = new Vector3(2, 2, -6);
-        var panelRot = new Euler(-1 * Math.PI * 45 / 180, 0, Math.PI * 30 / 180);
+        var panelRot = new Euler(-45 * Matrix3.DEG_TO_RAD, 0, 30 * Matrix3.DEG_TO_RAD);
         var panelW = 5;
         var panelH = 5;
 
@@ -364,7 +364,7 @@ public class IndexBase : ComponentBase, IDisposable
             Width = panelW,
             Height = panelH,
             TextLines = textLines,
-            Transform = new Transform3()
+            Transform = new Transform3("PanelGroup")
             {
                 Position = panelPos,
                 Rotation = panelRot,
@@ -393,7 +393,7 @@ public class IndexBase : ComponentBase, IDisposable
             Name = "Box1",
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-            Transform = new Transform3()
+            Transform = new Transform3("Box1")
             {
                 Position = new Vector3(-5, 0, 0),
                 Rotation = new Euler(0, 0, 0),
@@ -410,7 +410,7 @@ public class IndexBase : ComponentBase, IDisposable
             Name = "Box2",
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-            Transform = new Transform3()
+            Transform = new Transform3("Box2")
             {
                 Position = new Vector3(5, 0, 5),
                 Rotation = new Euler(0, 0, 0),
@@ -444,7 +444,7 @@ public class IndexBase : ComponentBase, IDisposable
             Name = "Box3",
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-            Transform = new Transform3()
+            Transform = new Transform3("Box3")
             {
                 Position = new Vector3(-5, 0, -5),
                 Rotation = new Euler(0, 0, 0),
@@ -458,7 +458,7 @@ public class IndexBase : ComponentBase, IDisposable
             Name = "Box4",
             Uuid = Guid.NewGuid().ToString(),
             Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-            Transform = new Transform3()
+            Transform = new Transform3("Box4")
             {
                 Position = new Vector3(5, 0, 5),
                 Rotation = new Euler(0, 0, 0),
@@ -480,7 +480,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                 Name = DataGenerator.GenerateWord(),
                 Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
-                Transform = new Transform3()
+                Transform = new Transform3("Box3")
                 {
                     Position = new Vector3(-2, 0, 0),
                     Rotation = new Euler(0, 0, 0),
@@ -493,7 +493,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new CircleGeometry(radius: 0.75f, segments: 12),
-                Transform = new Transform3()
+                Transform = new Transform3("Circle")
                 {
                     Position = new Vector3(2, 0, 0),
                     Rotation = new Euler(0, 0, 0),
@@ -506,7 +506,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new CapsuleGeometry(radius: 0.5f, length: 2),
-                Transform = new Transform3()
+                Transform = new Transform3("Capsule")
                 {
                     Position = new Vector3(-4, 0, 0),
                     Rotation = new Euler(0, 0, 0),
@@ -519,7 +519,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
-                Transform = new Transform3()
+                Transform = new Transform3("Cone")
                 {
                     Position = new Vector3(4, 0, 0),
                     Rotation = new Euler(0, 0, 0),
@@ -538,7 +538,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new CylinderGeometry(radiusTop: 0.5f, height: 1.2f, radialSegments: 16),
-                Transform = new Transform3()
+                Transform = new Transform3("Cylinder")
                 {
                     Position = new Vector3(0, 0, -2),
                     Rotation = new Euler(0, 0, 0),
@@ -555,7 +555,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new DodecahedronGeometry(radius: 0.8f),
-                Transform = new Transform3()
+                Transform = new Transform3("Dodecahedron")
                 {
                     Position = new Vector3(-2, 0, -2),
                     Rotation = new Euler(0, 0, 0),
@@ -572,7 +572,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new IcosahedronGeometry(radius: 0.8f),
-                Transform = new Transform3()
+                Transform = new Transform3("Icosahedron")
                 {
                     Position = new Vector3(-4, 0, -2),
                     Rotation = new Euler(0, 0, 0),
@@ -585,12 +585,13 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new OctahedronGeometry(radius: 0.75f),
-                Transform = new Transform3()
+                Transform = new Transform3("Octahedron")
                 {
                     Position = new Vector3(2, 0, -2),
                     Rotation = new Euler(0, 0, 0),
                     Scale = new Vector3(1, 1, 1)
                 },
+
                 Material = new MeshStandardMaterial("aqua", 1.0)
             },
             new Mesh3D
@@ -598,7 +599,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new PlaneGeometry(width: 0.5f, height: 2),
-                Transform = new Transform3()
+                Transform = new Transform3("Plane")
                 {
                     Position = new Vector3(4, 0, -2),
                     Rotation = new Euler(0, 0, 0),
@@ -611,7 +612,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new RingGeometry(innerRadius: 0.6f, outerRadius: 0.7f),
-                 Transform = new Transform3()
+                 Transform = new Transform3("Ring")
                 {
                     Position = new Vector3(0, 0, -4),
                     Rotation = new Euler(0, 0, 0),
@@ -624,7 +625,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new SphereGeometry(radius: 0.6f),
-                Transform = new Transform3()
+                Transform = new Transform3("Sphere")
                 {
                     Position = new Vector3(-2, 0, -4),
                     Rotation = new Euler(0, 0, 0),
@@ -637,7 +638,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new TetrahedronGeometry(radius: 0.75f),
-                Transform = new Transform3()
+                Transform = new Transform3("Tetrahedron")
                 {
                     Position = new Vector3(2, 0, -4),
                     Rotation = new Euler(0, 0, 0),
@@ -650,7 +651,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new TorusGeometry(radius: 0.6f, tube: 0.4f, radialSegments: 12, tubularSegments: 12),
-                Transform = new Transform3()
+                Transform = new Transform3("Torus")
                 {
                     Position = new Vector3(4, 0, -4),
                     Rotation = new Euler(0, 0, 0),
@@ -663,7 +664,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Uuid = Guid.NewGuid().ToString(),
                  Name = DataGenerator.GenerateWord(),
                 Geometry = new TorusKnotGeometry(radius: 0.6f, tube: 0.1f),
-                Transform = new Transform3()
+                Transform = new Transform3("TorusKnot")
                 {
                     Position = new Vector3(6, 0, -4),
                     Rotation = new Euler(0, 0, 0),

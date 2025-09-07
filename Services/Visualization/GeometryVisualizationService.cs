@@ -32,7 +32,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         {
             Name = $"head",
             Color = "#FF0000",
-            Transform = new Transform3()
+            Transform = new Transform3("HeadTransform")
             {
                 Position = new Vector3(axisOffset, 0, 0),
             }
@@ -44,7 +44,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         {
             Name = $"{name}_YAxis",
             Color = "#00FF00",
-            Transform = new Transform3
+            Transform = new Transform3("YAxisTransform")
             {
                 Position = new Vector3(0, axisOffset, 0)
             }
@@ -54,7 +54,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         {
             Name = $"head",
             Color = "#00FF00",
-            Transform = new Transform3()
+            Transform = new Transform3("HeadTransform")
             {
                 Position = new Vector3(0, axisOffset, 0),
             }
@@ -67,7 +67,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         {
             Name = $"{name}_ZAxis",
             Color = "#0000FF", 
-            Transform = new Transform3
+            Transform = new Transform3("ZAxisTransform")
             {
                 Position = new Vector3(0, 0, axisOffset)
             }
@@ -87,7 +87,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         var group = new FoShape3D
         {
             Name = $"{name}_Axes",
-            Transform = new Transform3
+            Transform = new Transform3("GroupTransform")
             {
                 Position = transform.Position,
                 Rotation = transform.Rotation,
@@ -111,7 +111,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             {
                 Name = point.Name ?? $"Vertex{i}",
                 Color = "#2196F3",
-                Transform = new Transform3
+                Transform = new Transform3("VertexTransform")
                 {
                     Position = new Vector3(point.X, point.Y, point.Z)
                 }
@@ -120,7 +120,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             var label = new FoText3D("VertexLabel", "White")
             {
                 Text = $"{point.Name}: ({point.X:F2}, {point.Y:F2}, {point.Z:F2})",
-                Transform = new Transform3()
+                Transform = new Transform3("LabelTransform")
                 {
                     Position = new Vector3(0, 0.15, 0),
                 }
@@ -138,23 +138,20 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         foreach (var edge in edges)
         {
             // Create path from edge start to end points for tube geometry
-            var edgePath = new List<Vector3>
-            {
-                new Vector3(edge.Start.X, edge.Start.Y, edge.Start.Z),
-                new Vector3(edge.End.X, edge.End.Y, edge.End.Z)
-            };
+            var edgePath = edge.AsPath();
 
             var edgeShape = new FoPipe3D($"Edge_{edge.Name}", "#333")
             {
                 GlyphId = Guid.NewGuid().ToString(),
             }.CreateTube(edge.Name, 0.03, edgePath);
 
+            var mid = edge.Midpoint;
             var label = new FoText3D("EdgeLabel", "Yellow")
             {
-                Text = $"{edge.Name}: L={edge.Length:F2}",
-                Transform = new Transform3()
+                Text = $"{edge.Name}: L={edge.Length:F2} M={mid.X:F2}, {mid.Y:F2}, {mid.Z:F2}",
+                Transform = new Transform3("LabelTransform")
                 {
-                    Position = new Vector3(edge.Midpoint.X, edge.Midpoint.Y, edge.Midpoint.Z + 0.1),
+                    Position = new Vector3(mid.X, mid.Y, mid.Z + 0.1),
                 }
             };
             edgeShape.AddSubGlyph3D<FoText3D>(label);
@@ -176,7 +173,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             {
                 Name = $"Face_{face.Name}",
                 Color = "#F00",
-                Transform = new Transform3
+                Transform = new Transform3("FaceTransform")
                 {
                     Position = center.AsVector3(),
                 }
@@ -187,7 +184,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             var LabelName = new FoText3D("Name", "White")
             {
                 Text = $"{face.Name} {center.X:F2}, {center.Y:F2}, {center.Z:F2}",
-                Transform = new Transform3(),
+                Transform = new Transform3("LabelTransform"),
                 TextAlign = Text3DAlign.Center,
             };
             normalShape.AddSubGlyph3D<FoText3D>(LabelName);
@@ -206,7 +203,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             var normalShape = new FoShape3D {
                 Name = $"Normal_{face.Name}",
                 Color = "#F00",
-                Transform = new Transform3 {
+                Transform = new Transform3("NormalTransform") {
                     Position = mid.AsVector3(),
                     Rotation = new Euler(euler.X, euler.Y, euler.Z, "XYZ")
                 }
@@ -216,7 +213,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             {
                 Name = $"NormalCone_{face.Name}",
                 Color = "#F00",
-                Transform = new Transform3()
+                Transform = new Transform3("NormalConeTransform")
                 {
                     Position = new Vector3(0, length / 2, 0),
                 }
@@ -227,7 +224,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             var LabelName = new FoText3D("Name", "White")
             {
                 Text = $"{face.Name} {n.X:F2}, {n.Y:F2}, {n.Z:F2}",
-                Transform = new Transform3()
+                Transform = new Transform3("LabelTransform")
                 {
                     Position = new Vector3(0, length, 0),
                 }
@@ -249,7 +246,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         {
             Name = "XAxis",
             Color = "#FF0000",
-            Transform = new Transform3
+            Transform = new Transform3("XAxisTransform")
             {
                 Position = transform.Position,
                 Rotation = new Euler(0, 0, -Math.PI/2, "XYZ")
@@ -261,7 +258,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         {
             Name = "YAxis",
             Color = "#00FF00",
-            Transform = new Transform3
+            Transform = new Transform3("YAxisTransform")
             {
                 Position = transform.Position,
                 Rotation = new Euler(0, 0, 0, "XYZ")
@@ -273,7 +270,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         {
             Name = "ZAxis",
             Color = "#0000FF", 
-            Transform = new Transform3
+            Transform = new Transform3("ZAxisTransform")
             {
                 Position = transform.Position,
                 Rotation = new Euler(Math.PI/2, 0, 0, "XYZ")
@@ -311,7 +308,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             Name = name,
             Color = color,
             GlyphId = Guid.NewGuid().ToString(),
-            Transform = new Transform3() {
+            Transform = new Transform3("SphereTransform") {
                 Position = new Vector3(position.X, position.Y, position.Z)
             }
         }.CreateSphere(name, radius, radius, radius);
@@ -327,7 +324,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             Name = name,
             Color = color,
             GlyphId = Guid.NewGuid().ToString(),
-            Transform = new Transform3() {
+            Transform = new Transform3("CylinderTransform") {
                 Position = new Vector3(position.X, position.Y, position.Z),
                 Rotation = new Euler(rotation.X, rotation.Y, rotation.Z)
             }
@@ -344,7 +341,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             Name = name,
             Color = color,
             GlyphId = Guid.NewGuid().ToString(),
-            Transform = new Transform3() {
+            Transform = new Transform3("PlaneTransform") {
                 Position = new Vector3(position.X, position.Y, position.Z),
                 Rotation = new Euler(rotation.X, rotation.Y, rotation.Z)
             },

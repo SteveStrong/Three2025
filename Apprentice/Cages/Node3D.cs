@@ -27,7 +27,7 @@ public class Node3D : FoShape3D
 
     public override (bool success, Vector3 path) HitPosition()
     {
-        return (true, GetTransform().Position);
+        return (true, Transform.Position);
     }
 
     public int LinkCount()

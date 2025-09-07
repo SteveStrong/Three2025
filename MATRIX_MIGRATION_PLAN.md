@@ -427,7 +427,7 @@ public Transform3 SetScale(double x, double y, double z) => /* set scale */;
 public Transform3 RotateEuler(double x, double y, double z) => /* set rotation */;
 
 // Added to SpacialFrame3D for type conversion
-var blazorVector = new BlazorThreeJS.Maths.Vector3((float)vector.X, (float)vector.Y, (float)vector.Z);
+var blazorVector = new BlazorThreeJS.Maths.Vector3(vector.X, vector.Y, vector.Z);
 var transformedBlazorVector = Transform.TransformPoint(blazorVector);
 var transformedFoVector = new FoVector3D(transformedBlazorVector.X, transformedBlazorVector.Y, transformedBlazorVector.Z);
 ```
@@ -517,7 +517,7 @@ var transformedFoVector = new FoVector3D(transformedBlazorVector.X, transformedB
    private Point3D TransformPoint(Point3D point)
    {
        var vector = ToVector3D(point);
-       var blazorVector = new BlazorThreeJS.Maths.Vector3((float)vector.X, (float)vector.Y, (float)vector.Z);
+       var blazorVector = new BlazorThreeJS.Maths.Vector3(vector.X, vector.Y, vector.Z);
        var transformedBlazorVector = Transform.TransformPoint(blazorVector);
        var transformedFoVector = new FoVector3D(transformedBlazorVector.X, transformedBlazorVector.Y, transformedBlazorVector.Z);
        return ToPoint3D(transformedFoVector, point.Name);

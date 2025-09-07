@@ -83,7 +83,7 @@ public partial class ClockBase : ComponentBase
         var shape = new FoModel3D("TRISOC " + name)
         {
             Url = GetReferenceTo(@"storage/StaticFiles/TRISOC.glb"),
-            Transform = new Transform3()
+            Transform = new Transform3("TRISOCTransform")
             {
                 Position = new Vector3(x, 0, z),
                 Scale = new Vector3(s, s, s),
@@ -148,7 +148,7 @@ public partial class ClockBase : ComponentBase
             Text = DataGenerator.GenerateText(),
             Color = DataGenerator.GenerateColor(),
             FontSize =  DataGenerator.GenerateDouble(.5, 5.0),
-            Transform = new Transform3()
+            Transform = new Transform3("Text3DTransform")
             {
                 Position = new Vector3(x, y, z),
             },
@@ -158,7 +158,7 @@ public partial class ClockBase : ComponentBase
         {
             Text = "Extra Text",
             Color = "White",
-            Transform = new Transform3()
+            Transform = new Transform3("LabelTransform")
             {
                 Position = new Vector3(0, 3, 0),
             },

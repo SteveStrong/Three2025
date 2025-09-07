@@ -36,15 +36,15 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
     protected double PositionX { get; set; } = 0.0;
     protected double PositionY { get; set; } = 0.0;
     protected double PositionZ { get; set; } = 0.0;
-    
+
     protected double PivotX { get; set; } = 0.0;
     protected double PivotY { get; set; } = 0.0;
     protected double PivotZ { get; set; } = 0.0;
-    
+
     protected double RotationX { get; set; } = 0.0;
     protected double RotationY { get; set; } = 0.0;
     protected double RotationZ { get; set; } = 0.0;
-    
+
     protected double ScaleX { get; set; } = 1.0;
     protected double ScaleY { get; set; } = 1.0;
     protected double ScaleZ { get; set; } = 1.0;
@@ -62,9 +62,9 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
     {
         if (firstRender)
         {
-            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false,null!);
+            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
 
-            scene?.SetAfterUpdateAction((s,j) =>
+            scene?.SetAfterUpdateAction((s, j) =>
             {
                 FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
             });
@@ -93,6 +93,12 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
         scene.AddChild(model);
     }
 
+    public void AutoRefreshShape()
+    {
+        $"🔄 AutoRefreshShape called".WriteInfo();
+        CreateSpacialFrame();
+    }
+
     public void CreateSpacialFrame()
     {
         try
@@ -107,38 +113,52 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
 
             arena.ClearArena();
 
+            $"Creating SpacialFrame3D with Rotation {RotationX}×{RotationY}×{RotationZ}° at Position ({PositionX}, {PositionY}, {PositionZ}), Pivot ({PivotX}, {PivotY}, {PivotZ}), Scale ({ScaleX}, {ScaleY}, {ScaleZ})".WriteInfo();
+
 
             CurrentShape = new FoShape3D()
             {
-                Name = "SpacialFrameMain",
+                Name = "SourceShape",
                 GlyphId = Guid.NewGuid().ToString(),
                 Color = "#FFB050",
                 Opacity = 0.8,
-                Transform = new Transform3()
+                Transform = new Transform3("BoxTransform")
                 {
-                    Position = new Vector3(0, 0, 0),
-                    Pivot = new Vector3(-BoxWidth/2, -BoxHeight/2, -BoxDepth/2),
-                    Rotation = new Euler(0, 0, 0),
-                    Scale = new Vector3(1, 1, 1)
+                    // Update the transform properties - this will automatically trigger refresh via OnChange
+                    Position = new Vector3(PositionX, PositionY, PositionZ),
+                    Pivot = new Vector3(PivotX, PivotY, PivotZ),
+                    Rotation = new Euler(RotationX, RotationY, RotationZ, AngleUnit.Degrees),
+                    Scale = new Vector3(ScaleX, ScaleY, ScaleZ),
+                    OnChange = (isDirty) =>
+                    {
+                        $"Transform OnChange fired. isDirty={isDirty}".WriteInfo(1);
+                        if (isDirty)
+                        {
+                            //it is likely this fires many times as the transform is marked dirty
+                            //with every small change  there migbt be some value in debouncing this
+                            //or haveing a function the applys all the changes at once 
+                            // Immediately start UI updates when transform becomes dirty
+                            StatusMessage = "🔄 Transform updating...";
+                            AutoRefreshShape();
+                            StateHasChanged();
+                        }
+                    },
+                    OnComputed = (matrix) =>
+                    {
+                        $"Transform OnComputed fired. Matrix is now ready.".WriteInfo(1);
+                        // Matrix is ready - safe to refresh the shape
+                        AutoRefreshShape();
+                        StatusMessage = "✅ Transform computed and shape refreshed";
+                        StateHasChanged();
+                    }
                 }
-            }.CreateBox("SpacialFrameMain", BoxWidth, BoxHeight, BoxDepth);
+            }.CreateBox("SourceShape", BoxWidth, BoxHeight, BoxDepth);
 
-            // Set up automatic refresh when transform changes
-            CurrentShape.Transform.OnChange = (isDirty) =>
-            {
-                if (isDirty)
-                {
-                    // Automatically refresh the shape when transform changes
-                    AutoRefreshShape();
-                }
-            };
 
             arena.AddShapeToStage<FoShape3D>(CurrentShape);
 
             CurrentFrame = new SpacialFrame3D(CurrentShape, "m");
 
-            // Load the current transform values into the UI controls
-            LoadCurrentTransform();
 
             StatusMessage = $"Created SpacialFrame3D (FoShape3D): {BoxWidth}×{BoxHeight}×{BoxDepth}m";
             StateHasChanged();
@@ -160,7 +180,6 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
             StateHasChanged();
             return;
         }
-
 
         arena.ClearArena();
         StateHasChanged();
@@ -207,39 +226,6 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
     }
 
     // === TRANSFORMATION METHODS ===
-    protected void UpdateTransform()
-    {
-        if (CurrentFrame?.Source == null)
-        {
-            StatusMessage = "No box created yet. Please create a box first.";
-            StateHasChanged();
-            return;
-        }
-
-        try
-        {
-            var transform = CurrentFrame.Source.Transform;
-            var rotX = RotationX * (Math.PI / 180.0);
-            var rotY = RotationY * (Math.PI / 180.0);
-            var rotZ = RotationZ * (Math.PI / 180.0);
-            // Update the transform properties - this will automatically trigger refresh via OnChange
-            transform.Position = new Vector3(PositionX, PositionY, PositionZ);
-            transform.Pivot = new Vector3(PivotX, PivotY, PivotZ);
-            transform.Rotation = new Euler(rotX, rotY, rotZ);
-            transform.Scale = new Vector3(ScaleX, ScaleY, ScaleZ);
-
-            StatusMessage = $"Transform updated: Pos({PositionX:F2},{PositionY:F2},{PositionZ:F2}) " +
-                          $"Rot({RotationX:F1}°,{RotationY:F1}°,{RotationZ:F1}°) " +
-                          $"Scale({ScaleX:F2},{ScaleY:F2},{ScaleZ:F2}) " +
-                          $"[Degrees auto-converted to radians for matrix calculations]";
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Error updating transform: {ex.Message}";
-            StateHasChanged();
-        }
-    }
 
     protected void ResetTransform()
     {
@@ -247,107 +233,72 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
         PivotX = PivotY = PivotZ = 0.0;
         RotationX = RotationY = RotationZ = 0.0;
         ScaleX = ScaleY = ScaleZ = 1.0;
-        UpdateTransform();
+        CreateSpacialFrame();
     }
 
-    protected void LoadCurrentTransform()
-    {
-        if (CurrentFrame?.Source?.Transform == null)
-        {
-            StatusMessage = "No box created yet. Please create a box first.";
-            StateHasChanged();
-            return;
-        }
 
-        var transform = CurrentFrame.Source.Transform;
-        PositionX = transform.Position.X;
-        PositionY = transform.Position.Y;
-        PositionZ = transform.Position.Z;
-        
-        PivotX = transform.Pivot.X;
-        PivotY = transform.Pivot.Y;
-        PivotZ = transform.Pivot.Z;
-        
-        RotationX = transform.Rotation.X * (180.0 / Math.PI); // Convert to degrees
-        RotationY = transform.Rotation.Y * (180.0 / Math.PI);
-        RotationZ = transform.Rotation.Z * (180.0 / Math.PI);
-
-        ScaleX = transform.Scale.X;
-        ScaleY = transform.Scale.Y;
-        ScaleZ = transform.Scale.Z;
-        
-        StatusMessage = "Current transform values loaded into controls.";
-        StateHasChanged();
-    }
 
     // === PRESET TRANSFORMATIONS ===
     protected void ApplyQuickRotationX90()
     {
         RotationX += 90;
         if (RotationX >= 360) RotationX -= 360;
-        UpdateTransform();
+        CreateSpacialFrame();
     }
 
     protected void ApplyQuickRotationY90()
     {
         RotationY += 90;
         if (RotationY >= 360) RotationY -= 360;
-        UpdateTransform();
+        CreateSpacialFrame();
     }
 
     protected void ApplyQuickRotationZ90()
     {
         RotationZ += 90;
         if (RotationZ >= 360) RotationZ -= 360;
-        UpdateTransform();
+        CreateSpacialFrame();
     }
 
-    protected void ApplyRandomTransform()
+    // === POSITION INCREMENT METHODS ===
+    protected void IncrementPositionX()
     {
-        var random = new Random();
-        PositionX = (random.NextDouble() - 0.5) * 4.0; // -2 to 2
-        PositionY = (random.NextDouble() - 0.5) * 4.0;
-        PositionZ = (random.NextDouble() - 0.5) * 4.0;
-
-        RotationX = random.NextDouble() * 360;
-        RotationY = random.NextDouble() * 360;
-        RotationZ = random.NextDouble() * 360;
-        
-        ScaleX = 0.5 + random.NextDouble() * 1.5; // 0.5 to 2.0
-        ScaleY = 0.5 + random.NextDouble() * 1.5;
-        ScaleZ = 0.5 + random.NextDouble() * 1.5;
-        
-        UpdateTransform();
+        PositionX += 1.0;
+        CreateSpacialFrame();
     }
 
-    protected void AutoRefreshShape()
+    protected void IncrementPositionY()
     {
-        if (CurrentFrame?.Source == null)
-            return;
-
-        try
-        {
-            // Mark the shape as dirty so it will be refreshed
-            CurrentFrame.Source.SetDirty(true);
-
-            // Get the scene and refresh the shape efficiently
-            var arena = FoundryService.Arena();
-            if (arena != null)
-            {
-                var (found, scene) = arena.CurrentScene();
-                if (found)
-                {
-                    // Use the efficient refresh mechanism
-                    CurrentFrame.Source.RefreshToScene(scene);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Error auto-refreshing shape: {ex.Message}";
-            StateHasChanged();
-        }
+        PositionY += 1.0;
+        CreateSpacialFrame();
     }
+
+    protected void IncrementPositionZ()
+    {
+        PositionZ += 1.0;
+        CreateSpacialFrame();
+    }
+
+    // === PIVOT INCREMENT METHODS ===
+    protected void IncrementPivotX()
+    {
+        PivotX += 1.0;
+        CreateSpacialFrame();
+    }
+
+    protected void IncrementPivotY()
+    {
+        PivotY += 1.0;
+        CreateSpacialFrame();
+    }
+
+    protected void IncrementPivotZ()
+    {
+        PivotZ += 1.0;
+        CreateSpacialFrame();
+    }
+
+
 
     protected void ShowTransformMatrix()
     {
@@ -371,8 +322,6 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
             StateHasChanged();
         }
     }
-
- 
 
 
 
@@ -414,306 +363,97 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
         StateHasChanged();
     }
 
- 
 
 
-
-
-        // === VISUALIZATION TEST METHODS ===
-        public void ShowVertices()
+    // === VISUALIZATION TEST METHODS ===
+    public void ShowVertices()
+    {
+        if (CurrentFrame == null)
         {
-            if (CurrentFrame == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-            var arena = FoundryService.Arena();
-            if (arena == null)
-            {
-                StatusMessage = "Arena not ready yet. Try again in a moment.";
-                StateHasChanged();
-                return;
-            }
-            
-            var vertices = CurrentFrame.GetVertices();
-            VisualizationService.ShowLabeledVertices(arena, vertices);
-            StatusMessage = $"Showing {vertices.Count} vertices as labeled spheres.";
+            StatusMessage = "No box created yet. Please create a box first.";
             StateHasChanged();
+            return;
         }
-
-        public void ShowEdges()
+        var arena = FoundryService.Arena();
+        if (arena == null)
         {
-            if (CurrentFrame == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-           var arena = FoundryService.Arena();
-            if (arena == null)
-            {
-                StatusMessage = "Arena not ready yet. Try again in a moment.";
-                StateHasChanged();
-                return;
-            }
-
-            var edges = CurrentFrame.GetEdges();
-            VisualizationService.ShowLabeledEdges(arena, edges);
-            StatusMessage = $"Showing {edges.Count} edges as labeled tubes.";
+            StatusMessage = "Arena not ready yet. Try again in a moment.";
             StateHasChanged();
+            return;
         }
 
-        public void ShowFaces()
+        $"Expect this vertices to be transformed correctly. ".WriteInfo();
+        var vertices = CurrentFrame.GetVertices();
+        VisualizationService.ShowLabeledVertices(arena, vertices);
+        StatusMessage = $"Showing {vertices.Count} vertices as labeled spheres.";
+        StateHasChanged();
+    }
+
+    public void ShowEdges()
+    {
+        if (CurrentFrame == null)
         {
-            if (CurrentFrame == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-            var arena = FoundryService.Arena();
-            if (arena == null)
-            {
-                StatusMessage = "Arena not ready yet. Try again in a moment.";
-                StateHasChanged();
-                return;
-            }
-            
-            var faces = CurrentFrame.GetFaces();
-            VisualizationService.ShowLabeledFaces(arena, faces);
-            StatusMessage = $"Showing {faces.Count} faces as wireframe outlines with labels.";
+            StatusMessage = "No box created yet. Please create a box first.";
             StateHasChanged();
+            return;
         }
-
-        public void ShowNormals()
+        var arena = FoundryService.Arena();
+        if (arena == null)
         {
-            if (CurrentFrame == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-            var arena = FoundryService.Arena();
-            if (arena == null)
-            {
-                StatusMessage = "Arena not ready yet. Try again in a moment.";
-                StateHasChanged();
-                return;
-            }
-
-            var faces = CurrentFrame.GetFaces();
-            VisualizationService.ShowLabeledNormals(arena, faces);
-            StatusMessage = $"Showing {faces.Count} face normals as red cylinders, aligned with normals.";
+            StatusMessage = "Arena not ready yet. Try again in a moment.";
             StateHasChanged();
+            return;
         }
 
-        // === DEBUGGING METHODS FOR TRANSFORMATION INVESTIGATION ===
-        
-        public void DebugTransformationFlow()
+        var edges = CurrentFrame.GetEdges();
+        VisualizationService.ShowLabeledEdges(arena, edges);
+        StatusMessage = $"Showing {edges.Count} edges as labeled tubes.";
+        StateHasChanged();
+    }
+
+    public void ShowFaces()
+    {
+        if (CurrentFrame == null)
         {
-            if (CurrentFrame == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-
-            try
-            {
-                var transform = CurrentFrame.Source.Transform;
-                var matrix = transform.ToMatrix3();
-                
-                // Get first vertex to trace transformation
-                var localVertices = CurrentFrame.GetLocalVertices();
-                var transformedVertices = CurrentFrame.GetVertices();
-                
-                if (localVertices.Count > 0 && transformedVertices.Count > 0)
-                {
-                    var localV0 = localVertices[0];
-                    var transformedV0 = transformedVertices[0];
-                    
-                    // Use the debug method from SpacialFrame3D
-                    var debugInfo = CurrentFrame.DebugTransformation(localV0);
-                    
-                    StatusMessage = $"🔍 TRANSFORM DEBUG:\n{debugInfo}\n" +
-                                  $"Expected vs Actual:\n" +
-                                  $"Expected: ({transformedV0.X:F2}, {transformedV0.Y:F2}, {transformedV0.Z:F2})\n" +
-                                  $"Matrix working: {(Math.Abs(transformedV0.X - localV0.X) > 0.01 || Math.Abs(transformedV0.Y - localV0.Y) > 0.01 || Math.Abs(transformedV0.Z - localV0.Z) > 0.01 ? "YES" : "NO CHANGE")}";
-                }
-                else
-                {
-                    StatusMessage = "❌ No vertices found for debugging";
-                }
-                
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"❌ Debug error: {ex.Message}";
-                StateHasChanged();
-            }
+            StatusMessage = "No box created yet. Please create a box first.";
+            StateHasChanged();
+            return;
         }
-        
-        public void CompareBeforeAfterRotation()
+        var arena = FoundryService.Arena();
+        if (arena == null)
         {
-            if (CurrentFrame == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-
-            try
-            {
-                // Store current vertices
-                var beforeVertices = CurrentFrame.GetVertices().Take(2).ToList();
-                var beforeStatus = $"BEFORE: V0({beforeVertices[0].X:F2},{beforeVertices[0].Y:F2},{beforeVertices[0].Z:F2}) " +
-                                 $"V1({beforeVertices[1].X:F2},{beforeVertices[1].Y:F2},{beforeVertices[1].Z:F2})";
-                
-                // Apply a 45° Y rotation
-                RotationY += 45;
-                UpdateTransform();
-                
-                // Get vertices after transformation
-                var afterVertices = CurrentFrame.GetVertices().Take(2).ToList();
-                var afterStatus = $"AFTER: V0({afterVertices[0].X:F2},{afterVertices[0].Y:F2},{afterVertices[0].Z:F2}) " +
-                                $"V1({afterVertices[1].X:F2},{afterVertices[1].Y:F2},{afterVertices[1].Z:F2})";
-                
-                StatusMessage = $"🔄 ROTATION TEST:\n{beforeStatus}\n{afterStatus}\n" +
-                               $"Rotation Applied: +45° Y (Total: {RotationY:F1}°)";
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"❌ Rotation test error: {ex.Message}";
-                StateHasChanged();
-            }
+            StatusMessage = "Arena not ready yet. Try again in a moment.";
+            StateHasChanged();
+            return;
         }
-        
-        public void TestDirtyFlag()
+
+        var faces = CurrentFrame.GetFaces();
+        VisualizationService.ShowLabeledFaces(arena, faces);
+        StatusMessage = $"Showing {faces.Count} faces as wireframe outlines with labels.";
+        StateHasChanged();
+    }
+
+    public void ShowNormals()
+    {
+        if (CurrentFrame == null)
         {
-            if (CurrentFrame?.Source?.Transform == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-
-            try
-            {
-                var transform = CurrentFrame.Source.Transform;
-                
-                // Check initial dirty state
-                var initialDirty = transform.IsDirty;
-                
-                // Get vertices before any change
-                var beforeVertices = CurrentFrame.GetVertices();
-                var beforeV0 = beforeVertices.Count > 0 ? beforeVertices[0] : new Point3D(0, 0, 0);
-                var beforeV1 = beforeVertices.Count > 1 ? beforeVertices[1] : new Point3D(0, 0, 0);
-
-                // Modify rotation to trigger dirty flag naturally
-                var oldRotation = transform.Rotation;
-                transform.Rotation = new Euler(oldRotation.X + 0.1, oldRotation.Y + 0.1, oldRotation.Z + 0.1);
-                var afterRotationChange = transform.IsDirty;
-                
-                // Get vertices after rotation change
-                var afterVertices = CurrentFrame.GetVertices();
-                var afterV0 = afterVertices.Count > 0 ? afterVertices[0] : new Point3D(0, 0, 0);
-                
-                // Check if vertices actually moved
-                var moved = Math.Abs(beforeV0.X - afterV0.X) > 0.01 || 
-                           Math.Abs(beforeV0.Y - afterV0.Y) > 0.01 || 
-                           Math.Abs(beforeV0.Z - afterV0.Z) > 0.01;
-                
-                StatusMessage = $"🚩 DIRTY FLAG TEST:\n" +
-                              $"Initial dirty: {initialDirty}\n" +
-                              $"After rotation change: {afterRotationChange}\n" +
-                              $"Before V0: ({beforeV0.X:F2}, {beforeV0.Y:F2}, {beforeV0.Z:F2})\n" +
-                              $"After V0:  ({afterV0.X:F2}, {afterV0.Y:F2}, {afterV0.Z:F2})\n" +
-                              $"Vertices moved: {(moved ? "YES ✅" : "NO ❌")}\n" +
-                              $"Transform working: {(moved ? "CORRECT" : "PROBLEM DETECTED")}";
-                
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"❌ Dirty flag test error: {ex.Message}";
-                StateHasChanged();
-            }
+            StatusMessage = "No box created yet. Please create a box first.";
+            StateHasChanged();
+            return;
         }
-        
-        public void TestTransformMatrix()
+        var arena = FoundryService.Arena();
+        if (arena == null)
         {
-            if (CurrentFrame?.Source?.Transform == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-
-            try
-            {
-                var transform = CurrentFrame.Source.Transform;
-                var matrix = transform.ToMatrix3();
-                
-                // Test transform a simple point manually
-                var testPoint = new Vector3(1, 0, 0); // Simple X-axis point
-                var transformedPoint = matrix.TransformPoint(testPoint);
-                
-                StatusMessage = $"🧪 MATRIX TEST:\n" +
-                              $"Input Point: (1, 0, 0)\n" +
-                              $"Transformed: ({transformedPoint.X:F3}, {transformedPoint.Y:F3}, {transformedPoint.Z:F3})\n" +
-                              $"Current Rotation: ({RotationX:F1}°, {RotationY:F1}°, {RotationZ:F1}°)\n" +
-                              $"Matrix working: {(transformedPoint.X != 1 || transformedPoint.Y != 0 ? "YES" : "NO CHANGE")}";
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"❌ Matrix test error: {ex.Message}";
-                StateHasChanged();
-            }
-        }
-        
-        public void ShowLocalVsTransformed()
-        {
-            if (CurrentFrame == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-            
-            var arena = FoundryService.Arena();
-            if (arena == null) return;
-
-            try
-            {
-                // Show local vertices in green
-                var localVertices = CurrentFrame.GetLocalVertices();
-                foreach (var vertex in localVertices.Take(4)) // Show first 4 to avoid clutter
-                {
-                    VisualizationService.CreateMarkerSphere(arena, $"Local_{vertex.Name}", vertex, "#00FF00", 0.08);
-                }
-                
-                // Show transformed vertices in red
-                var transformedVertices = CurrentFrame.GetVertices();
-                foreach (var vertex in transformedVertices.Take(4))
-                {
-                    VisualizationService.CreateMarkerSphere(arena, $"Trans_{vertex.Name}", vertex, "#FF0000", 0.06);
-                }
-                
-                StatusMessage = $"🔄 GREEN = Local vertices, RED = Transformed vertices\n" +
-                               $"If they overlap, transformation isn't working!";
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"❌ Comparison error: {ex.Message}";
-                StateHasChanged();
-            }
+            StatusMessage = "Arena not ready yet. Try again in a moment.";
+            StateHasChanged();
+            return;
         }
 
+        var faces = CurrentFrame.GetFaces();
+        VisualizationService.ShowLabeledNormals(arena, faces);
+        StatusMessage = $"Showing {faces.Count} face normals as red cylinders, aligned with normals.";
+        StateHasChanged();
+    }
 
 
 }

@@ -100,7 +100,7 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
                 GlyphId = Guid.NewGuid().ToString(),
                 Color = "#4CAF50",
                 Opacity = 0.8,
-                Transform = new Transform3()
+                Transform = new Transform3("BoxTransform")
                 {
                     Position = new Vector3(0, 0, 0)
                 }
@@ -309,7 +309,5 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
             StatusMessage = $"Showing {faces.Count} face normals as red cylinders, aligned with normals.";
             StateHasChanged();
         }
-
-
 
 }

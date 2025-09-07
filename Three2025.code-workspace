@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../FoundryBlazor"
+		},
+		{
+			"path": "../FoundryMentorModeler"
 		}
 	],
 	"settings": {}

@@ -260,7 +260,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var shape = new FoText3D(name,color)
         {
             Text = DataGenerator.GenerateText(),
-            Transform = new Transform3()
+            Transform = new Transform3("TextTransform")
             {
                 Position = new Vector3(x, y, z),
             }
