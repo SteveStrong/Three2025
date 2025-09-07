@@ -1,8 +1,32 @@
+
+// -----------------------------------------------------------------------------
+// Matrix3RotationSimpleTest.cs
+//
+// This test verifies that Transform3 rotation produces the expected matrix for
+// simple 90-degree rotations about X, Y, and Z axes.
+//
+// IMPORTANT CONVENTIONS:
+// - Euler angles in the Transform3 system are STORED INTERNALLY IN RADIANS.
+// - Use Euler.FromDegrees(x, y, z) to construct Euler angles from degrees.
+// - Use Euler.FromRadians(x, y, z) to construct Euler angles from radians.
+// - Always be explicit about units when setting or reading Euler angles.
+// - All tests here use degrees for clarity, but the system converts to radians internally.
+//
+// This documentation is intended to prevent confusion and bugs caused by mixing up degrees and radians.
+// -----------------------------------------------------------------------------
 using BlazorThreeJS.Maths;
 using FoundryRulesAndUnits.Extensions;
 
 namespace Three2025
 {
+    /// <summary>
+    /// Simple diagnostic tests for Transform3 rotation matrices.
+    /// 
+    /// Angle conventions:
+    /// - Euler angles are always stored in radians internally.
+    /// - Use Euler.FromDegrees for degree input, Euler.FromRadians for radian input.
+    /// - All test cases here use degrees for clarity.
+    /// </summary>
     public class Matrix3RotationSimpleTest
     {
         public static void Run()
