@@ -49,7 +49,7 @@ public class TriSocGeometry : FoComponent
 
         var shape = new FoText3D(text, "green")
         {
-            Transform = new Transform3()
+            Transform = new Transform3("TextTransform")
             {
                 Position = point.AsVector3(),
             },

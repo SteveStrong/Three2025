@@ -204,8 +204,8 @@ public class LightingTech :ILightingTech
 
       if ( light != null)
       {
-         light.Transform.Position = new Vector3(x, y, z);
-         //light.SetDirty(true);
+         light.Transform.Position = Vector3.Zero;
+         light.Transform.MoveBy(x, y, z);
          $"Light {name} repositioned to {x}, {y}, {z}".WriteSuccess();
       }
 
@@ -262,7 +262,7 @@ public class LightingComponent : FoShape3D
       {
          Text = name,
          FontSize = 0.5,
-         Transform = new Transform3()
+         Transform = new Transform3("TagTransform")
          {
             Position = new Vector3(3, 0, 0),
          },

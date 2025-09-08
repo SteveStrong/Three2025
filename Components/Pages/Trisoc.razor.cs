@@ -102,12 +102,13 @@ public partial class TrisocBase : ComponentBase
         var (c, center) = Tech.GetSpacialBox("Center", 0, "C");
 
 
-        var (t,top) = Tech.GetSpacialBox("Top",c, "T");
-        top.Transform.Position = center.Transform.Position.CreatePlus(0, -10, 0);
+    var (t,top) = Tech.GetSpacialBox("Top",c, "T");
+    top.Transform.Position = center.Transform.Position;
+    top.Transform.MoveBy(0, -10, 0);
 
-
-        var (f,front) = Tech.GetSpacialBox("Front",t, "F");
-        front.Transform.Position = center.Transform.Position.CreatePlus(0, 0, 10);
+    var (f,front) = Tech.GetSpacialBox("Front",t, "F");
+    front.Transform.Position = center.Transform.Position;
+    front.Transform.MoveBy(0, 0, 10);
 
 
         var arena = Workspace.GetArena();

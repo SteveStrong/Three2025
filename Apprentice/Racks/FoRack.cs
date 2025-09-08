@@ -51,7 +51,7 @@ public class FoRack : FoShape3D
 
         var group = new FoRack(name)
         {
-            Transform = new Transform3()
+            Transform = new Transform3("RackTransform")
             {
                 Position = new Vector3(x, height/2, z),
                 //Pivot = new Vector3(0, -height/2, 0),
@@ -63,7 +63,7 @@ public class FoRack : FoShape3D
         var rackName = new FoText3D("Name", "White")
         {
             Text = name,
-            Transform = new Transform3()
+            Transform = new Transform3("NameTransform")
             {
                 Position = new Vector3(0, -1 - height/2, 0),
             }

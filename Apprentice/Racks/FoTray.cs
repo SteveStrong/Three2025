@@ -20,7 +20,7 @@ public class FoTray : FoShape3D
 
         var box = new FoTray(name, "aqua")
         {
-            Transform = new Transform3()
+            Transform = new Transform3("TrayTransform")
             {
                 Position = new Vector3(0, Y + height / 2, 0),
             }
@@ -30,7 +30,7 @@ public class FoTray : FoShape3D
         var boxName = new FoText3D("Name", "white")
         {
             Text = name,
-            Transform = new Transform3()
+            Transform = new Transform3("NameTransform")
             {
                 Position = new Vector3(width, 0, 0),
             }

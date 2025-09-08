@@ -92,7 +92,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var shape = new FoPipe3D("Tube", color)
         {
-            Transform = new Transform3()
+            Transform = new Transform3("TubeTransform")
             {
                 Position = new Vector3(x, y, z),
                 Rotation = new Euler(ax, ay, az),
@@ -130,7 +130,7 @@ public partial class HomeBase : ComponentBase, IDisposable
             Uuid = Guid.NewGuid().ToString(),
             Name = DataGenerator.GenerateWord(),
             Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
-            Transform = new Transform3()
+            Transform = new Transform3("ConeTransform")
             {
                 Position = new Vector3(x, y, z),
             },

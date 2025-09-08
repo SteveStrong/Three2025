@@ -181,7 +181,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var shape = new FoModel3D("T-Rex " + name)
         {
             Url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
-            Transform = new Transform3()
+            Transform = new Transform3("TRexTransform")
             {
                 Position = new Vector3(x, 0, z),
             }
@@ -211,7 +211,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var arena = Workspace.GetArena();
         var shape = new FoShape3D(name,color)
         {
-            Transform = new Transform3()
+            Transform = new Transform3("GeomTransform")
             {
                 Position = new Vector3(x, y, z),
             }
@@ -284,7 +284,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var box = new Node3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
-            Transform = new Transform3()
+            Transform = new Transform3("BoxTransform")
             {
                 Position = new Vector3(x, 0, z),
                 Pivot = new Vector3(0, height/2, 0)
@@ -304,7 +304,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var box = new Node3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
-            Transform = new Transform3()
+            Transform = new Transform3("ConeTransform")
             {
                 Position = new Vector3(x, 0, z),
                 Pivot = new Vector3(0, height/2, 0)

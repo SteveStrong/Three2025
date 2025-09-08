@@ -138,7 +138,7 @@ public class CageTech : ICageTech
 
             var node = new Node3D(item.GetName(), "Blue")
             {
-                Transform = new Transform3()
+                Transform = new Transform3("NodeTransform")
                 {
                     Position = data.HitBoundary.GetPosition(),
                 }
@@ -169,7 +169,7 @@ public class CageTech : ICageTech
 
             var node = new Node3D(item.GetName(), "Blue")
             {
-                Transform = new Transform3()
+                Transform = new Transform3("NodeTransform")
                 {
                     Position = data.HitBoundary.GetPosition(),
                 }
@@ -223,7 +223,7 @@ public class CageTech : ICageTech
 
         var root = new FoShape3D(name)
         {
-            Transform = new Transform3()
+            Transform = new Transform3("BoxTransform")
             {
                 Position = new Vector3(0, 0, 0),
             }

@@ -21,7 +21,7 @@ public class FoEquipment : FoShape3D
 
         var box = new FoEquipment(name, "Orange")
         {
-            Transform = new Transform3()
+            Transform = new Transform3("EquipmentTransform")
             {
                 Position = new Vector3(0, Y + height / 2, 0),
             }
@@ -31,7 +31,7 @@ public class FoEquipment : FoShape3D
         var boxName = new FoText3D("Name", "white")
         {
             Text = name,
-            Transform = new Transform3()
+            Transform = new Transform3("NameTransform")
             {
                 Position = new Vector3(width, 0, 0),
             }
@@ -41,7 +41,7 @@ public class FoEquipment : FoShape3D
         box.AddSubGlyph3D<FoText3D>(new FoText3D("Front", "black")
         {
             Text = "Front",
-            Transform = new Transform3()
+            Transform = new Transform3("FrontTransform")
             {
                 Position = new Vector3(-width / 3, 0, depth),
             }

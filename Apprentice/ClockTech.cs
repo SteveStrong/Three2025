@@ -149,7 +149,7 @@ public class ClockTech : IClockTech
         //now lets add the center post
         var centerPost = new FoShape3D("Post", "red")
         {
-            Transform = new Transform3()
+            Transform = new Transform3("PostTransform")
             {
                 Position = new Vector3(0, 0, 0),
                 Rotation = new Euler(0, 0, 0),
@@ -189,20 +189,27 @@ public class ClockTech : IClockTech
             //RunClockOnArena(); //stop the clock for debugging
 
             var post = Clock.FindSubGlyph3D<FoShape3D>("Post");
+
             if (post != null)
             {
-                post.Transform.Rotation = new Euler(0, -angle, 0);
+                post.Transform.RotateBy(0, -angle, 0, AngleUnit.Radians);
             }
 
             var globalText = Clock.FindSubGlyph3D<FoText3D>("TimeText");
+
             if (globalText != null)
             {
                 var currentTime = time.ToString("HH:mm:ss");
                 globalText.Text = currentTime;
-                globalText.Transform.Position = new Vector3(x, y, z);
+                var dx = x - globalText.Transform.Position.X;
+                var dy = y - globalText.Transform.Position.Y;
+                var dz = z - globalText.Transform.Position.Z;
+                globalText.Transform.MoveBy(dx, dy, dz);
             }
 
-            Clock.Transform.Rotation = new Euler(Math.PI / 2, 0, angle);
+            var deltaX = Math.PI / 2 - Clock.Transform.Rotation.X;
+            var deltaZ = angle - Clock.Transform.Rotation.Z;
+            Clock.Transform.RotateBy(deltaX, 0, deltaZ, AngleUnit.Radians);
 
         }
         else
@@ -234,11 +241,13 @@ public class ClockTech : IClockTech
         if (GlobalText != null)
         {
             GlobalText.Text = currentTime;
-            GlobalText.Transform.Position = new Vector3(x, y, z);
-            GlobalText.SetDirty(true);
+            var dx = x - GlobalText.Transform.Position.X;
+            var dy = y - GlobalText.Transform.Position.Y;
+            var dz = z - GlobalText.Transform.Position.Z;
+            GlobalText.Transform.MoveBy(dx, dy, dz);
 
-            CenterPost.Transform.Rotation = new Euler(0, -angle, 0);
-            CenterPost.SetDirty(true);
+            var deltaY = -angle - CenterPost.Transform.Rotation.Y;
+            CenterPost.Transform.RotateBy(0, deltaY, 0, AngleUnit.Radians);
         }
         else 
         {
@@ -248,7 +257,7 @@ public class ClockTech : IClockTech
                 Text = currentTime,
                 Color = DataGenerator.GenerateColor(),
                 FontSize = 3.0,
-                Transform = new Transform3()
+                Transform = new Transform3("GlobalTextTransform")
                 {
                     Position = new Vector3(x, y, z),
                 },
@@ -322,7 +331,7 @@ public class ClockTech : IClockTech
             Uuid = Guid.NewGuid().ToString(),
             Name = "Clock Face",
             Geometry = new CylinderGeometry(radiusTop: radius-1.0, radiusBottom: radius, height: height,  radialSegments: 36),
-            Transform = new Transform3()
+            Transform = new Transform3("ClockFaceTransform")
             {
                 Position = new Vector3(0, 0, 0),
             },

@@ -3,9 +3,6 @@ using Microsoft.AspNetCore.Components;
 using BlazorThreeJS.Maths;
 using BlazorThreeJS.Viewers;
 using FoundryBlazor.Shape;
-using BlazorThreeJS.Cameras;
-using BlazorThreeJS.Helpers;
-using BlazorThreeJS.Lights;
 using System.Text;
 using FoundryBlazor.Shared;
 using BlazorThreeJS.Objects;
@@ -18,6 +15,7 @@ using Three2025.Services.Visualization;
 namespace Three2025.Components.Pages;
 
 public partial class MatrixTransformTest : ComponentBase, IDisposable
+
 {
     #region Dependency Injection
     [Inject] public NavigationManager Navigation { get; set; } = null!;
@@ -64,7 +62,7 @@ public partial class MatrixTransformTest : ComponentBase, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error in OnChange handler: {ex.Message}");
+                    $"Error in OnChange handler: {ex.Message}".WriteError();
                 }
             });
         };
@@ -80,7 +78,7 @@ public partial class MatrixTransformTest : ComponentBase, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error in OnComputed handler: {ex.Message}");
+                    $"Error in OnComputed handler: {ex.Message}".WriteError();
                 }
             });
         };
@@ -129,7 +127,20 @@ public partial class MatrixTransformTest : ComponentBase, IDisposable
     #endregion
 
     #region Visualization Setup
-    
+      // Incremental transform update methods
+    public void MoveMainTransform(double dx, double dy, double dz)
+    {
+        MainTransform.MoveBy(dx, dy, dz);
+        UpdateMatrixDisplay();
+        StateHasChanged();
+    }
+
+    public void RotateMainTransform(double x, double y, double z, AngleUnit unit = AngleUnit.Degrees)
+    {
+        MainTransform.RotateBy(x, y, z, unit);
+        UpdateMatrixDisplay();
+        StateHasChanged();
+    }  
     private void RenderScene()
     {
         try

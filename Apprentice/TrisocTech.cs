@@ -20,7 +20,7 @@ public class Label3D : FoText3D
         AnchorY = Text3DAnchor.Top;
         AnchorX = align == Text3DAlign.Right ? Text3DAnchor.Left : Text3DAnchor.Right;
 
-        Transform = new Transform3()
+        Transform = new Transform3("LabelTransform")
         {
             Position = align == Text3DAlign.Left ? new Vector3(-5, 0, 0) : new Vector3(3, 0, 0),
         };
@@ -82,7 +82,7 @@ public class TrisocTech : ITrisocTech
                 AnchorX = Text3DAnchor.Center,
                 AnchorY = Text3DAnchor.Middle,
                 TextAlign = Text3DAlign.Center,
-                Transform = new Transform3()
+                Transform = new Transform3("ClockTransform")
                 {
                     Position = new Vector3(0, 0, 0),
                 },
@@ -167,7 +167,7 @@ public class TrisocTech : ITrisocTech
         CurrentModel = new FoModel3D("TRISOC")
         {
             Url = url,
-            Transform = new Transform3()
+            Transform = new Transform3("ModelTransform")
             {
                 Position = new Vector3(0, y, 0),
                 Rotation = new Euler(Math.PI/2, Math.PI, Math.PI/2),
@@ -191,7 +191,7 @@ public class TrisocTech : ITrisocTech
         var model = new FoModel3D("Model"+name)
         {
             Url = url,
-            Transform = new Transform3()
+            Transform = new Transform3("ModelTransform")
             {
                 Position = new Vector3(0, y, 0),
                 Scale = new Vector3(s, s, s),
@@ -210,7 +210,7 @@ public class TrisocTech : ITrisocTech
 
         var root = new FoShape3D(name)
         {
-            Transform = new Transform3()
+            Transform = new Transform3("BoxTransform")
             {
                 Position = new Vector3(0, 0, 0),
             }
@@ -270,7 +270,7 @@ public class TrisocTech : ITrisocTech
             var name = tag(item, start++);
             var sphere = new FoShape3D("Thermocouple")
             {
-                Transform = new Transform3()
+                Transform = new Transform3("SphereTransform")
                 {
                     Position = item.AsVector3(),
                 }

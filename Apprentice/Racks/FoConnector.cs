@@ -17,7 +17,7 @@ public class FoConnector : FoShape3D
 
         var connect = new FoConnector(name, color)
         {
-            Transform = new Transform3()
+            Transform = new Transform3("ConnectorTransform")
             {
                 Position = new Vector3(x, 0, -depth / 2),
             }
@@ -26,7 +26,7 @@ public class FoConnector : FoShape3D
         var connName = new FoText3D("Name", "black")
         {
             Text = name,
-            Transform = new Transform3()
+            Transform = new Transform3("NameTransform")
             {
                 Position = new Vector3(0, 0, -.2),
             }

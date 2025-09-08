@@ -22,7 +22,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         {
             Name = $"{name}_XAxis",
             Color = "#FF0000",
-            Transform = new Transform3
+            Transform = new Transform3("XAxisTransform")
             {
                 Position = new Vector3(axisOffset, 0, 0)
             }
@@ -77,22 +77,23 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         {
             Name = $"head",
             Color = "#0000FF",
-            Transform = new Transform3()
+            Transform = new Transform3("HeadTransform")
             {
                 Position = new Vector3(0, 0, axisOffset),
             }
         }.CreateBox($"head", headLength, headLength, headLength);
         zAxis.AddSubGlyph3D<FoShape3D>(zHead);
 
+        var groupTransform = new Transform3("GroupTransform");
+        groupTransform.Position = Vector3.Zero;
+        groupTransform.MoveBy(transform.Position.X, transform.Position.Y, transform.Position.Z);
+        groupTransform.Rotation = new Euler(0,0,0);
+        groupTransform.RotateBy(transform.Rotation.X, transform.Rotation.Y, transform.Rotation.Z, AngleUnit.Radians);
+        groupTransform.Scale = transform.Scale;
         var group = new FoShape3D
         {
             Name = $"{name}_Axes",
-            Transform = new Transform3("GroupTransform")
-            {
-                Position = transform.Position,
-                Rotation = transform.Rotation,
-                Scale = transform.Scale
-            }
+            Transform = groupTransform
         }.CreateGroup($"{name}_Axes", headLength, headLength, headLength);
 
         group.AddSubGlyph3D<FoShape3D>(xAxis);
@@ -107,14 +108,14 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         int i = 0;
         foreach (var point in points)
         {
+            var vertexTransform = new Transform3("VertexTransform");
+            vertexTransform.Position = Vector3.Zero;
+            vertexTransform.MoveBy(point.X, point.Y, point.Z);
             var vertexShape = new FoShape3D
             {
                 Name = point.Name ?? $"Vertex{i}",
                 Color = "#2196F3",
-                Transform = new Transform3("VertexTransform")
-                {
-                    Position = new Vector3(point.X, point.Y, point.Z)
-                }
+                Transform = vertexTransform
             }.CreateSphere(point.Name, 0.05, 0.05, 0.05);
 
             var label = new FoText3D("VertexLabel", "White")
@@ -146,13 +147,13 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             }.CreateTube(edge.Name, 0.03, edgePath);
 
             var mid = edge.Midpoint;
+            var labelTransform = new Transform3("LabelTransform");
+            labelTransform.Position = Vector3.Zero;
+            labelTransform.MoveBy(mid.X, mid.Y, mid.Z + 0.1);
             var label = new FoText3D("EdgeLabel", "Yellow")
             {
                 Text = $"{edge.Name}: L={edge.Length:F2} M={mid.X:F2}, {mid.Y:F2}, {mid.Z:F2}",
-                Transform = new Transform3("LabelTransform")
-                {
-                    Position = new Vector3(mid.X, mid.Y, mid.Z + 0.1),
-                }
+                Transform = labelTransform
             };
             edgeShape.AddSubGlyph3D<FoText3D>(label);
             label.Text.WriteSuccess();
@@ -169,14 +170,14 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         foreach (var face in faces)
         {
             var center = face.Center;
+            var faceTransform = new Transform3("FaceTransform");
+            faceTransform.Position = Vector3.Zero;
+            faceTransform.MoveBy(center.X, center.Y, center.Z);
             var normalShape = new FoShape3D
             {
                 Name = $"Face_{face.Name}",
                 Color = "#F00",
-                Transform = new Transform3("FaceTransform")
-                {
-                    Position = center.AsVector3(),
-                }
+                Transform = faceTransform
             }.CreateBoundary($"Face_{face.Name}", face.Width, face.Height, face.Depth);
 
 
@@ -200,13 +201,15 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         {
             var (mid, n, euler, length) = face.GetNormalCylinderTransform(0.4);
 
+            var normalTransform = new Transform3("NormalTransform");
+            normalTransform.Position = Vector3.Zero;
+            normalTransform.MoveBy(mid.X, mid.Y, mid.Z);
+            normalTransform.Rotation = new Euler(0,0,0);
+            normalTransform.RotateBy(euler.X, euler.Y, euler.Z, AngleUnit.Radians);
             var normalShape = new FoShape3D {
                 Name = $"Normal_{face.Name}",
                 Color = "#F00",
-                Transform = new Transform3("NormalTransform") {
-                    Position = mid.AsVector3(),
-                    Rotation = new Euler(euler.X, euler.Y, euler.Z, "XYZ")
-                }
+                Transform = normalTransform
             }.CreateCylinder($"Normal_{face.Name}", 0.015, length, 0.015);
 
             var cone = new FoShape3D
@@ -242,39 +245,42 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         var axisRadius = 0.02;
 
         // X axis - Red
+        var xAxisTransform = new Transform3("XAxisTransform");
+        xAxisTransform.Position = Vector3.Zero;
+        xAxisTransform.MoveBy(transform.Position.X, transform.Position.Y, transform.Position.Z);
+        xAxisTransform.Rotation = new Euler(0,0,0);
+        xAxisTransform.RotateBy(0, 0, -Math.PI/2, AngleUnit.Radians);
         var xAxis = new FoShape3D
         {
             Name = "XAxis",
             Color = "#FF0000",
-            Transform = new Transform3("XAxisTransform")
-            {
-                Position = transform.Position,
-                Rotation = new Euler(0, 0, -Math.PI/2, "XYZ")
-            }
+            Transform = xAxisTransform
         }.CreateCylinder("XAxis", axisRadius, axisLength, axisRadius);
 
         // Y axis - Green  
+        var yAxisTransform = new Transform3("YAxisTransform");
+        yAxisTransform.Position = Vector3.Zero;
+        yAxisTransform.MoveBy(transform.Position.X, transform.Position.Y, transform.Position.Z);
+        yAxisTransform.Rotation = new Euler(0,0,0);
+        yAxisTransform.RotateBy(0, 0, 0, AngleUnit.Radians);
         var yAxis = new FoShape3D
         {
             Name = "YAxis",
-            Color = "#00FF00",
-            Transform = new Transform3("YAxisTransform")
-            {
-                Position = transform.Position,
-                Rotation = new Euler(0, 0, 0, "XYZ")
-            }
+            Color = "00FF00",
+            Transform = yAxisTransform
         }.CreateCylinder("YAxis", axisRadius, axisLength, axisRadius);
 
         // Z axis - Blue
+        var zAxisTransform = new Transform3("ZAxisTransform");
+        zAxisTransform.Position = Vector3.Zero;
+        zAxisTransform.MoveBy(transform.Position.X, transform.Position.Y, transform.Position.Z);
+        zAxisTransform.Rotation = new Euler(0,0,0);
+        zAxisTransform.RotateBy(Math.PI/2, 0, 0, AngleUnit.Radians);
         var zAxis = new FoShape3D
         {
             Name = "ZAxis",
             Color = "#0000FF", 
-            Transform = new Transform3("ZAxisTransform")
-            {
-                Position = transform.Position,
-                Rotation = new Euler(Math.PI/2, 0, 0, "XYZ")
-            }
+            Transform = zAxisTransform
         }.CreateCylinder("ZAxis", axisRadius, axisLength, axisRadius);
 
         arena.AddShapeToStage<FoShape3D>(xAxis);

@@ -9,6 +9,7 @@ using BlazorThreeJS.Objects;
 using FoundryBlazor.PubSub;
 using FoundryRulesAndUnits.Models;
 using Three2025.Apprentice;
+using FoundryRulesAndUnits.Extensions;
 
 
 namespace Three2025.Components.Pages;
@@ -166,20 +167,17 @@ public partial class ClockBase : ComponentBase
         text3d.AddSubGlyph3D(label);
         arena.AddShapeToStage<FoText3D>(text3d);
 
-        //can we do some animation here?
+        // Animation using MoveBy for proper dirty flag handling
         text3d.SetAnimationUpdate((self, tick, fps) =>
         {
             bool move = tick % 10 == 0;
             if (!move) return;
 
-            var loc = self.Transform.Position.Z;
-            loc += delta;
-            if ( loc > 10 || loc < -10)
+            var pos = self.Transform.MoveBy(0, 0, delta);
+            if (pos.Z > 10 || pos.Z < -10)
             {
                 delta = -delta;
             }
-            self.Transform.Position.Z = loc;
-            self.SetDirty(true);
         });
     }
 
@@ -201,7 +199,7 @@ public partial class ClockBase : ComponentBase
         {
             Name = "Box Animated",
             Url =  GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
-            Transform = new Transform3()
+            Transform = new Transform3("BoxTransform")
             {
                 Position = new Vector3(x, y, z),
             },
@@ -211,7 +209,7 @@ public partial class ClockBase : ComponentBase
         {
             Text = "This is a Box",
             Color = "White",
-            Transform = new Transform3()
+            Transform = new Transform3("LabelTransform")
             {
                 Position = new Vector3(0, 3, 0),
             },
@@ -226,19 +224,15 @@ public partial class ClockBase : ComponentBase
             bool move = tick % 10 == 0;
             if (!move) return;
 
-            var loc = self.Transform.Position.X;
-            loc += delta;
-            if ( loc > 10 || loc < -10)
+            var pos = self.Transform.MoveBy(delta,0,0);
+            if ( pos.X > 10 || pos.X < -10)
             {
                 delta = -delta;
-                if (loc > 10) angle = Math.PI;
+                if (pos.X > 10) angle = Math.PI;
                 else angle = 0.0;
             }
 
-
-            self.Transform.Position.X = loc;
-            self.Transform.Rotation.Y = angle;
-            self.SetDirty(true);
+            self.Transform.RotateBy(0,angle,0, AngleUnit.Radians);
         });
 
     }
@@ -261,7 +255,7 @@ public partial class ClockBase : ComponentBase
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
             Format = Model3DFormats.Gltf,
-            Transform = new Transform3()
+            Transform = new Transform3("BoxTransform")
             {
                 Position = new Vector3(x, y, z),
             },
@@ -272,19 +266,16 @@ public partial class ClockBase : ComponentBase
             bool move = tick % 10 == 0;
             if (!move) return;
 
-            var loc = self.Transform.Position.X;
-            loc += delta;
-            if ( loc > 10 || loc < -10)
+            var pos = self.Transform.MoveBy(delta,0,0);
+            if ( pos.X > 10 || pos.X < -10)
             {
                 delta = -delta;
-                if (loc > 10) angle = Math.PI;
+                if (pos.X > 10) angle = Math.PI;
                 else angle = 0.0;
             }
 
+            self.Transform.RotateBy(0,angle,0, AngleUnit.Radians);
 
-            self.Transform.Position.X = loc;
-            self.Transform.Rotation.Y = angle;
-            self.SetDirty(true);
         });
 
 
@@ -312,7 +303,7 @@ public partial class ClockBase : ComponentBase
             Uuid = Guid.NewGuid().ToString(),
             Url =  GetReferenceTo(@"storage/staticfiles/T_Rex.glb"),
             Format = Model3DFormats.Gltf,
-            Transform = new Transform3()
+            Transform = new Transform3("TRexTransform")
             {
                 Position = new Vector3(x, 0, z),
             },
@@ -323,19 +314,17 @@ public partial class ClockBase : ComponentBase
             bool move = tick % 10 == 0;
             if (!move) return;
 
-            var loc = self.Transform.Position.Z;
-            loc += delta;
-            if ( loc > 10 || loc < -10)
+            $"SetAnimationUpdate {tick} on FoGlyph3D {self.Name}".WriteInfo();
+            var pos = self.Transform.MoveBy(0,0,delta);
+            $"Transform moved to {pos.X}, {pos.Y}, {pos.Z} on FoGlyph3D {self.Name}".WriteInfo();
+            if (pos.Z > 10 || pos.Z < -10)
             {
                 delta = -delta;
-                if (loc > 10) angle = Math.PI;
+                if (pos.Z > 10) angle = Math.PI;
                 else angle = 0.0;
             }
 
-
-            self.Transform.Position.Z = loc;
-            self.Transform.Rotation.Y = angle;
-            self.SetDirty(true);
+            self.Transform.RotateBy(0,angle,0, AngleUnit.Radians);
 
             //FoGlyph2D.Animations.Tween<FoShape2D>(s1, new { PinX = s1.PinX - 150, }, 2, 2.2F);
             // FoGlyph2D.Animations.Tween<FoShape2D>(s2, new { PinX = s2.PinX + 150, PinY = s2.PinY + 50, }, 2, 2.4f).OnComplete(() =>

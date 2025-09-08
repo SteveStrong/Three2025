@@ -80,8 +80,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
             ComponentA = new FoShape3D("ComponentA", "#2196F3");
             ComponentA.CreateBox("ComponentA", BoxWidth, BoxHeight, BoxDepth);
 
-            // Set position using standard Transform3
-            ComponentA.Transform.Position = new Vector3(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
+            // Set position using MoveBy for proper dirty flag handling
+            ComponentA.Transform.Position = Vector3.Zero;
+            ComponentA.Transform.MoveBy(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
 
             // Add to arena as standard FoShape3D
             var arena = Workspace?.GetArena();
@@ -112,8 +113,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
             ComponentB = new FoShape3D("ComponentB", "#4CAF50");
             ComponentB.CreateBox("ComponentB", BoxWidth, BoxHeight, BoxDepth);
             
-            // Set position using standard Transform3
-            ComponentB.Transform.Position = new Vector3(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
+            // Set position using MoveBy for proper dirty flag handling
+            ComponentB.Transform.Position = Vector3.Zero;
+            ComponentB.Transform.MoveBy(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
 
             // Add to arena as standard FoShape3D
             var arena = Workspace?.GetArena();
@@ -139,8 +141,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     {
         if (ComponentA == null) return;
         
-        // Use standard Transform3 position update
-        ComponentA.Transform.Position = new Vector3(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
+    // Use MoveBy for proper dirty flag handling
+    ComponentA.Transform.Position = Vector3.Zero;
+    ComponentA.Transform.MoveBy(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
         
         var arena = Workspace?.GetArena();
         var (found, scene) = arena?.CurrentScene() ?? (false, null);
@@ -157,8 +160,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     {
         if (ComponentB == null) return;
         
-        // Use standard Transform3 position update
-        ComponentB.Transform.Position = new Vector3(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
+    // Use MoveBy for proper dirty flag handling
+    ComponentB.Transform.Position = Vector3.Zero;
+    ComponentB.Transform.MoveBy(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
         
         var arena = Workspace?.GetArena();
         var (found, scene) = arena?.CurrentScene() ?? (false, null);
