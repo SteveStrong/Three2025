@@ -1,25 +1,27 @@
+
 using FoundryBlazor.Shape;
-using Microsoft.AspNetCore.Components;
-using FoundryBlazor.Shared;
 using FoundryBlazor.Solutions;
 using FoundryBlazor.PubSub;
 using Three2025.Services.Visualization;
 using FoundryRulesAndUnits.Extensions;
 using BlazorThreeJS.Viewers;
 using BlazorThreeJS.Objects;
+using Microsoft.AspNetCore.Components;
 using BlazorThreeJS.Maths;
+using FoundryBlazor.Shared;
 
 namespace Three2025.Components.Pages;
 
-public partial class SpacialFrameTest : ComponentBase, IDisposable
+public partial class MatrixOrientationTest : ComponentBase, IDisposable
 {
     [Inject] public NavigationManager Navigation { get; set; }
+
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
     public Canvas3DComponentBase Canvas3DReference = null;
-    protected SpacialFrame3D CurrentFrame;
     protected FoShape3D CurrentShape;
+    protected SpacialFrame3D CurrentFrame;
 
     // Box properties for UI binding
     protected double BoxWidth { get; set; } = 2.0;
@@ -29,32 +31,22 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
     [Parameter] public int CanvasWidth { get; set; } = 1200;
     [Parameter] public int CanvasHeight { get; set; } = 1000;
 
+    public double[] CurrentMatrix { get; set; }
+    public List<double[]> PresetMatrices { get; set; } = new List<double[]>();
+    public int CurrentPresetIndex { get; set; } = -1;
+
     protected string StatusMessage { get; set; } = string.Empty;
 
-    // Transform properties for UI binding
-    protected double PositionX { get; set; } = 0.0;
-    protected double PositionY { get; set; } = 0.0;
-    protected double PositionZ { get; set; } = 0.0;
-
-    protected double PivotX { get; set; } = 0.0;
-    protected double PivotY { get; set; } = 0.0;
-    protected double PivotZ { get; set; } = 0.0;
-
-    protected double RotationX { get; set; } = 0.0;
-    protected double RotationY { get; set; } = 0.0;
-    protected double RotationZ { get; set; } = 0.0;
-
-    protected double ScaleX { get; set; } = 1.0;
-    protected double ScaleY { get; set; } = 1.0;
-    protected double ScaleZ { get; set; } = 1.0;
-
-
-
-    public string GetReferenceTo(string filename)
+    protected override void OnInitialized()
     {
-        var path = Path.Combine(Navigation.BaseUri, filename);
-        path.WriteSuccess();
-        return path;
+        PresetMatrices = new List<double[]>
+        {
+            new double[] { 1,0,0,0, 0,0,1,0, 0,-1,0,0, 0,0,0,1 }, // X 90
+            new double[] { 0,0,-1,0, 0,1,0,0, 1,0,0,0, 0,0,0,1 }, // Y 90
+            new double[] { 0,1,0,0, -1,0,0,0, 0,0,1,0, 0,0,0,1 }, // Z 90
+            new Transform3("CombinedXYZ") { Rotation = Euler.FromDegrees(90,90,90) }.ToMatrix3().Elements
+        };
+        ApplyPreset(0);
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
@@ -79,6 +71,7 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
         return base.OnAfterRenderAsync(firstRender);
     }
 
+
     public void DoRequestAxisToScene(Scene3D scene)
     {
         var model = new Model3D()
@@ -92,10 +85,11 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
         scene.AddChild(model);
     }
 
-    public void AutoRefreshShape()
+    public string GetReferenceTo(string filename)
     {
-        $"🔄 AutoRefreshShape called".WriteInfo();
-        CreateSpacialFrame();
+        var path = Path.Combine(Navigation.BaseUri, filename);
+        path.WriteSuccess();
+        return path;
     }
 
     public void CreateSpacialFrame()
@@ -112,7 +106,6 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
 
             arena.ClearArena();
 
-            $"Creating SpacialFrame3D with Rotation {RotationX}×{RotationY}×{RotationZ}° at Position ({PositionX}, {PositionY}, {PositionZ}), Pivot ({PivotX}, {PivotY}, {PivotZ}), Scale ({ScaleX}, {ScaleY}, {ScaleZ})".WriteInfo();
 
 
             CurrentShape = new FoShape3D()
@@ -124,10 +117,9 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
                 Transform = new Transform3("BoxTransform")
                 {
                     // Update the transform properties - this will automatically trigger refresh via OnChange
-                    Position = new Vector3(PositionX, PositionY, PositionZ),
-                    Pivot = new Vector3(PivotX, PivotY, PivotZ),
-                    Rotation = new Euler(RotationX, RotationY, RotationZ, AngleUnit.Degrees),
-                    Scale = new Vector3(ScaleX, ScaleY, ScaleZ),
+                    //Position = new Vector3(PositionX, PositionY, PositionZ),
+                    //Pivot = new Vector3(PivotX, PivotY, PivotZ),
+                    //Rotation = new Euler(RotationX, RotationY, RotationZ, AngleUnit.Degrees),
                     OnChange = (isDirty) =>
                     {
                         $"Transform OnChange fired. isDirty={isDirty}".WriteInfo(1);
@@ -165,10 +157,35 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
             StatusMessage = $"Error creating box: {ex.Message}";
             StateHasChanged();
         }
+    }  
+
+    public void AutoRefreshShape()
+    {
+        $"🔄 AutoRefreshShape called".WriteInfo();
+        CreateSpacialFrame();
+    }  
+
+    public void ApplyPreset(int index)
+    {
+        if (index >= 0 && index < PresetMatrices.Count)
+        {
+            CurrentPresetIndex = index;
+            CurrentMatrix = PresetMatrices[index];
+            CreateTestBox();
+            StateHasChanged();
+        }
     }
 
+    public async Task RunAllPresets()
+    {
+        for (int i = 0; i < PresetMatrices.Count; i++)
+        {
+            ApplyPreset(i);
+            await Task.Delay(800);
+        }
+    }
 
-    public void ClearAll()
+    public void CreateTestBox()
     {
         var arena = FoundryService.Arena();
         if (arena == null)
@@ -177,127 +194,31 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
             StateHasChanged();
             return;
         }
-
         arena.ClearArena();
+        // For demonstration, use preset angles for rotation
+        double rx = 0, ry = 0, rz = 0;
+        if (CurrentPresetIndex == 0) { rx = 90; ry = 0; rz = 0; }
+        else if (CurrentPresetIndex == 1) { rx = 0; ry = 90; rz = 0; }
+        else if (CurrentPresetIndex == 2) { rx = 0; ry = 0; rz = 90; }
+        else if (CurrentPresetIndex == 3) { rx = 90; ry = 90; rz = 90; }
+        CurrentShape = new FoShape3D()
+        {
+            Name = "TestBox",
+            GlyphId = Guid.NewGuid().ToString(),
+            Color = "#80B0FF",
+            Opacity = 0.8,
+            Transform = new Transform3("BoxTransform")
+            {
+                Rotation = Euler.FromDegrees(rx, ry, rz)
+            }
+        }.CreateBox("TestBox", 2.0, 1.5, 1.0);
+        arena.AddShapeToStage<FoShape3D>(CurrentShape);
+        CurrentFrame = new SpacialFrame3D(CurrentShape, "m");
+        StatusMessage = $"Created TestBox with preset index {CurrentPresetIndex}";
         StateHasChanged();
     }
 
-
-
-
-
-    public void Dispose()
-    {
-        // Cleanup resources if needed
-    }
-
-    // === PRESET SHAPES ===
-    protected void CreateCube()
-    {
-        BoxWidth = BoxHeight = BoxDepth = 2.0;
-        CreateSpacialFrame();
-    }
-
-    protected void CreateLongBox()
-    {
-        BoxWidth = 4.0; BoxHeight = 1.0; BoxDepth = 1.0;
-        CreateSpacialFrame();
-    }
-
-    protected void CreateTallBox()
-    {
-        BoxWidth = 1.0; BoxHeight = 4.0; BoxDepth = 1.0;
-        CreateSpacialFrame();
-    }
-
-    protected void CreateWideBox()
-    {
-        BoxWidth = 1.0; BoxHeight = 1.0; BoxDepth = 4.0;
-        CreateSpacialFrame();
-    }
-
-    protected void CreateTinyBox()
-    {
-        BoxWidth = BoxHeight = BoxDepth = 0.5;
-        CreateSpacialFrame();
-    }
-
-    // === TRANSFORMATION METHODS ===
-
-    protected void ResetTransform()
-    {
-        PositionX = PositionY = PositionZ = 0.0;
-        PivotX = PivotY = PivotZ = 0.0;
-        RotationX = RotationY = RotationZ = 0.0;
-        ScaleX = ScaleY = ScaleZ = 1.0;
-        CreateSpacialFrame();
-    }
-
-
-
-    // === PRESET TRANSFORMATIONS ===
-    protected void ApplyQuickRotationX90()
-    {
-        RotationX += 90;
-        if (RotationX >= 360) RotationX -= 360;
-        CreateSpacialFrame();
-    }
-
-    protected void ApplyQuickRotationY90()
-    {
-        RotationY += 90;
-        if (RotationY >= 360) RotationY -= 360;
-        CreateSpacialFrame();
-    }
-
-    protected void ApplyQuickRotationZ90()
-    {
-        RotationZ += 90;
-        if (RotationZ >= 360) RotationZ -= 360;
-        CreateSpacialFrame();
-    }
-
-    // === POSITION INCREMENT METHODS ===
-    protected void IncrementPositionX()
-    {
-        PositionX += 1.0;
-        CreateSpacialFrame();
-    }
-
-    protected void IncrementPositionY()
-    {
-        PositionY += 1.0;
-        CreateSpacialFrame();
-    }
-
-    protected void IncrementPositionZ()
-    {
-        PositionZ += 1.0;
-        CreateSpacialFrame();
-    }
-
-    // === PIVOT INCREMENT METHODS ===
-    protected void IncrementPivotX()
-    {
-        PivotX += 1.0;
-        CreateSpacialFrame();
-    }
-
-    protected void IncrementPivotY()
-    {
-        PivotY += 1.0;
-        CreateSpacialFrame();
-    }
-
-    protected void IncrementPivotZ()
-    {
-        PivotZ += 1.0;
-        CreateSpacialFrame();
-    }
-
-
-
-    protected void ShowTransformMatrix()
+    public void ShowTransformMatrix()
     {
         if (CurrentFrame?.Source?.Transform == null)
         {
@@ -305,7 +226,6 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
             StateHasChanged();
             return;
         }
-
         try
         {
             var matrix = CurrentFrame.Source.Transform.ToMatrix3();
@@ -320,49 +240,6 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
         }
     }
 
-
-
-    public void ShowQuadrants()
-    {
-        if (CurrentFrame == null)
-        {
-            StatusMessage = "No box created yet. Please create a box first.";
-            StateHasChanged();
-            return;
-        }
-
-        var arena = FoundryService.Arena();
-        if (arena == null) return;
-
-        var center = CurrentFrame.Center;
-        var quadrantSize = 0.2;
-        var colors = new[] { "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FFA500", "#800080" };
-
-        // Create 8 quadrant markers (for a 3D box)
-        var quadrants = new[]
-        {
-            new Point3D(center.X + quadrantSize, center.Y + quadrantSize, center.Z + quadrantSize),
-            new Point3D(center.X - quadrantSize, center.Y + quadrantSize, center.Z + quadrantSize),
-            new Point3D(center.X + quadrantSize, center.Y - quadrantSize, center.Z + quadrantSize),
-            new Point3D(center.X - quadrantSize, center.Y - quadrantSize, center.Z + quadrantSize),
-            new Point3D(center.X + quadrantSize, center.Y + quadrantSize, center.Z - quadrantSize),
-            new Point3D(center.X - quadrantSize, center.Y + quadrantSize, center.Z - quadrantSize),
-            new Point3D(center.X + quadrantSize, center.Y - quadrantSize, center.Z - quadrantSize),
-            new Point3D(center.X - quadrantSize, center.Y - quadrantSize, center.Z - quadrantSize)
-        };
-
-        for (int i = 0; i < quadrants.Length; i++)
-        {
-            VisualizationService.CreateMarkerSphere(arena, $"Quadrant{i}", quadrants[i], colors[i], 0.04);
-        }
-
-        StatusMessage = "Showing 8 3D quadrants around center";
-        StateHasChanged();
-    }
-
-
-
-    // === VISUALIZATION TEST METHODS ===
     public void ShowVertices()
     {
         if (CurrentFrame == null)
@@ -378,8 +255,6 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
             StateHasChanged();
             return;
         }
-
-        $"Expect this vertices to be transformed correctly. ".WriteInfo();
         var vertices = CurrentFrame.GetVertices();
         VisualizationService.ShowLabeledVertices(arena, vertices);
         StatusMessage = $"Showing {vertices.Count} vertices as labeled spheres.";
@@ -401,7 +276,6 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
             StateHasChanged();
             return;
         }
-
         var edges = CurrentFrame.GetEdges();
         VisualizationService.ShowLabeledEdges(arena, edges);
         StatusMessage = $"Showing {edges.Count} edges as labeled tubes.";
@@ -423,7 +297,6 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
             StateHasChanged();
             return;
         }
-
         var faces = CurrentFrame.GetFaces();
         VisualizationService.ShowLabeledFaces(arena, faces);
         StatusMessage = $"Showing {faces.Count} faces as wireframe outlines with labels.";
@@ -445,12 +318,47 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
             StateHasChanged();
             return;
         }
-
         var faces = CurrentFrame.GetFaces();
         VisualizationService.ShowLabeledNormals(arena, faces);
         StatusMessage = $"Showing {faces.Count} face normals as red cylinders, aligned with normals.";
         StateHasChanged();
     }
 
+    public void ShowQuadrants()
+    {
+        if (CurrentFrame == null)
+        {
+            StatusMessage = "No box created yet. Please create a box first.";
+            StateHasChanged();
+            return;
+        }
+        var arena = FoundryService.Arena();
+        if (arena == null) return;
+        var center = CurrentFrame.Center;
+        var quadrantSize = 0.2;
+        var colors = new[] { "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FFA500", "#800080" };
+        var quadrants = new[]
+        {
+            new Point3D(center.X + quadrantSize, center.Y + quadrantSize, center.Z + quadrantSize),
+            new Point3D(center.X - quadrantSize, center.Y + quadrantSize, center.Z + quadrantSize),
+            new Point3D(center.X + quadrantSize, center.Y - quadrantSize, center.Z + quadrantSize),
+            new Point3D(center.X - quadrantSize, center.Y - quadrantSize, center.Z + quadrantSize),
+            new Point3D(center.X + quadrantSize, center.Y + quadrantSize, center.Z - quadrantSize),
+            new Point3D(center.X - quadrantSize, center.Y + quadrantSize, center.Z - quadrantSize),
+            new Point3D(center.X + quadrantSize, center.Y - quadrantSize, center.Z - quadrantSize),
+            new Point3D(center.X - quadrantSize, center.Y - quadrantSize, center.Z - quadrantSize)
+        };
+        for (int i = 0; i < quadrants.Length; i++)
+        {
+            VisualizationService.CreateMarkerSphere(arena, $"Quadrant{i}", quadrants[i], colors[i], 0.04);
+        }
+        StatusMessage = "Showing 8 3D quadrants around center";
+        StateHasChanged();
+    }
 
+    public void Dispose()
+    {
+        // Cleanup resources if needed
+    }
 }
+
