@@ -128,28 +128,15 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
                     Pivot = new Vector3(PivotX, PivotY, PivotZ),
                     Rotation = new Euler(RotationX, RotationY, RotationZ, AngleUnit.Degrees),
                     Scale = new Vector3(ScaleX, ScaleY, ScaleZ),
-                    OnChange = (isDirty) =>
-                    {
-                        $"Transform OnChange fired. isDirty={isDirty}".WriteInfo(1);
-                        if (isDirty)
-                        {
-                            //it is likely this fires many times as the transform is marked dirty
-                            //with every small change  there migbt be some value in debouncing this
-                            //or haveing a function the applys all the changes at once 
-                            // Immediately start UI updates when transform becomes dirty
-                            StatusMessage = "🔄 Transform updating...";
-                            AutoRefreshShape();
-                            StateHasChanged();
-                        }
-                    },
-                    OnComputed = (matrix) =>
-                    {
-                        $"Transform OnComputed fired. Matrix is now ready.".WriteInfo(1);
-                        // Matrix is ready - safe to refresh the shape
-                        AutoRefreshShape();
-                        StatusMessage = "✅ Transform computed and shape refreshed";
-                        StateHasChanged();
-                    }
+
+                    // OnComputed = (matrix) =>
+                    // {
+                    //     $"Transform OnComputed fired. Matrix is now ready.".WriteInfo(1);
+                    //     // Matrix is ready - safe to refresh the shape
+                    //     AutoRefreshShape();
+                    //     StatusMessage = "✅ Transform computed and shape refreshed";
+                    //     StateHasChanged();
+                    // }
                 }
             }.CreateBox("SourceShape", BoxWidth, BoxHeight, BoxDepth);
 

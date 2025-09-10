@@ -149,11 +149,11 @@ public class ClockTech : IClockTech
         //now lets add the center post
         var centerPost = new FoShape3D("Post", "red")
         {
-            Transform = new Transform3("PostTransform")
-            {
-                Position = new Vector3(0, 0, 0),
-                Rotation = new Euler(0, 0, 0),
-            }
+            // Transform = new Transform3("PostTransform")
+            // {
+            //     Position = new Vector3(0, 0, 0),
+            //     Rotation = new Euler(0, 0, 0),
+            // }
         }.CreateBox("Post", 0.2, 1.0, .2);
 
         clock.AddSubGlyph3D(centerPost);
@@ -164,7 +164,6 @@ public class ClockTech : IClockTech
             Transform = new Transform3("HandTransform")
             {
                 Position = new Vector3(0.5 * radius, 1, 0),
-                Rotation = new Euler(0, 0, 0),
             }
         }.CreateBox("Hand", 1.2 * radius, 2.0, .1);
 
@@ -192,7 +191,10 @@ public class ClockTech : IClockTech
 
             if (post != null)
             {
-                post.Transform.RotateBy(0, -angle, 0, AngleUnit.Radians);
+                //$"Rotating Post {post.Name} by {angle} radians".WriteInfo();
+                var xxx = post.Transform.RotateTo(0, -angle, 0, AngleUnit.Radians);
+                //$"Post {post.Name} {angle} new rotation is {xxx.X}, {xxx.Y}, {xxx.Z}".WriteInfo();
+
             }
 
             var globalText = Clock.FindSubGlyph3D<FoText3D>("TimeText");
@@ -201,14 +203,13 @@ public class ClockTech : IClockTech
             {
                 var currentTime = time.ToString("HH:mm:ss");
                 globalText.Text = currentTime;
-                var dx = x - globalText.Transform.Position.X;
-                var dy = y - globalText.Transform.Position.Y;
-                var dz = z - globalText.Transform.Position.Z;
-                globalText.Transform.MoveBy(dx, dy, dz);
+                var pos = globalText.Transform.Position;
+                globalText.Transform.MoveBy(x - pos.X, y - pos.Y, z - pos.Z);
             }
 
-            var deltaX = Math.PI / 2 - Clock.Transform.Rotation.X;
-            var deltaZ = angle - Clock.Transform.Rotation.Z;
+            var rot = Clock.Transform.Rotation;
+            var deltaX = Math.PI / 2 - rot.X;
+            var deltaZ = angle - rot.Z;
             Clock.Transform.RotateBy(deltaX, 0, deltaZ, AngleUnit.Radians);
 
         }

@@ -27,7 +27,7 @@ public class Node3D : FoShape3D
 
     public override (bool success, Vector3 path) HitPosition()
     {
-        return (true, Transform.Position);
+        return (true, Transform!.Position);
     }
 
     public int LinkCount()
@@ -67,22 +67,22 @@ public class Node3D : FoShape3D
 
     public Vector3 Boundary(Node3D target)
     {
-        var a = Transform.Position;
-        var b = target.Transform.Position;
+        var a = Transform!.Position;
+        var b = target.Transform!.Position;
         return a.BoundingBox(b);
     }
 
     public Vector3 Center(Node3D target)
     {
-        var a = Transform.Position;
-        var b = target.Transform.Position;
+        var a = Transform!.Position;
+        var b = target.Transform!.Position;
         return a.Center(b);
     }
 
     public double Distance(Node3D target)
     {
-        var a = Transform.Position;
-        var b = target.Transform.Position;
+        var a = Transform!.Position;
+        var b = target.Transform!.Position;
         return a.Distance(b);
     }
 
@@ -90,7 +90,7 @@ public class Node3D : FoShape3D
 
     public override string GetTreeNodeTitle()
     {
-        var pos = Transform.Position;
+        var pos = Transform!.Position;
         return $"{base.GetTreeNodeTitle()} Links: {LinkCount()} POS: {pos.X:F1} {pos.Y:F1} {pos.Z:F1}";
     }
 

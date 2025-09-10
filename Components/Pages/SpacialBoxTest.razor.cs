@@ -9,12 +9,12 @@ using FoundryBlazor.PubSub;
 using Three2025.Services.Visualization;
 using BlazorThreeJS.Maths;
 
+
 namespace Three2025.Components.Pages;
 
 public partial class SpacialBoxTest : ComponentBase, IDisposable
 {
     [Inject] public NavigationManager Navigation { get; set; }
-    [Inject] public IWorkspace Workspace { get; set; }
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
@@ -101,9 +101,6 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
                 Color = "#4CAF50",
                 Opacity = 0.8,
                 Transform = new Transform3("BoxTransform")
-                {
-                    Position = new Vector3(0, 0, 0)
-                }
             }.CreateBox("SpacialBoxMain", BoxWidth, BoxHeight, BoxDepth);
 
             arena.AddShapeToStage<FoShape3D>(boxShape);
@@ -130,7 +127,6 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
             StateHasChanged();
             return;
         }
-
 
         arena.ClearArena();
         StateHasChanged();
@@ -216,6 +212,40 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
         StateHasChanged();
     }
 
+        public void ShowSubModel()
+        {
+            var arena = FoundryService.Arena();
+            if (arena == null)
+            {
+                StatusMessage = "Arena not ready yet. Try again in a moment.";
+                StateHasChanged();
+                return;
+            }
+
+            var model = new FoModel3D()
+            {
+                Name = "Submarine",
+                Url = GetReferenceTo(@"storage/StaticFiles/sub.glb"),
+
+            }.CreateModel("sub", GetReferenceTo(@"storage/StaticFiles/sub.glb"), 12.0, 4.5, 4.5);
+
+            arena.AddShapeToStage<FoModel3D>(model);
+
+            var box = new SpacialFrame3D(model, "m");
+
+            var vertices = box.GetVertices();
+            VisualizationService.ShowLabeledVertices(arena, vertices);
+
+            var edges = box.GetEdges();
+            VisualizationService.ShowLabeledEdges(arena, edges);
+
+            var faces = box.GetFaces();
+            VisualizationService.ShowLabeledFaces(arena, faces);
+            VisualizationService.ShowLabeledNormals(arena, faces);
+
+            StatusMessage = "Submarine model added to scene.";
+            StateHasChanged();
+        }
  
 
 

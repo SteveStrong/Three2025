@@ -274,7 +274,7 @@ public class LightingComponent : FoShape3D
 
    public override string GetTreeNodeTitle()
    {
-      var pos = Transform.Position;
+      var pos = Transform!.Position;
       return $"{GetName()} {Color} is {Status()} @ {pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0}";
    }
 }

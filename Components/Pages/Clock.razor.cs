@@ -30,14 +30,14 @@ public partial class ClockBase : ComponentBase
 
 
     protected MockDataGenerator DataGenerator { get; set; } = new();
- 
+
 
     public (bool, Scene3D) GetCurrentScene()
     {
         var arena = Workspace.GetArena();
         return arena.CurrentScene();
     }
- 
+
 
     protected override void OnInitialized()
     {
@@ -49,9 +49,9 @@ public partial class ClockBase : ComponentBase
     {
         if (firstRender)
         {
-            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false,null!);
+            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
 
-            scene?.SetAfterUpdateAction((s,j) =>
+            scene?.SetAfterUpdateAction((s, j) =>
             {
                 FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
             });
@@ -70,9 +70,9 @@ public partial class ClockBase : ComponentBase
         //path.WriteSuccess();
         return path;
     }
-    
 
-    
+
+
     public void DoAddTRISOCToArena()
     {
         var name = DataGenerator.GenerateWord();
@@ -148,7 +148,7 @@ public partial class ClockBase : ComponentBase
         {
             Text = DataGenerator.GenerateText(),
             Color = DataGenerator.GenerateColor(),
-            FontSize =  DataGenerator.GenerateDouble(.5, 5.0),
+            FontSize = DataGenerator.GenerateDouble(.5, 5.0),
             Transform = new Transform3("Text3DTransform")
             {
                 Position = new Vector3(x, y, z),
@@ -178,10 +178,11 @@ public partial class ClockBase : ComponentBase
             {
                 delta = -delta;
             }
+            self.SetDirty(self.Transform.IsDirty);
         });
     }
 
-    
+
     public void DoAddBoxGLBToArena()
     {
         var arena = Workspace.GetArena();
@@ -198,7 +199,7 @@ public partial class ClockBase : ComponentBase
         var model3d = new FoModel3D()
         {
             Name = "Box Animated",
-            Url =  GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
+            Url = GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
             Transform = new Transform3("BoxTransform")
             {
                 Position = new Vector3(x, y, z),
@@ -224,15 +225,16 @@ public partial class ClockBase : ComponentBase
             bool move = tick % 10 == 0;
             if (!move) return;
 
-            var pos = self.Transform.MoveBy(delta,0,0);
-            if ( pos.X > 10 || pos.X < -10)
+            var pos = self.Transform.MoveBy(delta, 0, 0);
+            if (pos.X > 10 || pos.X < -10)
             {
                 delta = -delta;
                 if (pos.X > 10) angle = Math.PI;
                 else angle = 0.0;
             }
 
-            self.Transform.RotateBy(0,angle,0, AngleUnit.Radians);
+            self.Transform.RotateBy(0, angle, 0, AngleUnit.Radians);
+            self.SetDirty(self.Transform.IsDirty);
         });
 
     }
@@ -253,7 +255,7 @@ public partial class ClockBase : ComponentBase
         {
             Name = "Box Animated",
             Uuid = Guid.NewGuid().ToString(),
-            Url =  GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
+            Url = GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
             Format = Model3DFormats.Gltf,
             Transform = new Transform3("BoxTransform")
             {
@@ -266,16 +268,16 @@ public partial class ClockBase : ComponentBase
             bool move = tick % 10 == 0;
             if (!move) return;
 
-            var pos = self.Transform.MoveBy(delta,0,0);
-            if ( pos.X > 10 || pos.X < -10)
+            var pos = self.Transform.MoveBy(delta, 0, 0);
+            if (pos.X > 10 || pos.X < -10)
             {
                 delta = -delta;
                 if (pos.X > 10) angle = Math.PI;
                 else angle = 0.0;
             }
 
-            self.Transform.RotateBy(0,angle,0, AngleUnit.Radians);
-
+            self.Transform.RotateBy(0, angle, 0, AngleUnit.Radians);
+            self.SetDirty(self.Transform.IsDirty);
         });
 
 
@@ -291,40 +293,45 @@ public partial class ClockBase : ComponentBase
         var (found, scene) = GetCurrentScene();
         if (!found) return;
 
-        var name = DataGenerator.GenerateWord();
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
-        var delta = 0.5;
-        var angle = 0.0;
+
+        var delta = 0.05;
+        var range = 20.0;
 
         var model = new Model3D()
         {
             Name = "TRex", // $"TRex:{DataGenerator.GenerateWord()}",
             Uuid = Guid.NewGuid().ToString(),
-            Url =  GetReferenceTo(@"storage/staticfiles/T_Rex.glb"),
+            Url = GetReferenceTo(@"storage/staticfiles/T_Rex.glb"),
             Format = Model3DFormats.Gltf,
             Transform = new Transform3("TRexTransform")
             {
-                Position = new Vector3(x, 0, z),
+                Position = new Vector3(8, 0, 0),
             },
         };
 
         model.SetAnimationUpdate((self, tick, fps) =>
         {
-            bool move = tick % 10 == 0;
-            if (!move) return;
+            // bool move = tick % 10 == 0;
+            // if (!move) return;
 
-            $"SetAnimationUpdate {tick} on FoGlyph3D {self.Name}".WriteInfo();
-            var pos = self.Transform.MoveBy(0,0,delta);
-            $"Transform moved to {pos.X}, {pos.Y}, {pos.Z} on FoGlyph3D {self.Name}".WriteInfo();
-            if (pos.Z > 10 || pos.Z < -10)
+            //$"SetAnimationUpdate {tick} on FoGlyph3D {self.Name}".WriteInfo();
+            var pos = self.Transform.MoveBy(0, 0, delta);
+            var loc = pos.Z;
+            //$"Transform moved to {pos.X}, {pos.Y}, {pos.Z} on FoGlyph3D {self.Name}".WriteInfo();
+
+            if (loc > range)
             {
                 delta = -delta;
-                if (pos.Z > 10) angle = Math.PI;
-                else angle = 0.0;
+                self.Transform.RotateTo(0, Math.PI, 0, AngleUnit.Radians);
+            }
+            else if (loc < -range)
+            {
+                delta = -delta;
+                self.Transform.RotateTo(0, 0, 0, AngleUnit.Radians);
             }
 
-            self.Transform.RotateBy(0,angle,0, AngleUnit.Radians);
+            //Since this is NOT a FoGlyph3D we need to manually set the dirty flag
+            self.SetDirty(self.Transform.IsDirty);
 
             //FoGlyph2D.Animations.Tween<FoShape2D>(s1, new { PinX = s1.PinX - 150, }, 2, 2.2F);
             // FoGlyph2D.Animations.Tween<FoShape2D>(s2, new { PinX = s2.PinX + 150, PinY = s2.PinY + 50, }, 2, 2.4f).OnComplete(() =>
@@ -341,6 +348,52 @@ public partial class ClockBase : ComponentBase
     }
 
 
+
+    public async Task DoRequestAddSubToScene()
+    {
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
+
+        var name = "Sub";
+        var angle = 0.0;
+        var radius = 22.0;
+        var y = -3.0;
+
+        var model = new Model3D()
+        {
+            Name = name,
+            Uuid = Guid.NewGuid().ToString(),
+            Url = GetReferenceTo(@"storage/staticfiles/sub.glb"),
+            Format = Model3DFormats.Gltf,
+            Transform = new Transform3("SubTransform")
+            {
+                Position = new Vector3(radius, y, 0),
+                Scale = new Vector3(0.1, 0.1, 0.1),
+                Rotation = new Euler(0, Math.PI/2, 0, AngleUnit.Radians)
+            },
+        };
+
+        model.SetAnimationUpdate((self, tick, fps) =>
+        {
+            //bool move = tick % 10 == 0;
+            //if (!move) return;
+
+            angle += Math.PI / 120; // Adjust speed as needed
+            var x = radius * Math.Cos(angle);
+            var z = radius * Math.Sin(angle);
+            self.Transform.Position = new Vector3(x, y, z);
+            // Set rotation so sub points in direction of travel
+            var direction = new Vector3(-Math.Sin(angle), 0, Math.Cos(angle));
+            var rotationY = Math.Atan2(direction.X, direction.Z);
+            rotationY += Math.PI/2; // Adjust to align model's forward direction
+            self.Transform.Rotation = new Euler(0, rotationY, 0, AngleUnit.Radians);
+            self.SetDirty(self.Transform.IsDirty);
+        });
+
+        await scene.Request3DModel(model, async (uuid) =>
+        {
+            scene.AddChild(model);
+            await Task.CompletedTask;
+        });
+    }
 }
-
-
