@@ -54,7 +54,7 @@ public class FoRack : FoShape3D
             Transform = new Transform3("RackTransform")
             {
                 Position = new Vector3(x, height/2, z),
-                //Pivot = new Vector3(0, -height/2, 0),
+                Pivot = new Vector3(0, -height/2, 0),
                 Rotation = new Euler(0, angle, 0),
             }
         };

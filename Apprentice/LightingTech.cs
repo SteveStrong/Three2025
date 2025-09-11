@@ -204,7 +204,7 @@ public class LightingTech :ILightingTech
 
       if ( light != null)
       {
-         light.Transform.Position = Vector3.Zero;
+         light.Transform!.Position = Vector3.Zero;
          light.Transform.MoveBy(x, y, z);
          $"Light {name} repositioned to {x}, {y}, {z}".WriteSuccess();
       }

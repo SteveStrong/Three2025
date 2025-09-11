@@ -42,12 +42,12 @@ namespace Three2025
             t.Rotation = Euler.FromDegrees(90, 0, 0); // degrees
             var m = t.ToMatrix3();
 
-            // Expected matrix for 90° rotation about X axis (right-handed system):
+            // Expected 4x4 matrix for 90° rotation about X axis (right-handed system):
             double[] expected = new double[]
             {
                 1, 0, 0, 0,
-                0, 0, 1, 0,
-                0, -1, 0, 0,
+                0, 0, -1, 0,
+                0, 1, 0, 0,
                 0, 0, 0, 1
             };
 
@@ -60,12 +60,12 @@ namespace Three2025
             t.Rotation = Euler.FromDegrees(0, 90, 0); // degrees
             var m = t.ToMatrix3();
 
-            // Expected matrix for 90° rotation about Y axis (right-handed system):
+            // Expected 4x4 matrix for 90° rotation about Y axis (right-handed system):
             double[] expected = new double[]
             {
-                0, 0, -1, 0,
+                0, 0, 1, 0,
                 0, 1, 0, 0,
-                1, 0, 0, 0,
+                -1, 0, 0, 0,
                 0, 0, 0, 1
             };
 
@@ -78,11 +78,11 @@ namespace Three2025
             t.Rotation = Euler.FromDegrees(0, 0, 90); // degrees
             var m = t.ToMatrix3();
 
-            // Expected matrix for 90° rotation about Z axis (right-handed system):
+            // Expected 4x4 matrix for 90° rotation about Z axis (right-handed system):
             double[] expected = new double[]
             {
-                0, 1, 0, 0,
-                -1, 0, 0, 0,
+                0, -1, 0, 0,
+                1, 0, 0, 0,
                 0, 0, 1, 0,
                 0, 0, 0, 1
             };
@@ -93,7 +93,8 @@ namespace Three2025
         private static void CheckMatrix(string testName, double[] actual, double[] expected)
         {
             bool success = true;
-            for (int i = 0; i < expected.Length; i++)
+            int n = expected.Length; // Should be 16 for 4x4
+            for (int i = 0; i < n; i++)
             {
                 if (Math.Abs(actual[i] - expected[i]) > 1e-6)
                 {
