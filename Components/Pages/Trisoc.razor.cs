@@ -7,13 +7,14 @@ using BlazorThreeJS.Objects;
 using FoundryBlazor.PubSub;
 using FoundryRulesAndUnits.Models;
 using Three2025.Apprentice;
+using Three2025.Shared;
 
 
 namespace Three2025.Components.Pages;
 
 public partial class TrisocBase : ComponentBase
 {
-    public Canvas3DComponentBase Canvas3DReference = null;
+    public Canvas3D Canvas3DReference = null;
 
     [Inject] public NavigationManager Navigation { get; set; }
 

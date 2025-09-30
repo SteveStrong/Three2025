@@ -2,10 +2,6 @@
 
 @page "/drawing"
 
-@using FoundryBlazor.Shared
-@using FoundryRulesAndUnits.Extensions
-@using BlazorThreeJS.Viewers
-
 @namespace Three2025.Components.Pages
 @inherits DrawingBase
 @rendermode InteractiveServer
@@ -16,6 +12,6 @@
 
 
 <div class="d-flex">
-    <Canvas2DComponent SceneName="Drawing" @ref="Canvas2DReference" CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight"  />
+    <Canvas2D SceneName="Drawing" @ref="Canvas2DReference" CanvasWidth="@CanvasWidth" CanvasHeight="@CanvasHeight"  />
 
 </div>

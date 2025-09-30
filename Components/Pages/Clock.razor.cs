@@ -11,12 +11,14 @@ using FoundryRulesAndUnits.Models;
 using Three2025.Apprentice;
 using FoundryRulesAndUnits.Extensions;
 
+using Three2025.Shared;
+
 
 namespace Three2025.Components.Pages;
 
 public partial class ClockBase : ComponentBase
 {
-    public Canvas3DComponentBase Canvas3DReference = null;
+    public Canvas3D Canvas3DReference = null;
 
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] protected IJSRuntime JsRuntime { get; set; }

@@ -6,6 +6,7 @@ using FoundryBlazor.Solutions;
 using FoundryBlazor.PubSub;
 using Three2025.Services.Visualization;
 using Three2025.Apprentice;
+using Three2025.Shared;
 
 namespace Three2025.Components.Pages;
 
@@ -16,7 +17,7 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
-    public Canvas3DComponentBase Canvas3DReference = null;
+    public Canvas3D Canvas3DReference = null;
     
     // Universal geometry snapping components - work with any FoShape3D
     protected FoShape3D ComponentA;

@@ -1,10 +1,6 @@
 ﻿
 @page "/home"
 
-@using FoundryBlazor.Shared
-@using FoundryRulesAndUnits.Extensions
-@using BlazorThreeJS.Viewers
-
 @namespace Three2025.Components.Pages
 @inherits HomeBase
 @rendermode InteractiveServer
@@ -16,7 +12,7 @@
 
 <div class="d-flex">
 
-    <Canvas3DComponent SceneName="Home3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+    <Canvas3D SceneName="Home3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
     <ShapeTreeView/>
 
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">

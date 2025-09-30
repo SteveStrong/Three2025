@@ -1,9 +1,5 @@
 @page "/clock"
 
-@using FoundryBlazor.Shared
-@using FoundryRulesAndUnits.Extensions
-@using BlazorThreeJS.Viewers
-
 @namespace Three2025.Components.Pages
 @inherits ClockBase
 @rendermode InteractiveServer
@@ -15,8 +11,8 @@
 
 <div class="d-flex">
 
-    <Canvas3DComponent SceneName="Clock3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
-    <ShapeTreeView/>
+   <Canvas3D SceneName="Clock3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+     <ShapeTreeView/>
     <AIChat/>
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">
         <h4>Testing the API's</h4>

@@ -8,6 +8,7 @@ using FoundryRulesAndUnits.Extensions;
 using BlazorThreeJS.Viewers;
 using BlazorThreeJS.Objects;
 using BlazorThreeJS.Maths;
+using Three2025.Shared;
 
 namespace Three2025.Components.Pages;
 
@@ -17,7 +18,7 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
-    public Canvas3DComponentBase Canvas3DReference = null;
+    public Canvas3D Canvas3DReference = null;
     protected SpacialFrame3D CurrentFrame;
     protected FoShape3D CurrentShape;
 

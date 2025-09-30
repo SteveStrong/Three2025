@@ -8,6 +8,7 @@ using FoundryBlazor.Shared;
 using FoundryBlazor.PubSub;
 using Three2025.Services.Visualization;
 using BlazorThreeJS.Maths;
+using Three2025.Shared;
 
 
 namespace Three2025.Components.Pages;
@@ -25,7 +26,7 @@ public partial class MatrixTest : ComponentBase, IDisposable
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
-    public Canvas3DComponentBase Canvas3DReference = null;
+    public Canvas3D Canvas3DReference = null;
     protected SpacialBox3D CurrentBox;
 
     // Box properties for UI binding

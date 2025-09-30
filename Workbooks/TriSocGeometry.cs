@@ -19,9 +19,10 @@ public class TriSocGeometry : FoComponent
 
     public List<FoText3D> GenerateLabels()
     {
-        var width = new Length(.1, "m");
-        var height = new Length(.1, "m");
-        var depth = new Length(.1, "m");
+        var unitsystem = new UnitSystem();
+        var width = unitsystem.CreateLength(.1, "m");
+        var height = unitsystem.CreateLength(.1, "m");
+        var depth = unitsystem.CreateLength(.1, "m");
 
         var root = new FoGroup3D("Labels");
         //_world.AddGlyph3D<FoGroup3D>(root);
@@ -79,9 +80,10 @@ public class TriSocGeometry : FoComponent
 
     public (FoGroup3D root, List<FoShape3D> list) GenerateMarkers()
     {
-        var width = new Length(.1, "m");
-        var height = new Length(.1, "m");
-        var depth = new Length(.1, "m");
+        var unitsystem = new UnitSystem();
+        var width = unitsystem.CreateLength(.1, "m");
+        var height = unitsystem.CreateLength(.1, "m");
+        var depth = unitsystem.CreateLength(.1, "m");
 
         var root = new FoGroup3D("Labels");
         //_world.AddGlyph3D<FoGroup3D>(root);

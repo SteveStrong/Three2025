@@ -233,19 +233,18 @@ public class CageTech : ICageTech
         var outerBox = new SpacialBox3D(10, 10, 10, "cm");
         var innerBox = new SpacialBox3D(10.5, 8, 8, "cm");
 
-        // var leftFace = innerBox.GetFaceCenters.FirstOrDefault(p => p.Name.Matches("left"));
-        // var rightFace = innerBox.FaceCenters.FirstOrDefault(p => p.Name.Matches("right"));
+        var leftFace = innerBox.GetLocalLeftFace();
+        var rightFace = innerBox.GetLocalRightFace();
 
 
-        // var leftList = new List<Point3D>(innerBox.LeftFace) { leftFace };
-        // var rightlist = new List<Point3D>(innerBox.RightFace) { rightFace };
+        DrawPipe(root, "leftedge", "red", leftFace.Vertices);
+        DrawPipe(root, "rightedge", "green", rightFace.Vertices);
 
-
-        // DrawPipe(root, "leftedge", "red", innerBox.LeftFace);
-        // DrawPipe(root, "rightedge", "green", innerBox.RightFace);
-
-        // DrawFace(root, "Left", outerBox.LeftFaceMesh(0.1, "blue"));
-        // DrawFace(root, "Right", outerBox.RightFaceMesh(0.1, "yellow"));
+        
+        leftFace = outerBox.GetLocalLeftFace();
+        rightFace = outerBox.GetLocalRightFace();
+        DrawFace(root, "Left", leftFace.FaceMesh("blue", .8));
+        DrawFace(root, "Right", rightFace.FaceMesh("yellow", .8));
 
         return (i,root);
     }

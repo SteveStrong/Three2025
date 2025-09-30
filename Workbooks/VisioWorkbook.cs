@@ -35,9 +35,10 @@ public class VisioWorkbook : FoWorkbook
         Arena = space.GetArena();
 
         //var page = Drawing.CurrentPage();
-        
-        var drawing = new Length(10.0, "cm");
-        var world = new Length(1.0, "m");
+
+        var unitsystem = foundry.UnitSystem();
+        var drawing = unitsystem.CreateLength(10.0, "cm");
+        var world = unitsystem.CreateLength(1.0, "m");
         EstablishCurrentPage<VisioPage>("Front View", "#BBE9FF").ResetScale(drawing,world).SetPageSize(100, 60, "cm");
     
 

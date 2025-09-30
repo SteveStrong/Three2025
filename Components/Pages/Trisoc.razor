@@ -1,11 +1,6 @@
 @page "/"
 @page "/trisoc"
 
-@using FoundryBlazor.Shared
-
-@using FoundryRulesAndUnits.Extensions
-@using BlazorThreeJS.Viewers
-
 @namespace Three2025.Components.Pages
 @inherits TrisocBase
 @rendermode InteractiveServer
@@ -16,7 +11,7 @@
 
 <div class="d-flex">
 
-    <Canvas3DComponent SceneName="Trisoc" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+    <Canvas3D SceneName="Trisoc" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
         <RadzenTabs style="min-width: 600px;">
         <Tabs>
             <RadzenTabsItem Text="Chat View">

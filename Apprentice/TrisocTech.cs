@@ -224,9 +224,7 @@ public class TrisocTech : ITrisocTech
         var rightFace = innerBox.GetLocalRightFace();
 
 
-
         i = TagVertex(root, i, Text3DAlign.Left, leftFace.Vertices, (p,i) => $"{section}L{i}");
-
         i = TagVertex(root, i, Text3DAlign.Right, rightFace.Vertices, (p,i) => $"{section}R{i}");
 
         GlobalPipe = DrawPipe(root, "leftedge", "red", leftFace.Vertices);

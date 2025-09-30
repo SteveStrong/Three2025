@@ -16,6 +16,7 @@ using FoundryBlazor.PubSub;
 using FoundryRulesAndUnits.Models;
 using BlazorThreeJS.Core;
 using Three2025.Apprentice;
+using Three2025.Shared;
 
 
 
@@ -29,7 +30,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
 
-    public Canvas2DComponentBase Canvas2DReference = null;
+    public Canvas2D Canvas2DReference = null;
 
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
