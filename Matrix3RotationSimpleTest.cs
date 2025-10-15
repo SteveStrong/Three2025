@@ -14,8 +14,9 @@
 //
 // This documentation is intended to prevent confusion and bugs caused by mixing up degrees and radians.
 // -----------------------------------------------------------------------------
-using BlazorThreeJS.Maths;
+
 using FoundryRulesAndUnits.Extensions;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 namespace Three2025
 {

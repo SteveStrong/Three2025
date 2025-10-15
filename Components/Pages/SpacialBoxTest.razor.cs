@@ -1,14 +1,15 @@
-using BlazorThreeJS.Objects;
-using BlazorThreeJS.Viewers;
-using FoundryBlazor.Shape;
+
+using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Extensions;
 using Microsoft.AspNetCore.Components;
-using FoundryBlazor.Solutions;
-using FoundryBlazor.Shared;
-using FoundryBlazor.PubSub;
+using FoundryWorldsAndDrawings.Solutions;
+using FoundryWorldsAndDrawings.Shared;
+using FoundryWorldsAndDrawings.PubSub;
 using Three2025.Services.Visualization;
-using BlazorThreeJS.Maths;
-using Three2025.Shared;
+
+using FoundryWorldsAndDrawings.ThreeD.Viewers;
+using FoundryWorldsAndDrawings.ThreeD.Objects;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 
 namespace Three2025.Components.Pages;
@@ -19,7 +20,7 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
-    public Canvas3D Canvas3DReference = null;
+    public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
     protected SpacialBox3D CurrentBox;
 
     // Box properties for UI binding

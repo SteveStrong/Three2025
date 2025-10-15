@@ -1,5 +1,6 @@
-using BlazorThreeJS.Maths;
-using FoundryBlazor.Shape;
+
+using FoundryWorldsAndDrawings.Shape;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 public class FoConnector : FoShape3D
 {

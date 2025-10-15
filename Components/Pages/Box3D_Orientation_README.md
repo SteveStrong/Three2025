@@ -1,7 +1,7 @@
 # 3D Box Geometry and Orientation in Three2025
 
 ## Overview
-This project uses a robust, testable approach to 3D box geometry, ensuring that all faces, edges, and normals are mathematically correct and visually consistent in BlazorThreeJS.
+This project uses a robust, testable approach to 3D box geometry, ensuring that all faces, edges, and normals are mathematically correct and visually consistent in FoundryWorldsAndDrawings.
 
 ## Face Orientation
 - **Face3D** encapsulates all math for face orientation and transformation.

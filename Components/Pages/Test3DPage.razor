@@ -4,9 +4,9 @@
 @using Blazor.Extensions.Canvas
 @using Blazor.Extensions.Canvas.Canvas2D
 
-@using FoundryBlazor.Shared
-@using BlazorThreeJS.Viewers
-@using Three2025.Shared
+@using FoundryWorldsAndDrawings.Shared
+
+
 @inherits Test3DPageBase
 @rendermode InteractiveServer
 
@@ -17,7 +17,7 @@
 <h3>Canvas3D</h3>
 
 <div class="d-flex">
-    <Canvas3D SceneName="BestScene"  @ref="Canvas3DReference" CanvasWidth="1800" CanvasHeight="1000" />
+    <Canvas3DComponent SceneName="BestScene"  @ref="Canvas3DReference" CanvasWidth="1800" CanvasHeight="1000" />
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">
         <button class="btn btn-primary" @onclick="DoAxisTest">Axis</button>
         <button class="btn btn-primary" @onclick="OnAddTRex">Add T-Rex</button>

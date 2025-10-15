@@ -1,14 +1,17 @@
 using System.Drawing;
 using Blazor.Extensions.Canvas.Canvas2D;
-using BlazorThreeJS.Core;
-using BlazorThreeJS.Maths;
-using BlazorThreeJS.Objects;
-using BlazorThreeJS.Solutions;
-using FoundryBlazor.Shape;
-using FoundryBlazor.Solutions;
+
+using FoundryWorldsAndDrawings.Solutions;
+using FoundryWorldsAndDrawings.Shape;
+
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
+
+using FoundryWorldsAndDrawings.ThreeD.Solutions;
 using Three2025.Apprentice;
+using FoundryWorldsAndDrawings.ThreeD.Core;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryWorldsAndDrawings.ThreeD.Objects;
 
 public class Label3D : FoText3D
 {

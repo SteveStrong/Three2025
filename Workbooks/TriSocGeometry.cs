@@ -1,7 +1,8 @@
-using BlazorThreeJS.Maths;
-using FoundryBlazor;
-using FoundryBlazor.Shape;
+
+using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Units;
+using FoundryWorldsAndDrawings;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 
 namespace Three2025.Model;

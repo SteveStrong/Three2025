@@ -1,10 +1,10 @@
-using FoundryBlazor.Shape;
-using FoundryBlazor.Solutions;
+using FoundryWorldsAndDrawings.Shape;
+using FoundryWorldsAndDrawings.Solutions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using FoundryRulesAndUnits.Extensions;
 
-using FoundryBlazor.Shared;
+using FoundryWorldsAndDrawings.Shared;
 
 
 using FoundryRulesAndUnits.Units;
@@ -36,9 +36,9 @@ public class VisioWorkbook : FoWorkbook
 
         //var page = Drawing.CurrentPage();
 
-        var unitsystem = foundry.UnitSystem();
-        var drawing = unitsystem.CreateLength(10.0, "cm");
-        var world = unitsystem.CreateLength(1.0, "m");
+        //var unitsystem = foundry.UnitSystem();
+        var drawing = new FoScaleDimension(10.0, "cm");
+        var world = new FoScaleDimension(1.0, "m");
         EstablishCurrentPage<VisioPage>("Front View", "#BBE9FF").ResetScale(drawing,world).SetPageSize(100, 60, "cm");
     
 

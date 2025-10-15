@@ -1,14 +1,14 @@
-using FoundryBlazor.Shape;
+using FoundryWorldsAndDrawings.Shape;
 using Microsoft.AspNetCore.Components;
-using FoundryBlazor.Shared;
-using FoundryBlazor.Solutions;
-using FoundryBlazor.PubSub;
+using FoundryWorldsAndDrawings.Shared;
+using FoundryWorldsAndDrawings.Solutions;
+using FoundryWorldsAndDrawings.PubSub;
 using Three2025.Services.Visualization;
 using FoundryRulesAndUnits.Extensions;
-using BlazorThreeJS.Viewers;
-using BlazorThreeJS.Objects;
-using BlazorThreeJS.Maths;
-using Three2025.Shared;
+
+using FoundryWorldsAndDrawings.ThreeD.Viewers;
+using FoundryWorldsAndDrawings.ThreeD.Objects;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 namespace Three2025.Components.Pages;
 
@@ -18,7 +18,7 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
-    public Canvas3D Canvas3DReference = null;
+    public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
     protected SpacialFrame3D CurrentFrame;
     protected FoShape3D CurrentShape;
 

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
-using FoundryBlazor.Shape;
-using FoundryBlazor.Solutions;
+using FoundryWorldsAndDrawings.Shape;
+using FoundryWorldsAndDrawings.Solutions;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 using Microsoft.SemanticKernel;

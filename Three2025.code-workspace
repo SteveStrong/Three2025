@@ -4,12 +4,6 @@
 			"path": "."
 		},
 		{
-			"path": "../BlazorThreeJS"
-		},
-		{
-			"path": "../FoundryBlazor"
-		},
-		{
 			"path": "../FoundryMentorModeler"
 		}
 	],

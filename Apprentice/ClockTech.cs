@@ -1,17 +1,19 @@
 
 
 using System.Diagnostics.CodeAnalysis;
-using BlazorThreeJS.Core;
-using BlazorThreeJS.Geometires;
-using BlazorThreeJS.Materials;
-using BlazorThreeJS.Maths;
-using BlazorThreeJS.Objects;
-using BlazorThreeJS.Solutions;
-using FoundryBlazor.Shape;
-using FoundryBlazor.Solutions;
+
+using FoundryWorldsAndDrawings.Solutions;
+using FoundryWorldsAndDrawings.Shape;
+
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 using Three2025.Apprentice;
+using FoundryWorldsAndDrawings.ThreeD.Solutions;
+using FoundryWorldsAndDrawings.ThreeD.Core;
+using FoundryWorldsAndDrawings.ThreeD.Objects;
+using FoundryWorldsAndDrawings.ThreeD.Materials;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryWorldsAndDrawings.ThreeD.Geometires;
 
 // public class FoRack : FoShape3D
 // {

@@ -1,17 +1,16 @@
-﻿using FoundryBlazor.Shared;
-using FoundryBlazor.Solutions;
+﻿using FoundryWorldsAndDrawings.Solutions;
 using Microsoft.AspNetCore.Components;
-using FoundryBlazor.Shape;
-using BlazorThreeJS.Maths;
+using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Extensions;
-using BlazorThreeJS.Objects;
-using BlazorThreeJS.Geometires;
-using BlazorThreeJS.Materials;
-using FoundryBlazor.PubSub;
+using FoundryWorldsAndDrawings.PubSub;
 using FoundryRulesAndUnits.Models;
-using BlazorThreeJS.Core;
 using Three2025.Apprentice;
-using Three2025.Shared;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryWorldsAndDrawings.ThreeD.Objects;
+using FoundryWorldsAndDrawings.ThreeD.Geometires;
+using FoundryWorldsAndDrawings.ThreeD.Materials;
+using FoundryWorldsAndDrawings.ThreeD.Core;
+
 
 
 
@@ -21,7 +20,7 @@ namespace Three2025.Components.Pages;
 
 public partial class HomeBase : ComponentBase, IDisposable
 {
-    public Canvas3D Canvas3DReference = null;
+    public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
 
     [Inject] public NavigationManager Navigation { get; set; }
 

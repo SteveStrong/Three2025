@@ -1,24 +1,23 @@
-﻿using FoundryBlazor.Shared;
-using FoundryBlazor.Solutions;
+﻿using FoundryWorldsAndDrawings.Shared;
+using FoundryWorldsAndDrawings.Solutions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using FoundryBlazor.Shape;
-using BlazorThreeJS.Viewers;
-using BlazorThreeJS.Maths;
-using BlazorThreeJS.Objects;
-using FoundryBlazor.PubSub;
+using FoundryWorldsAndDrawings.Shape;
+
+using FoundryWorldsAndDrawings.PubSub;
 using FoundryRulesAndUnits.Models;
 using Three2025.Apprentice;
 using FoundryRulesAndUnits.Extensions;
-
-using Three2025.Shared;
+using FoundryWorldsAndDrawings.ThreeD.Viewers;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryWorldsAndDrawings.ThreeD.Objects;
 
 
 namespace Three2025.Components.Pages;
 
 public partial class ClockBase : ComponentBase
 {
-    public Canvas3D Canvas3DReference = null;
+    public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
 
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] protected IJSRuntime JsRuntime { get; set; }
@@ -51,16 +50,52 @@ public partial class ClockBase : ComponentBase
     {
         if (firstRender)
         {
-            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
-
-            scene?.SetAfterUpdateAction((s, j) =>
+            Console.WriteLine($"Clock OnAfterRenderAsync: Canvas3DReference is {(Canvas3DReference == null ? "null" : "not null")}");
+            Console.WriteLine($"Clock OnAfterRenderAsync: Workspace is {(Workspace == null ? "null" : "available")}");
+            Console.WriteLine($"Clock OnAfterRenderAsync: FoundryService is {(FoundryService == null ? "null" : "available")}");
+            Console.WriteLine($"Clock OnAfterRenderAsync: Tech is {(Tech == null ? "null" : "available")}");
+            
+            // Wait a bit for the canvas to initialize
+            await Task.Delay(500); // Increased delay for better initialization
+            
+            if (Canvas3DReference != null)
             {
-                FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-            });
+                var (found, scene) = Canvas3DReference.GetActiveScene();
+                
+                Console.WriteLine($"Clock OnAfterRenderAsync: GetActiveScene returned found={found}, scene={scene?.Name ?? "null"}");
 
-            var arena = Workspace.GetArena();
-            if (found)
-                arena.SetScene(scene!);
+                if (found && scene != null)
+                {
+                    scene.SetAfterUpdateAction((s, j) =>
+                    {
+                        FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
+                    });
+
+                    var arena = Workspace.GetArena();
+                    arena.SetScene(scene);
+                    Console.WriteLine($"Clock OnAfterRenderAsync: Scene set in arena successfully");
+                    
+                    // Try to add a simple object to test rendering
+                    try
+                    {
+                        DoClockFaceOnScene();
+                        Console.WriteLine($"Clock OnAfterRenderAsync: Clock face added successfully");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Clock OnAfterRenderAsync: Error adding clock face: {ex.Message}");
+                        Console.WriteLine($"Clock OnAfterRenderAsync: Stack trace: {ex.StackTrace}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Clock OnAfterRenderAsync: Canvas3DReference.GetActiveScene() failed to return valid scene");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Clock OnAfterRenderAsync: Canvas3DReference is null - component not properly bound");
+            }
         }
 
         await base.OnAfterRenderAsync(firstRender);

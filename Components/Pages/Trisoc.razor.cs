@@ -1,20 +1,20 @@
-﻿using FoundryBlazor.Shared;
-using FoundryBlazor.Solutions;
+﻿using FoundryWorldsAndDrawings.Shared;
+using FoundryWorldsAndDrawings.Solutions;
 using Microsoft.AspNetCore.Components;
-using BlazorThreeJS.Viewers;
-using BlazorThreeJS.Objects;
 
-using FoundryBlazor.PubSub;
+
+using FoundryWorldsAndDrawings.PubSub;
 using FoundryRulesAndUnits.Models;
 using Three2025.Apprentice;
-using Three2025.Shared;
+using FoundryWorldsAndDrawings.ThreeD.Viewers;
+using FoundryWorldsAndDrawings.ThreeD.Objects;
 
 
 namespace Three2025.Components.Pages;
 
 public partial class TrisocBase : ComponentBase
 {
-    public Canvas3D Canvas3DReference = null;
+    public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
 
     [Inject] public NavigationManager Navigation { get; set; }
 

@@ -1,6 +1,6 @@
 
 // Import packages
-using FoundryBlazor.Solutions;
+using FoundryWorldsAndDrawings.Solutions;
 using FoundryRulesAndUnits.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

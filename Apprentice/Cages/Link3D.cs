@@ -1,10 +1,4 @@
-
-
-
-using BlazorThreeJS.Maths;
-using FoundryBlazor.Extensions;
-using FoundryBlazor.Shape;
-using FoundryRulesAndUnits.Extensions;
+using FoundryWorldsAndDrawings.Shape;
 
 namespace Three2025.Apprentice;
 public class Link3D : FoPipe3D

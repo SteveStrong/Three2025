@@ -5,10 +5,11 @@ using Radzen;
 using FoundryRulesAndUnits.Extensions;
 
 using Microsoft.AspNetCore.StaticFiles;
-using FoundryBlazor;
+
 using Microsoft.Extensions.FileProviders;
 using Three2025.Apprentice;
 using Three2025.Services.Visualization;
+using FoundryWorldsAndDrawings;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -51,7 +52,7 @@ builder.Services.Configure<StaticFileOptions>(options =>
 });
 
 var envConfig = new EnvConfig("./.env");
-builder.Services.AddFoundryBlazorServices(envConfig);
+builder.Services.AddFoundryWorldsAndDrawingsServices(envConfig);
 
 builder.Services.AddScoped<IApprenticeAI, ApprenticeAI>();
 builder.Services.AddScoped<IRackTech, RackTech>();

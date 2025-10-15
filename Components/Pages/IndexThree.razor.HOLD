@@ -2,8 +2,8 @@
 
 
 @inherits IndexThreePage
-@using FoundryBlazor.Shared
-@using BlazorThreeJS.Viewers
+@using FoundryWorldsAndDrawings.Shared
+@using FoundryWorldsAndDrawings.Viewers
 
 @rendermode InteractiveServer
 

@@ -1,25 +1,25 @@
 ﻿
 
-using BlazorThreeJS.Core;
-using BlazorThreeJS.Enums;
-using BlazorThreeJS.Objects;
-using BlazorThreeJS.Materials;
-using BlazorThreeJS.Maths;
-using BlazorThreeJS.Viewers;
-using BlazorThreeJS.Settings;
-using FoundryBlazor.Solutions;
+
+using FoundryWorldsAndDrawings.Solutions;
 using FoundryRulesAndUnits.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using BlazorThreeJS.Geometires;
+
 
 
 using FoundryRulesAndUnits.Models;
+using FoundryWorldsAndDrawings.ThreeD.Viewers;
+using FoundryWorldsAndDrawings.ThreeD.Core;
+using FoundryWorldsAndDrawings.ThreeD.Objects;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryWorldsAndDrawings.ThreeD.Geometires;
+using FoundryWorldsAndDrawings.ThreeD.Materials;
 
 
 
 
-        
+
 
 
 namespace Three2025.Components.Pages;
@@ -32,7 +32,7 @@ public class IndexBase : ComponentBase, IDisposable
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
 
-    protected ViewerThreeD View3D;
+    protected FoundryWorldsAndDrawings.ThreeD.Viewers.ViewerThreeD View3D;
     
     protected Text3D TestText { get; set; }
     protected TextPanel3D TextPanel1 { get; set; }

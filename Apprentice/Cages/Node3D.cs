@@ -1,8 +1,5 @@
-
-using BlazorThreeJS.Maths;
-using FoundryBlazor.Shape;
-using FoundryBlazor.Extensions;
-using BlazorThreeJS.Core;
+using FoundryWorldsAndDrawings.Shape;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 #nullable enable
 

@@ -1,6 +1,6 @@
 
 using Blazor.Extensions.Canvas.Canvas2D;
-using FoundryBlazor.Shape;
+using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Extensions;
 
 namespace Three2025.Model;

@@ -1,11 +1,9 @@
-
-
-using BlazorThreeJS.Maths;
-using FoundryBlazor.Shape;
-using FoundryBlazor.Solutions;
+using FoundryWorldsAndDrawings.Shape;
+using FoundryWorldsAndDrawings.Solutions;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 using Three2025.Apprentice;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 public interface IRackTech : ITechnician
 {

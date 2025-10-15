@@ -1,10 +1,7 @@
 @page "/legosnaptest"
 
-@using FoundryBlazor.Shared
-@using FoundryBlazor.Shape
-@using BlazorThreeJS.Viewers
-@using BlazorThreeJS.Maths
-@using Three2025.Shared
+@using FoundryWorldsAndDrawings.Shared
+@using FoundryWorldsAndDrawings.Shape
 
 @inherits LegoSnappingTestBase
 @rendermode InteractiveServer
@@ -14,7 +11,7 @@
 <h3>LEGO Snapping & Constraint Test Page</h3>
 
 <div class="d-flex">
-    <Canvas3D SceneName="LegoSnappingScene" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+    <Canvas3DComponent SceneName="LegoSnappingScene" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
     <div class="controls-panel" style="margin-left: 10px; width: 400px; overflow-y: auto; max-height: 1000px;">
         
         <h4>Component Creation</h4>

@@ -1,15 +1,10 @@
-using System.Drawing;
-using Blazor.Extensions.Canvas.Canvas2D;
-using BlazorThreeJS.Core;
-using BlazorThreeJS.Maths;
-using BlazorThreeJS.Objects;
-using BlazorThreeJS.Solutions;
-using FoundryBlazor.Shape;
-using FoundryBlazor.Solutions;
+using FoundryWorldsAndDrawings.Solutions;
+using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
-using FoundryRulesAndUnits.Units;
 using Three2025.Apprentice;
+using FoundryWorldsAndDrawings.ThreeD.Objects;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 
 

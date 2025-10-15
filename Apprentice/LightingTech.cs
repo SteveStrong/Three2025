@@ -1,14 +1,12 @@
 using System.ComponentModel;
-using System.Text.Json.Serialization;
-using System.Web;
-using BlazorThreeJS.Maths;
-using FoundryBlazor.Shape;
-using FoundryBlazor.Solutions;
+using FoundryWorldsAndDrawings.Shape;
+using FoundryWorldsAndDrawings.Solutions;
 
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 
 using Microsoft.SemanticKernel;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 
 namespace Three2025.Apprentice;

@@ -7,11 +7,18 @@
 <PageTitle>Clock</PageTitle>
 <h2>Canvas3DComponent and calls API's top create Clock</h2>
 
-
+<style>
+    .canvas-container {
+        border: 1px solid #ccc;
+        background-color: #f0f0f0;
+    }
+</style>
 
 <div class="d-flex">
 
-   <Canvas3D SceneName="Clock3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+   <div class="canvas-container">
+       <Canvas3DComponent SceneName="Clock3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+   </div>
      <ShapeTreeView/>
     <AIChat/>
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">

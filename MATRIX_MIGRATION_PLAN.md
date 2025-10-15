@@ -84,7 +84,7 @@ All target files have been **successfully removed** from FoundryBlazor:
 **Final Implementation**: **Direct BlazorThreeJS Integration** (not wrapper pattern)
 ```csharp
 // FoundryBlazor now directly uses BlazorThreeJS types
-using BlazorThreeJS.Maths;  // Vector3, Matrix3, Transform3
+using FoundryWorldsAndDrawings.Maths;  // Vector3, Matrix3, Transform3
 
 public class SpacialFrame3D
 {
@@ -147,7 +147,7 @@ CurrentShape.Transform.OnChange = (isDirty) =>
 ---
 
 ## Goal
-Consolidate all matrix and vector math into BlazorThreeJS, removing Matrix3D and FoVector3D from FoundryBlazor.
+Consolidate all matrix and vector math into BlazorThreeJS, removing Matrix3D and FoVector3D from FoundryWorldsAndDrawings.
 
 ## 🎯 ULTIMATE GOAL: LEGO-Style Snapping Architecture
 
@@ -385,7 +385,7 @@ With SpacialFrame3D working perfectly, we have **proven** that:
 
 **Next Target**: Replace Matrix3D class in FoundryBlazor
 - **File**: `FoundryBlazor/Shapes3D/SpacialFrame/Matrix3D.cs`
-- **Strategy**: Convert Matrix3D to wrapper around BlazorThreeJS.Matrix3
+- **Strategy**: Convert Matrix3D to wrapper around FoundryWorldsAndDrawings.Matrix3
 - **Risk**: LOW - Transform3 compatibility bridge already working
 - **Validation**: Use SpacialFrame3D as test case for each change
 
@@ -427,7 +427,7 @@ public Transform3 SetScale(double x, double y, double z) => /* set scale */;
 public Transform3 RotateEuler(double x, double y, double z) => /* set rotation */;
 
 // Added to SpacialFrame3D for type conversion
-var blazorVector = new BlazorThreeJS.Maths.Vector3(vector.X, vector.Y, vector.Z);
+var blazorVector = new FoundryWorldsAndDrawings.Maths.Vector3(vector.X, vector.Y, vector.Z);
 var transformedBlazorVector = Transform.TransformPoint(blazorVector);
 var transformedFoVector = new FoVector3D(transformedBlazorVector.X, transformedBlazorVector.Y, transformedBlazorVector.Z);
 ```
@@ -517,7 +517,7 @@ var transformedFoVector = new FoVector3D(transformedBlazorVector.X, transformedB
    private Point3D TransformPoint(Point3D point)
    {
        var vector = ToVector3D(point);
-       var blazorVector = new BlazorThreeJS.Maths.Vector3(vector.X, vector.Y, vector.Z);
+       var blazorVector = new FoundryWorldsAndDrawings.Maths.Vector3(vector.X, vector.Y, vector.Z);
        var transformedBlazorVector = Transform.TransformPoint(blazorVector);
        var transformedFoVector = new FoVector3D(transformedBlazorVector.X, transformedBlazorVector.Y, transformedBlazorVector.Z);
        return ToPoint3D(transformedFoVector, point.Name);
@@ -749,10 +749,10 @@ Replace all imports throughout FoundryBlazor:
 
 ```csharp
 // Remove these imports:
-// using FoundryBlazor.Shapes3D.SpacialFrame; (for Matrix3D/FoVector3D)
+// using FoundryWorldsAndDrawings.Shapes3D.SpacialFrame; (for Matrix3D/FoVector3D)
 
 // Add these imports:
-using BlazorThreeJS.Maths; // For Vector3 and Matrix3
+using FoundryWorldsAndDrawings.Maths; // For Vector3 and Matrix3
 ```
 
 ### Step 8: Delete Obsolete Files

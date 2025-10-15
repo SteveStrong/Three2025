@@ -1,9 +1,11 @@
-using BlazorThreeJS.Maths;
-using FoundryBlazor.Shape;
-using FoundryBlazor.Solutions;
-using FoundryBlazor.Shared;
+
+using FoundryWorldsAndDrawings.Shape;
+using FoundryWorldsAndDrawings.Solutions;
+using FoundryWorldsAndDrawings.Shared;
 using FoundryRulesAndUnits.Extensions;
-using BlazorThreeJS.Core;
+
+using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryWorldsAndDrawings.ThreeD.Core;
 
 namespace Three2025.Services.Visualization;
 

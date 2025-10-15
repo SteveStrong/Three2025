@@ -1,17 +1,17 @@
 ﻿using Microsoft.AspNetCore.Components;
-using BlazorThreeJS.Core;
-using BlazorThreeJS.Viewers;
-using BlazorThreeJS.Settings;
+using FoundryWorldsAndDrawings.Core;
+using FoundryWorldsAndDrawings.Viewers;
+using FoundryWorldsAndDrawings.Settings;
 
-using BlazorThreeJS.Lights;
-using BlazorThreeJS.Maths;
-using BlazorThreeJS.Objects;
-using BlazorThreeJS.Geometires;
-using BlazorThreeJS.Materials;
-using BlazorThreeJS.Events;
-using BlazorThreeJS.Labels;
-using BlazorThreeJS.Enums;
-using BlazorThreeJS.Menus;
+using FoundryWorldsAndDrawings.Lights;
+using FoundryWorldsAndDrawings.Maths;
+using FoundryWorldsAndDrawings.Objects;
+using FoundryWorldsAndDrawings.Geometires;
+using FoundryWorldsAndDrawings.Materials;
+using FoundryWorldsAndDrawings.Events;
+using FoundryWorldsAndDrawings.Labels;
+using FoundryWorldsAndDrawings.Enums;
+using FoundryWorldsAndDrawings.Menus;
 using FoundryRulesAndUnits.Extensions;
 using Microsoft.JSInterop;
 

@@ -1,12 +1,10 @@
-using BlazorThreeJS.Maths;
-using FoundryBlazor.Shape;
+using FoundryWorldsAndDrawings.Shape;
 using Microsoft.AspNetCore.Components;
-using FoundryBlazor.Shared;
-using FoundryBlazor.Solutions;
-using FoundryBlazor.PubSub;
+using FoundryWorldsAndDrawings.Solutions;
+using FoundryWorldsAndDrawings.PubSub;
 using Three2025.Services.Visualization;
-using Three2025.Apprentice;
-using Three2025.Shared;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryWorldsAndDrawings.Shared;
 
 namespace Three2025.Components.Pages;
 
@@ -17,7 +15,7 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
-    public Canvas3D Canvas3DReference = null;
+    public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
     
     // Universal geometry snapping components - work with any FoShape3D
     protected FoShape3D ComponentA;

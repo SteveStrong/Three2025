@@ -1,6 +1,7 @@
-using BlazorThreeJS.Maths;
-using FoundryBlazor.Shape;
+
+using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Models;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 public class FoRack : FoShape3D
 {

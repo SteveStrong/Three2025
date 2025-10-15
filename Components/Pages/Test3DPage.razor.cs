@@ -1,22 +1,19 @@
 ﻿
 
-using BlazorThreeJS.Core;
-using BlazorThreeJS.Enums;
-using BlazorThreeJS.Objects;
-using BlazorThreeJS.Materials;
-using BlazorThreeJS.Maths;
-using BlazorThreeJS.Viewers;
-using BlazorThreeJS.Settings;
-using FoundryBlazor.Solutions;
+
+using FoundryWorldsAndDrawings.Solutions;
 using FoundryRulesAndUnits.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using BlazorThreeJS.Geometires;
+
 
 
 using FoundryRulesAndUnits.Models;
 
-using Three2025.Shared;
+using FoundryWorldsAndDrawings.ThreeD.Core;
+using FoundryWorldsAndDrawings.ThreeD.Viewers;
+using FoundryWorldsAndDrawings.ThreeD.Objects;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 
 namespace Three2025.Components.Pages;
@@ -26,7 +23,7 @@ public class Test3DPageBase : ComponentBase, IDisposable
 
     [Inject] public NavigationManager Navigation { get; set; }
 
-    protected Canvas3D Canvas3DReference;
+    protected FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference;
     protected Text3D TestText;
 
     protected MockDataGenerator DataGenerator { get; set; } = new();

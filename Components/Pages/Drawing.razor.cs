@@ -1,22 +1,22 @@
-﻿using FoundryBlazor.Shared;
-using FoundryBlazor.Solutions;
+﻿using FoundryWorldsAndDrawings.Shared;
+using FoundryWorldsAndDrawings.Solutions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using FoundryBlazor.Shape;
+using FoundryWorldsAndDrawings.Shape;
 using Three2025.Model;
-using BlazorThreeJS.Viewers;
-using BlazorThreeJS.Settings;
-using BlazorThreeJS.Maths;
-using BlazorThreeJS.Enums;
+
 using FoundryRulesAndUnits.Extensions;
-using BlazorThreeJS.Objects;
-using BlazorThreeJS.Geometires;
-using BlazorThreeJS.Materials;
-using FoundryBlazor.PubSub;
+
+using FoundryWorldsAndDrawings.PubSub;
 using FoundryRulesAndUnits.Models;
-using BlazorThreeJS.Core;
+
 using Three2025.Apprentice;
-using Three2025.Shared;
+
+using FoundryWorldsAndDrawings.ThreeD.Viewers;
+using FoundryWorldsAndDrawings.ThreeD.Objects;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryWorldsAndDrawings.ThreeD.Materials;
+using FoundryWorldsAndDrawings.ThreeD.Geometires;
 
 
 
@@ -30,7 +30,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
 
-    public Canvas2D Canvas2DReference = null;
+    public FoundryWorldsAndDrawings.Shared.Canvas2DComponent Canvas2DReference = null;
 
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
