@@ -103,9 +103,15 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
                 Color = "#4CAF50",
                 Opacity = 0.8,
                 Transform = new Transform3("BoxTransform")
+                {
+                    Position = new Vector3(0, 0, 0),
+                    Rotation = Euler.FromDegrees(0, 0, 0),
+                    Scale = new Vector3(1, 1, 1),
+                    Pivot = new Vector3(0, -BoxHeight/2, 0)
+                }
             }.CreateBox("SpacialBoxMain", BoxWidth, BoxHeight, BoxDepth);
 
-            arena.AddShapeToStage<FoShape3D>(boxShape);
+             arena.AddShapeToStage<FoShape3D>(boxShape);
 
             CurrentBox = new SpacialBox3D(boxShape, "m");
 

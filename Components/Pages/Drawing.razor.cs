@@ -30,7 +30,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
 
-    public FoundryWorldsAndDrawings.Shared.Canvas2DComponent Canvas2DReference = null;
+    public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
 
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
@@ -55,6 +55,22 @@ public partial class DrawingBase : ComponentBase, IDisposable
     {
         if (firstRender)
         {
+            // Initialize the 3D scene connection
+            await Task.Delay(100); // Give canvas time to initialize
+            
+            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
+            
+            if (found && scene != null)
+            {
+                scene.SetAfterUpdateAction((s, j) =>
+                {
+                    FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
+                });
+
+                var arena = Workspace.GetArena();
+                arena.SetScene(scene);
+            }
+            
             CreateMenus(Workspace);
         }
 
@@ -274,6 +290,45 @@ public partial class DrawingBase : ComponentBase, IDisposable
         // var (found, scene) = GetCurrentScene();
         // if (found)
         //     stage.RefreshScene(scene);
+    }
+
+    public void OnAddPorsche()
+    {
+        var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
+        var shape = DoLoad3dModel(url, 2, 6, 2);
+        var arena = Workspace.GetArena();
+        arena.AddShapeToStage<FoShape3D>(shape);
+    }
+
+    public void OnRenderTube()
+    {
+        var (found, scene) = GetCurrentScene();
+        if (!found) return;
+
+        var capsuleRadius = 0.15f;
+        var capsulePositions = new List<Vector3>() {
+            new Vector3(0, 0, 0),
+            new Vector3(4, 0, 0),
+            new Vector3(4, 4, 0),
+            new Vector3(4, 4, -4)
+        };
+
+        scene.AddChild(new Mesh3D
+        {
+            Uuid = Guid.NewGuid().ToString(),
+            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+            Material = new MeshStandardMaterial("yellow", 1.0)
+        });
+    }
+
+    public void OnClearScene()
+    {
+        // Clear the 3D scene if available
+        var (found, scene) = GetCurrentScene();
+        if (found && scene != null)
+        {
+            scene.ClearAll();
+        }
     }
 
     public Node3D AddBox(string name, double x=0, double z=0)
