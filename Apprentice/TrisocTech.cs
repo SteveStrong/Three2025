@@ -7,7 +7,7 @@ using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 
-using FoundryWorldsAndDrawings.ThreeD.Solutions;
+
 using Three2025.Apprentice;
 using FoundryWorldsAndDrawings.ThreeD.Core;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
@@ -45,7 +45,6 @@ public class TrisocTech : ITrisocTech
 {
 
     protected IFoundryService FoundryService { get; init; }
-    protected IThreeDService Render3dService { get; set; }
     protected MockDataGenerator DataGenerator { get; set; } = new();
 
     private Timer _timer = null!;
@@ -55,11 +54,10 @@ public class TrisocTech : ITrisocTech
     private FoModel3D CurrentModel { get; set; } = null!;
     private Dictionary<string, (FoShape3D,Label3D)> Tags = new();
 
-    public TrisocTech(IFoundryService foundry, IThreeDService render3d)
+    public TrisocTech(IFoundryService foundry)
     {
 
         FoundryService = foundry;
-        Render3dService = render3d;
     }
 
 

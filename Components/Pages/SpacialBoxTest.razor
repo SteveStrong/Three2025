@@ -35,6 +35,14 @@
             <button class="btn btn-outline-primary" @onclick="CreateTinyBox">Tiny Box (0.5×0.5×0.5)</button>
         </div>
 
+        <h4>Animated Pivot Tests</h4>
+        <div class="pivot-buttons">
+            <button class="btn btn-primary" @onclick="AnimateDoorHinge">🚪 Door Hinge (Swing Open)</button>
+            <button class="btn btn-warning" @onclick="AnimateCornerBalance">⚖️ Corner Balance</button>
+            <button class="btn btn-info" @onclick="AnimateCenterSpin">🌀 Center Spin</button>
+            <button class="btn btn-success" @onclick="AnimateResetToFloor">🏠 Reset to Floor</button>
+        </div>
+
         <h4>Box Visualization</h4>
         <div class="visual-buttons">
             <button class="btn btn-outline-success" @onclick="ShowVertices">Show Vertices</button>
@@ -42,6 +50,24 @@
             <button class="btn btn-outline-success" @onclick="ShowFaces">Show Faces</button>
             <button class="btn btn-outline-success" @onclick="ShowNormals">Show Normals</button>
             <button class="btn btn-outline-success" @onclick="ShowQuadrants">Show Quadrants</button>
+        </div>
+
+        <h4>Dirty Flag Testing</h4>
+        <div class="dirty-flag-buttons">
+            <button class="btn btn-outline-secondary" @onclick="VerifyDirtyFlags">🧪 Check Dirty Flags</button>
+            <button class="btn btn-outline-secondary" @onclick="TestDirtyFlagPropagation">🔄 Test Dirty Propagation</button>
+            <button class="btn btn-outline-secondary" @onclick="TestTweenerDirtyFlags">🎬 Test Tweener Dirty Flags</button>
+                    <button class="btn btn-secondary" @onclick="TestInitializationDirtyFlags">
+            🔬 Test Initialization Dirty Flags
+        </button>
+        
+        <button class="btn btn-warning" @onclick="TestInitializationTiming">
+            ⏰ Test Initialization Timing
+        </button>
+        
+        <button class="btn btn-info" @onclick="TestObjectReplacementPattern">
+            🔄 Test Object Replacement
+        </button>
         </div>
 
         
@@ -107,7 +133,7 @@
     }
     
     .preset-buttons, .visual-buttons, .face-buttons, .edge-buttons, 
-    .analysis-buttons, .multi-buttons, .transform-buttons, .measure-buttons, .scene-buttons {
+    .analysis-buttons, .multi-buttons, .transform-buttons, .measure-buttons, .scene-buttons, .pivot-buttons {
         display: flex;
         flex-direction: column;
         gap: 3px;

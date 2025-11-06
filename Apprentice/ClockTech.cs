@@ -8,7 +8,7 @@ using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 using Three2025.Apprentice;
-using FoundryWorldsAndDrawings.ThreeD.Solutions;
+
 using FoundryWorldsAndDrawings.ThreeD.Core;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
 using FoundryWorldsAndDrawings.ThreeD.Materials;
@@ -37,7 +37,6 @@ public interface IClockTech : ITechnician
 public class ClockTech : IClockTech
 {
     public IFoundryService FoundryService { get; init; }
-    public IThreeDService Render3dService { get; set; }
     protected MockDataGenerator DataGenerator { get; set; } = new();
 
     private Timer _timer = null!;
@@ -48,10 +47,9 @@ public class ClockTech : IClockTech
 
     private FoShape3D Clock = null!;
 
-    public ClockTech(IFoundryService foundry, IThreeDService render3d)
+    public ClockTech(IFoundryService foundry)
     {
         FoundryService = foundry;
-        Render3dService = render3d;
     }
 
     public bool ComputeHitBoundaries(Action OnComplete)

@@ -81,6 +81,7 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
 
             // Set position using MoveBy for proper dirty flag handling
             ComponentA.Transform.Position = Vector3.Zero;
+            ComponentA.Transform.Pivot = new Vector3(0, -BoxHeight/2, 0); // Pivot at bottom center
             ComponentA.Transform.MoveBy(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
 
             // Add to arena as standard FoShape3D
@@ -114,6 +115,7 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
             
             // Set position using MoveBy for proper dirty flag handling
             ComponentB.Transform.Position = Vector3.Zero;
+            ComponentB.Transform.Pivot = new Vector3(0, -BoxHeight/2, 0); // Pivot at bottom center
             ComponentB.Transform.MoveBy(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
 
             // Add to arena as standard FoShape3D

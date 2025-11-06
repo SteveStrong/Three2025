@@ -9,7 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ApprenticeFoundryWorldsAndDrawings" Version="24.1.0" />
+   <ProjectReference Include="..\FoundryWorldsAndDrawings\FoundryWorldsAndDrawings.csproj" />
+    <!-- <PackageReference Include="ApprenticeFoundryWorldsAndDrawings" Version="24.3.0" /> -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
@@ -28,7 +29,6 @@
 
   <!-- <ItemGroup>
     <ProjectReference Include="..\FoundryRulesAndUnits\FoundryRulesAndUnits.csproj" />
-    <ProjectReference Include="..\BlazorThreeJS\FoundryWorldsAndDrawings.csproj" />
     <ProjectReference Include="..\FoundryBlazor\FoundryWorldsAndDrawings.csproj" />
   </ItemGroup> -->
 
