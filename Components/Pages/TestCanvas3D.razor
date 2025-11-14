@@ -1,0 +1,54 @@
+@page "/test3d"
+@namespace Three2025.Components.Pages
+@rendermode InteractiveServer
+@using FoundryWorldsAndDrawings.Shared
+@using Microsoft.AspNetCore.Components
+
+<h1>Canvas3D Test Page</h1>
+<h1>Canvas3D Test Page</h1>
+<p>This page tests if Canvas3DComponent renders properly</p>
+
+<div style="border: 2px solid red; padding: 10px;">
+    <h3>Canvas3D Component Should Render Below:</h3>
+    <Canvas3DComponent SceneName="Test3D" @ref="TestCanvas3DReference" CanvasWidth="400" CanvasHeight="300" />
+</div>
+
+<div style="margin-top: 20px;">
+    <button class="btn btn-primary" @onclick="TestComponentReference">Test Component Reference</button>
+    <p>Component Reference Status: @ComponentStatus</p>
+</div>
+
+@code {
+    private Canvas3DComponent? TestCanvas3DReference;
+    private string ComponentStatus = "Not checked";
+
+    private void TestComponentReference()
+    {
+        if (TestCanvas3DReference == null)
+        {
+            ComponentStatus = "❌ Canvas3DComponent reference is NULL";
+        }
+        else
+        {
+            var (found, scene) = TestCanvas3DReference.GetActiveScene();
+            if (found && scene != null)
+            {
+                ComponentStatus = $"✅ Canvas3DComponent working, Scene: {scene.Name}";
+            }
+            else
+            {
+                ComponentStatus = "⚠️ Canvas3DComponent exists but no active scene";
+            }
+        }
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Test component after first render
+            TestComponentReference();
+        }
+    }
+}
