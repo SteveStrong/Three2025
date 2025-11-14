@@ -1,11 +1,13 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../FoundryWorldsAndDrawings"
-		}
-	],
-	"settings": {}
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "../FoundryWorldsAndDrawings"
+    }
+  ],
+  "settings": {
+    "inlineChat.holdToSpeech": true
+  }
 }
