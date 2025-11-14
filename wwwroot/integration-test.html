@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>JavaScript Integration Test</title>
+  </head>
+  <body>
+    <h1>Three2025 JavaScript Integration Status</h1>
+    <div id="results"></div>
+
+    <script src="js/script-monitor.js"></script>
+    <script src="js/foundry-namespace-shim.js"></script>
+    <script src="_content/ApprenticeFoundryWorldsAndDrawings/js/app-lib.js"></script>
+    <script src="js/canvas-debug.js"></script>
+
+    <script>
+      window.addEventListener("load", function () {
+        const results = document.getElementById("results");
+        const checks = [];
+
+        // Check 1: Namespace exists
+        checks.push({
+          name: "FoundryWorldsAndDrawings namespace",
+          status: typeof window.FoundryWorldsAndDrawings !== "undefined",
+          details: typeof window.FoundryWorldsAndDrawings,
+        });
+
+        // Check 2: Initialize3DViewer exists
+        checks.push({
+          name: "Initialize3DViewer function",
+          status:
+            typeof window.FoundryWorldsAndDrawings?.Initialize3DViewer ===
+            "function",
+          details: window.FoundryWorldsAndDrawings?.Initialize3DViewer
+            ? "function"
+            : "missing",
+        });
+
+        // Check 3: Is it a stub or real?
+        const isStub =
+          window.FoundryWorldsAndDrawings?.Initialize3DViewer?.toString().includes(
+            "stub called"
+          );
+        checks.push({
+          name: "Implementation type",
+          status: !isStub,
+          details: isStub ? "STUB" : "REAL",
+        });
+
+        // Check 4: Pending calls
+        checks.push({
+          name: "Pending calls",
+          status: true,
+          details: window.FoundryWorldsAndDrawings?._pendingCalls?.length || 0,
+        });
+
+        // Render results
+        let html = '<ul style="font-family: monospace;">';
+        checks.forEach((check) => {
+          const icon = check.status ? "✅" : "❌";
+          html += `<li>${icon} ${check.name}: ${check.details}</li>`;
+        });
+        html += "</ul>";
+
+        html += "<h2>Console Commands</h2>";
+        html += "<p>Open browser console and run:</p>";
+        html += "<pre>window.checkFoundryNamespace();</pre>";
+        html += "<pre>window.debugCanvas();</pre>";
+
+        results.innerHTML = html;
+
+        // Run automatic checks
+        console.log("=== Automatic Integration Check ===");
+        window.checkFoundryNamespace();
+        console.log("=== End Automatic Check ===");
+      });
+    </script>
+  </body>
+</html>
