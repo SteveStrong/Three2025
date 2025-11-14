@@ -10,6 +10,7 @@ using FoundryWorldsAndDrawings.ThreeD.Objects;
 using FoundryWorldsAndDrawings.ThreeD.Geometires;
 using FoundryWorldsAndDrawings.ThreeD.Materials;
 using FoundryWorldsAndDrawings.ThreeD.Core;
+using FoundryWorldsAndDrawings.Shared;
 
 
 
@@ -20,7 +21,8 @@ namespace Three2025.Components.Pages;
 
 public partial class HomeBase : ComponentBase, IDisposable
 {
-    public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
+    public Canvas3DComponent Canvas3DReference = null;
+    public Canvas2DComponent Canvas2DReference = null;
 
     [Inject] public NavigationManager Navigation { get; set; }
 
