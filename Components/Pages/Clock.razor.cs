@@ -30,6 +30,8 @@ public partial class ClockBase : ComponentBase, IDisposable
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
 
+    protected double _currentFps = 0;
+    protected int _currentTick = 0;
 
     protected MockDataGenerator DataGenerator { get; set; } = new();
 
@@ -46,7 +48,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         Workspace.SetBaseUrl(Navigation?.BaseUri ?? "");
         
         // Subscribe to animation frame events for World (3D)
-        FoundryService.AnimationBus().SubscribeTo<AnimationEvent>(args => OnAnimationFrame(args));
+        FoundryService.AnimationBus().SubscribeTo<AnimationEvent>(OnAnimationFrame);
         
         base.OnInitialized();
     }
@@ -55,14 +57,22 @@ public partial class ClockBase : ComponentBase, IDisposable
     {
         if (animEvent.IsWorld3D())
         {
-            Console.WriteLine($"Clock Page: Animation frame for World at {DateTime.Now:HH:mm:ss.fff}, tick={animEvent.tick}, fps={animEvent.fps}");
+            _currentFps = animEvent.fps;
+            _currentTick = animEvent.tick;
+            $"Clock OnAnimationFrame: Tick {_currentTick}, FPS {_currentFps:F1}".WriteInfo();
+            
+            // Only update UI every 15 frames to avoid overwhelming Blazor
+            if (_currentTick % 15 == 0)
+            {
+                InvokeAsync(StateHasChanged);
+            }
         }
     }
 
     public void Dispose()
     {
         // Unsubscribe when component is disposed
-        FoundryService?.AnimationBus()?.UnSubscribeFrom<AnimationEvent>(args => OnAnimationFrame(args));
+        FoundryService?.AnimationBus()?.UnSubscribeFrom<AnimationEvent>(OnAnimationFrame);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
