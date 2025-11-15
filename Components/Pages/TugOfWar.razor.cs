@@ -19,7 +19,6 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] protected IJSRuntime JsRuntime { get; set; }
-    [Inject] private ComponentBus? PubSub { get; set; }
 
     public FoundryWorldsAndDrawings.Shared.Canvas2DComponent Canvas2DReference = null;
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
@@ -30,8 +29,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     protected MockDataGenerator DataGenerator { get; set; } = new();
 
     // 3D Animation state
-    private FoModel3D _box1_3D;
-    private FoModel3D _box2_3D;
+    private FoShape3D _box1_3D;
+    private FoShape3D _box2_3D;
     private FoPipe3D _tube_3D;
     private bool _isAnimating3D = false;
     private double _animationTime = 0;
@@ -178,26 +177,22 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         arena.ClearArena();
 
         // Create Box 1 (Blue) - starting position left
-        _box1_3D = new FoModel3D($"Box1-{Guid.NewGuid().ToString().Substring(0, 8)}")
+        _box1_3D = new FoShape3D($"Box1-{Guid.NewGuid().ToString().Substring(0, 8)}", "blue")
         {
-            Url = GetReferenceTo(@"storage/StaticFiles/box.glb"),
             Transform = new Transform3("Box1Transform")
             {
                 Position = new Vector3(-2, 0, 0),
-                Scale = new Vector3(0.5, 0.5, 0.5),
             },
-        };
+        }.CreateBox("Box1", 1.0, 1.0, 1.0);
 
-        // Create Box 2 (Red) - starting position right
-        _box2_3D = new FoModel3D($"Box2-{Guid.NewGuid().ToString().Substring(0, 8)}")
+        // Create Box 2 (Orange) - starting position right
+        _box2_3D = new FoShape3D($"Box2-{Guid.NewGuid().ToString().Substring(0, 8)}", "orange")
         {
-            Url = GetReferenceTo(@"storage/StaticFiles/box.glb"),
             Transform = new Transform3("Box2Transform")
             {
                 Position = new Vector3(2, 0, 0),
-                Scale = new Vector3(0.5, 0.5, 0.5),
             },
-        };
+        }.CreateBox("Box2", 1.0, 1.0, 1.0);
 
         // Create connecting tube (Cyan) - using TubeGeometry with path
         var initialPath = new List<Vector3> 
@@ -209,8 +204,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             .CreateTube("ConnectingTube", 0.1, initialPath); // radius 0.1, path between boxes
 
         // Add to arena
-        arena.AddShapeToStage<FoModel3D>(_box1_3D);
-        arena.AddShapeToStage<FoModel3D>(_box2_3D);
+        arena.AddShapeToStage<FoShape3D>(_box1_3D);
+        arena.AddShapeToStage<FoShape3D>(_box2_3D);
         arena.AddShapeToStage<FoPipe3D>(_tube_3D);
         
         // Trigger initial render so shapes appear before animation starts
@@ -259,12 +254,15 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             var pos1 = _box1_3D.Transform.Position;
             var pos2 = _box2_3D.Transform.Position;
 
-            // Update path to connect box centers directly on _tube_3D
+            // Update path to connect box centers directly
             _tube_3D.Path3D = new List<Vector3> 
             { 
                 pos1,  // Start at box1 position
                 pos2   // End at box2 position
             };
+            
+            // Explicitly mark dirty to force geometry regeneration
+            _tube_3D.SetDirty(true);
         });
 
         $"3D Tug of War started".WriteSuccess();
