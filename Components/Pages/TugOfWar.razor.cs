@@ -32,7 +32,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     // 3D Animation state
     private FoModel3D _box1_3D;
     private FoModel3D _box2_3D;
-    private FoModel3D _tube_3D;
+    private FoPipe3D _tube_3D;
     private bool _isAnimating3D = false;
     private double _animationTime = 0;
     private const double ANIMATION_DURATION = 2.0; // seconds
@@ -111,6 +111,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             service.ClearAll();
             $"2D Tug of War animation completed".WriteSuccess();
         });
+        
+        // Trigger initial render to show shapes
+        StateHasChanged();
         
         $"2D Tug of War started".WriteSuccess();
     }
@@ -196,21 +199,22 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             },
         };
 
-        // Create connecting tube (Cyan)
-        _tube_3D = new FoModel3D($"Tube-{Guid.NewGuid().ToString().Substring(0, 8)}")
-        {
-            Url = GetReferenceTo(@"storage/StaticFiles/tube.glb"),
-            Transform = new Transform3("TubeTransform")
-            {
-                Position = new Vector3(0, 0, 0),
-                Scale = new Vector3(4, 0.2, 0.2), // Long thin tube
-            },
+        // Create connecting tube (Cyan) - using TubeGeometry with path
+        var initialPath = new List<Vector3> 
+        { 
+            new Vector3(-2, 0, 0),  // Start at box1
+            new Vector3(2, 0, 0)    // End at box2
         };
+        _tube_3D = new FoPipe3D($"Tube-{Guid.NewGuid().ToString().Substring(0, 8)}", "cyan")
+            .CreateTube("ConnectingTube", 0.1, initialPath); // radius 0.1, path between boxes
 
         // Add to arena
         arena.AddShapeToStage<FoModel3D>(_box1_3D);
         arena.AddShapeToStage<FoModel3D>(_box2_3D);
-        arena.AddShapeToStage<FoModel3D>(_tube_3D);
+        arena.AddShapeToStage<FoPipe3D>(_tube_3D);
+        
+        // Trigger initial render so shapes appear before animation starts
+        arena.UpdateArena();
 
         // Reset animation state
         _isAnimating3D = true;
@@ -247,7 +251,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             self.Transform.Position = new Vector3(newX, newY, 0);
         });
 
-        // Update tube to stretch between boxes
+        // Update tube path to follow boxes
         _tube_3D.SetAnimationUpdate((self, tick, fps) =>
         {
             if (_box1_3D == null || _box2_3D == null) return;
@@ -255,18 +259,12 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             var pos1 = _box1_3D.Transform.Position;
             var pos2 = _box2_3D.Transform.Position;
 
-            // Center between boxes
-            var centerX = (pos1.X + pos2.X) / 2;
-            var centerY = (pos1.Y + pos2.Y) / 2;
-            self.Transform.Position = new Vector3(centerX, centerY, 0);
-
-            // Scale to stretch between boxes
-            var distance = Math.Sqrt(Math.Pow(pos2.X - pos1.X, 2) + Math.Pow(pos2.Y - pos1.Y, 2));
-            self.Transform.Scale = new Vector3(distance / 2, 0.2, 0.2);
-            
-            // Rotate to point from box1 to box2
-            var angle = Math.Atan2(pos2.Y - pos1.Y, pos2.X - pos1.X);
-            self.Transform.Rotation = new Euler(0, 0, angle);
+            // Update path to connect box centers directly on _tube_3D
+            _tube_3D.Path3D = new List<Vector3> 
+            { 
+                pos1,  // Start at box1 position
+                pos2   // End at box2 position
+            };
         });
 
         $"3D Tug of War started".WriteSuccess();
