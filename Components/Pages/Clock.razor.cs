@@ -204,7 +204,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         {
             Text = DataGenerator.GenerateText(),
             Color = DataGenerator.GenerateColor(),
-            FontSize = DataGenerator.GenerateDouble(.5, 5.0),
+            FontSize = DataGenerator.GenerateDouble(2.5, 5.0),
             Transform = new Transform3("Text3DTransform")
             {
                 Position = new Vector3(x, y, z),
@@ -228,6 +228,10 @@ public partial class ClockBase : ComponentBase, IDisposable
         {
             bool move = tick % 10 == 0;
             if (!move) return;
+
+            //shift the characters 1 letter to the left
+            // every itteration 
+            text3d.Text = text3d.Text.Substring(1) + text3d.Text[0];
 
             var pos = self.Transform.MoveBy(0, 0, delta);
             if (pos.Z > 10 || pos.Z < -10)
@@ -287,9 +291,9 @@ public partial class ClockBase : ComponentBase, IDisposable
                 delta = -delta;
                 if (pos.X > 10) angle = Math.PI;
                 else angle = 0.0;
+                self.Transform.RotateTo(0, angle, 0, AngleUnit.Radians);
             }
 
-            self.Transform.RotateBy(0, angle, 0, AngleUnit.Radians);
             self.SetDirty(self.Transform.IsDirty);
         });
 
@@ -330,9 +334,9 @@ public partial class ClockBase : ComponentBase, IDisposable
                 delta = -delta;
                 if (pos.X > 10) angle = Math.PI;
                 else angle = 0.0;
+                self.Transform.RotateTo(0, angle, 0, AngleUnit.Radians);
             }
 
-            self.Transform.RotateBy(0, angle, 0, AngleUnit.Radians);
             self.SetDirty(self.Transform.IsDirty);
         });
 
