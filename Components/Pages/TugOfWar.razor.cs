@@ -36,10 +36,29 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     private double _animationTime = 0;
     private const double ANIMATION_DURATION = 2.0; // seconds
 
+    // FPS and tick tracking
+    protected double _currentFps = 0;
+    protected int _currentTick = 0;
+    private int _frameCount = 0;
+    private const int FPS_UPDATE_INTERVAL = 15; // Update display every 15 frames
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        AnimationFrameBus.SubscribeToAnimation(OnAnimationFrame);
         $"TugOfWar Page OnInitialized".WriteInfo();
+    }
+
+    private void OnAnimationFrame(AnimationEvent animEvent)
+    {
+        _frameCount++;
+        if (_frameCount >= FPS_UPDATE_INTERVAL)
+        {
+            _currentFps = animEvent.fps;
+            _currentTick = animEvent.tick;
+            _frameCount = 0;
+            InvokeAsync(StateHasChanged);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -82,6 +101,19 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
         // Clear existing shapes
         drawing.ClearAll();
+        
+        // Disable line router and hit test display for clean display (keep grid visible)
+        var page = drawing.CurrentPage();
+        if (page != null)
+        {
+            page.ShowGrid = true;  // Keep grid visible
+            page.ShowLineRouter = false;
+        }
+        drawing.ToggleHitTestRender(); // Turn off if currently on
+        if (drawing.ToggleHitTestRender()) // Check state
+        {
+            drawing.ToggleHitTestRender(); // Turn it off
+        }
 
         // Create two shapes
         var s1 = new FoShape2D(50, 50, "Blue");
@@ -89,9 +121,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         var s2 = new FoShape2D(50, 50, "Orange");
         s2.MoveTo(500, 300);
         
-        var service = Workspace.GetSelectionService();
-        service.AddItem(drawing.AddShape(s1));
-        service.AddItem(drawing.AddShape(s2));
+        // Add shapes to drawing (without selection to avoid debug lines)
+        drawing.AddShape(s1);
+        drawing.AddShape(s2);
         
         // Create connecting arrow
         var wire = new FoShape1D("Arrow", "Cyan")
@@ -107,7 +139,6 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         FoGlyph2D.Animations.Tween<FoShape2D>(s1, new { PinX = s1.PinX - 150, }, 2, 2.2F);
         FoGlyph2D.Animations.Tween<FoShape2D>(s2, new { PinX = s2.PinX + 150, PinY = s2.PinY + 50, }, 2, 2.4f).OnComplete(() =>
         {
-            service.ClearAll();
             $"2D Tug of War animation completed".WriteSuccess();
         });
         
@@ -246,19 +277,41 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             self.Transform.Position = new Vector3(newX, newY, 0);
         });
 
-        // Update tube path to follow boxes
+        // Update tube path to follow boxes using world positions
         _tube_3D.SetAnimationUpdate((self, tick, fps) =>
         {
             if (_box1_3D == null || _box2_3D == null) return;
 
-            var pos1 = _box1_3D.Transform.Position;
-            var pos2 = _box2_3D.Transform.Position;
+            // Get world positions from HitBoundary (computed by Three.js getWorldPosition)
+            var (found1, pos1) = _box1_3D.HitPosition();
+            var (found2, pos2) = _box2_3D.HitPosition();
 
-            // Update path to connect box centers directly
+            // Fallback to transform position if HitBoundary not yet computed
+            if (!found1)
+            {
+                pos1 = _box1_3D.Transform.Position;
+                $"Box1 using Transform: {pos1}".WriteWarning();
+            }
+            else
+            {
+                $"Box1 HitPosition: {pos1}".WriteInfo();
+            }
+
+            if (!found2)
+            {
+                pos2 = _box2_3D.Transform.Position;
+                $"Box2 using Transform: {pos2}".WriteWarning();
+            }
+            else
+            {
+                $"Box2 HitPosition: {pos2}".WriteInfo();
+            }
+
+            // Update path to connect box centers in world space
             _tube_3D.Path3D = new List<Vector3> 
             { 
-                pos1,  // Start at box1 position
-                pos2   // End at box2 position
+                pos1,  // Start at box1 world position
+                pos2   // End at box2 world position
             };
             
             // Explicitly mark dirty to force geometry regeneration
@@ -266,6 +319,20 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         });
 
         $"3D Tug of War started".WriteSuccess();
+    }
+
+    public void StartBothAnimations()
+    {
+        StartTugOfWar2D();
+        StartTugOfWar3D();
+        $"Both 2D and 3D Tug of War started".WriteSuccess();
+    }
+
+    public void ResetBoth()
+    {
+        Reset2D();
+        Reset3D();
+        $"Both 2D and 3D reset".WriteSuccess();
     }
 
     public void Reset3D()
@@ -282,6 +349,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     public void Dispose()
     {
         _isAnimating3D = false;
+        AnimationFrameBus.UnSubscribeFromAnimation(OnAnimationFrame);
         $"TugOfWar Page Disposed".WriteInfo();
     }
 }
