@@ -4,10 +4,12 @@ using FoundryRulesAndUnits.Extensions;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.ThreeD;
-using FoundryWorldsAndDrawings.ThreeD.Shapes;
+
 using FoundryWorldsAndDrawings.ThreeD.Viewers;
 using BlazorComponentBus;
 using FoundryWorldsAndDrawings.PubSub;
+using FoundryRulesAndUnits.Models;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 namespace Three2025.Components.Pages;
 
@@ -152,8 +154,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         $"Initializing 3D scene".WriteInfo();
         
         // Add grid and axes helpers
-        await scene.DoAddGridHelper(20, 20);
-        await scene.DoAddAxisHelper(5);
+        // await scene.DoAddGridHelper(20, 20);
+        // await scene.DoAddAxisHelper(5);
 
         $"3D scene initialized".WriteSuccess();
     }
@@ -225,7 +227,6 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             // Box 1 moves left
             var newX = -2 - (progress * 3); // Move from -2 to -5
             self.Transform.Position = new Vector3(newX, 0, 0);
-            self.Transform.SetDirty(true);
 
             if (progress >= 1.0)
             {
@@ -244,7 +245,6 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             var newX = 2 + (progress * 3); // Move from 2 to 5
             var newY = progress * 1; // Move up by 1 unit
             self.Transform.Position = new Vector3(newX, newY, 0);
-            self.Transform.SetDirty(true);
         });
 
         // Update tube to stretch between boxes
@@ -267,8 +267,6 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             // Rotate to point from box1 to box2
             var angle = Math.Atan2(pos2.Y - pos1.Y, pos2.X - pos1.X);
             self.Transform.Rotation = new Euler(0, 0, angle);
-            
-            self.Transform.SetDirty(true);
         });
 
         $"3D Tug of War started".WriteSuccess();
