@@ -1,0 +1,45 @@
+@page "/animation-control"
+@rendermode InteractiveServer
+
+<PageTitle>Animation Control</PageTitle>
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>Animation Control Panel</h3>
+        </div>
+        <div class="card-body">
+            <div class="d-flex gap-3 align-items-center">
+                <button class="btn btn-success btn-lg" @onclick="StartAnimation" disabled="@isRunning">
+                    <i class="bi bi-play-fill"></i> Start Animation
+                </button>
+                <button class="btn btn-danger btn-lg" @onclick="StopAnimation" disabled="@(!isRunning)">
+                    <i class="bi bi-stop-fill"></i> Stop Animation
+                </button>
+                <div class="ms-3">
+                    <span class="badge @(isRunning ? "bg-success" : "bg-secondary") fs-5">
+                        @(isRunning ? "Running" : "Stopped")
+                    </span>
+                </div>
+            </div>
+            
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert @alertClass mt-3" role="alert">
+                    @message
+                </div>
+            }
+
+            <div class="mt-4">
+                <h5>Instructions:</h5>
+                <ul>
+                    <li>Click <strong>Start Animation</strong> to begin the global animation loop</li>
+                    <li>Click <strong>Stop Animation</strong> to pause the animation</li>
+                    <li>Check your browser console to see the <code>TriggerAnimationFrame()</code> logs</li>
+                    <li>The animation controls all Canvas3D and Canvas2D components</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+

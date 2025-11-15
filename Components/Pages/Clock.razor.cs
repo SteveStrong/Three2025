@@ -11,11 +11,12 @@ using FoundryRulesAndUnits.Extensions;
 using FoundryWorldsAndDrawings.ThreeD.Viewers;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
+using BlazorComponentBus;
 
 
 namespace Three2025.Components.Pages;
 
-public partial class ClockBase : ComponentBase
+public partial class ClockBase : ComponentBase, IDisposable
 {
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
 
@@ -43,7 +44,25 @@ public partial class ClockBase : ComponentBase
     protected override void OnInitialized()
     {
         Workspace.SetBaseUrl(Navigation?.BaseUri ?? "");
+        
+        // Subscribe to animation frame events for World (3D)
+        FoundryService.AnimationBus().SubscribeTo<AnimationEvent>(args => OnAnimationFrame(args));
+        
         base.OnInitialized();
+    }
+
+    private void OnAnimationFrame(AnimationEvent animEvent)
+    {
+        if (animEvent.IsWorld3D())
+        {
+            Console.WriteLine($"Clock Page: Animation frame for World at {DateTime.Now:HH:mm:ss.fff}, tick={animEvent.tick}, fps={animEvent.fps}");
+        }
+    }
+
+    public void Dispose()
+    {
+        // Unsubscribe when component is disposed
+        FoundryService?.AnimationBus()?.UnSubscribeFrom<AnimationEvent>(args => OnAnimationFrame(args));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -325,83 +344,73 @@ public partial class ClockBase : ComponentBase
         });
     }
 
-    public async Task DoAddTRexToScene()
+    public void DoAddTRexToArena()
     {
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
+        var arena = Workspace.GetArena();
 
-
-        var delta = 0.05;
         var range = 20.0;
+        
+        // Use array to hold mutable state (arrays are reference types)
+        var state = new double[] { 0.5 }; // state[0] is delta - MUCH FASTER to see movement
 
-        var model = new Model3D()
+        var uniqueName = $"WalkingSub-{Guid.NewGuid().ToString().Substring(0, 8)}";
+        
+        var model = new FoModel3D(uniqueName)
         {
-            Name = "TRex", // $"TRex:{DataGenerator.GenerateWord()}",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/staticfiles/T_Rex.glb"),
-            Format = Model3DFormats.Gltf,
-            Transform = new Transform3("TRexTransform")
+            Url = GetReferenceTo(@"storage/staticfiles/sub.glb"), // Use sub instead of T-Rex
+            Transform = new Transform3("SubWalkTransform")
             {
-                Position = new Vector3(8, 0, 0),
+                Position = new Vector3(0, 5, 0), // Start at center, raised up
+                Scale = new Vector3(1, 1, 1), // Normal size for sub
             },
         };
 
         model.SetAnimationUpdate((self, tick, fps) =>
         {
-            // bool move = tick % 10 == 0;
-            // if (!move) return;
-
-            //$"SetAnimationUpdate {tick} on FoGlyph3D {self.Name}".WriteInfo();
+            // Move every frame to make it obvious
+            var delta = state[0];
             var pos = self.Transform.MoveBy(0, 0, delta);
             var loc = pos.Z;
-            //$"Transform moved to {pos.X}, {pos.Y}, {pos.Z} on FoGlyph3D {self.Name}".WriteInfo();
+            
+            if (tick % 30 == 0) // Log every 30 frames
+            {
+                Console.WriteLine($"{uniqueName} at Z={loc:F2}, delta={delta}");
+            }
 
             if (loc > range)
             {
-                delta = -delta;
+                state[0] = -Math.Abs(state[0]);
                 self.Transform.RotateTo(0, Math.PI, 0, AngleUnit.Radians);
+                Console.WriteLine($"{uniqueName} turned around at Z={loc:F2}, delta now {state[0]}");
             }
             else if (loc < -range)
             {
-                delta = -delta;
+                state[0] = Math.Abs(state[0]);
                 self.Transform.RotateTo(0, 0, 0, AngleUnit.Radians);
+                Console.WriteLine($"{uniqueName} turned around at Z={loc:F2}, delta now {state[0]}");
             }
 
-            //Since this is NOT a FoGlyph3D we need to manually set the dirty flag
             self.SetDirty(self.Transform.IsDirty);
-
-            //FoGlyph2D.Animations.Tween<FoShape2D>(s1, new { PinX = s1.PinX - 150, }, 2, 2.2F);
-            // FoGlyph2D.Animations.Tween<FoShape2D>(s2, new { PinX = s2.PinX + 150, PinY = s2.PinY + 50, }, 2, 2.4f).OnComplete(() =>
-            // {
-            //     service.ClearAll();
-            // });
         });
 
-        await scene.Request3DModel(model, async (uuid) =>
-        {
-            scene.AddChild(model);
-            await Task.CompletedTask;
-        });
+        arena.AddShapeToStage<FoModel3D>(model);
+        Console.WriteLine($"Added {uniqueName} to arena - submarine walking back and forth");
     }
 
 
 
-    public async Task DoRequestAddSubToScene()
+    public void DoRequestAddSubToArena()
     {
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
-
+        var arena = Workspace.GetArena();
+        
         var name = "Sub";
         var angle = 0.0;
         var radius = 22.0;
         var y = -3.0;
 
-        var model = new Model3D()
+        var model = new FoModel3D(name)
         {
-            Name = name,
-            Uuid = Guid.NewGuid().ToString(),
             Url = GetReferenceTo(@"storage/staticfiles/sub.glb"),
-            Format = Model3DFormats.Gltf,
             Transform = new Transform3("SubTransform")
             {
                 Position = new Vector3(radius, y, 0),
@@ -412,25 +421,24 @@ public partial class ClockBase : ComponentBase
 
         model.SetAnimationUpdate((self, tick, fps) =>
         {
-            //bool move = tick % 10 == 0;
-            //if (!move) return;
+            Console.WriteLine($"Sub animation callback - tick: {tick}, angle: {angle}");
 
-            angle += Math.PI / 120; // Adjust speed as needed
+            angle += Math.PI / 120;
             var x = radius * Math.Cos(angle);
             var z = radius * Math.Sin(angle);
             self.Transform.Position = new Vector3(x, y, z);
-            // Set rotation so sub points in direction of travel
+            
+            Console.WriteLine($"Sub moved to position: X={x:F2}, Y={y:F2}, Z={z:F2}");
+            
             var direction = new Vector3(-Math.Sin(angle), 0, Math.Cos(angle));
             var rotationY = Math.Atan2(direction.X, direction.Z);
-            rotationY += Math.PI/2; // Adjust to align model's forward direction
+            rotationY += Math.PI/2;
             self.Transform.Rotation = new Euler(0, rotationY, 0, AngleUnit.Radians);
             self.SetDirty(self.Transform.IsDirty);
+            
+            Console.WriteLine($"Sub dirty flag: {self.Transform.IsDirty}");
         });
 
-        await scene.Request3DModel(model, async (uuid) =>
-        {
-            scene.AddChild(model);
-            await Task.CompletedTask;
-        });
+        arena.AddShapeToStage<FoModel3D>(model);
     }
 }
