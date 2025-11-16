@@ -402,7 +402,6 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         arena.EstablishStage<FoStage3D>("Main Stage");
         arena.AddShapeToStage<Node3D>(box);
-        arena.UpdateArena();
     }
 
 

@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../FoundryWorldsAndDrawings"
+		},
+		{
+			"path": "../FoundryRulesAndUnits"
 		}
 	],
 	"settings": {}

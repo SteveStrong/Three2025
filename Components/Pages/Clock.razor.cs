@@ -248,7 +248,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             {
                 delta = -delta;
             }
-            self.SetDirty(self.Transform.IsDirty);
+            self.SetTransformStale();
         });
     }
 
@@ -304,7 +304,7 @@ public partial class ClockBase : ComponentBase, IDisposable
                 self.Transform.RotateTo(0, angle, 0, AngleUnit.Radians);
             }
 
-            self.SetDirty(self.Transform.IsDirty);
+            self.SetTransformStale();
         });
 
     }
@@ -347,7 +347,7 @@ public partial class ClockBase : ComponentBase, IDisposable
                 self.Transform.RotateTo(0, angle, 0, AngleUnit.Radians);
             }
 
-            self.SetDirty(self.Transform.IsDirty);
+            self.SetTransformStale();
         });
 
 
@@ -404,7 +404,7 @@ public partial class ClockBase : ComponentBase, IDisposable
                 Console.WriteLine($"{uniqueName} turned around at Z={loc:F2}, delta now {state[0]}");
             }
 
-            self.SetDirty(self.Transform.IsDirty);
+            self.SetTransformStale();
         });
 
         arena.AddShapeToStage<FoModel3D>(model);
@@ -448,9 +448,9 @@ public partial class ClockBase : ComponentBase, IDisposable
             var rotationY = Math.Atan2(direction.X, direction.Z);
             rotationY += Math.PI/2;
             self.Transform.Rotation = new Euler(0, rotationY, 0, AngleUnit.Radians);
-            self.SetDirty(self.Transform.IsDirty);
+            self.SetTransformStale();
             
-            Console.WriteLine($"Sub dirty flag: {self.Transform.IsDirty}");
+            Console.WriteLine($"Sub transform stale flag: {self.IsTransformStale}");
         });
 
         arena.AddShapeToStage<FoModel3D>(model);
