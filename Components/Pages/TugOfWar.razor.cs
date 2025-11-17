@@ -327,7 +327,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         
         // Reset animation state and start animation
         _animationTime = 0;
-        _growingPipe.SetAnimationUpdate(GrowPipeAnimation);
+        //_growingPipe.SetAnimationUpdate(GrowPipeAnimation);
 
         $"Pipe animation started - watch for [PIPE ANIM] logs".WriteSuccess();
         $"Animation will run for {ANIMATION_DURATION} seconds, growing from height {START_HEIGHT} to {TARGET_HEIGHT}".WriteInfo();
@@ -336,14 +336,14 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     // Extracted animation function for growing pipe
     private void GrowPipeAnimation(Object3D self, int tick, double fps)
     {
-        //lets slow this down a bit and only proceed every 300 clicks
-        if (tick % 300 != 0)
-            return;
-            
+ 
         _animationTime += 1.0 / fps;
         var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
         if (progress >= 1.0) 
+        {
+            StopAnimation3D();
             return;
+        }
         
         var newHeight = START_HEIGHT + (progress * (TARGET_HEIGHT - START_HEIGHT));
         
