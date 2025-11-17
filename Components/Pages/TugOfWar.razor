@@ -34,10 +34,10 @@
     <div style="flex: 1;">
         <h4>3D Canvas (Transform Animation)</h4>
         <div style="margin-bottom: 10px;">
-            <button class="btn btn-primary" @onclick="StartTugOfWar3D">Create Pipe</button>
+            <button class="btn btn-primary" @onclick="StartTugOfWar3D">Create Scene</button>
             <button class="btn btn-success" @onclick="StartAnimation3D">Start Animation</button>
-            <button class="btn btn-danger" @onclick="StopAnimation3D">Stop Animation</button>
-            <button class="btn btn-secondary" @onclick="Reset3D">Reset 3D</button>
+            <button class="btn btn-danger" @onclick="StopAnimation3D">Stop</button>
+            <button class="btn btn-secondary" @onclick="Reset3D">Reset</button>
         </div>
         <Canvas3DComponent SceneName="TugOfWar3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight WithAnimations="true" />
     </div>
@@ -47,8 +47,15 @@
     <h5>Test Details:</h5>
     <ul>
         <li><strong>2D Test:</strong> Two shapes (Blue and Orange) connected by a cyan arrow. They animate using GlideTween.</li>
-        <li><strong>3D Test:</strong> Two 3D boxes (Blue and Red) connected by a cyan tube. They animate using SetAnimationUpdate.</li>
+        <li><strong>3D Test:</strong> 
+            <ul>
+                <li>Tug-of-War: Two boxes (blue & orange) moving apart with connecting cyan tube</li>
+                <li>Static Triangle: Three boxes connected by pipes</li>
+                <li>Growing Pipe: Vertical cyan tube growing from height 1.0 to 15.0</li>
+                <li>Flag Poles: Five vertical poles growing upward simultaneously</li>
+            </ul>
+        </li>
         <li><strong>Purpose:</strong> Verify both Canvas2D and Canvas3D receive animation events correctly and render smoothly.</li>
-        <li><strong>Expected:</strong> Both animations should run simultaneously and complete in approximately 2 seconds.</li>
+        <li><strong>Expected:</strong> All animations run for 5 seconds. Boxes move, pipes grow, flag poles extend.</li>
     </ul>
 </div>

@@ -32,12 +32,15 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     // 3D Animation state
     private FoShape3D _box1_3D;
     private FoShape3D _box2_3D;
+    private FoPipe3D _tube_3D;  // The connecting tube between boxes
     private FoPipe3D _growingPipe;
     private FoText3D _distanceText_3D;
+    private List<(FoShape3D ground, FoShape3D top, FoPipe3D pole)> _flagPoles = new();
     private double _animationTime = 0;
     private const double ANIMATION_DURATION = 5.0; // seconds
     private const double START_HEIGHT = 1.0;
-    private const double TARGET_HEIGHT = 15.0;
+    private const double TARGET_HEIGHT = 5.0;
+    private const double BOX_MOVE_DISTANCE = 3.0;
 
     // FPS and tick tracking
     protected double _currentFps = 0;
@@ -223,99 +226,117 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         // Clear existing objects
         arena.ClearArena();
 
-        // COMMENTED OUT: Complex tug-of-war test with two boxes and connecting pipe
-        // Keeping for future use case
-        // _box1_3D = new FoShape3D($"Box1-{Guid.NewGuid().ToString().Substring(0, 8)}", "blue")
-        // {
-        //     Transform = new Transform3("Box1Transform")
-        //     {
-        //         Position = new Vector3(-2, 0, 0),
-        //     },
-        // }.CreateBox("Box1", 1.0, 1.0, 1.0);
-        //
-        // _box2_3D = new FoShape3D($"Box2-{Guid.NewGuid().ToString().Substring(0, 8)}", "orange")
-        // {
-        //     Transform = new Transform3("Box2Transform")
-        //     {
-        //         Position = new Vector3(2, 0, 0),
-        //     },
-        // }.CreateBox("Box2", 1.0, 1.0, 1.0);
-        //
-        // _tube_3D = new FoPipe3D($"Tube-{Guid.NewGuid().ToString().Substring(0, 8)}", "cyan")
-        // {
-        //     FromShape3D = _box1_3D,
-        //     ToShape3D = _box2_3D
-        // }.CreatePipe("ConnectingTube", 0.1);
+        // Complex tug-of-war test with two boxes and connecting pipe
+        _box1_3D = new FoShape3D($"Box1-{Guid.NewGuid().ToString().Substring(0, 8)}", "blue")
+        {
+            Transform = new Transform3("Box1Transform")
+            {
+                Position = new Vector3(-2, 0, 0),
+            },
+        }.CreateBox("Box1", 1.0, 1.0, 1.0);
 
-        // COMMENTED OUT: Static test pipes (triangle formation)
-        // var staticBox1 = new FoShape3D("StaticBox1", "yellow")
-        // {
-        //     Transform = new Transform3("StaticBox1Transform") { Position = new Vector3(-4, 2, 0) }
-        // }.CreateBox("StaticBox1", 0.5, 0.5, 0.5);
-        // 
-        // var staticBox2 = new FoShape3D("StaticBox2", "green")
-        // {
-        //     Transform = new Transform3("StaticBox2Transform") { Position = new Vector3(4, 2, 0) }
-        // }.CreateBox("StaticBox2", 0.5, 0.5, 0.5);
-        // 
-        // var staticBox3 = new FoShape3D("StaticBox3", "purple")
-        // {
-        //     Transform = new Transform3("StaticBox3Transform") { Position = new Vector3(0, 3, 3) }
-        // }.CreateBox("StaticBox3", 0.5, 0.5, 0.5);
-        // 
-        // var staticPipe1 = new FoPipe3D("StaticPipe1", "yellow")
-        // {
-        //     FromShape3D = staticBox1,
-        //     ToShape3D = staticBox2
-        // }.CreatePipe("StaticPipe1", 0.05);
-        // 
-        // var staticPipe2 = new FoPipe3D("StaticPipe2", "magenta")
-        // {
-        //     FromShape3D = staticBox1,
-        //     ToShape3D = staticBox3
-        // }.CreatePipe("StaticPipe2", 0.05);
-        // 
-        // var staticPipe3 = new FoPipe3D("StaticPipe3", "lime")
-        // {
-        //     FromShape3D = staticBox2,
-        //     ToShape3D = staticBox3
-        // }.CreatePipe("StaticPipe3", 0.05);
+        _box2_3D = new FoShape3D($"Box2-{Guid.NewGuid().ToString().Substring(0, 8)}", "orange")
+        {
+            Transform = new Transform3("Box2Transform")
+            {
+                Position = new Vector3(2, 0, 0),
+            },
+        }.CreateBox("Box2", 1.0, 1.0, 1.0);
 
-        // COMMENTED OUT: Multiple flag poles test
-        // var flagPoles = new List<(FoShape3D ground, FoShape3D top, FoPipe3D pole)>();
-        // for (int i = 0; i < 5; i++)
-        // {
-        //     var xPos = -6 + (i * 3);
-        //     var ground = new FoShape3D($"FlagPoleBase{i}", "brown")
-        //     {
-        //         Transform = new Transform3("FlagPoleBase{i}Transform") { Position = new Vector3(xPos, 0, -5) }
-        //     }.CreateBox($"FlagPoleBase{i}", 0.3, 0.1, 0.3);
-        //     
-        //     var top = new FoShape3D($"FlagPoleTop{i}", "red")
-        //     {
-        //         Transform = new Transform3($"FlagPoleTop{i}Transform") { Position = new Vector3(xPos, 1, -5) }
-        //     }.CreateBox($"FlagPoleTop{i}", 0.4, 0.1, 0.4);
-        //     
-        //     var pole = new FoPipe3D($"FlagPole{i}", "gray")
-        //     {
-        //         FromShape3D = ground,
-        //         ToShape3D = top
-        //     }.CreatePipe($"FlagPole{i}", 0.03);
-        //     
-        //     flagPoles.Add((ground, top, pole));
-        // }
+        _tube_3D = new FoPipe3D($"Tube-{Guid.NewGuid().ToString().Substring(0, 8)}", "cyan")
+        {
+            FromShape3D = _box1_3D,
+            ToShape3D = _box2_3D
+        }.CreatePipe("ConnectingTube", 0.1);
+
+        // Static test pipes (triangle formation)
+        var staticBox1 = new FoShape3D("StaticBox1", "yellow")
+        {
+            Transform = new Transform3("StaticBox1Transform") { Position = new Vector3(-4, 2, 0) }
+        }.CreateBox("StaticBox1", 0.5, 0.5, 0.5);
+        
+        var staticBox2 = new FoShape3D("StaticBox2", "green")
+        {
+            Transform = new Transform3("StaticBox2Transform") { Position = new Vector3(4, 2, 0) }
+        }.CreateBox("StaticBox2", 0.5, 0.5, 0.5);
+        
+        var staticBox3 = new FoShape3D("StaticBox3", "purple")
+        {
+            Transform = new Transform3("StaticBox3Transform") { Position = new Vector3(0, 3, 3) }
+        }.CreateBox("StaticBox3", 0.5, 0.5, 0.5);
+        
+        var staticPipe1 = new FoPipe3D("StaticPipe1", "yellow")
+        {
+            FromShape3D = staticBox1,
+            ToShape3D = staticBox2
+        }.CreatePipe("StaticPipe1", 0.05);
+        
+        var staticPipe2 = new FoPipe3D("StaticPipe2", "magenta")
+        {
+            FromShape3D = staticBox1,
+            ToShape3D = staticBox3
+        }.CreatePipe("StaticPipe2", 0.05);
+        
+        var staticPipe3 = new FoPipe3D("StaticPipe3", "lime")
+        {
+            FromShape3D = staticBox2,
+            ToShape3D = staticBox3
+        }.CreatePipe("StaticPipe3", 0.05);
+
+        // Multiple flag poles test
+        _flagPoles = new List<(FoShape3D ground, FoShape3D top, FoPipe3D pole)>();
+        for (int i = 0; i < 5; i++)
+        {
+            var xPos = -6 + (i * 3);
+            var ground = new FoShape3D($"FlagPoleBase{i}", "brown")
+            {
+                Transform = new Transform3($"FlagPoleBase{i}Transform") { Position = new Vector3(xPos, 0, -5) }
+            }.CreateBox($"FlagPoleBase{i}", 0.3, 0.1, 0.3);
+            
+            var top = new FoShape3D($"FlagPoleTop{i}", "red")
+            {
+                Transform = new Transform3($"FlagPoleTop{i}Transform") { Position = new Vector3(xPos, START_HEIGHT, -5) }
+            }.CreateBox($"FlagPoleTop{i}", 0.4, 0.1, 0.4);
+            
+            var pole = new FoPipe3D($"FlagPole{i}", "gray")
+            {
+                FromShape3D = ground,
+                ToShape3D = top
+            }.CreatePipe($"FlagPole{i}", 0.03);
+            
+            _flagPoles.Add((ground, top, pole));
+        }
+
+        // ADD ALL OBJECTS TO ARENA
+        arena.AddShapeToStage<FoShape3D>(_box1_3D);
+        arena.AddShapeToStage<FoShape3D>(_box2_3D);
+        arena.AddShapeToStage<FoPipe3D>(_tube_3D);
+        
+        arena.AddShapeToStage<FoShape3D>(staticBox1);
+        arena.AddShapeToStage<FoShape3D>(staticBox2);
+        arena.AddShapeToStage<FoShape3D>(staticBox3);
+        arena.AddShapeToStage<FoPipe3D>(staticPipe1);
+        arena.AddShapeToStage<FoPipe3D>(staticPipe2);
+        arena.AddShapeToStage<FoPipe3D>(staticPipe3);
+        
+        foreach (var (ground, top, pole) in _flagPoles)
+        {
+            arena.AddShapeToStage<FoShape3D>(ground);
+            arena.AddShapeToStage<FoShape3D>(top);
+            arena.AddShapeToStage<FoPipe3D>(pole);
+        }
 
         // ULTRA SIMPLIFIED TEST: Just a pipe with animated path
         $"Creating pipe with animated path".WriteInfo();
         
         // Create pipe directly with initial path
-        _growingPipe = new FoPipe3D("GrowingPipe", "cyan");
+        _growingPipe = new FoPipe3D("GrowingPipe", "red");
         
         // Initial path (straight line from origin upward)
         var initialPath = new List<Vector3>
         {
-            new Vector3(0, 0, 0),      // Start point (static)
-            new Vector3(0, START_HEIGHT, 0)  // End point (will animate)
+            new Vector3(10, 0, 10),      // Start point (static)
+            new Vector3(10, START_HEIGHT, 10)  // End point (will animate)
         };
         
         _growingPipe.CreateTube("GrowingPipe", 0.25, initialPath);
@@ -325,60 +346,92 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         // Add just the pipe to arena
         arena.AddShapeToStage<FoPipe3D>(_growingPipe);
         
-        // Reset animation state and start animation
+        // Reset animation state - DON'T start animation yet
         _animationTime = 0;
-        //_growingPipe.SetAnimationUpdate(GrowPipeAnimation);
 
-        $"Pipe animation started - watch for [PIPE ANIM] logs".WriteSuccess();
-        $"Animation will run for {ANIMATION_DURATION} seconds, growing from height {START_HEIGHT} to {TARGET_HEIGHT}".WriteInfo();
+        $"All 3D objects created - ready for animation".WriteSuccess();
+        $"Use 'Start Animation' button to begin".WriteInfo();
     }
 
-    // Extracted animation function for growing pipe
-    private void GrowPipeAnimation(Object3D self, int tick, double fps)
+    // Unified animation function for all 3D objects
+    private void Animate3D(Object3D self, int tick, double fps)
     {
- 
         _animationTime += 1.0 / fps;
         var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
+        
         if (progress >= 1.0) 
         {
             StopAnimation3D();
+            $"All 3D animations completed".WriteSuccess();
             return;
         }
         
-        var newHeight = START_HEIGHT + (progress * (TARGET_HEIGHT - START_HEIGHT));
-        
-        // Update the path with new endpoint
-        _growingPipe.Path3D = new List<Vector3>
+        // 1. Animate tug-of-war boxes (move apart)
+        if (_box1_3D != null && _box2_3D != null)
         {
-            new Vector3(0, 0, 0),           // Start (static)
-            new Vector3(0, newHeight, 0)    // End (animated)
-        };
+            var box1NewX = -2 - (progress * BOX_MOVE_DISTANCE);
+            var box2NewX = 2 + (progress * BOX_MOVE_DISTANCE);
+            
+            _box1_3D.Transform.Position = new Vector3(box1NewX, 0, 0);
+            _box2_3D.Transform.Position = new Vector3(box2NewX, 0, 0);
+            
+            // No need to manually mark tube stale - it listens to box transform changes!
+        }
         
-        $"[PIPE ANIM] Path[1].Y: {newHeight:F3}".WriteInfo();
+        // 2. Animate growing pipe (vertical growth)
+        if (_growingPipe != null)
+        {
+            var newHeight = START_HEIGHT + (progress * (TARGET_HEIGHT - START_HEIGHT));
+            _growingPipe.Path3D = new List<Vector3>
+            {
+                new Vector3(10, 0, 10),
+                new Vector3(10, newHeight, 10)
+            };
+        }
+        
+        // 3. Animate flag poles (grow upward)
+        if (_flagPoles != null && _flagPoles.Count > 0)
+        {
+            var flagHeight = START_HEIGHT + (progress * (TARGET_HEIGHT - START_HEIGHT));
+            foreach (var (ground, top, pole) in _flagPoles)
+            {
+                var currentPos = top.Transform.Position;
+                top.Transform.Position = new Vector3(currentPos.X, flagHeight, currentPos.Z);
+                
+                // No need to manually mark pole stale - it listens to top transform changes!
+            }
+        }
     }
 
     public void StartAnimation3D()
     {
-        if (_growingPipe == null)
+        if (_growingPipe == null && _box1_3D == null && _flagPoles.Count == 0)
         {
-            $"No pipe available - call StartTugOfWar3D first".WriteError();
+            $"No objects available - call StartTugOfWar3D first".WriteError();
             return;
         }
         
         _animationTime = 0;
-        _growingPipe.SetAnimationUpdate(GrowPipeAnimation);
-        $"3D animation started".WriteSuccess();
+        
+        // Register animation callback on growing pipe (will drive all animations)
+        if (_growingPipe != null)
+        {
+            _growingPipe.SetAnimationUpdate(Animate3D);
+            $"3D animation started - animating pipe, boxes, and flag poles".WriteSuccess();
+        }
+        else
+        {
+            $"No growing pipe to attach animation to".WriteError();
+        }
     }
 
     public void StopAnimation3D()
     {
-        if (_growingPipe == null)
+        if (_growingPipe != null)
         {
-            $"No pipe available".WriteError();
-            return;
+            _growingPipe.ClearAnimationUpdate();
         }
         
-        _growingPipe.ClearAnimationUpdate();
         $"3D animation stopped".WriteInfo();
     }
 
@@ -398,13 +451,22 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
     public void Reset3D()
     {
-        _growingPipe?.ClearAnimationUpdate();
+        if (_growingPipe != null)
+        {
+            _growingPipe.ClearAnimationUpdate();
+        }
+        
         _animationTime = 0;
         
         var arena = Workspace?.GetArena();
         arena?.ClearArena();
         
         _growingPipe = null;
+        _box1_3D = null;
+        _box2_3D = null;
+        _tube_3D = null;
+        _flagPoles.Clear();
+        
         $"3D scene reset".WriteInfo();
     }
 
