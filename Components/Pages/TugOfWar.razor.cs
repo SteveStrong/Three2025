@@ -376,7 +376,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             _box2_3D.Transform.Position = new Vector3(box2NewX, 0, 0);
             
             // Manually smash the connecting tube since we don't have 3D Glue yet
-            _tube_3D?.SetGeometryStale();
+            // CRITICAL: Call GetValue3D() to rebuild geometry BEFORE Scene3D serializes it
+            _tube_3D?.Value3D?.SetGeometryStale();
+            _tube_3D?.GetValue3D(); // Eagerly update geometry
         }
         
         // 2. Animate growing pipe (vertical growth)
@@ -400,7 +402,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                 top.Transform.Position = new Vector3(currentPos.X, flagHeight, currentPos.Z);
                 
                 // Manually smash the pole since we don't have 3D Glue yet
-                pole?.SetGeometryStale();
+                // CRITICAL: Call GetValue3D() to rebuild geometry BEFORE Scene3D serializes it
+                pole?.Value3D?.SetGeometryStale();
+                pole?.GetValue3D(); // Eagerly update geometry
             }
         }
     }
