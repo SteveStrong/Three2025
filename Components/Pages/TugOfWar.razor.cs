@@ -375,7 +375,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             _box1_3D.Transform.Position = new Vector3(box1NewX, 0, 0);
             _box2_3D.Transform.Position = new Vector3(box2NewX, 0, 0);
             
-            // No need to manually mark tube stale - it listens to box transform changes!
+            // Manually smash the connecting tube since we don't have 3D Glue yet
+            _tube_3D?.SetGeometryStale();
         }
         
         // 2. Animate growing pipe (vertical growth)
@@ -398,7 +399,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                 var currentPos = top.Transform.Position;
                 top.Transform.Position = new Vector3(currentPos.X, flagHeight, currentPos.Z);
                 
-                // No need to manually mark pole stale - it listens to top transform changes!
+                // Manually smash the pole since we don't have 3D Glue yet
+                pole?.SetGeometryStale();
             }
         }
     }
