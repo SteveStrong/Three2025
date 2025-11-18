@@ -238,13 +238,13 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                 {
                     _animationTime += 1.0 / fps;
                     var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
-                    $"Box1 BeforeShapeRefresh called at tick {tick}".WriteInfo();
+                    //$"Box1 BeforeShapeRefresh called at tick {tick}".WriteInfo();
                     var x = -2 - (progress * BOX_MOVE_DISTANCE);
 
                     
                     shape.Transform.Position = new Vector3(x, 0, 0);
                     
-                    $"[TUG ANIMATE] Progress={progress:F2}, Box1 pos=({x:F2},0,0)".WriteInfo();
+                    //$"[TUG ANIMATE] Progress={progress:F2}, Box1 pos=({x:F2},0,0)".WriteInfo();
         
                 });
 
@@ -262,11 +262,11 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                 {
                     _animationTime += 1.0 / fps;
                     var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
-                    $"Box2 BeforeShapeRefresh called at tick {tick}".WriteInfo();
+                    //$"Box2 BeforeShapeRefresh called at tick {tick}".WriteInfo();
                     var x = 2 + (progress * BOX_MOVE_DISTANCE);
                     shape.Transform.Position = new Vector3(x, 0, 0);
                     
-                    $"[TUG ANIMATE] Progress={progress:F2}, Box2 pos=({x:F2},0,0)".WriteInfo();
+                    //$"[TUG ANIMATE] Progress={progress:F2}, Box2 pos=({x:F2},0,0)".WriteInfo();
         
                 });
 
@@ -287,7 +287,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                         return;
                     }
 
-                    $"Tube BeforeShapeRefresh called at tick {tick}".WriteInfo();
+                    //$"Tube BeforeShapeRefresh called at tick {tick}".WriteInfo();
 
 
                     // var (s1, fromPos) = _tube_3D.FromShape3D.GetWorldPosition();
@@ -341,7 +341,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     }
 
     // Unified animation function for all 3D objects
-    private void Animate3D(Object3D self, int tick, double fps)
+    private void Animate3D(FoGlyph3D self, int tick, double fps)
     {
         _animationTime += 1.0 / fps;
         var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
