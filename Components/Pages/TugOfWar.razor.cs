@@ -239,10 +239,17 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                     _animationTime += 1.0 / fps;
                     var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
                     //$"Box1 BeforeShapeRefresh called at tick {tick}".WriteInfo();
-                    var x = -2 - (progress * BOX_MOVE_DISTANCE);
-
                     
-                    shape.Transform.Position = new Vector3(x, 0, 0);
+                    // Only update position while animation is running (progress < 1.0)
+                    // Once complete, animation continues but nothing is marked stale
+                    // This demonstrates the optimization: no dirty objects = no JavaScript calls
+                    if (progress < 1.0)
+                    {
+                        var x = -2 - (progress * BOX_MOVE_DISTANCE);
+                        shape.Transform.Position = new Vector3(x, 0, x);
+
+                        _tube_3D.SetGeometryStale();
+                    }
                     
                     //$"[TUG ANIMATE] Progress={progress:F2}, Box1 pos=({x:F2},0,0)".WriteInfo();
         
@@ -263,8 +270,14 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                     _animationTime += 1.0 / fps;
                     var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
                     //$"Box2 BeforeShapeRefresh called at tick {tick}".WriteInfo();
-                    var x = 2 + (progress * BOX_MOVE_DISTANCE);
-                    shape.Transform.Position = new Vector3(x, 0, 0);
+                    
+                    // Only update while animating - idle after completion
+                    if (progress < 1.0)
+                    {
+                        var x = 2 + (progress * BOX_MOVE_DISTANCE);
+                        shape.Transform.Position = new Vector3(x, x, 0);
+                         _tube_3D.SetGeometryStale();
+                    }
                     
                     //$"[TUG ANIMATE] Progress={progress:F2}, Box2 pos=({x:F2},0,0)".WriteInfo();
         
@@ -275,38 +288,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         {
             FromShape3D = _box1_3D,
             ToShape3D = _box2_3D
-        };
+        }.CreatePipe("ConnectingTube", 0.1);
 
-
-        _tube_3D.CreatePipe("ConnectingTube", 0.1)
-                .BeforeShapeRefresh((shape, tick, fps) =>
-                {
-                    if ( _tube_3D.FromShape3D == null || _tube_3D.ToShape3D == null)
-                    {
-                        $"Tube BeforeShapeRefresh: Missing From/To shapes".WriteError();
-                        return;
-                    }
-
-                    //$"Tube BeforeShapeRefresh called at tick {tick}".WriteInfo();
-
-
-                    // var (s1, fromPos) = _tube_3D.FromShape3D.GetWorldPosition();
-                    // var (s2, toPos) = _tube_3D.ToShape3D.GetWorldPosition();
-                    // if ( !s1 || !s2 )
-                    // {
-                    //     $"[TUG ANIMATE] Tube BeforeShapeRefresh: Unable to get world positions".WriteError();
-                    //     return;
-                    // }
-
-                    //$"[TUG ANIMATE] Tube will see: Box1=({fromPos.X:F2},{fromPos.Y:F2},{fromPos.Z:F2}), Box2=({toPos.X:F2},{toPos.Y:F2},{toPos.Z:F2})".WriteSuccess();
-                    
-                    // Mark tube geometry as stale so it recomputes path from updated endpoint positions
-                    _tube_3D.SetGeometryStale();
-                    
-                    // Force geometry recomputation NOW before serialization
-                    _tube_3D.GetValue3D();
-
-                });
+ 
 
         // ADD BOXES AND TUBE TO ARENA
         arena.AddShapeToStage<FoShape3D>(_box1_3D);

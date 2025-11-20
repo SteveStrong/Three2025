@@ -246,8 +246,7 @@ public class CageTech : ICageTech
 
     private static FoGlyph3D DrawFace(FoShape3D root, string name, Mesh3D face)
     {
-        var shape = new FoGlyph3D(name);
-        shape.SetValue3D(face);
+        var shape = new FoGlyph3D(name, face);
         root.AddSubGlyph3D(shape);
         return shape;
     }

@@ -371,7 +371,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         
         var model = new FoModel3D(uniqueName)
         {
-            Url = GetReferenceTo(@"storage/staticfiles/sub.glb"), // Use sub instead of T-Rex
+            Url = GetReferenceTo(@"storage/staticfiles/T_Rex.glb"), // Use sub instead of T-Rex
             Transform = new Transform3("SubWalkTransform")
             {
                 Position = new Vector3(0, 5, 0), // Start at center, raised up
@@ -395,13 +395,13 @@ public partial class ClockBase : ComponentBase, IDisposable
             {
                 state[0] = -Math.Abs(state[0]);
                 self.Transform.RotateTo(0, Math.PI, 0, AngleUnit.Radians);
-                Console.WriteLine($"{uniqueName} turned around at Z={loc:F2}, delta now {state[0]}");
+                //Console.WriteLine($"{uniqueName} turned around at Z={loc:F2}, delta now {state[0]}");
             }
             else if (loc < -range)
             {
                 state[0] = Math.Abs(state[0]);
                 self.Transform.RotateTo(0, 0, 0, AngleUnit.Radians);
-                Console.WriteLine($"{uniqueName} turned around at Z={loc:F2}, delta now {state[0]}");
+                //Console.WriteLine($"{uniqueName} turned around at Z={loc:F2}, delta now {state[0]}");
             }
 
             self.SetTransformStale();
