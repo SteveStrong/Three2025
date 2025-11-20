@@ -363,7 +363,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         // Register animation callback on growing pipe (will drive all animations)
         if (_growingPipe != null)
         {
-            _growingPipe.SetAnimationUpdate(Animate3D);
+            //_growingPipe.SetAnimationUpdate(Animate3D);
             $"3D animation started - animating pipe, boxes, and flag poles".WriteSuccess();
         }
         else
