@@ -109,7 +109,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         };
 
         shape.CreateTube("TheTube", 0.15f, path);
-        shape.RefreshToScene(scene);
+        shape.QueueForMeshUpdate();
     }
 
     public void DoAddConeToScene()

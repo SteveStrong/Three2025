@@ -79,10 +79,10 @@ public partial class ClockBase : ComponentBase, IDisposable
     {
         if (firstRender)
         {
-            Console.WriteLine($"Clock OnAfterRenderAsync: Canvas3DReference is {(Canvas3DReference == null ? "null" : "not null")}");
-            Console.WriteLine($"Clock OnAfterRenderAsync: Workspace is {(Workspace == null ? "null" : "available")}");
-            Console.WriteLine($"Clock OnAfterRenderAsync: FoundryService is {(FoundryService == null ? "null" : "available")}");
-            Console.WriteLine($"Clock OnAfterRenderAsync: Tech is {(Tech == null ? "null" : "available")}");
+            $"Clock OnAfterRenderAsync: Canvas3DReference is {(Canvas3DReference == null ? "null" : "not null")}".WriteInfo();
+            $"Clock OnAfterRenderAsync: Workspace is {(Workspace == null ? "null" : "available")}".WriteInfo();
+            $"Clock OnAfterRenderAsync: FoundryService is {(FoundryService == null ? "null" : "available")}".WriteInfo();
+            $"Clock OnAfterRenderAsync: Tech is {(Tech == null ? "null" : "available")}".WriteInfo();
             
             // Wait a bit for the canvas to initialize
             await Task.Delay(500); // Increased delay for better initialization
@@ -91,7 +91,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             {
                 var (found, scene) = Canvas3DReference.GetActiveScene();
                 
-                Console.WriteLine($"Clock OnAfterRenderAsync: GetActiveScene returned found={found}, scene={scene?.Name ?? "null"}");
+                $"Clock OnAfterRenderAsync: GetActiveScene returned found={found}, scene={scene?.Name ?? "null"}".WriteInfo();
 
                 if (found && scene != null)
                 {
@@ -102,28 +102,28 @@ public partial class ClockBase : ComponentBase, IDisposable
 
                     var arena = Workspace.GetArena();
                     arena.SetScene(scene);
-                    Console.WriteLine($"Clock OnAfterRenderAsync: Scene set in arena successfully");
+                    $"Clock OnAfterRenderAsync: Scene set in arena successfully".WriteSuccess();
                     
                     // Try to add a simple object to test rendering
                     try
                     {
                         DoClockFaceOnScene();
-                        Console.WriteLine($"Clock OnAfterRenderAsync: Clock face added successfully");
+                        $"Clock OnAfterRenderAsync: Clock face added successfully".WriteSuccess();
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Clock OnAfterRenderAsync: Error adding clock face: {ex.Message}");
-                        Console.WriteLine($"Clock OnAfterRenderAsync: Stack trace: {ex.StackTrace}");
+                        $"Clock OnAfterRenderAsync: Error adding clock face: {ex.Message}".WriteError();
+                        $"Clock OnAfterRenderAsync: Stack trace: {ex.StackTrace}".WriteError();
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"Clock OnAfterRenderAsync: Canvas3DReference.GetActiveScene() failed to return valid scene");
+                    $"Clock OnAfterRenderAsync: Canvas3DReference.GetActiveScene() failed to return valid scene".WriteError();
                 }
             }
             else
             {
-                Console.WriteLine($"Clock OnAfterRenderAsync: Canvas3DReference is null - component not properly bound");
+                $"Clock OnAfterRenderAsync: Canvas3DReference is null - component not properly bound".WriteError();
             }
         }
 
@@ -165,11 +165,8 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public void DoClockFaceOnScene()
     {
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
-
-        var mesh = Tech.CreateClockFaceMesh();
-        scene.AddChild(mesh);
+        var shape3D = Tech.CreateClockFace3D();
+        shape3D.QueueForMeshUpdate();
     }
 
     public void DoRunClock()
@@ -309,54 +306,54 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     }
 
-    public async Task DoRequestAddBoxGLBToScene()
-    {
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
+    // public async Task DoRequestAddBoxGLBToScene()
+    // {
+    //     var (found, scene) = GetCurrentScene();
+    //     if (!found) return;
 
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+    //     var x = DataGenerator.GenerateDouble(-10, 10);
+    //     var y = DataGenerator.GenerateDouble(-10, 10);
+    //     var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var angle = 0.0;
-        var delta = 0.5;
+    //     var angle = 0.0;
+    //     var delta = 0.5;
 
-        var model = new Model3D()
-        {
-            Name = "Box Animated",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
-            Format = Model3DFormats.Gltf,
-            Transform = new Transform3("BoxTransform")
-            {
-                Position = new Vector3(x, y, z),
-            },
-        };
+    //     var model = new Model3D()
+    //     {
+    //         Name = "Box Animated",
+    //         Uuid = Guid.NewGuid().ToString(),
+    //         Url = GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
+    //         Format = Model3DFormats.Gltf,
+    //         Transform = new Transform3("BoxTransform")
+    //         {
+    //             Position = new Vector3(x, y, z),
+    //         },
+    //     };
 
-        model.SetAnimationUpdate((self, tick, fps) =>
-        {
-            bool move = tick % 10 == 0;
-            if (!move) return;
+    //     model.SetAnimationUpdate((self, tick, fps) =>
+    //     {
+    //         bool move = tick % 10 == 0;
+    //         if (!move) return;
 
-            var pos = self.Transform.MoveBy(delta, 0, 0);
-            if (pos.X > 10 || pos.X < -10)
-            {
-                delta = -delta;
-                if (pos.X > 10) angle = Math.PI;
-                else angle = 0.0;
-                self.Transform.RotateTo(0, angle, 0, AngleUnit.Radians);
-            }
+    //         var pos = self.Transform.MoveBy(delta, 0, 0);
+    //         if (pos.X > 10 || pos.X < -10)
+    //         {
+    //             delta = -delta;
+    //             if (pos.X > 10) angle = Math.PI;
+    //             else angle = 0.0;
+    //             self.Transform.RotateTo(0, angle, 0, AngleUnit.Radians);
+    //         }
 
-            self.SetTransformStale();
-        });
+    //         self.SetTransformStale();
+    //     });
 
 
-        await scene.Request3DModel(model, async (uuid) =>
-        {
-            scene.AddChild(model);
-            await Task.CompletedTask;
-        });
-    }
+        // await scene.Request3DModel(model, async (uuid) =>
+        // {
+        //     scene.AddChild(model);
+        //     await Task.CompletedTask;
+        // });
+    //}
 
     public void DoAddTRexToArena()
     {
@@ -388,7 +385,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             
             if (tick % 30 == 0) // Log every 30 frames
             {
-                Console.WriteLine($"{uniqueName} at Z={loc:F2}, delta={delta}");
+                $"{uniqueName} at Z={loc:F2}, delta={delta}".WriteInfo();
             }
 
             if (loc > range)
@@ -408,7 +405,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         });
 
         arena.AddShapeToStage<FoModel3D>(model);
-        Console.WriteLine($"Added {uniqueName} to arena - submarine walking back and forth");
+        $"Added {uniqueName} to arena - submarine walking back and forth".WriteSuccess();
     }
 
 
@@ -418,7 +415,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         var arena = Workspace.GetArena();
         
         var name = "Sub";
-        var angle = 0.0;
+        var state = new double[] { 0.0 }; // Use array for mutable state (reference type)
         var radius = 22.0;
         var y = -3.0;
 
@@ -435,22 +432,19 @@ public partial class ClockBase : ComponentBase, IDisposable
 
         model.SetAnimationUpdate((self, tick, fps) =>
         {
-            Console.WriteLine($"Sub animation callback - tick: {tick}, angle: {angle}");
-
-            angle += Math.PI / 120;
+            // Update angle using array reference
+            state[0] += Math.PI / 120;
+            var angle = state[0];
+            
             var x = radius * Math.Cos(angle);
             var z = radius * Math.Sin(angle);
             self.Transform.Position = new Vector3(x, y, z);
-            
-            Console.WriteLine($"Sub moved to position: X={x:F2}, Y={y:F2}, Z={z:F2}");
             
             var direction = new Vector3(-Math.Sin(angle), 0, Math.Cos(angle));
             var rotationY = Math.Atan2(direction.X, direction.Z);
             rotationY += Math.PI/2;
             self.Transform.Rotation = new Euler(0, rotationY, 0, AngleUnit.Radians);
             self.SetTransformStale();
-            
-            Console.WriteLine($"Sub transform stale flag: {self.IsTransformStale}");
         });
 
         arena.AddShapeToStage<FoModel3D>(model);

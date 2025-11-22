@@ -150,7 +150,7 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
         var (found, scene) = arena?.CurrentScene() ?? (false, null);
         if (found && scene != null)
         {
-            ComponentA.RefreshToScene(scene);
+            ComponentA.QueueForMeshUpdate();
         }
         
         StatusMessage = $"Updated Component A position to ({ComponentAPosX},{ComponentAPosY},{ComponentAPosZ}) using Universal Snapping";
@@ -169,7 +169,7 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
         var (found, scene) = arena?.CurrentScene() ?? (false, null);
         if (found && scene != null)
         {
-            ComponentB.RefreshToScene(scene);
+            ComponentB.QueueForMeshUpdate();
         }
         
         StatusMessage = $"Updated Component B position to ({ComponentBPosX},{ComponentBPosY},{ComponentBPosZ}) using Universal Snapping";

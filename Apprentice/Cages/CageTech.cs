@@ -128,7 +128,7 @@ public class CageTech : ICageTech
         var connections = equip.GetConnectors();
         foreach (var item in connections)
         {
-            var (success, data) = item.GetValue3D();
+            var (success, data) = item.GetComputedMesh();
             if (!success || data.HitBoundary == null) continue;
 
             var node = new Node3D(item.GetName(), "Blue")
@@ -159,7 +159,7 @@ public class CageTech : ICageTech
         var connections = tray.GetConnectors();
         foreach (var item in connections)
         {
-            var (success, data) = item.GetValue3D();
+            var (success, data) = item.GetComputedMesh();
             if (!success || data.HitBoundary == null) continue;
 
             var node = new Node3D(item.GetName(), "Blue")

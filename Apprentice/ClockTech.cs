@@ -15,22 +15,12 @@ using FoundryWorldsAndDrawings.ThreeD.Materials;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryWorldsAndDrawings.ThreeD.Geometires;
 
-// public class FoRack : FoShape3D
-// {
-//     public FoRack(string name) : base(name)
-//     {
-//     }
-
-//     public FoRack(string name, string color) : base(name, color)
-//     {
-//     }
-// }
 namespace Three2025.Apprentice;
 
 public interface IClockTech : ITechnician
 {
-    Mesh3D CreateClockFaceMesh();
     FoShape3D CreateClockOnArena();
+    FoClockFace3D CreateClockFace3D();
     void RunClock();
 }
 
@@ -81,6 +71,23 @@ public class ClockTech : IClockTech
             _timer?.Dispose();
             _timer = null;
         }
+    }
+
+    public FoClockFace3D CreateClockFace3D()
+    {
+        var clockFace = new FoClockFace3D("ArenaClock")
+        {
+            Radius = 12.0,
+            Height = 0.2,
+            FontSize = 1.2,
+            Transform = new Transform3("ClockTransform")
+            {
+                Position = new Vector3(0, 0, 0),
+                Rotation = new Euler(Math.PI / 2, 0, 0),
+            }
+        };
+        
+        return clockFace;
     }
 
     public FoText3D LetterText3D(FoShape3D parent, double angle, double radius, double height, double size,  string text)
@@ -293,66 +300,6 @@ public class ClockTech : IClockTech
             scene.AddChild(CenterPost);
         }
     }
-
-
-    public void PlaceTextAtPosition(Object3D parent, double angle, double radius, double height, double size,  string text)
-    {
-        var arena = FoundryService.Arena();
-        var (found, scene) = arena.CurrentScene();
-        if (!found) return;
-
-        var x = radius * Math.Cos(angle);
-        var y = height;
-        var z = radius * Math.Sin(angle);
-
-        var letter = new Text3D()
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Name = text,
-            Text = text,
-            Color = "white",
-            FontSize = size,
-            Transform = new Transform3("LetterTransform")
-            {
-                Position = new Vector3(x, y, z),
-            },
-        };
-
-        parent.AddChild(letter);     
-    }
-
-    public Mesh3D CreateClockFaceMesh()
-    {
-
-        var radius = 18.0f;
-        var height = 0.1f;
-
-        var mesh = new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Name = "Clock Face",
-            Geometry = new CylinderGeometry(radiusTop: radius-1.0, radiusBottom: radius, height: height,  radialSegments: 36),
-            Transform = new Transform3("ClockFaceTransform")
-            {
-                Position = new Vector3(0, 0, 0),
-            },
-            Material = new MeshStandardMaterial("blue", .3)
-        };
-
-
-
-        for (int i = 1; i <= 12; i++)
-        {
-            var letter = $"{i}";
-            var angle = i * (2 * Math.PI / 12) - Math.PI / 2;
-
-            PlaceTextAtPosition(mesh, angle, radius-1.0, height + 1.0, 1.2, letter);
-        }
-
-        return mesh;
-
-    }
-
 
 
 }
