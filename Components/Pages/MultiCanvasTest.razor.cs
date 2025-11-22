@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shape;
+using FoundryWorldsAndDrawings.ThreeD.Viewers;
 using FoundryRulesAndUnits.Extensions;
 
 namespace Three2025.Components.Pages;
@@ -22,75 +23,96 @@ public partial class MultiCanvasTest : IDisposable
     protected override async Task OnInitializedAsync()
     {
         "MultiCanvasTest: Initializing".WriteInfo();
-
-        // Clear any existing arena content
-        arena.ClearArena();
-
-        // Setup scenes
-        SetupSceneA();
-        SetupSceneB();
-        SetupSceneC();
-
-        // Start animation
-        await Foundry.StartGlobalAnimation();
-
-        "MultiCanvasTest: Initialized with 3 scenes".WriteSuccess();
+        "MultiCanvasTest: Initialized - scenes will be setup after render".WriteSuccess();
     }
 
     private void SetupSceneA()
     {
+        "SetupSceneA: Starting".WriteInfo();
+        if (arena == null)
+        {
+            "SetupSceneA: Arena is NULL!".WriteError();
+            return;
+        }
+        
         var stage = arena.EstablishStage<FoStage3D>("SceneA");
+        arena.SetCurrentStage(stage);
 
-        // Create a rotating cube
+        // Create a rotating cube - just add to stage, scene sync happens automatically
         _cubeA = new FoShape3D("RotatingCube", "red").CreateBox("RotatingCube", 2, 2, 2);
         _cubeA.Transform.Position.Y = 0;
-        arena.AddShapeToStage(_cubeA);
+        stage.AddShape(_cubeA);
 
-        $"Scene A setup complete".WriteInfo();
+        $"Scene A setup complete - stage has {stage.Members<FoShape3D>().Count()} shapes".WriteSuccess();
     }
 
     private void SetupSceneB()
     {
+        "SetupSceneB: Starting".WriteInfo();
+        if (arena == null)
+        {
+            "SetupSceneB: Arena is NULL!".WriteError();
+            return;
+        }
+        
         var stage = arena.EstablishStage<FoStage3D>("SceneB");
+        arena.SetCurrentStage(stage);
 
-        // Create three spheres in different colors
+        // Create three spheres - just add to stage, scene sync happens automatically
         _sphereB1 = new FoShape3D("SphereRed", "red").CreateSphere("SphereRed", 1, 1, 1);
         _sphereB1.Transform.Position.Set(-3, 0, 0);
-        arena.AddShapeToStage(_sphereB1);
+        stage.AddShape(_sphereB1);
 
         _sphereB2 = new FoShape3D("SphereGreen", "green").CreateSphere("SphereGreen", 1, 1, 1);
         _sphereB2.Transform.Position.Set(0, 0, 0);
-        arena.AddShapeToStage(_sphereB2);
+        stage.AddShape(_sphereB2);
 
         _sphereB3 = new FoShape3D("SphereBlue", "blue").CreateSphere("SphereBlue", 1, 1, 1);
         _sphereB3.Transform.Position.Set(3, 0, 0);
-        arena.AddShapeToStage(_sphereB3);
+        stage.AddShape(_sphereB3);
 
-        $"Scene B setup complete".WriteInfo();
+        $"Scene B setup complete - stage has {stage.Members<FoShape3D>().Count()} shapes".WriteSuccess();
     }
 
     private void SetupSceneC()
     {
+        "SetupSceneC: Starting".WriteInfo();
+        if (arena == null)
+        {
+            "SetupSceneC: Arena is NULL!".WriteError();
+            return;
+        }
+        
         var stage = arena.EstablishStage<FoStage3D>("SceneC");
+        arena.SetCurrentStage(stage);
 
-        // Create a cylinder and cone
+        // Create shapes - just add to stage, scene sync happens automatically
         _cylinderC = new FoShape3D("Cylinder", "orange").CreateCylinder("Cylinder", 1, 3, 1);
         _cylinderC.Transform.Position.Set(-2, 0, 0);
-        arena.AddShapeToStage(_cylinderC);
+        stage.AddShape(_cylinderC);
 
         _coneC = new FoShape3D("Cone", "purple").CreateCone("Cone", 1.5, 3, 1.5);
         _coneC.Transform.Position.Set(2, 0, 0);
-        arena.AddShapeToStage(_coneC);
+        stage.AddShape(_coneC);
 
-        $"Scene C setup complete".WriteInfo();
+        $"Scene C setup complete - stage has {stage.Members<FoShape3D>().Count()} shapes".WriteSuccess();
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (!firstRender) return;
 
+        "MultiCanvasTest: First render - setting up scenes now".WriteInfo();
+
+        // Setup all three scenes - Canvas3DComponent already created matching stages and linked them
+        SetupSceneA();
+        SetupSceneB();
+        SetupSceneC();
+
         // Subscribe to PreAnimation for updates
         AnimationFrameBus.SubscribeToPreAnimation(HandleAnimationFrame);
+
+        "MultiCanvasTest: All scenes setup and connected".WriteSuccess();
     }
 
     private void HandleAnimationFrame(PreAnimationEvent message)
@@ -103,6 +125,7 @@ public partial class MultiCanvasTest : IDisposable
         if (_cubeA != null)
         {
             _rotationA += deltaTime * 1.0; // 1 radian per second
+            _rotationA %= (2 * Math.PI); // Keep within 0 to 2π
             _cubeA.Transform.Rotation.Y = _rotationA;
         }
 
@@ -119,6 +142,7 @@ public partial class MultiCanvasTest : IDisposable
         if (_cylinderC != null && _coneC != null)
         {
             _timeC += deltaTime * 0.5;
+            _timeC %= (2 * Math.PI); // Keep within 0 to 2π
             _cylinderC.Transform.Rotation.Y = _timeC;
             _coneC.Transform.Rotation.Y = -_timeC;
         }
