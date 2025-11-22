@@ -28,7 +28,7 @@
             <button class="btn btn-primary" @onclick="StartTugOfWar2D">Start 2D Tug of War</button>
             <button class="btn btn-secondary" @onclick="Reset2D">Reset 2D</button>
         </div>
-        <Canvas2DComponent SceneName="TugOfWar2D" @ref="Canvas2DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight WithAnimations="true" />
+        <Canvas2DComponent SceneName="TugOfWar2D" @ref="Canvas2DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight  />
     </div>
 
     <div style="flex: 1;">
@@ -39,7 +39,14 @@
             <button class="btn btn-danger" @onclick="StopAnimation3D">Stop</button>
             <button class="btn btn-secondary" @onclick="Reset3D">Reset</button>
         </div>
-        <Canvas3DComponent SceneName="TugOfWar3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight WithAnimations="true" />
+        <Canvas3DComponent SceneName="TugOfWar3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight  />
+    </div>
+
+    <div style="flex: 0 0 350px;">
+        <h4>Scene Hierarchy</h4>
+        <div style="overflow: auto; background: #f5f5f5; padding: 10px; border-radius: 5px; max-height: 600px;">
+            <ShapeTreeView />
+        </div>
     </div>
 </div>
 

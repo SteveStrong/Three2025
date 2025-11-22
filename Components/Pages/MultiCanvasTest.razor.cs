@@ -102,17 +102,26 @@ public partial class MultiCanvasTest : IDisposable
     {
         if (!firstRender) return;
 
-        "MultiCanvasTest: First render - setting up scenes now".WriteInfo();
+        "MultiCanvasTest: First render - delaying scene setup to ensure all canvases are ready".WriteInfo();
 
-        // Setup all three scenes - Canvas3DComponent already created matching stages and linked them
-        SetupSceneA();
-        SetupSceneB();
-        SetupSceneC();
+        // Delay scene setup to ensure all Canvas3DComponents have completed their OnAfterRenderAsync
+        // This prevents the race condition where shapes are added before scenes exist
+        Task.Run(async () =>
+        {
+            await Task.Delay(100); // Small delay to let all canvases initialize
 
-        // Subscribe to PreAnimation for updates
-        AnimationFrameBus.SubscribeToPreAnimation(HandleAnimationFrame);
+            "MultiCanvasTest: Setting up scenes now".WriteInfo();
 
-        "MultiCanvasTest: All scenes setup and connected".WriteSuccess();
+            // Setup all three scenes - Canvas3DComponent already created matching stages and linked them
+            SetupSceneA();
+            SetupSceneB();
+            SetupSceneC();
+
+            // Subscribe to PreAnimation for updates
+            AnimationFrameBus.SubscribeToPreAnimation(HandleAnimationFrame);
+
+            "MultiCanvasTest: All scenes setup and connected".WriteSuccess();
+        });
     }
 
     private void HandleAnimationFrame(PreAnimationEvent message)
@@ -126,16 +135,26 @@ public partial class MultiCanvasTest : IDisposable
         {
             _rotationA += deltaTime * 1.0; // 1 radian per second
             _rotationA %= (2 * Math.PI); // Keep within 0 to 2π
-            _cubeA.Transform.Rotation.Y = _rotationA;
+            
+            // Use object replacement pattern to trigger dirty flag
+            var rot = _cubeA.Transform.Rotation;
+            _cubeA.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rot.X, _rotationA, rot.Z);
         }
 
         // Animate Scene B - Bouncing spheres
         if (_sphereB1 != null && _sphereB2 != null && _sphereB3 != null)
         {
             _timeB += deltaTime;
-            _sphereB1.Transform.Position.Y = Math.Sin(_timeB * 2) * 2;
-            _sphereB2.Transform.Position.Y = Math.Sin(_timeB * 2 + Math.PI * 2/3) * 2;
-            _sphereB3.Transform.Position.Y = Math.Sin(_timeB * 2 + Math.PI * 4/3) * 2;
+            
+            // Use object replacement pattern for positions
+            var pos1 = _sphereB1.Transform.Position;
+            _sphereB1.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos1.X, Math.Sin(_timeB * 2) * 2, pos1.Z);
+            
+            var pos2 = _sphereB2.Transform.Position;
+            _sphereB2.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos2.X, Math.Sin(_timeB * 2 + Math.PI * 2/3) * 2, pos2.Z);
+            
+            var pos3 = _sphereB3.Transform.Position;
+            _sphereB3.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos3.X, Math.Sin(_timeB * 2 + Math.PI * 4/3) * 2, pos3.Z);
         }
 
         // Animate Scene C - Rotating shapes
@@ -143,8 +162,13 @@ public partial class MultiCanvasTest : IDisposable
         {
             _timeC += deltaTime * 0.5;
             _timeC %= (2 * Math.PI); // Keep within 0 to 2π
-            _cylinderC.Transform.Rotation.Y = _timeC;
-            _coneC.Transform.Rotation.Y = -_timeC;
+            
+            // Use object replacement pattern for rotations
+            var rotC = _cylinderC.Transform.Rotation;
+            _cylinderC.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rotC.X, _timeC, rotC.Z);
+            
+            var rotCone = _coneC.Transform.Rotation;
+            _coneC.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rotCone.X, -_timeC, rotCone.Z);
         }
     }
 
