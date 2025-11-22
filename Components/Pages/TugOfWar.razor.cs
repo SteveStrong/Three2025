@@ -71,6 +71,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         {
             $"TugOfWar Page OnAfterRenderAsync".WriteInfo();
 
+            // Wait a moment for Canvas3DComponent to finish its OnAfterRenderAsync
+            await Task.Delay(100);
+
             // Setup 3D Arena-Scene bridge
             var (found3D, scene3D) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
             var arena = Workspace.GetArena();
