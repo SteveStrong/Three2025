@@ -48,7 +48,7 @@ public class FoClockFace3D : FoShape3D
         
         // Add center post
         _centerPost = new FoShape3D("Post", "red")
-            .CreateBox("PostBox", 0.2, 1.0, 0.2);
+            .CreateBox("PostBox", 1.2, 1.0, 0.2);
         this.AddSubGlyph3D(_centerPost);
         
         // Add second hand
@@ -90,7 +90,6 @@ public class FoClockFace3D : FoShape3D
         // Update every 60 frames (approximately once per second at 60fps)
         if (tick % 60 != 0) return;
 
-        $"refresh floor clock".WriteInfo();
         
         var time = DateTime.Now;
         var angle = time.Second * (2 * Math.PI / 60) - Math.PI / 2;
@@ -99,6 +98,8 @@ public class FoClockFace3D : FoShape3D
         var y = 2;
         var z = radius * Math.Sin(angle);
         
+        $"refresh floor clock {time:HH:mm:ss}".WriteInfo();
+
         // Update time text
         if (_timeText != null)
         {
@@ -112,11 +113,5 @@ public class FoClockFace3D : FoShape3D
         {
             _centerPost.Transform.RotateTo(0, -angle, 0, AngleUnit.Radians);
         }
-        
-        // Rotate the entire clock face slightly
-        var rot = this.Transform.Rotation;
-        var deltaX = Math.PI / 2 - rot.X;
-        var deltaZ = angle - rot.Z;
-        this.Transform.RotateBy(deltaX, 0, deltaZ, AngleUnit.Radians);
     }
 }

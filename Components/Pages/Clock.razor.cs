@@ -47,6 +47,11 @@ public partial class ClockBase : ComponentBase, IDisposable
     {
         Workspace.SetBaseUrl(Navigation?.BaseUri ?? "");
         
+        // Clear any previous page's objects from the arena
+        var arena = Workspace.GetArena();
+        arena.ClearArena();
+        $"Clock: Cleared arena on initialization".WriteInfo();
+        
         // Subscribe directly to AnimationFrameBus for animation events
         $"Clock: Subscribing to AnimationEvent on AnimationFrameBus".WriteSuccess();
         AnimationFrameBus.SubscribeToAnimation(OnAnimationFrame);
@@ -70,6 +75,8 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public void Dispose()
     {
+        var arena = Workspace.GetArena();
+        arena.ClearArena();
         // Unsubscribe when component is disposed
         AnimationFrameBus.UnSubscribeFromAnimation(OnAnimationFrame);
     }
