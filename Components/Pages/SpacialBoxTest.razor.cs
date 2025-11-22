@@ -56,8 +56,6 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
             if (!found || scene == null) return base.OnAfterRenderAsync(firstRender);
 
             _scene = scene;
-            _scene.SetAfterUpdateAction((s, j) => 
-                FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree")));
 
             Arena.SetScene(_scene);
             

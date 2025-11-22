@@ -45,10 +45,6 @@ public partial class TrisocBase : ComponentBase
         {
             var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false,null!);
 
-            scene?.SetAfterUpdateAction((s,j) =>
-            {
-                FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-            });
 
             var arena = Workspace.GetArena();
             if (found)

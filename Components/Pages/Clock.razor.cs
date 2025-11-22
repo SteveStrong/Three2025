@@ -11,14 +11,14 @@ using FoundryRulesAndUnits.Extensions;
 using FoundryWorldsAndDrawings.ThreeD.Viewers;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
-using BlazorComponentBus;
+
 
 
 namespace Three2025.Components.Pages;
 
 public partial class ClockBase : ComponentBase, IDisposable
 {
-    public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
+    public Canvas3DComponent Canvas3DReference = null;
 
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] protected IJSRuntime JsRuntime { get; set; }
@@ -65,7 +65,6 @@ public partial class ClockBase : ComponentBase, IDisposable
             // Only update UI every 15 frames to avoid overwhelming Blazor
 
             InvokeAsync(StateHasChanged);
-            
         }
     }
 
@@ -95,26 +94,22 @@ public partial class ClockBase : ComponentBase, IDisposable
 
                 if (found && scene != null)
                 {
-                    scene.SetAfterUpdateAction((s, j) =>
-                    {
-                        FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-                    });
 
                     var arena = Workspace.GetArena();
                     arena.SetScene(scene);
                     $"Clock OnAfterRenderAsync: Scene set in arena successfully".WriteSuccess();
                     
                     // Try to add a simple object to test rendering
-                    try
-                    {
-                        DoClockFaceOnScene();
-                        $"Clock OnAfterRenderAsync: Clock face added successfully".WriteSuccess();
-                    }
-                    catch (Exception ex)
-                    {
-                        $"Clock OnAfterRenderAsync: Error adding clock face: {ex.Message}".WriteError();
-                        $"Clock OnAfterRenderAsync: Stack trace: {ex.StackTrace}".WriteError();
-                    }
+                    // try
+                    // {
+                    //     //DoClockFaceOnScene();
+                    //     $"Clock OnAfterRenderAsync: Clock face added successfully".WriteSuccess();
+                    // }
+                    // catch (Exception ex)
+                    // {
+                    //     $"Clock OnAfterRenderAsync: Error adding clock face: {ex.Message}".WriteError();
+                    //     $"Clock OnAfterRenderAsync: Stack trace: {ex.StackTrace}".WriteError();
+                    // }
                 }
                 else
                 {
@@ -162,11 +157,22 @@ public partial class ClockBase : ComponentBase, IDisposable
         arena.AddShapeToStage<FoModel3D>(shape);
     }
 
-
-    public void DoClockFaceOnScene()
+    public void DoClockFace()
     {
-        var shape3D = Tech.CreateClockFace3D();
-        shape3D.QueueForMeshUpdate();
+        var clockFace = new FoClockFace3D("ArenaClockFace")
+        {
+            Radius = 12.0,
+            Height = 0.2,
+            FontSize = 1.2,
+            Transform = new Transform3("ClockTransform")
+            {
+                Position = new Vector3(0, 0, 0),
+            }
+        };
+
+        var arena = Workspace.GetArena();
+        arena.AddShapeToStage<FoClockFace3D>(clockFace);
+
     }
 
     public void DoRunClock()
@@ -231,7 +237,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         arena.AddShapeToStage<FoText3D>(text3d);
 
         // Animation using MoveBy for proper dirty flag handling
-        text3d.SetAnimationUpdate((self, tick, fps) =>
+        text3d.BeforeAnimationRefresh((self, tick, fps) =>
         {
             bool move = tick % 10 == 0;
             if (!move) return;
@@ -287,7 +293,7 @@ public partial class ClockBase : ComponentBase, IDisposable
 
         arena.AddShapeToStage<FoModel3D>(model3d);
 
-        model3d.SetAnimationUpdate((self, tick, fps) =>
+        model3d.BeforeAnimationRefresh((self, tick, fps) =>
         {
             bool move = tick % 10 == 0;
             if (!move) return;
@@ -376,7 +382,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
         };
 
-        model.SetAnimationUpdate((self, tick, fps) =>
+        model.BeforeAnimationRefresh((self, tick, fps) =>
         {
             // Move every frame to make it obvious
             var delta = state[0];
@@ -430,7 +436,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
         };
 
-        model.SetAnimationUpdate((self, tick, fps) =>
+        model.BeforeAnimationRefresh((self, tick, fps) =>
         {
             // Update angle using array reference
             state[0] += Math.PI / 120;

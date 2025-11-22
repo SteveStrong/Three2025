@@ -55,10 +55,6 @@ public partial class MatrixTest : ComponentBase, IDisposable
         {
             var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
 
-            scene?.SetAfterUpdateAction((s, j) =>
-            {
-                FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-            });
 
             var arena = FoundryService.Arena();
             if (found)

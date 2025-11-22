@@ -1,3 +1,4 @@
+using FoundryRulesAndUnits.Extensions;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 
@@ -23,7 +24,7 @@ public class FoClockFace3D : FoShape3D
         var diameter = 2 * Radius;
         
         // Create base cylinder
-        this.CreateCylinder("ClockBase", diameter, Height, diameter);
+        this.CreateCylinder("ClockFaceBase", diameter, Height, diameter);
         
         // Add numbers as children
         for (int i = 1; i <= 12; i++)
@@ -36,7 +37,7 @@ public class FoClockFace3D : FoShape3D
         // Add time display text
         _timeText = new FoText3D("TimeText", "white")
         {
-            Text = "Ready",
+            Text = "Current Time",
             FontSize = 5.0,
             Transform = new Transform3("TimeTextTransform")
             {
@@ -61,10 +62,7 @@ public class FoClockFace3D : FoShape3D
         _centerPost.AddSubGlyph3D(_secondHand);
         
         // Set up animation to update every second
-        this.SetAnimationUpdate((FoGlyph3D self, int tick, double fps) =>
-        {
-            UpdateClockAnimation(self, tick, fps);
-        });
+        BeforeAnimationRefresh(UpdateClockAnimation);
         
         return this;
     }
@@ -91,6 +89,8 @@ public class FoClockFace3D : FoShape3D
     {
         // Update every 60 frames (approximately once per second at 60fps)
         if (tick % 60 != 0) return;
+
+        $"refresh floor clock".WriteInfo();
         
         var time = DateTime.Now;
         var angle = time.Second * (2 * Math.PI / 60) - Math.PI / 2;

@@ -26,17 +26,17 @@
     <AIChat/>
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">
         <h4>Testing the API's</h4>
+        <button class="btn btn-primary" @onclick="DoRequestAxisToScene">Request Axis to Scene</button>
         <button class="btn btn-primary" @onclick="DoAddTextToArena">Add Text to Arena</button>
         <button class="btn btn-primary" @onclick="DoAddBoxGLBToArena">Add BoxAnimated to Arena</button>
         <h4>Scene Objects</h4>
         <button class="btn btn-primary" @onclick="DoAddTRexToArena">T-Rex to Arena</button>
-        <button class="btn btn-primary" @onclick="DoRequestAxisToScene">Request Axis to Scene</button>
 
-        <button class="btn btn-primary" @onclick="DoClockFaceOnScene">Clock Face to Scene</button>
         <button class="btn btn-primary" @onclick="DoRequestAddSubToArena">Add Submarine to Arena</button>
 
                 
         <h4>Add to Arena</h4>
+        <button class="btn btn-primary" @onclick="DoClockFace">Floor Clock</button>
         <button class="btn btn-primary" @onclick="DoRunClock">Arena Clock</button>
         <button class="btn btn-primary" @onclick="DoAddTRISOCToArena">TRISOC to Arena</button>
        @* 

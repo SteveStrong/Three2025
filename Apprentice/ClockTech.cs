@@ -20,7 +20,6 @@ namespace Three2025.Apprentice;
 public interface IClockTech : ITechnician
 {
     FoShape3D CreateClockOnArena();
-    FoClockFace3D CreateClockFace3D();
     void RunClock();
 }
 
@@ -73,22 +72,7 @@ public class ClockTech : IClockTech
         }
     }
 
-    public FoClockFace3D CreateClockFace3D()
-    {
-        var clockFace = new FoClockFace3D("ArenaClock")
-        {
-            Radius = 12.0,
-            Height = 0.2,
-            FontSize = 1.2,
-            Transform = new Transform3("ClockTransform")
-            {
-                Position = new Vector3(0, 0, 0),
-                Rotation = new Euler(Math.PI / 2, 0, 0),
-            }
-        };
-        
-        return clockFace;
-    }
+
 
     public FoText3D LetterText3D(FoShape3D parent, double angle, double radius, double height, double size,  string text)
     {

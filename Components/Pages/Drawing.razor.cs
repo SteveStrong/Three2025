@@ -62,11 +62,6 @@ public partial class DrawingBase : ComponentBase, IDisposable
             
             if (found && scene != null)
             {
-                scene.SetAfterUpdateAction((s, j) =>
-                {
-                    FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-                });
-
                 var arena = Workspace.GetArena();
                 arena.SetScene(scene);
             }

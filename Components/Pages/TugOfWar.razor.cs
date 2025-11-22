@@ -234,7 +234,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         };
 
         _box1_3D.CreateBox("Box1", 1.0, 1.0, 1.0)
-                .BeforeShapeRefresh((shape, tick, fps) =>
+                .BeforeAnimationRefresh((shape, tick, fps) =>
                 {
                     _animationTime += 1.0 / fps;
                     var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
@@ -265,7 +265,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
 
         _box2_3D.CreateBox("Box2", 1.0, 1.0, 1.0)
-                .BeforeShapeRefresh((shape, tick, fps) =>
+                .BeforeAnimationRefresh((shape, tick, fps) =>
                 {
                     _animationTime += 1.0 / fps;
                     var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
@@ -376,7 +376,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     {
         if (_growingPipe != null)
         {
-            _growingPipe.ClearAnimationUpdate();
+            _growingPipe.ClearAnimationRefresh();
         }
         
         $"3D animation stopped".WriteInfo();
@@ -400,7 +400,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     {
         if (_growingPipe != null)
         {
-            _growingPipe.ClearAnimationUpdate();
+            _growingPipe.ClearAnimationRefresh();
         }
         
         _animationTime = 0;
@@ -418,7 +418,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        _growingPipe?.ClearAnimationUpdate();
+        _growingPipe?.ClearAnimationRefresh();
         AnimationFrameBus.UnSubscribeFromAnimation(OnAnimationFrame);
         $"TugOfWar Page Disposed".WriteInfo();
     }
