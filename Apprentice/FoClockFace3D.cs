@@ -104,14 +104,14 @@ public class FoClockFace3D : FoShape3D
         if (_timeText != null)
         {
             var currentTime = time.ToString("HH:mm:ss");
-            _timeText.Text = currentTime;
-            _timeText.Transform.Position = new Vector3(x, y, z);
+            _timeText.Text = currentTime;                    // Text setter calls SetDataStale()
+            _timeText.Transform.Position = new Vector3(x, y, z);  // Position setter calls SetTransformStale()
         }
         
         // Rotate center post (and attached second hand)
         if (_centerPost != null)
         {
-            _centerPost.Transform.RotateTo(0, -angle, 0, AngleUnit.Radians);
+            _centerPost.Transform.RotateTo(0, -angle, 0, AngleUnit.Radians);  // RotateTo sets Rotation which calls SetTransformStale()
         }
     }
 }
