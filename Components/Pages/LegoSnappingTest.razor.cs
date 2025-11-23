@@ -184,10 +184,11 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
 
         try
         {
-
-
-            CurrentConstraintStatus = "Ready to apply";
-            StatusMessage = $"Ready to snap: A.{SelectedFaceA} → B.{SelectedFaceB}";
+            var faceAName = $"{SelectedFaceA}FaceCenter";
+            var faceBName = $"{SelectedFaceB}FaceCenter";
+            
+            CurrentConstraintStatus = $"Ready to glue: A.{faceAName} → B.{faceBName}";
+            StatusMessage = $"Ready to snap: A.{SelectedFaceA} → B.{SelectedFaceB} (will align and rotate)";
             StateHasChanged();
         }
         catch (Exception ex)
@@ -210,9 +211,14 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
 
         try
         {
-            // Use the new universal snapping engine
-
+            var faceAName = $"{SelectedFaceA}FaceCenter";
+            var faceBName = $"{SelectedFaceB}FaceCenter";
             
+            // Use glue system with rotation alignment
+            ComponentA.GlueTo(ComponentB, faceBName, offset: 0.0, alignRotation: true);
+            
+            CurrentConstraintStatus = $"Applied: A glued to B.{faceBName} with rotation alignment";
+            StatusMessage = $"✓ Snapped A.{SelectedFaceA} to B.{SelectedFaceB} with proper alignment!";
             StateHasChanged();
         }
         catch (Exception ex)
@@ -233,7 +239,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
             return;
         }
         
-       StateHasChanged();
+        ComponentA.GlueTo(ComponentB, "TopFaceCenter", offset: 0.0, alignRotation: true);
+        StatusMessage = "✓ Stacked A on top of B with rotation alignment!";
+        StateHasChanged();
     }
 
     public void PlaceASideBySideWithB()
@@ -245,7 +253,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
             return;
         }
         
-       StateHasChanged();
+        ComponentA.GlueTo(ComponentB, "RightFaceCenter", offset: 0.0, alignRotation: true);
+        StatusMessage = "✓ Placed A beside B (to the right) with rotation alignment!";
+        StateHasChanged();
     }
 
     public void AttachAToFrontOfB()
@@ -257,7 +267,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
             return;
         }
         
-         StateHasChanged();
+        ComponentA.GlueTo(ComponentB, "FrontFaceCenter", offset: 0.0, alignRotation: true);
+        StatusMessage = "✓ Attached A in front of B with rotation alignment!";
+        StateHasChanged();
     }
 
     public void AttachAToBackOfB()
@@ -269,6 +281,8 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
             return;
         }
         
+        ComponentA.GlueTo(ComponentB, "BackFaceCenter", offset: 0.0, alignRotation: true);
+        StatusMessage = "✓ Attached A behind B with rotation alignment!";
         StateHasChanged();
     }
 
