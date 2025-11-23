@@ -245,7 +245,6 @@ public class ClockTech : IClockTech
         {
             GlobalText = new Text3D()
             {
-                Uuid = Guid.NewGuid().ToString(),
                 Text = currentTime,
                 Color = DataGenerator.GenerateColor(),
                 FontSize = 3.0,
@@ -256,7 +255,6 @@ public class ClockTech : IClockTech
             };
             CenterPost = new Mesh3D
             {
-                Uuid = Guid.NewGuid().ToString(),
                 Name = "CenterPost",
                 Geometry = new BoxGeometry(width: 0.5, depth: 0.5, height: 2.5),
                 Transform = new Transform3("CenterPostTransform")
@@ -268,7 +266,6 @@ public class ClockTech : IClockTech
             };
             var secondHand = new Mesh3D
             {
-                Uuid = Guid.NewGuid().ToString(),
                 Name = "Second Hand",
                 Geometry = new BoxGeometry(width: 1.2 * radius, depth: 0.1, height: 2),
                 Transform = new Transform3("SecondHandTransform")

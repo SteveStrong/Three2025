@@ -196,9 +196,7 @@ public partial class ClockBase : ComponentBase, IDisposable
 
         var model = new Model3D()
         {
-            Name = "Axis",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Name = "Axis",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
         };
 
@@ -334,8 +332,7 @@ public partial class ClockBase : ComponentBase, IDisposable
     //     var model = new Model3D()
     //     {
     //         Name = "Box Animated",
-    //         Uuid = Guid.NewGuid().ToString(),
-    //         Url = GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
+    //    //         Url = GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
     //         Format = Model3DFormats.Gltf,
     //         Transform = new Transform3("BoxTransform")
     //         {

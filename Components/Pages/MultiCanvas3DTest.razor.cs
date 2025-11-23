@@ -6,7 +6,7 @@ using FoundryRulesAndUnits.Extensions;
 
 namespace Three2025.Components.Pages;
 
-public partial class MultiCanvasTest : IDisposable
+public partial class MultiCanvas3DTest : IDisposable
 {
     [Inject] public required IFoundryService Foundry { get; set; }
 
@@ -22,8 +22,8 @@ public partial class MultiCanvasTest : IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        "MultiCanvasTest: Initializing".WriteInfo();
-        "MultiCanvasTest: Initialized - scenes will be setup after render".WriteSuccess();
+        "MultiCanvas3DTest: Initializing".WriteInfo();
+        "MultiCanvas3DTest: Initialized - scenes will be setup after render".WriteSuccess();
     }
 
     private void SetupSceneA()
@@ -102,7 +102,7 @@ public partial class MultiCanvasTest : IDisposable
     {
         if (!firstRender) return;
 
-        "MultiCanvasTest: First render - delaying scene setup to ensure all canvases are ready".WriteInfo();
+        "MultiCanvas3DTest: First render - delaying scene setup to ensure all canvases are ready".WriteInfo();
 
         // Delay scene setup to ensure all Canvas3DComponents have completed their OnAfterRenderAsync
         // This prevents the race condition where shapes are added before scenes exist
@@ -110,7 +110,7 @@ public partial class MultiCanvasTest : IDisposable
         {
             await Task.Delay(100); // Small delay to let all canvases initialize
 
-            "MultiCanvasTest: Setting up scenes now".WriteInfo();
+            "MultiCanvas3DTest: Setting up scenes now".WriteInfo();
 
             // Setup all three scenes - Canvas3DComponent already created matching stages and linked them
             SetupSceneA();
@@ -120,7 +120,7 @@ public partial class MultiCanvasTest : IDisposable
             // Subscribe to PreAnimation for updates
             AnimationFrameBus.SubscribeToPreAnimation(HandleAnimationFrame);
 
-            "MultiCanvasTest: All scenes setup and connected".WriteSuccess();
+            "MultiCanvas3DTest: All scenes setup and connected".WriteSuccess();
         });
     }
 
@@ -174,11 +174,11 @@ public partial class MultiCanvasTest : IDisposable
 
     public void Dispose()
     {
-        "MultiCanvasTest: Disposing".WriteInfo();
+        "MultiCanvas3DTest: Disposing".WriteInfo();
 
         AnimationFrameBus.UnSubscribeFromPreAnimation(HandleAnimationFrame);
 
         // Don't clear arena here - let page navigation handle it
-        "MultiCanvasTest: Disposed".WriteInfo();
+        "MultiCanvas3DTest: Disposed".WriteInfo();
     }
 }

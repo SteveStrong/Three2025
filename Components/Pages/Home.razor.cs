@@ -124,9 +124,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
 
         var mesh = new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Name = DataGenerator.GenerateWord(),
+        {            Name = DataGenerator.GenerateWord(),
             Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
             Transform = new Transform3("ConeTransform")
             {
@@ -254,9 +252,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
 
         var mesh = new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+        {            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
             Material = new MeshStandardMaterial("yellow", 1.0)
         };
         scene.AddChild(mesh);
@@ -400,9 +396,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var model = new Model3D()
         {
-            Name = "Axis",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Name = "Axis",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
         };
 
@@ -429,9 +423,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
 
         var text3d = new Text3D()
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Text = DataGenerator.GenerateText(),
+        {            Text = DataGenerator.GenerateText(),
             Color = DataGenerator.GenerateColor(),
             Transform = new Transform3("Text3DTransform")
             {
@@ -454,9 +446,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var model = new Model3D()
         {
-            Name = $"JET:{DataGenerator.GenerateWord()}",
-            Uuid = Guid.NewGuid().ToString(),
-            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
+            Name = $"JET:{DataGenerator.GenerateWord()}",            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
             Transform = new Transform3("JetTransform")
             {

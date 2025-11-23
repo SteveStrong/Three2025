@@ -169,9 +169,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
 
             scene.AddChild(new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+            {                Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
               
                 Material = new MeshStandardMaterial("yellow", 1.0)
             });
@@ -309,9 +307,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         };
 
         scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+        {            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
             Material = new MeshStandardMaterial("yellow", 1.0)
         });
     }
@@ -439,9 +435,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var model = new Model3D()
         {
-            Name = $"Axis:{DataGenerator.GenerateWord()}",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Name = $"Axis:{DataGenerator.GenerateWord()}",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
         };
 
@@ -461,9 +455,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
     {
         var model = new Model3D()
         {
-            Name = $"JET:{DataGenerator.GenerateWord()}",
-            Uuid = Guid.NewGuid().ToString(),
-            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
+            Name = $"JET:{DataGenerator.GenerateWord()}",            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
         };
 

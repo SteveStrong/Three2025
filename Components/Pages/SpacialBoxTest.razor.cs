@@ -73,9 +73,7 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
     {
         var axis = new Model3D
         {
-            Name = "Axis",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Name = "Axis",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf
         };
         _scene.AddChild(axis);
