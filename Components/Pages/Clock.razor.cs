@@ -65,10 +65,8 @@ public partial class ClockBase : ComponentBase, IDisposable
         {
             _currentFps = animEvent.fps;
             _currentTick = animEvent.tick;
-            //$"Clock OnAnimationFrame: Tick {_currentTick}, FPS {_currentFps:F1}".WriteInfo();
             
-            // Only update UI every 15 frames to avoid overwhelming Blazor
-
+            // Update UI every frame for smooth display
             InvokeAsync(StateHasChanged);
         }
     }
@@ -395,7 +393,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             
             if (tick % 30 == 0) // Log every 30 frames
             {
-                $"{uniqueName} at Z={loc:F2}, delta={delta}".WriteInfo();
+                $"{uniqueName} BeforeAnimationRefresh called: Z={loc:F2}, delta={delta}, calling SetTransformStale()".WriteInfo();
             }
 
             if (loc > range)
