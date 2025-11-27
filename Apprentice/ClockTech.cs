@@ -41,15 +41,7 @@ public class ClockTech : IClockTech
         FoundryService = foundry;
     }
 
-    public bool ComputeHitBoundaries(Action OnComplete)
-    {
-        var arena = FoundryService.Arena();
-        var (success, scene) = arena.CurrentScene();
 
-        if (!success) return false;
-        scene.UpdateHitBoundaries(OnComplete);
-        return true;
-    } 
 
     public void UpdateClock(object state)
     {

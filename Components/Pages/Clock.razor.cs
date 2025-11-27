@@ -34,6 +34,11 @@ public partial class ClockBase : ComponentBase, IDisposable
     protected int _currentTick = 0;
 
     protected MockDataGenerator DataGenerator { get; set; } = new();
+    
+    // Guard flags to prevent duplicate additions
+    private HashSet<string> _addedModels = new();  // Track models added (unused now)
+    private HashSet<string> _loadingModels = new(); // Track URLs currently loading (unused now)
+    private bool _tRexRequested = false;  // Simple flag: has T-Rex been requested at all?
 
 
     public (bool, Scene3D) GetCurrentScene()
@@ -43,7 +48,7 @@ public partial class ClockBase : ComponentBase, IDisposable
     }
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         Workspace.SetBaseUrl(Navigation?.BaseUri ?? "");
         
@@ -56,7 +61,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         $"Clock: Subscribing to AnimationEvent on AnimationFrameBus".WriteSuccess();
         AnimationFrameBus.SubscribeToAnimation(OnAnimationFrame);
         
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
     private void OnAnimationFrame(AnimationEvent animEvent)
@@ -75,6 +80,8 @@ public partial class ClockBase : ComponentBase, IDisposable
     {
         var arena = Workspace.GetArena();
         arena.ClearArena();
+        _addedModels.Clear(); // Clear guard flags
+        _tRexRequested = false; // Reset T-Rex guard for restart
         // Unsubscribe when component is disposed
         AnimationFrameBus.UnSubscribeFromAnimation(OnAnimationFrame);
     }
@@ -365,6 +372,17 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public void DoAddTRexToArena()
     {
+        // ✅ Guard against animation loop calling this multiple times
+        if (_tRexRequested)
+        {
+            // Silent return - this gets called every frame in animation loop
+            return;
+        }
+        
+        // Mark immediately to prevent subsequent animation frames from re-entering
+        _tRexRequested = true;
+        
+        var url = GetReferenceTo(@"storage/staticfiles/T_Rex.glb");
         var arena = Workspace.GetArena();
 
         var range = 20.0;
@@ -376,7 +394,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         
         var model = new FoModel3D(uniqueName)
         {
-            Url = GetReferenceTo(@"storage/staticfiles/T_Rex.glb"), // Use sub instead of T-Rex
+            Url = url,
             Transform = new Transform3("SubWalkTransform")
             {
                 Position = new Vector3(0, 5, 0), // Start at center, raised up
@@ -413,7 +431,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         });
 
         arena.AddShapeToStage<FoModel3D>(model);
-        $"Added {uniqueName} to arena - submarine walking back and forth".WriteSuccess();
+        $"Added {uniqueName} to arena - T-Rex walking (animation loop protected by flag)".WriteSuccess();
     }
 
 

@@ -36,6 +36,7 @@
         <div style="margin-bottom: 10px;">
             <button class="btn btn-primary" @onclick="StartTugOfWar3D">Start 3D Tug of War</button>
             <button class="btn btn-secondary" @onclick="Reset3D">Reset 3D</button>
+            <button class="btn btn-info" @onclick="ClearScene3D">Clear Scene</button>
         </div>
         <Canvas3DComponent SceneName="TugOfWar3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight  />
     </div>

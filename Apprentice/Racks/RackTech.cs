@@ -10,7 +10,6 @@ public interface IRackTech : ITechnician
     void DoAddEquipmentArena();
     FoRack CreateRack(string name, double x, double z, double height = 10, double angle = 0);
 
-    bool ComputeHitBoundaries(Action OnComplete);
     (bool success, FoPipe3D pipe) TryCreatePipe(string from, string to);
     (bool success, T obj, Vector3 vector) TryFindHitPosition<T>(string path) where T: FoGlyph3D;
 }
@@ -27,15 +26,7 @@ public class RackTech : IRackTech
         FoundryService = foundry;
     }
 
-    public bool ComputeHitBoundaries(Action OnComplete)
-    {
-        var arena = FoundryService.Arena();
-        var (success, scene) = arena.CurrentScene();
 
-        if (!success) return false;
-        scene.UpdateHitBoundaries(OnComplete);
-        return true;
-    } 
 
  
     public void DoAddEquipmentArena()

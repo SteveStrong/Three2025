@@ -36,12 +36,12 @@ public partial class MultiCanvas3DTest : IDisposable
         }
         
         var stage = arena.EstablishStage<FoStage3D>("SceneA");
-        arena.SetCurrentStage(stage);
+        // ❌ REMOVED: arena.SetCurrentStage(stage); // Don't set as current - add directly to stage
 
-        // Create a rotating cube - just add to stage, scene sync happens automatically
+        // Create a rotating cube - add DIRECTLY to this specific stage
         _cubeA = new FoShape3D("RotatingCube", "red").CreateBox("RotatingCube", 2, 2, 2);
         _cubeA.Transform.Position.Y = 0;
-        stage.AddShape(_cubeA);
+        stage.AddShape(_cubeA);  // Add to SceneA's stage specifically
 
         $"Scene A setup complete - stage has {stage.Members<FoShape3D>().Count()} shapes".WriteSuccess();
     }
@@ -56,20 +56,20 @@ public partial class MultiCanvas3DTest : IDisposable
         }
         
         var stage = arena.EstablishStage<FoStage3D>("SceneB");
-        arena.SetCurrentStage(stage);
+        // ❌ REMOVED: arena.SetCurrentStage(stage); // Don't set as current - add directly to stage
 
-        // Create three spheres - just add to stage, scene sync happens automatically
+        // Create three spheres - add DIRECTLY to this specific stage
         _sphereB1 = new FoShape3D("SphereRed", "red").CreateSphere("SphereRed", 1, 1, 1);
         _sphereB1.Transform.Position.Set(-3, 0, 0);
-        stage.AddShape(_sphereB1);
+        stage.AddShape(_sphereB1);  // Add to SceneB's stage specifically
 
         _sphereB2 = new FoShape3D("SphereGreen", "green").CreateSphere("SphereGreen", 1, 1, 1);
         _sphereB2.Transform.Position.Set(0, 0, 0);
-        stage.AddShape(_sphereB2);
+        stage.AddShape(_sphereB2);  // Add to SceneB's stage specifically
 
         _sphereB3 = new FoShape3D("SphereBlue", "blue").CreateSphere("SphereBlue", 1, 1, 1);
         _sphereB3.Transform.Position.Set(3, 0, 0);
-        stage.AddShape(_sphereB3);
+        stage.AddShape(_sphereB3);  // Add to SceneB's stage specifically
 
         $"Scene B setup complete - stage has {stage.Members<FoShape3D>().Count()} shapes".WriteSuccess();
     }
@@ -84,16 +84,16 @@ public partial class MultiCanvas3DTest : IDisposable
         }
         
         var stage = arena.EstablishStage<FoStage3D>("SceneC");
-        arena.SetCurrentStage(stage);
+        // ❌ REMOVED: arena.SetCurrentStage(stage); // Don't set as current - add directly to stage
 
-        // Create shapes - just add to stage, scene sync happens automatically
+        // Create shapes - add DIRECTLY to this specific stage
         _cylinderC = new FoShape3D("Cylinder", "orange").CreateCylinder("Cylinder", 1, 3, 1);
         _cylinderC.Transform.Position.Set(-2, 0, 0);
-        stage.AddShape(_cylinderC);
+        stage.AddShape(_cylinderC);  // Add to SceneC's stage specifically
 
         _coneC = new FoShape3D("Cone", "purple").CreateCone("Cone", 1.5, 3, 1.5);
         _coneC.Transform.Position.Set(2, 0, 0);
-        stage.AddShape(_coneC);
+        stage.AddShape(_coneC);  // Add to SceneC's stage specifically
 
         $"Scene C setup complete - stage has {stage.Members<FoShape3D>().Count()} shapes".WriteSuccess();
     }

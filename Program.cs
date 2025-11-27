@@ -22,6 +22,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddServerSideBlazor()
     .AddCircuitOptions(options =>
     {
+        options.DetailedErrors = true; // Enable detailed error messages
         options.DisconnectedCircuitMaxRetained = 100;
         options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
         options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(1);

@@ -146,9 +146,9 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void OnAddCageToRacks()
     {
-        RackTech.ComputeHitBoundaries(() => {
+        //RackTech.ComputeHitBoundaries(() => {
             CageTech.CreateRoutingCage();
-        });
+        //});
     }
 
     public void DoAddRacksArena()
@@ -178,12 +178,12 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void DoAddRoutesArena()
     {
-        RackTech.ComputeHitBoundaries(() => {
+        //RackTech.ComputeHitBoundaries(() => {
             for (int i = 0; i < 20; i++)
             {
                 TryAddRoutesArena();
             }
-        });
+        //});
 
     }
 

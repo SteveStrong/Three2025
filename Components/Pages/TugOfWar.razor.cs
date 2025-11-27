@@ -205,16 +205,15 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             return;
         }
 
-        $"Initializing 3D scene".WriteInfo();
+        $"Initializing 3D scene". WriteInfo();
         
-        // Add grid and axes helpers
-        // await scene.DoAddGridHelper(20, 20);
-        // await scene.DoAddAxisHelper(5);
+        // Grid and axis helpers are added by default in InitializeScene
+        // No need to add them explicitly here
 
         $"3D scene initialized".WriteSuccess();
     }
 
-    public void StartTugOfWar3D()
+    public async void StartTugOfWar3D()
     {
         $"Starting 3D Tug of War".WriteInfo();
         
@@ -225,15 +224,16 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             return;
         }
 
-        // Clear existing objects
+        // Clear existing objects and wait for JavaScript to process deletions
         arena.ClearArena();
+        $"3D scene cleared - ready for new objects".WriteSuccess();
 
         // Complex tug-of-war test with two boxes and connecting pipe
         _box1_3D = new FoShape3D($"Box1-{Guid.NewGuid().ToString().Substring(0, 8)}", "blue")
         {
             Transform = new Transform3("Box1Transform")
             {
-                Position = new Vector3(-2, 0, 0),
+                Position = new Vector3(-2, 0.5, 0),
             },
         };
 
@@ -246,12 +246,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                     if (progress < 1.0)
                     {
                         var x = -2 - (progress * BOX_MOVE_DISTANCE);
-                        shape.Transform.Position = new Vector3(x, 0, x);
+                        shape.Transform.Position = new Vector3(x, 0.5, x);
                         _tube_3D.SetGeometryStale();
-                        
-                        // Update distance text
-                        var distance = _box1_3D.DistanceBetween(_box2_3D);
-                        _distanceText.Text = $"dist: {distance:F2}";
+
                     }
                     else if (progress >= 1.0)
                     {
@@ -267,7 +264,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         {
             Transform = new Transform3("Box2Transform")
             {
-                Position = new Vector3(2, 0, 0),
+                Position = new Vector3(2, 0.5, 0),
             },
         };
 
@@ -280,12 +277,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                     if (progress < 1.0)
                     {
                         var x = 2 + (progress * BOX_MOVE_DISTANCE);
-                        shape.Transform.Position = new Vector3(x, x, 0);
+                        shape.Transform.Position = new Vector3(x, x, 2 * x);
                         _tube_3D.SetGeometryStale();
-                        
-                        // Update distance text
-                        var distance = _box1_3D.DistanceBetween(_box2_3D);
-                        _distanceText.Text = $"dist: {distance:F2}";
                     }
                 });
 
@@ -300,17 +293,40 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         _distanceText = new FoText3D("DistanceText", "white")
         {
             Text = "dist: 0.00",
-            FontSize = 0.5,
+            FontSize = 0.8,
             Transform = new Transform3("DistanceTextTransform")
             {
-                Position = new Vector3(0, 3, 0)
+                Position = new Vector3(0, 2, 0)
             }
         };
+        _distanceText.BeforeAnimationRefresh((text, tick, fps) =>
+        {
+            // Update distance text EVERY frame
+            var distance = _box1_3D.DistanceBetween(_box2_3D);
+            
+            // Only log occasionally to avoid spam
+            if (tick % 30 == 0)
+            {
+                $"Distance updated at tick {tick}: {distance:F2}".WriteInfo(1);
+            }
+            
+            _distanceText.Text = $"length: {distance:F2}";
+            
+            // DON'T clear animation - we want this to run every frame!
+            // _distanceText.ClearAnimationRefresh(); // ❌ REMOVED - was stopping updates after first frame
+        });
 
         arena.AddShapeToStage<FoShape3D>(_box1_3D);
+        $"Added Box1 to stage at {_box1_3D.Transform.Position}".WriteSuccess();
+        
         arena.AddShapeToStage<FoShape3D>(_box2_3D);
+        $"Added Box2 to stage at {_box2_3D.Transform.Position}".WriteSuccess();
+        
         arena.AddShapeToStage<FoPipe3D>(_tube_3D);
+        $"Added connecting tube to stage".WriteSuccess();
+        
         arena.AddShapeToStage<FoText3D>(_distanceText);
+        $"Added distance text to stage at {_distanceText.Transform.Position}".WriteSuccess();
 
         // ULTRA SIMPLIFIED TEST: Just a pipe with animated path
         $"Creating pipe with animated path".WriteInfo();
@@ -341,6 +357,18 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                     });
 
         arena.AddShapeToStage<FoPipe3D>(_growingPipe);
+        $"Added growing pipe to stage".WriteSuccess();
+        
+        // Log scene status
+        var (found, scene) = arena.CurrentScene();
+        if (found && scene != null)
+        {
+            $"Scene '{scene.Title}' ready - objects should be visible".WriteSuccess();
+        }
+        else
+        {
+            $"WARNING: No scene found - objects won't be visible!".WriteError();
+        }
         
         // Reset animation state and START animation immediately
         _animationTime = 0;
@@ -380,17 +408,14 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         
         _animationTime = 0;
         
-        // Clear the arena/stage - this marks objects for deletion
+        // Clear the arena/stage - this waits for deletion to complete
         var arena = Workspace?.GetArena();
-        arena?.ClearArena();
+        if (arena != null)
+        {
+            arena.ClearArena();
+        }
         
-        $"3D scene reset - all objects marked for deletion".WriteInfo();
-        
-        // Trigger animation frame to process deletions
-        // This ensures the deleted objects are actually removed from JavaScript scene
-        await AnimationFrameBus.TriggerBothAnimationFrames();
-        
-        $"3D scene reset - deletion frame triggered".WriteSuccess();
+        $"3D scene reset complete".WriteSuccess();
         
         // Clear local references
         _growingPipe = null;
@@ -403,6 +428,20 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         StateHasChanged();
         
         $"3D scene reset complete".WriteSuccess();
+    }
+
+    public async Task ClearScene3D()
+    {
+        $"Clearing 3D scene...".WriteInfo();
+        
+        var arena = Workspace?.GetArena();
+        if (arena != null)
+        {
+            arena.ClearArena();
+        }
+        
+        $"3D scene cleared".WriteSuccess();
+        StateHasChanged();
     }
 
     public void Dispose()

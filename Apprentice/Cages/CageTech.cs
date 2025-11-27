@@ -128,14 +128,16 @@ public class CageTech : ICageTech
         var connections = equip.GetConnectors();
         foreach (var item in connections)
         {
-            var (success, data) = item.GetComputedMesh();
-            if (!success || data.HitBoundary == null) continue;
+            //var (success, data) = item.GetComputedMesh();
+            if (!item.RecomputeWorldPosition()) continue;
+            var (found, pos) = item.GetWorldPosition();
+            if ( !found ) continue;
 
             var node = new Node3D(item.GetName(), "Blue")
             {
                 Transform = new Transform3("NodeTransform")
                 {
-                    Position = data.HitBoundary.GetPosition(),
+                    Position = pos,
                 }
             };
             node.CreateBox(item.GetName(), .2, .2, .3);
@@ -159,14 +161,16 @@ public class CageTech : ICageTech
         var connections = tray.GetConnectors();
         foreach (var item in connections)
         {
-            var (success, data) = item.GetComputedMesh();
-            if (!success || data.HitBoundary == null) continue;
+            //var (success, data) = item.GetComputedMesh();
+            if (!item.RecomputeWorldPosition()) continue;
+            var (found, pos) = item.GetWorldPosition();
+            if ( !found ) continue;
 
             var node = new Node3D(item.GetName(), "Blue")
             {
                 Transform = new Transform3("NodeTransform")
                 {
-                    Position = data.HitBoundary.GetPosition(),
+                    Position = pos,
                 }
             };
             node.CreateSphere(item.GetName(), 0.3, 0.3, 0.3);
@@ -198,17 +202,7 @@ public class CageTech : ICageTech
         }
     }
 
-    public bool ComputeHitBoundaries(Action OnComplete)
-    {
-        var arena = FoundryService.Arena();
-        var (success, scene) = arena.CurrentScene();
 
-        if (!success) return false;
-        scene.UpdateHitBoundaries(OnComplete);
-        return true;
-    } 
-
- 
 
 
 

@@ -62,15 +62,7 @@ public class TrisocTech : ITrisocTech
 
 
 
-    public bool ComputeHitBoundaries(Action OnComplete)
-    {
-        var arena = FoundryService.Arena();
-        var (success, scene) = arena.CurrentScene();
 
-        if (!success) return false;
-        scene.UpdateHitBoundaries(OnComplete);
-        return true;
-    } 
 
     private void UpdateClock(object state)
     {
