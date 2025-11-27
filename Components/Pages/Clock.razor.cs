@@ -35,6 +35,9 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     protected MockDataGenerator DataGenerator { get; set; } = new();
     
+    // ✅ Phase 0.5: Per-page stage (matches 2D's ManagedPage pattern)
+    private FoStage3D? _clockStage;
+    
     // Guard flags to prevent duplicate additions
     private HashSet<string> _addedModels = new();  // Track models added (unused now)
     private HashSet<string> _loadingModels = new(); // Track URLs currently loading (unused now)
@@ -52,10 +55,8 @@ public partial class ClockBase : ComponentBase, IDisposable
     {
         Workspace.SetBaseUrl(Navigation?.BaseUri ?? "");
         
-        // Clear any previous page's objects from the arena
-        var arena = Workspace.GetArena();
-        arena.ClearArena();
-        $"Clock: Cleared arena on initialization".WriteInfo();
+        // ✅ Phase 0.5: Don't clear arena - stage doesn't exist yet
+        // Canvas will create stage in its OnAfterRenderAsync
         
         // Subscribe directly to AnimationFrameBus for animation events
         $"Clock: Subscribing to AnimationEvent on AnimationFrameBus".WriteSuccess();
@@ -78,8 +79,10 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        var arena = Workspace.GetArena();
-        arena.ClearArena();
+        // ✅ Phase 0.5: Clear only this page's stage
+        _clockStage?.ClearStage();
+        $"Clock: Cleared ClockStage on dispose".WriteInfo();
+        
         _addedModels.Clear(); // Clear guard flags
         _tRexRequested = false; // Reset T-Rex guard for restart
         // Unsubscribe when component is disposed
@@ -106,10 +109,12 @@ public partial class ClockBase : ComponentBase, IDisposable
 
                 if (found && scene != null)
                 {
-
+                    // ✅ Phase 0.5: Get stage created by Canvas (matches 2D pattern)
                     var arena = Workspace.GetArena();
-                    arena.SetScene(scene);
-                    $"Clock OnAfterRenderAsync: Scene set in arena successfully".WriteSuccess();
+                    _clockStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                    
+                    // Stage already linked to scene by Canvas - no need to link again
+                    $"Clock: Retrieved ClockStage '{_clockStage.Key}' from arena".WriteSuccess();
                     
                     // Try to add a simple object to test rendering
                     // try
@@ -164,9 +169,9 @@ public partial class ClockBase : ComponentBase, IDisposable
             }
         };
 
-
-        var arena = Workspace.GetArena();
-        arena.AddShapeToStage<FoModel3D>(shape);
+        // ✅ Phase 0.5: Add to this page's stage
+        _clockStage?.AddShape(shape);
+        $"Clock: Added TRISOC to ClockStage".WriteInfo();
     }
 
     public void DoClockFace()
@@ -182,9 +187,9 @@ public partial class ClockBase : ComponentBase, IDisposable
             }
         };
 
-        var arena = Workspace.GetArena();
-        arena.AddShapeToStage<FoClockFace3D>(clockFace);
-
+        // ✅ Phase 0.5: Add to this page's stage
+        _clockStage?.AddShape(clockFace);
+        $"Clock: Added clock face to ClockStage".WriteInfo();
     }
 
     public void DoRunClock()
@@ -244,7 +249,10 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
         };
         text3d.AddSubGlyph3D(label);
-        arena.AddShapeToStage<FoText3D>(text3d);
+        
+        // ✅ Phase 0.5: Add to this page's stage
+        _clockStage?.AddShape(text3d);
+        $"Clock: Added text to ClockStage".WriteInfo();
 
         // Animation using MoveBy for proper dirty flag handling
         text3d.BeforeAnimationRefresh((self, tick, fps) =>
@@ -300,8 +308,9 @@ public partial class ClockBase : ComponentBase, IDisposable
         };
         model3d.AddSubGlyph3D(label);
 
-
-        arena.AddShapeToStage<FoModel3D>(model3d);
+        // ✅ Phase 0.5: Add to this page's stage
+        _clockStage?.AddShape(model3d);
+        $"Clock: Added BoxAnimated to ClockStage".WriteInfo();
 
         model3d.BeforeAnimationRefresh((self, tick, fps) =>
         {
@@ -430,8 +439,9 @@ public partial class ClockBase : ComponentBase, IDisposable
             self.SetTransformStale();
         });
 
-        arena.AddShapeToStage<FoModel3D>(model);
-        $"Added {uniqueName} to arena - T-Rex walking (animation loop protected by flag)".WriteSuccess();
+        // ✅ Phase 0.5: Add to this page's stage
+        _clockStage?.AddShape(model);
+        $"Added {uniqueName} to ClockStage - T-Rex walking (animation loop protected by flag)".WriteSuccess();
     }
 
 
@@ -473,6 +483,8 @@ public partial class ClockBase : ComponentBase, IDisposable
             self.SetTransformStale();
         });
 
-        arena.AddShapeToStage<FoModel3D>(model);
+        // ✅ Phase 0.5: Add to this page's stage
+        _clockStage?.AddShape(model);
+        $"Clock: Added submarine to ClockStage".WriteInfo();
     }
 }

@@ -46,6 +46,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     protected int _currentTick = 0;
     private int _frameCount = 0;
     private const int FPS_UPDATE_INTERVAL = 15; // Update display every 15 frames
+    
+    // ✅ Phase 0.5: Per-page stage (matches 2D's ManagedPage pattern)
+    private FoStage3D? _tugOfWarStage;
 
     protected override void OnInitialized()
     {
@@ -77,11 +80,14 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
             // Setup 3D Arena-Scene bridge
             var (found3D, scene3D) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
-            var arena = Workspace.GetArena();
-            if (found3D) 
+            if (found3D)
             {
-                arena.SetScene(scene3D!);
-                $"TugOfWar: Arena-Scene bridge established".WriteSuccess();
+                // ✅ Phase 0.5: Get stage created by Canvas (matches 2D pattern)
+                var arena = Workspace.GetArena();
+                _tugOfWarStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                
+                // Stage already linked to scene by Canvas - no need to link again
+                $"TugOfWar: Retrieved TugOfWarStage from arena".WriteSuccess();
             }
 
             // Initialize both scenes but don't start animations yet
@@ -224,8 +230,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             return;
         }
 
-        // Clear existing objects and wait for JavaScript to process deletions
-        arena.ClearArena();
+        // ✅ Phase 0.5: Clear only this page's stage
+        _tugOfWarStage?.ClearStage();
         $"3D scene cleared - ready for new objects".WriteSuccess();
 
         // Complex tug-of-war test with two boxes and connecting pipe
@@ -316,17 +322,18 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             // _distanceText.ClearAnimationRefresh(); // ❌ REMOVED - was stopping updates after first frame
         });
 
-        arena.AddShapeToStage<FoShape3D>(_box1_3D);
-        $"Added Box1 to stage at {_box1_3D.Transform.Position}".WriteSuccess();
+        // ✅ Phase 0.5: Add all shapes to this page's stage
+        _tugOfWarStage?.AddShape(_box1_3D);
+        $"Added Box1 to TugOfWarStage at {_box1_3D.Transform.Position}".WriteSuccess();
         
-        arena.AddShapeToStage<FoShape3D>(_box2_3D);
-        $"Added Box2 to stage at {_box2_3D.Transform.Position}".WriteSuccess();
+        _tugOfWarStage?.AddShape(_box2_3D);
+        $"Added Box2 to TugOfWarStage at {_box2_3D.Transform.Position}".WriteSuccess();
         
-        arena.AddShapeToStage<FoPipe3D>(_tube_3D);
-        $"Added connecting tube to stage".WriteSuccess();
+        _tugOfWarStage?.AddShape(_tube_3D);
+        $"Added connecting tube to TugOfWarStage".WriteSuccess();
         
-        arena.AddShapeToStage<FoText3D>(_distanceText);
-        $"Added distance text to stage at {_distanceText.Transform.Position}".WriteSuccess();
+        _tugOfWarStage?.AddShape(_distanceText);
+        $"Added distance text to TugOfWarStage at {_distanceText.Transform.Position}".WriteSuccess();
 
         // ULTRA SIMPLIFIED TEST: Just a pipe with animated path
         $"Creating pipe with animated path".WriteInfo();
@@ -356,8 +363,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                         }
                     });
 
-        arena.AddShapeToStage<FoPipe3D>(_growingPipe);
-        $"Added growing pipe to stage".WriteSuccess();
+        // ✅ Phase 0.5: Add growing pipe to this page's stage
+        _tugOfWarStage?.AddShape(_growingPipe);
+        $"Added growing pipe to TugOfWarStage".WriteSuccess();
         
         // Log scene status
         var (found, scene) = arena.CurrentScene();
@@ -408,13 +416,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         
         _animationTime = 0;
         
-        // Clear the arena/stage - this waits for deletion to complete
-        var arena = Workspace?.GetArena();
-        if (arena != null)
-        {
-            arena.ClearArena();
-        }
-        
+        // ✅ Phase 0.5: Clear only this page's stage
+        _tugOfWarStage?.ClearStage();
         $"3D scene reset complete".WriteSuccess();
         
         // Clear local references
@@ -434,12 +437,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     {
         $"Clearing 3D scene...".WriteInfo();
         
-        var arena = Workspace?.GetArena();
-        if (arena != null)
-        {
-            arena.ClearArena();
-        }
-        
+        // ✅ Phase 0.5: Clear only this page's stage
+        _tugOfWarStage?.ClearStage();
         $"3D scene cleared".WriteSuccess();
         StateHasChanged();
     }

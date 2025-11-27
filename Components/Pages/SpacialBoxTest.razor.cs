@@ -1,6 +1,6 @@
 
 using FoundryWorldsAndDrawings.Shape;
-using FoundryRulesAndUnits.Extensions;
+using FoundryRulesAndUnits.Extensions; // ✅ Phase 0.5: For WriteSuccess extension
 using Microsoft.AspNetCore.Components;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shared;
@@ -11,6 +11,7 @@ using FoundryWorldsAndDrawings.ThreeD.Viewers;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using Unglide;
+// ✅ Phase 0.5: FoStage3D already available via FoundryWorldsAndDrawings.Shape
 
 
 namespace Three2025.Components.Pages;
@@ -22,6 +23,7 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
+    private FoStage3D? _spacialBoxStage; // ✅ Phase 0.5: Track this page's stage
     protected SpacialBox3D CurrentBox;
 
     private string _mainBoxGuid = Guid.NewGuid().ToString();
@@ -57,11 +59,9 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
 
             _scene = scene;
 
-            Arena.SetScene(_scene);
-            
-            // 🔥 CRITICAL: Clear arena to remove artifacts from previous tests
-            // Scene is global singleton - must explicitly clean on page load
-            Arena.ClearArena();
+            // ✅ Phase 0.5: Get this page's stage (Canvas already linked it to scene)
+            _spacialBoxStage = Arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+            $"SpacialBoxTest: Retrieved stage '{_spacialBoxStage?.Name}' from Canvas".WriteSuccess();
             
             AddAxisToScene();
             CreateSpacialBox();
@@ -127,7 +127,8 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
         boxShape.Transform.Scale = new Vector3(1, 1, 1);
         boxShape.Transform.Pivot = new Vector3(0, -BoxHeight / 2, 0);
 
-        Arena.AddShapeToStage<FoShape3D>(boxShape);
+        // ✅ Phase 0.5: Add shape to this page's stage
+        _spacialBoxStage?.AddShape(boxShape);
         CurrentBox = new SpacialBox3D(boxShape, "m");
         
         SetStatus($"Created: {BoxWidth}×{BoxHeight}×{BoxDepth}m");
@@ -137,7 +138,8 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
     public void ClearAll()
     {
         if (!EnsureReady()) return;
-        Arena.ClearArena();
+        // ✅ Phase 0.5: Clear only this page's stage
+        _spacialBoxStage?.ClearStage();
         StateHasChanged();
     }
 
@@ -199,7 +201,8 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
         var model = new FoModel3D { Name = "Submarine", Url = url }
             .CreateModel("sub", url, 12.0, 4.5, 4.5);
 
-        Arena.AddShapeToStage<FoModel3D>(model);
+        // ✅ Phase 0.5: Add model to this page's stage
+        _spacialBoxStage?.AddShape(model);
 
         var frame = new SpacialFrame3D(model, "m");
         VisualizationService.ShowLabeledVertices(Arena, frame.GetVertices());

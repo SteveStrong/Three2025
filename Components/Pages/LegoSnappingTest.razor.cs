@@ -5,6 +5,7 @@ using FoundryWorldsAndDrawings.PubSub;
 using Three2025.Services.Visualization;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryWorldsAndDrawings.Shared;
+using FoundryRulesAndUnits.Extensions; // ✅ Phase 0.5: For WriteSuccess extension
 
 namespace Three2025.Components.Pages;
 
@@ -16,6 +17,7 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
+    private FoStage3D? _legoStage; // ✅ Phase 0.5: Track this page's stage
     
     // Universal geometry snapping components - work with any FoShape3D
     protected FoShape3D ComponentA;
@@ -58,7 +60,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
             var arena = Workspace.GetArena();
             if (found)
             {
-                arena.SetScene(scene!);
+                // ✅ Phase 0.5: Get this page's stage (Canvas already linked it to scene)
+                _legoStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                $"LegoSnappingTest: Retrieved stage '{_legoStage?.Name}' from Canvas".WriteSuccess();
                 // Create initial components for demonstration
                 CreateComponentA();
                 CreateComponentB();
@@ -89,7 +93,8 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
                 return;
             }
 
-            arena.AddShapeToStage<FoShape3D>(ComponentA);
+            // ✅ Phase 0.5: Add component to this page's stage
+            _legoStage?.AddShape(ComponentA);
 
             // Get face count using the new universal engine
             StateHasChanged();
@@ -123,7 +128,8 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
                 return;
             }
 
-            arena.AddShapeToStage<FoShape3D>(ComponentB);
+            // ✅ Phase 0.5: Add component to this page's stage
+            _legoStage?.AddShape(ComponentB);
             
             StateHasChanged();
         }
@@ -336,7 +342,8 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
         var arena = Workspace?.GetArena();
         if (arena == null) return;
         
-        arena.ClearArena();
+        // ✅ Phase 0.5: Clear only this page's stage
+        _legoStage?.ClearStage();
         
         // Reset components and status
         ComponentA = null;

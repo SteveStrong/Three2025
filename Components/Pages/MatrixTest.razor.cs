@@ -1,6 +1,6 @@
 
 using FoundryWorldsAndDrawings.Shape;
-using FoundryRulesAndUnits.Extensions;
+using FoundryRulesAndUnits.Extensions; // ✅ Phase 0.5: For WriteSuccess extension
 using Microsoft.AspNetCore.Components;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shared;
@@ -10,6 +10,7 @@ using Three2025.Services.Visualization;
 using FoundryWorldsAndDrawings.ThreeD.Viewers;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
+// ✅ Phase 0.5: FoStage3D already available via FoundryWorldsAndDrawings.Shape
 
 
 namespace Three2025.Components.Pages;
@@ -28,6 +29,7 @@ public partial class MatrixTest : ComponentBase, IDisposable
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
+    private FoStage3D? _matrixStage; // ✅ Phase 0.5: Track this page's stage
     protected SpacialBox3D CurrentBox;
 
     // Box properties for UI binding
@@ -59,7 +61,9 @@ public partial class MatrixTest : ComponentBase, IDisposable
             var arena = FoundryService.Arena();
             if (found)
             {
-                arena.SetScene(scene!);
+                // ✅ Phase 0.5: Get this page's stage (Canvas already linked it to scene)
+                _matrixStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                $"MatrixTest: Retrieved stage '{_matrixStage?.Name}' from Canvas".WriteSuccess();
                 DoRequestAxisToScene(scene!);
                 CreateSpacialBox();
             }
@@ -90,7 +94,8 @@ public partial class MatrixTest : ComponentBase, IDisposable
                 return;
             }
 
-            arena.ClearArena();
+            // ✅ Phase 0.5: Clear only this page's stage
+            _matrixStage?.ClearStage();
 
             //ok you need to remember that for spacialbox it is in a local coord system with 0,0,0 being the 
             // left , bottom, back corner
@@ -105,7 +110,8 @@ public partial class MatrixTest : ComponentBase, IDisposable
                 Scale = new Vector3(1, 1, 1)
             };
 
-            arena.AddShapeToStage<FoRack>(boxShape);
+            // ✅ Phase 0.5: Add shape to this page's stage
+            _matrixStage?.AddShape(boxShape);
 
             CurrentBox = new SpacialBox3D(boxShape, "m");
 
@@ -180,7 +186,8 @@ public partial class MatrixTest : ComponentBase, IDisposable
             return;
         }
 
-        arena.ClearArena();
+        // ✅ Phase 0.5: Clear only this page's stage
+        _matrixStage?.ClearStage();
         StateHasChanged();
     }
 
@@ -279,7 +286,8 @@ public partial class MatrixTest : ComponentBase, IDisposable
             Name = "Submarine",
         }.CreateModel("sub", GetReferenceTo(@"storage/StaticFiles/sub.glb"), 12.0, 4.5, 4.5);
 
-        arena.AddShapeToStage<FoModel3D>(model);
+        // ✅ Phase 0.5: Add model to this page's stage
+        _matrixStage?.AddShape(model);
 
         var box = new SpacialFrame3D(model, "m");
 
