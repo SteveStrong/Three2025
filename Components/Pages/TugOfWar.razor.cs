@@ -47,6 +47,10 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     private int _frameCount = 0;
     private const int FPS_UPDATE_INTERVAL = 15; // Update display every 15 frames
     
+    // Debug control state
+    protected string _animationState = "Running";
+    protected int _stepCount = 0;
+    
     // ✅ Phase 0.5: Per-page stage (matches 2D's ManagedPage pattern)
     private FoStage3D _tugOfWarStage;
 
@@ -64,6 +68,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         {
             _currentFps = animEvent.fps;
             _currentTick = animEvent.tick;
+            _animationState = AnimationFrameBus.GetAnimationState();
             _frameCount = 0;
             InvokeAsync(StateHasChanged);
         }
@@ -283,9 +288,20 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     }
 
 
-    public async void StartTugOfWar3D()
+    public async void StartTugOfWar3D(bool startPaused = false)
     {
-        $"Starting 3D Tug of War Animation".WriteInfo();
+        if (startPaused)
+        {
+            AnimationFrameBus.PauseAllAnimations();
+            _animationState = AnimationFrameBus.GetAnimationState();
+            _stepCount = 0;
+            $"Starting 3D Tug of War Animation in PAUSED mode".WriteInfo();
+        }
+        else
+        {
+            _stepCount = 0;
+            $"Starting 3D Tug of War Animation".WriteInfo();
+        }
         
         var arena = Workspace.GetArena();
         if (arena == null)
@@ -307,6 +323,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         };
 
         _box1_3D.CreateBox("Box1", 1.0, 1.0, 1.0)
+                .SetRecomputeBoundary()  // ← Opt-in IMMEDIATELY, not during animation
                 .BeforeAnimationRefresh((shape, tick, fps) =>
                 {
                     _animationTime += 1.0 / fps;
@@ -317,6 +334,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                         var x = -2 - (progress * BOX_MOVE_DISTANCE);
                         shape.Transform.Position = new Vector3(x, 0.5, x);
                         _tube_3D.SetGeometryStale();
+                        _distanceText.SetGeometryStale();
 
                     }
                     else if (progress >= 1.0)
@@ -340,6 +358,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         _box2_3D.CreateBox("Box2", 1.0, 1.0, 1.0)
                 .BeforeAnimationRefresh((shape, tick, fps) =>
                 {
+                    // Opt-in to world position calculation (once, flag persists)
+                    shape.SetRecomputeBoundary();
                     _animationTime += 1.0 / fps;
                     var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
                     
@@ -348,6 +368,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                         var x = 2 + (progress * BOX_MOVE_DISTANCE);
                         shape.Transform.Position = new Vector3(x, x, 2 * x);
                         _tube_3D.SetGeometryStale();
+                        _distanceText.SetGeometryStale();
                     }
                 });
 
@@ -368,22 +389,16 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                 Position = new Vector3(0, 2, 0)
             }
         };
-        _distanceText.BeforeAnimationRefresh((text, tick, fps) =>
+        _distanceText.PreComputeMesh = (shape) =>
         {
+            $"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW".WriteInfo();
             // Update distance text EVERY frame
-            var distance = _box1_3D.DistanceBetween(_box2_3D);
+            var (success, distance) = _box1_3D.DistanceBetween(_box2_3D);
             
-            // Only log occasionally to avoid spam
-            if (tick % 30 == 0)
-            {
-                $"Distance updated at tick {tick}: {distance:F2}".WriteInfo(1);
-            }
-            
-            _distanceText.Text = $"length: {distance:F2}";
-            
-            // DON'T clear animation - we want this to run every frame!
-            // _distanceText.ClearAnimationRefresh(); // ❌ REMOVED - was stopping updates after first frame
-        });
+            shape.Color = !success ? "red" : "white";
+
+            _distanceText.Text = $"length: {distance:F2} {success}";
+        };
 
         // ✅ Phase 0.5: Add all shapes to this page's stage
         _tugOfWarStage.AddShape(_box1_3D);
@@ -434,7 +449,19 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         // Reset animation state and START animation immediately
         _animationTime = 0;
 
-        $"3D Tug of War started - all objects animating".WriteSuccess();
+        // If starting paused, trigger one frame to create geometry, then stay paused
+        if (startPaused)
+        {
+            $"Triggering initial frame to create geometry while paused".WriteInfo();
+            await AnimationFrameBus.TriggerSingleFrame();
+            _stepCount = 1; // Count the initial frame
+            StateHasChanged();
+            $"Geometry created - ready for frame stepping (Step 1 complete)".WriteSuccess();
+        }
+        else
+        {
+            $"3D Tug of War started - all objects animating".WriteSuccess();
+        }
     }
 
     public void StartBothAnimations()
@@ -496,6 +523,40 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         
         $"3D scene cleared - stage now has {_tugOfWarStage?.Members<FoGlyph3D>().Count() ?? 0} shapes".WriteSuccess();
         StateHasChanged();
+    }
+
+    // ========== Debug Control Methods ==========
+    
+    protected void StartTugOfWarPaused()
+    {
+        StartTugOfWar3D(startPaused: true);
+    }
+    
+    protected void PauseAnimation()
+    {
+        AnimationFrameBus.PauseAllAnimations();
+        _animationState = AnimationFrameBus.GetAnimationState();
+        StateHasChanged();
+        "Animation paused by user".WriteInfo();
+    }
+
+    protected async Task StepFrame()
+    {
+        _stepCount++;
+        await AnimationFrameBus.TriggerSingleFrame();
+        _animationState = AnimationFrameBus.GetAnimationState();
+        _currentTick = AnimationFrameBus.IsGloballyPaused() ? _currentTick : _currentTick + 1;
+        StateHasChanged();
+        $"Step {_stepCount}: Single frame executed (Tick: {_currentTick})".WriteInfo();
+    }
+
+    protected void ResumeAnimation()
+    {
+        AnimationFrameBus.ResumeAllAnimations();
+        _animationState = AnimationFrameBus.GetAnimationState();
+        _stepCount = 0;
+        StateHasChanged();
+        "Animation resumed by user".WriteInfo();
     }
 
     public void Dispose()

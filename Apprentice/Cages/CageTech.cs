@@ -129,7 +129,7 @@ public class CageTech : ICageTech
         foreach (var item in connections)
         {
             //var (success, data) = item.GetComputedMesh();
-            if (!item.RecomputeWorldPosition()) continue;
+            if (!item.IsWorldPositionUpdateRequired()) continue;
             var (found, pos) = item.GetWorldPosition();
             if ( !found ) continue;
 
@@ -162,7 +162,7 @@ public class CageTech : ICageTech
         foreach (var item in connections)
         {
             //var (success, data) = item.GetComputedMesh();
-            if (!item.RecomputeWorldPosition()) continue;
+            if (!item.IsWorldPositionUpdateRequired()) continue;
             var (found, pos) = item.GetWorldPosition();
             if ( !found ) continue;
 

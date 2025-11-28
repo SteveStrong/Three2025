@@ -10,12 +10,21 @@
 
 <h3>Tug of War Test - 2D vs 3D Animation Comparison</h3>
 
-<div style="margin-bottom: 15px; padding: 10px; background-color: #e3f2fd; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
-    <div>
+<div style="margin-bottom: 15px; padding: 10px; background-color: #e3f2fd; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 20px;">
+    <div style="display: flex; gap: 10px; align-items: center; flex-shrink: 0;">
         <button class="btn btn-success" @onclick="StartBothAnimations">Start Both Animations</button>
         <button class="btn btn-warning" @onclick="ResetBoth">Reset Both</button>
     </div>
-    <div style="font-family: monospace; font-size: 16px; font-weight: bold;">
+    <div style="display: flex; gap: 10px; align-items: center; padding: 0 15px; background-color: #fff3cd; border-radius: 5px; flex-shrink: 0;">
+        <span style="font-weight: bold;">Debug:</span>
+        <button class="btn btn-sm btn-warning" @onclick="PauseAnimation">⏸ Pause</button>
+        <button class="btn btn-sm btn-info" @onclick="StepFrame">⏭ Step</button>
+        <button class="btn btn-sm btn-success" @onclick="ResumeAnimation">▶ Resume</button>
+        <div style="font-family: monospace; font-size: 14px; font-weight: bold; padding: 5px 10px; background-color: #fff; border-radius: 3px; margin-left: 10px;">
+            @_animationState @(_stepCount > 0 ? $"| Steps: {_stepCount}" : "")
+        </div>
+    </div>
+    <div style="font-family: monospace; font-size: 16px; font-weight: bold; flex-shrink: 0;">
         <span style="margin-right: 20px;">FPS: @_currentFps.ToString("F1")</span>
         <span>Tick: @_currentTick</span>
     </div>
@@ -34,7 +43,8 @@
     <div style="flex: 1;">
         <h4>3D Canvas (Transform Animation)</h4>
         <div style="margin-bottom: 10px;">
-            <button class="btn btn-primary" @onclick="StartTugOfWar3D">Start Tug of War Animation</button>
+            <button class="btn btn-primary" @onclick="@(() => StartTugOfWar3D())">Start Tug of War Animation</button>
+            <button class="btn btn-outline-primary" @onclick="StartTugOfWarPaused">Start PAUSED (for stepping)</button>
             <button class="btn btn-success" @onclick="Add3Boxes">Add 3 Boxes</button>
             <button class="btn btn-info" @onclick="AddOneBox">Add 1 Box</button>
             <button class="btn btn-secondary" @onclick="Reset3D">Reset 3D</button>

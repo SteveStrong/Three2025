@@ -140,7 +140,7 @@ public partial class DebugCanvasBase : ComponentBase
         }
     }
 
-    public void ClearScene()
+    public async void ClearScene()
     {
         try
         {
@@ -152,7 +152,7 @@ public partial class DebugCanvasBase : ComponentBase
                 return;
             }
 
-            scene.ClearScene();
+            await scene.ClearAll();
             DebugInfo = $"✅ Cleared scene '{scene.Title}'";
             StateHasChanged();
         }
