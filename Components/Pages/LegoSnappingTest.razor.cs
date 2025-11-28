@@ -147,7 +147,7 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
         // Use MoveBy for proper dirty flag handling
         ComponentA.Transform.Position = Vector3.Zero;
         ComponentA.Transform.MoveBy(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
-        ComponentA.QueueForMeshUpdate();
+
         
         StatusMessage = $"Updated Component A position to ({ComponentAPosX},{ComponentAPosY},{ComponentAPosZ}) using Universal Snapping";
         StateHasChanged();
@@ -160,7 +160,7 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
         // Use MoveBy for proper dirty flag handling
         ComponentB.Transform.Position = Vector3.Zero;
         ComponentB.Transform.MoveBy(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
-        ComponentB.QueueForMeshUpdate();
+
         
         StatusMessage = $"Updated Component B position to ({ComponentBPosX},{ComponentBPosY},{ComponentBPosZ}) using Universal Snapping";
         StateHasChanged();

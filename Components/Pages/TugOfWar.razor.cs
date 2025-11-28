@@ -202,7 +202,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
 
 
-    public async void StartTugOfWar3D()
+    public async void Add3Boxes()
     {
         $"SIMPLE TEST: Adding 3 static boxes".WriteInfo();
         
@@ -212,27 +212,43 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             return;
         }
 
-        _tugOfWarStage.ClearStage();
+        // DON'T clear - let boxes accumulate to test coexistence
+        $"Before adding: Stage has {_tugOfWarStage.Members<FoGlyph3D>().Count()} shapes".WriteInfo();
 
         // Create 3 boxes - NO animation, just static shapes
         var box1 = new FoShape3D("Box1", "blue");
         box1.Transform.Position = new Vector3(-3, 0.5, 0);
         box1.CreateBox("Box1", 1.0, 1.0, 1.0);
 
+        $"Adding Box1...".WriteInfo();
+        _tugOfWarStage.AddShape(box1);
+        $"After Box1: Stage has {_tugOfWarStage.Members<FoGlyph3D>().Count()} shapes, Box1 IsStale: {box1.IsStale()}".WriteInfo();
+
         var box2 = new FoShape3D("Box2", "red");
         box2.Transform.Position = new Vector3(0, 0.5, 0);
         box2.CreateBox("Box2", 1.0, 1.0, 1.0);
+
+        _tugOfWarStage.AddShape(box2);
+        $"After Box2: Stage has {_tugOfWarStage.Members<FoGlyph3D>().Count()} shapes".WriteInfo();
 
         var box3 = new FoShape3D("Box3", "green");
         box3.Transform.Position = new Vector3(3, 0.5, 0);
         box3.CreateBox("Box3", 1.0, 1.0, 1.0);
 
-        _tugOfWarStage.AddShape(box1);
-        _tugOfWarStage.AddShape(box2);
         _tugOfWarStage.AddShape(box3);
+        
+        var count = _tugOfWarStage.Members<FoGlyph3D>().Count();
+        var slots = _tugOfWarStage.AllSlotsOfType<FoGlyph3D>();
+        var totalInSlots = 0;
+        foreach (var slot in slots)
+        {
+            var slotCount = slot.ValuesOfType<FoGlyph3D>().Count();
+            totalInSlots += slotCount;
+            $"  Slot {slot.TypeSpec.Name}: {slotCount} items".WriteInfo();
+        }
 
         var linkedScene = _tugOfWarStage.GetAssociatedScene();
-        $"✅ Added 3 boxes. Stage has scene: {linkedScene != null}, Scene name: {linkedScene?.Title ?? "NULL"}".WriteSuccess();
+        $"✅ Added 3 boxes. Members<FoGlyph3D>(): {count}, Total in slots: {totalInSlots}. Scene: {linkedScene?.Title ?? "NULL"}".WriteSuccess();
         
         // CRITICAL: Trigger immediate render - don't wait for animation loop
         var arena = Workspace.GetArena();
@@ -240,9 +256,36 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
     }
 
-    public async void StartTugOfWar3D_OLD()
+    private int _boxCounter = 0;
+    
+    public async void AddOneBox()
     {
-        $"Starting 3D Tug of War".WriteInfo();
+        if (_tugOfWarStage == null)
+        {
+            $"ERROR: Stage is null!".WriteError();
+            return;
+        }
+
+        _boxCounter++;
+        var x = (_boxCounter - 1) * 2.0 - 3.0; // Spread boxes horizontally
+        
+        var box = new FoShape3D($"Box{_boxCounter}", "cyan");
+        box.Transform.Position = new Vector3(x, 0.5, 0);
+        box.CreateBox($"Box{_boxCounter}", 1.0, 1.0, 1.0);
+        
+        _tugOfWarStage.AddShape(box);
+        
+        $"✅ Added Box{_boxCounter} at ({x:F1}, 0.5, 0). Stage now has {_tugOfWarStage.Members<FoGlyph3D>().Count()} shapes".WriteSuccess();
+        
+        // Trigger render
+        var arena = Workspace.GetArena();
+        await arena.RenderArena(0, 0);
+    }
+
+
+    public async void StartTugOfWar3D()
+    {
+        $"Starting 3D Tug of War Animation".WriteInfo();
         
         var arena = Workspace.GetArena();
         if (arena == null)
@@ -251,9 +294,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             return;
         }
 
-        // ✅ Phase 0.5: Clear only this page's stage
-        _tugOfWarStage?.ClearStage();
-        $"3D scene cleared - ready for new objects".WriteSuccess();
+        // DON'T clear - let objects accumulate to test multiple animations
+        $"Before animation: Stage has {_tugOfWarStage?.Members<FoGlyph3D>().Count() ?? 0} shapes".WriteInfo();
 
         // Complex tug-of-war test with two boxes and connecting pipe
         _box1_3D = new FoShape3D($"Box1-{Guid.NewGuid().ToString().Substring(0, 8)}", "blue")
@@ -265,7 +307,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         };
 
         _box1_3D.CreateBox("Box1", 1.0, 1.0, 1.0)
-                .BeforeAnimationRefreshNOOP((shape, tick, fps) =>
+                .BeforeAnimationRefresh((shape, tick, fps) =>
                 {
                     _animationTime += 1.0 / fps;
                     var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
@@ -296,7 +338,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         };
 
         _box2_3D.CreateBox("Box2", 1.0, 1.0, 1.0)
-                .BeforeAnimationRefreshNOOP((shape, tick, fps) =>
+                .BeforeAnimationRefresh((shape, tick, fps) =>
                 {
                     _animationTime += 1.0 / fps;
                     var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
@@ -326,7 +368,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                 Position = new Vector3(0, 2, 0)
             }
         };
-        _distanceText.BeforeAnimationRefreshNOOP((text, tick, fps) =>
+        _distanceText.BeforeAnimationRefresh((text, tick, fps) =>
         {
             // Update distance text EVERY frame
             var distance = _box1_3D.DistanceBetween(_box2_3D);
@@ -368,7 +410,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         };
         
         _growingPipe.CreateTube("GrowingPipe", 0.25, initialPath)
-                    .BeforeAnimationRefreshNOOP((self, tick, fps) =>
+                    .BeforeAnimationRefresh((self, tick, fps) =>
                     {
                         _animationTime += 1.0 / fps;
                         var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
@@ -428,8 +470,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         _animationTime = 0;
         
         // ✅ Phase 0.5: Clear only this page's stage
-        _tugOfWarStage?.ClearStage();
-        $"3D scene reset complete".WriteSuccess();
+        if (_tugOfWarStage != null)
+            await _tugOfWarStage.ClearStage();
         
         // Clear local references
         _growingPipe = null;
@@ -438,19 +480,21 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         _tube_3D = null;
         _distanceText = null;
         
+        $"3D scene reset - objects deleted".WriteSuccess();
+        
         // Force UI update to reflect cleared state
         StateHasChanged();
-        
-        $"3D scene reset complete".WriteSuccess();
     }
 
     public async Task ClearScene3D()
     {
         $"Clearing 3D scene...".WriteInfo();
         
-        // ✅ Phase 0.5: Clear only this page's stage
-        _tugOfWarStage?.ClearStage();
-        $"3D scene cleared".WriteSuccess();
+        // ✅ IMMEDIATE DELETE: ClearStage now sends deletions immediately
+        if (_tugOfWarStage != null)
+            await _tugOfWarStage.ClearStage();
+        
+        $"3D scene cleared - stage now has {_tugOfWarStage?.Members<FoGlyph3D>().Count() ?? 0} shapes".WriteSuccess();
         StateHasChanged();
     }
 

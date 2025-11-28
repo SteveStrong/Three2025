@@ -34,9 +34,11 @@
     <div style="flex: 1;">
         <h4>3D Canvas (Transform Animation)</h4>
         <div style="margin-bottom: 10px;">
-            <button class="btn btn-primary" @onclick="StartTugOfWar3D">Start 3D Tug of War</button>
+            <button class="btn btn-primary" @onclick="StartTugOfWar3D">Start Tug of War Animation</button>
+            <button class="btn btn-success" @onclick="Add3Boxes">Add 3 Boxes</button>
+            <button class="btn btn-info" @onclick="AddOneBox">Add 1 Box</button>
             <button class="btn btn-secondary" @onclick="Reset3D">Reset 3D</button>
-            <button class="btn btn-info" @onclick="ClearScene3D">Clear Scene</button>
+            <button class="btn btn-danger" @onclick="ClearScene3D">Clear Scene</button>
         </div>
         <Canvas3DComponent SceneName="TugOfWar3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight  />
     </div>
