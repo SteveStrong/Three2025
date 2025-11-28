@@ -48,11 +48,8 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         if (firstRender)
         {
-            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false,null!);
-
-
-            var arena = Workspace.GetArena();
-            arena.SetScene(scene);
+            // Wait for Canvas to initialize (Canvas handles stage-scene linkage)
+            await Task.Delay(100);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -72,8 +69,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void DoAddTubeToScene()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if ( !found ) return;
 
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -110,8 +106,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void DoAddConeToScene()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if ( !found ) return;
 
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -234,10 +229,10 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void TryAddWiresArena()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if ( !found ) return;
 
+        var arena = Workspace.GetArena();
         var stage = arena.CurrentStage();
     
         
@@ -390,8 +385,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
    public async Task DoAddAxisToScene()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if (!found) return;
 
         var model = new Model3D()
@@ -413,8 +407,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void DoRequestAddTextToScene()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if (!found) return;
 
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -436,8 +429,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public async Task DoRequestAddJetToScene()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if (!found) return;
 
         var x = DataGenerator.GenerateDouble(-10, 10);

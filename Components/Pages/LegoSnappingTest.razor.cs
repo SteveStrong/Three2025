@@ -144,16 +144,10 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     {
         if (ComponentA == null) return;
         
-    // Use MoveBy for proper dirty flag handling
-    ComponentA.Transform.Position = Vector3.Zero;
-    ComponentA.Transform.MoveBy(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
-        
-        var arena = Workspace?.GetArena();
-        var (found, scene) = arena?.CurrentScene() ?? (false, null);
-        if (found && scene != null)
-        {
-            ComponentA.QueueForMeshUpdate();
-        }
+        // Use MoveBy for proper dirty flag handling
+        ComponentA.Transform.Position = Vector3.Zero;
+        ComponentA.Transform.MoveBy(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
+        ComponentA.QueueForMeshUpdate();
         
         StatusMessage = $"Updated Component A position to ({ComponentAPosX},{ComponentAPosY},{ComponentAPosZ}) using Universal Snapping";
         StateHasChanged();
@@ -163,16 +157,10 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     {
         if (ComponentB == null) return;
         
-    // Use MoveBy for proper dirty flag handling
-    ComponentB.Transform.Position = Vector3.Zero;
-    ComponentB.Transform.MoveBy(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
-        
-        var arena = Workspace?.GetArena();
-        var (found, scene) = arena?.CurrentScene() ?? (false, null);
-        if (found && scene != null)
-        {
-            ComponentB.QueueForMeshUpdate();
-        }
+        // Use MoveBy for proper dirty flag handling
+        ComponentB.Transform.Position = Vector3.Zero;
+        ComponentB.Transform.MoveBy(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
+        ComponentB.QueueForMeshUpdate();
         
         StatusMessage = $"Updated Component B position to ({ComponentBPosX},{ComponentBPosY},{ComponentBPosZ}) using Universal Snapping";
         StateHasChanged();

@@ -46,8 +46,7 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public (bool, Scene3D) GetCurrentScene()
     {
-        var arena = Workspace.GetArena();
-        return arena.CurrentScene();
+        return Canvas3DReference?.GetActiveScene() ?? (false, null!);
     }
 
 
@@ -218,10 +217,6 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public void DoAddTextToArena()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
-
         var delta = 0.5;
         var x = DataGenerator.GenerateDouble(-10, 10);
         var y = DataGenerator.GenerateDouble(-10, 10);
@@ -276,10 +271,6 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public void DoAddBoxGLBToArena()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
-
         var x = DataGenerator.GenerateDouble(-10, 10);
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);

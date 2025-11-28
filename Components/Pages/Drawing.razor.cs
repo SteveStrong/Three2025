@@ -40,8 +40,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
     public (bool, Scene3D) GetCurrentScene()
     {
-        var arena = Workspace.GetArena();
-        return arena.CurrentScene();
+        return Canvas3DReference?.GetActiveScene() ?? (false, null!);
     }
  
 
@@ -55,16 +54,8 @@ public partial class DrawingBase : ComponentBase, IDisposable
     {
         if (firstRender)
         {
-            // Initialize the 3D scene connection
-            await Task.Delay(100); // Give canvas time to initialize
-            
-            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
-            
-            if (found && scene != null)
-            {
-                var arena = Workspace.GetArena();
-                arena.SetScene(scene);
-            }
+            // Wait for Canvas to initialize (Canvas handles stage-scene linkage)
+            await Task.Delay(100);
             
             CreateMenus(Workspace);
         }
@@ -155,7 +146,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         
         world.AddAction("Render Tube", "btn-primary", () =>
         {
-            var (found, scene) = arena.CurrentScene();
+            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
             if ( !found ) return;
 
 

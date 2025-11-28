@@ -60,15 +60,6 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             // Wait for Canvas3DComponent to initialize
             await Task.Delay(100);
 
-            // Setup Arena-Scene bridge
-            var (found3D, scene3D) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
-            var arena = Workspace.GetArena();
-            if (found3D) 
-            {
-                arena.SetScene(scene3D!);
-                //$"GlueTest3D: Arena-Scene bridge established".WriteSuccess();
-            }
-
             // Don't auto-create - let user click button to create boxes
             //$"GlueTest3D: Ready. Click 'Create Boxes' to begin.".WriteInfo();
         }
