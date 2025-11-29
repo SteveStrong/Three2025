@@ -226,39 +226,25 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
         // Create 3 boxes - NO animation, just static shapes
         var box1 = new FoShape3D("Box1", "blue");
-        box1.Transform.Position = new Vector3(-3, 0.5, 0);
+        box1.Transform.Position = new Vector3(-3, 0.5, 3);
         box1.CreateBox("Box1", 1.0, 1.0, 1.0);
 
         $"Adding Box1...".WriteInfo();
         _tugOfWarStage.AddShape(box1);
-        $"After Box1: Stage has {_tugOfWarStage.Members<FoGlyph3D>().Count()} shapes, Box1 IsStale: {box1.IsStale()}".WriteInfo();
-
+ 
         var box2 = new FoShape3D("Box2", "red");
-        box2.Transform.Position = new Vector3(0, 0.5, 0);
+        box2.Transform.Position = new Vector3(0, 0.5, 3);
         box2.CreateBox("Box2", 1.0, 1.0, 1.0);
 
         _tugOfWarStage.AddShape(box2);
-        $"After Box2: Stage has {_tugOfWarStage.Members<FoGlyph3D>().Count()} shapes".WriteInfo();
-
+ 
         var box3 = new FoShape3D("Box3", "green");
-        box3.Transform.Position = new Vector3(3, 0.5, 0);
+        box3.Transform.Position = new Vector3(3, 0.5, 3);
         box3.CreateBox("Box3", 1.0, 1.0, 1.0);
 
         _tugOfWarStage.AddShape(box3);
         
-        var count = _tugOfWarStage.Members<FoGlyph3D>().Count();
-        var slots = _tugOfWarStage.AllSlotsOfType<FoGlyph3D>();
-        var totalInSlots = 0;
-        foreach (var slot in slots)
-        {
-            var slotCount = slot.ValuesOfType<FoGlyph3D>().Count();
-            totalInSlots += slotCount;
-            $"  Slot {slot.TypeSpec.Name}: {slotCount} items".WriteInfo();
-        }
-
-        var linkedScene = _tugOfWarStage.GetAssociatedScene();
-        $"✅ Added 3 boxes. Members<FoGlyph3D>(): {count}, Total in slots: {totalInSlots}. Scene: {linkedScene?.Title ?? "NULL"}".WriteSuccess();
-        
+         
         // CRITICAL: Trigger immediate render - don't wait for animation loop
         var arena = Workspace.GetArena();
         await arena.RenderArena(0, 0);
@@ -276,17 +262,15 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         }
 
         _boxCounter++;
-        var x = (_boxCounter - 1) * 2.0 - 3.0; // Spread boxes horizontally
         
+        // Just add a box - don't worry about total count or what's already there
         var box = new FoShape3D($"Box{_boxCounter}", "cyan");
-        box.Transform.Position = new Vector3(x, 0.5, 0);
+        box.Transform.Position = new Vector3((_boxCounter - 1) * 1.5, 0.5, 5);
         box.CreateBox($"Box{_boxCounter}", 1.0, 1.0, 1.0);
         
         _tugOfWarStage.AddShape(box);
         
-        $"✅ Added Box{_boxCounter} at ({x:F1}, 0.5, 0). Stage now has {_tugOfWarStage.Members<FoGlyph3D>().Count()} shapes".WriteSuccess();
-        
-        // Trigger render
+        // Push it out to JavaScript immediately
         var arena = Workspace.GetArena();
         await arena.RenderArena(0, 0);
     }
@@ -363,10 +347,10 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         };
 
         _box2_3D.CreateBox("Box2", 1.0, 1.0, 1.0)
+                .SetRecomputeBoundary()  // ← Opt-in IMMEDIATELY, not during animation
                 .BeforeAnimationRefresh((shape, tick, fps) =>
                 {
                     // Opt-in to world position calculation (once, flag persists)
-                    shape.SetRecomputeBoundary();
                     _animationTime += 1.0 / fps;
                     var duration = _debugMode ? DEBUG_ANIMATION_DURATION : ANIMATION_DURATION;
                     var progress = Math.Min(_animationTime / duration, 1.0);
