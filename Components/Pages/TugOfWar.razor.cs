@@ -36,7 +36,11 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     private FoPipe3D _growingPipe;
     private FoText3D _distanceText;
     private double _animationTime = 0;
-    private const double ANIMATION_DURATION = 5.0; // seconds
+    
+    // Animation constants - debug mode uses much shorter duration for visible stepping
+    private bool _debugMode = false;
+    private const double ANIMATION_DURATION = 5.0; // seconds (normal mode)
+    private const double DEBUG_ANIMATION_DURATION = 0.5; // seconds (10 frames at 60fps - very visible)
     private const double START_HEIGHT = 1.0;
     private const double TARGET_HEIGHT = 5.0;
     private const double BOX_MOVE_DISTANCE = 3.0;
@@ -295,11 +299,13 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             AnimationFrameBus.PauseAllAnimations();
             _animationState = AnimationFrameBus.GetAnimationState();
             _stepCount = 0;
-            $"Starting 3D Tug of War Animation in PAUSED mode".WriteInfo();
+            _debugMode = true;  // Use fast animation for visible stepping
+            $"Starting 3D Tug of War Animation in DEBUG/PAUSED mode (0.5s duration)".WriteInfo();
         }
         else
         {
             _stepCount = 0;
+            _debugMode = false;  // Use normal 5s animation
             $"Starting 3D Tug of War Animation".WriteInfo();
         }
         
@@ -327,14 +333,15 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                 .BeforeAnimationRefresh((shape, tick, fps) =>
                 {
                     _animationTime += 1.0 / fps;
-                    var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
+                    var duration = _debugMode ? DEBUG_ANIMATION_DURATION : ANIMATION_DURATION;
+                    var progress = Math.Min(_animationTime / duration, 1.0);
                     
                     if (progress < 1.0)
                     {
                         var x = -2 - (progress * BOX_MOVE_DISTANCE);
                         shape.Transform.Position = new Vector3(x, 0.5, x);
-                        _tube_3D.SetGeometryStale();
-                        _distanceText.SetGeometryStale();
+                        _tube_3D?.SetGeometryStale();
+                        _distanceText?.SetGeometryStale();
 
                     }
                     else if (progress >= 1.0)
@@ -361,14 +368,15 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                     // Opt-in to world position calculation (once, flag persists)
                     shape.SetRecomputeBoundary();
                     _animationTime += 1.0 / fps;
-                    var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
+                    var duration = _debugMode ? DEBUG_ANIMATION_DURATION : ANIMATION_DURATION;
+                    var progress = Math.Min(_animationTime / duration, 1.0);
                     
                     if (progress < 1.0)
                     {
                         var x = 2 + (progress * BOX_MOVE_DISTANCE);
                         shape.Transform.Position = new Vector3(x, x, 2 * x);
-                        _tube_3D.SetGeometryStale();
-                        _distanceText.SetGeometryStale();
+                        _tube_3D?.SetGeometryStale();
+                        _distanceText?.SetGeometryStale();
                     }
                 });
 
@@ -428,7 +436,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                     .BeforeAnimationRefresh((self, tick, fps) =>
                     {
                         _animationTime += 1.0 / fps;
-                        var progress = Math.Min(_animationTime / ANIMATION_DURATION, 1.0);
+                        var duration = _debugMode ? DEBUG_ANIMATION_DURATION : ANIMATION_DURATION;
+                        var progress = Math.Min(_animationTime / duration, 1.0);
                         
                         if (progress < 1.0)
                         {
@@ -449,14 +458,13 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         // Reset animation state and START animation immediately
         _animationTime = 0;
 
-        // If starting paused, trigger one frame to create geometry, then stay paused
+        // If starting paused, run for 2 frames to create and render geometry, then auto-pause
         if (startPaused)
         {
-            $"Triggering initial frame to create geometry while paused".WriteInfo();
-            await AnimationFrameBus.TriggerSingleFrame();
-            _stepCount = 1; // Count the initial frame
-            StateHasChanged();
-            $"Geometry created - ready for frame stepping (Step 1 complete)".WriteSuccess();
+            $"Running 2 frames to create and render geometry, then auto-pause".WriteInfo();
+            AnimationFrameBus.RunForFrames(2);
+            _stepCount = 2; // Will have run 2 frames
+            $"Geometry will be created and rendered - will auto-pause after 2 frames".WriteSuccess();
         }
         else
         {
