@@ -68,7 +68,6 @@ public class ClockTech : IClockTech
 
     public FoText3D LetterText3D(FoShape3D parent, double angle, double radius, double height, double size,  string text)
     {
-
         var x = radius * Math.Cos(angle);
         var y = height;
         var z = radius * Math.Sin(angle);
@@ -92,7 +91,7 @@ public class ClockTech : IClockTech
     public FoShape3D CreateClockOnArena()
     {
         var radius = 12.0f;
-        var height = 0.2;
+        var height = 0.6;
         var fontSize = 1.2;
         var diameter = 2 * radius;
 
@@ -101,7 +100,7 @@ public class ClockTech : IClockTech
         {
             Transform = new Transform3("ClockTransform")
             {
-                Position = new Vector3(0, 0, 0),
+                Position = new Vector3(0, 1.2 * radius, 0),
                 Rotation = new Euler(Math.PI / 2, 0, 0),
             }
         };
@@ -114,20 +113,8 @@ public class ClockTech : IClockTech
         {
             var letter = $"{i}";
             var angle = i * (2 * Math.PI / 12) - Math.PI / 2;
-            LetterText3D(clock, angle, radius - 1.0, height + 1.0, fontSize, letter);
+            LetterText3D(clock, angle, radius - 1.0, height, fontSize, letter);
         }
-
-        //now lets add the trailing text
-        var globalText = new FoText3D("TimeText", "white")
-        {
-            Text = "Ready",
-            FontSize = 5.0,
-            Transform = new Transform3("GlobalTextTransform")
-            {
-                Position = new Vector3(0, 2, 0),
-            }
-        };
-        clock.AddSubGlyph3D(globalText);
 
         //now lets add the center post
         var centerPost = new FoShape3D("Post", "red")
@@ -146,11 +133,23 @@ public class ClockTech : IClockTech
         {
             Transform = new Transform3("HandTransform")
             {
-                Position = new Vector3(0.5 * radius, 1, 0),
+                Position = new Vector3(0.6 * radius, 1, 0),
             }
         }.CreateBox("Hand", 1.2 * radius, 2.0, .1);
 
         centerPost.AddSubGlyph3D(secondHand);
+
+        //now lets add the time text at the end of the hand
+        var timeText = new FoText3D("TimeText", "white")
+        {
+            Text = "Ready",
+            FontSize = 1.5,
+            Transform = new Transform3("TimeTextTransform")
+            {
+                Position = new Vector3(0.6 * radius, 0, 0),
+            }
+        };
+        secondHand.AddSubGlyph3D(timeText);
 
         return clock;
     }
@@ -180,20 +179,20 @@ public class ClockTech : IClockTech
 
             }
 
-            var globalText = Clock.FindSubGlyph3D<FoText3D>("TimeText");
-
-            if (globalText != null)
+            // Find the time text (now a child of the hand)
+            var hand = post.FindSubGlyph3D<FoShape3D>("Hand");
+            if (hand != null)
             {
-                var currentTime = time.ToString("HH:mm:ss");
-                globalText.Text = currentTime;
-                var pos = globalText.Transform.Position;
-                globalText.Transform.MoveBy(x - pos.X, y - pos.Y, z - pos.Z);
+                var timeText = hand.FindSubGlyph3D<FoText3D>("TimeText");
+                if (timeText != null)
+                {
+                    var currentTime = time.ToString("HH:mm:ss");
+                    timeText.Text = currentTime;
+                }
             }
 
-            var rot = Clock.Transform.Rotation;
-            var deltaX = Math.PI / 2 - rot.X;
-            var deltaZ = angle - rot.Z;
-            Clock.Transform.RotateBy(deltaX, 0, deltaZ, AngleUnit.Radians);
+            // Rotate the entire clock face around global Y to keep numbers facing the hand
+            Clock.Transform.RotateTo(Math.PI / 2, 0, angle, AngleUnit.Radians);
 
         }
         else

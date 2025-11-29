@@ -205,7 +205,8 @@ public partial class ClockBase : ComponentBase, IDisposable
 
         var model = new Model3D()
         {
-            Name = "Axis",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Name = "Axis",            
+            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
         };
 
