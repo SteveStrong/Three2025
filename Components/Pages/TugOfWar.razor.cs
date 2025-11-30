@@ -383,13 +383,13 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         };
         _distanceText.PreComputeMesh = (shape) =>
         {
-            $"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW".WriteInfo();
             // Update distance text EVERY frame
-            var (success, distance) = _box1_3D.DistanceBetween(_box2_3D);
-            
-            shape.Color = !success ? "red" : "white";
-
+            var (success, distance) = _box1_3D.DistanceBetween(_box2_3D);          
+            shape.Color = success ? "green" : "red";
             _distanceText.Text = $"length: {distance:F2} {success}";
+            
+            //$"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW".WriteInfo();
+            //$"DistanceText PreComputeMesh: distance={distance:F2} success={success}".WriteInfo();
         };
 
         // ✅ Phase 0.5: Add all shapes to this page's stage
