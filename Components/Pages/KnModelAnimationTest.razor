@@ -1,4 +1,7 @@
 @page "/knmodel-animation"
+@page "/"
+
+@using FoundryMentorModeler.Shared
 
 @using FoundryWorldsAndDrawings.Solutions
 @using FoundryWorldsAndDrawings.Shared
@@ -30,47 +33,48 @@
 </div>
 
 <div style="display: flex; gap: 15px; margin-top: 15px; height: calc(100vh - 160px);">
-    @* Left Panel - 3D Canvas *@
-    <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column;">
-        <h5 style="margin-bottom: 8px;">3D Canvas</h5>
-        <div style="margin-bottom: 8px;">
-            <button class="btn btn-primary btn-sm" @onclick="AddAnimatedBox">Add Box</button>
-            <button class="btn btn-success btn-sm" @onclick="AddRotatingGroup">Add Group</button>
-            <button class="btn btn-danger btn-sm" @onclick="ClearScene">Clear</button>
+    @* Left Panel - Stacked 3D and 2D Canvases *@
+    <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 10px;">
+        @* 3D Canvas *@
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <h5 style="margin-bottom: 8px;">3D Canvas </h5>
+            @* <div style="margin-bottom: 8px;">
+                <button class="btn btn-primary btn-sm" @onclick="AddAnimatedBox">Add Box</button>
+                <button class="btn btn-success btn-sm" @onclick="AddRotatingGroup">Add Group</button>
+                <button class="btn btn-danger btn-sm" @onclick="ClearScene">Clear</button>
+            </div> *@
+            <div style="flex: 1; border: 1px solid #ccc; border-radius: 5px; overflow: hidden;">
+                <Canvas3DComponent SceneName="KnModelTest3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+            </div>
         </div>
-        <div style="flex: 1; border: 1px solid #ccc; border-radius: 5px; overflow: hidden;">
-            <Canvas3DComponent SceneName="KnModelTest3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+        @* 2D Canvas *@
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <h5 style="margin-bottom: 8px;">2D Canvas</h5>
+            @* <div style="margin-bottom: 8px;">
+                <button class="btn btn-outline-secondary btn-sm" disabled>2D shapes coming soon</button>
+            </div> *@
+            <div style="flex: 1; border: 1px solid #ccc; border-radius: 5px; overflow: hidden;">
+                <Canvas2DComponent SceneName="KnModelTest2D" @ref="Canvas2DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+            </div>
         </div>
     </div>
 
-    @* Second Panel - 2D Canvas *@
+    @* Center Panel - KnModel Tree *@
     <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column;">
-        <h5 style="margin-bottom: 8px;">2D Canvas</h5>
-        <div style="margin-bottom: 8px;">
-            <button class="btn btn-outline-secondary btn-sm" disabled>2D shapes coming soon</button>
-        </div>
-        <div style="flex: 1; border: 1px solid #ccc; border-radius: 5px; overflow: hidden;">
-            <Canvas2DComponent SceneName="KnModelTest2D" @ref="Canvas2DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
-        </div>
-    </div>
-
-    @* Center Panel - KnModel Tree (MOST IMPORTANT) *@
-    <div style="flex: 1.5; min-width: 400px; display: flex; flex-direction: column;">
         <h5 style="margin-bottom: 8px; color: #1976d2;">📊 KnModel Tree View</h5>
         <div style="margin-bottom: 8px; flex-shrink: 0;">
+            <button class="btn btn-success btn-sm" @onclick="RenderToCanvas">Render to Canvas</button>
             <button class="btn btn-primary btn-sm" @onclick="RefreshTree">Refresh Tree</button>
             <button class="btn btn-warning btn-sm" @onclick="AddChildComponent">Add KnComponent</button>
         </div>
         <div style="flex: 1; overflow: auto; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 15px; border-radius: 8px; border: 2px solid #1976d2; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <ShapeTreeItem 
-                Items="@GetModelTreeNodes()" 
-                OnSelect="OnTreeNodeSelected">
-            </ShapeTreeItem>
+            <MentorTreeView/>
+            @* <ShapeTreeView/> *@
         </div>
     </div>
 
     @* Right Panel - Event Log *@
-    <div style="flex: 0 0 300px; display: flex; flex-direction: column;">
+    <div style="flex: 0.5; min-width: 150px; display: flex; flex-direction: column;">
         <h5 style="margin-bottom: 8px;">Animation Event Log</h5>
         <div style="margin-bottom: 8px; flex-shrink: 0;">
             <button class="btn btn-outline-secondary btn-sm" @onclick="ClearEventLog">Clear Log</button>

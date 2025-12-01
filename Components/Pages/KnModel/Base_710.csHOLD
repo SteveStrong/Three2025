@@ -1,0 +1,617 @@
+using Blazor.Diagrams.Core.Geometry;
+using Blazor.Diagrams.Core.Models;
+using FoundryMentorModeler.Model;
+using FoundryRulesAndUnits.Models;
+using System.ComponentModel;
+
+namespace Plugin_710.Model;
+
+
+
+public class Base_710 : KnComponent, IModelRenderable  
+{
+    protected static MockDataGenerator mock = new();
+
+    public int ItemIndex { get; set; } = 0;
+
+    public DT_Component Source { get; set; }
+
+
+
+    public KnRelationship HasSub { get; set; } = new KnRelationship(ConnectType.HasSubcomponent.ToString());
+    public KnRelationship SubOf { get; set; } = new KnRelationship(ConnectType.ComponentOf.ToString());
+
+    public Base_710(string name) : base(name)
+    {
+        Add<KnRelationship>(HasSub);
+    }
+    public Base_710(DT_Component source) : base(source.Name)
+    {
+        //this lets you save the model recursevly
+        Source = source;
+        Category = source.Category ?? "Unknown";
+        Title = source.GetPart().StructureReference ?? GetName();
+
+
+        Calculations([
+            $"sPinX: 0",
+            $"sPinY: 0",
+            $"sWidth: 200",
+            $"sHeight: 100",
+        ]);
+
+        ExtendWithSource(source);
+
+        Add<KnRelationship>(HasSub);
+    }
+
+    public string PartTitle => Source.GetPart().Title ?? "";
+    public string DisplayName => Source.DisplayName ?? "";
+    public string Description => Source.Description ?? "";
+    public string SourceURL => MetaData().GetValue("SourceURL") ?? "";
+
+    public virtual void ExtendWithSource(DT_Component source)
+    {
+        if ( source.HasMetaData())
+            MetaData().CloneFrom(source.MetaData());
+
+        if ( source.Position != null)
+        {
+            var position = source.Position;
+            Calculations([
+                $"X|{position.xLoc.Units()}: {position.xLoc.Value()}",
+                $"Y|{position.yLoc.Units()}: {position.yLoc.Value()}",
+                $"Z|{position.zLoc.Units()}: {position.zLoc.Value()}",
+                $"Rx|{position.xAng.Units()}: {position.xAng.Value()}",
+                $"Ry|{position.yAng.Units()}: {position.yAng.Value()}",
+                $"Rz|{position.zAng.Units()}: {position.zAng.Value()}",
+            ]);
+        }
+
+        if ( source.BoundingBox != null)
+        {
+            var boundingBox = source.BoundingBox;
+            Calculations([
+                $"Width|{boundingBox.width.Units()}: {boundingBox.width.Value()}",
+                $"Height|{boundingBox.height.Units()}: {boundingBox.height.Value()}",
+                $"Depth|{boundingBox.depth.Units()}: {boundingBox.depth.Value()}",
+                $"PinX|{boundingBox.pinX.Units()}: {boundingBox.pinX.Value()}",
+                $"PinY|{boundingBox.pinY.Units()}: {boundingBox.pinY.Value()}",
+                $"PinZ|{boundingBox.pinZ.Units()}: {boundingBox.pinZ.Value()}",
+            ]);
+        }
+
+    }
+
+
+    public string StructureRef()
+    {
+        return Source.GetPart().StructureReference ?? "unknown";
+    }
+
+    public virtual void MoveTo(double x, double y)
+    {
+        EstablishParameter("sPinX").SetValue(x);
+        EstablishParameter("sPinY").SetValue(y);
+    }
+
+    public Func<Base_710, int> LocPinX = (obj) => obj.EstablishParameter("sWidth").GetCurrentValue().AsInteger() / 2;
+    public Func<Base_710, int> LocPinY = (obj) => obj.EstablishParameter("sHeight").GetCurrentValue().AsInteger() / 2;
+    public (int pinX, int pinY) LocationParameters()
+    {
+        var pinX = EstablishParameter("sPinX").GetCurrentValue().AsInteger();
+        var pinY = EstablishParameter("sPinY").GetCurrentValue().AsInteger();
+        return (pinX, pinY);
+    }
+
+    public (int width, int height) SizeParameters()
+    {
+        var width = EstablishParameter("sWidth").GetCurrentValue().AsInteger();
+        var height = EstablishParameter("sHeight").GetCurrentValue().AsInteger();
+        return (width, height);
+    }
+
+    public List<string> GetTags()
+    {
+        return Source.GetTags();
+    }
+
+    public int GetNextIndex()
+    {
+        return HasSub.Members<KnComponent>().Count();
+    }
+
+    public KnProblem AddProblem(string message)
+    {
+        var problem = new KnProblem(message);
+        Add<KnProblem>(problem);
+        return problem;
+    }
+    public KnProblem AddProblem(OPResult issue)
+    {
+        var problem = new KnProblem(issue);
+        Add<KnProblem>(problem);
+        return problem;
+    }
+
+    public override OPResult FindSubcomponent<T>(string name) 
+    {
+        var opResult = new OPResult(name, this);
+        opResult.SetUnknownReference($"{name} Subcomponent Not Found on parent {this.Name}");
+        
+        var list = HasSub.Members<T>();
+        var found = list.Where(x => x.GetName().Matches(name))?.FirstOrDefault();
+        if ( found != null)
+        {
+            opResult.SetValue(ResultStatus.Instance, found);
+            return opResult;
+        }
+
+        return opResult;
+    }
+
+    // public override IEnumerable<ITreeNode> GetTreeChildren()
+    // {
+    //     var list = new List<ITreeNode>();
+    //     EstablishFolderIfNotEmpty<KnProblem>(list,false);
+    //     EstablishFolderIfNotEmpty<KnVariable>(list);
+    //     EstablishFolderIfNotEmpty<KnFormula>(list);
+    //     EstablishFolderIfNotEmpty<KnParameter>(list,false);
+    //     EstablishFolderIfNotEmpty<KnComponent>(list);
+
+    //     EstablishFolderIfNotEmpty<KnEditor2DParameter>(list);
+    //     EstablishFolderIfNotEmpty<KnGeometry>(list);
+    //     EstablishFolderIfNotEmpty<KnGeometryParameter>(list);
+
+    //     EstablishRelationFolderIfNotEmpty<KnRelationship>(list);
+    //     return list;
+    // }
+
+    public override IEnumerable<TreeNodeAction>? GetTreeNodeActions()
+    {
+        var result = new List<TreeNodeAction>();
+
+        if ( OpenEditor != null && !StatusBits.IsReadOnly)
+            result.AddAction("Edit", "btn-success", () => 
+            {
+                OpenEditor?.Invoke();
+            });
+            
+        if ( OpenViewer != null)
+            result.AddAction("View", "btn-primary", () => 
+            {
+                OpenViewer?.Invoke();
+            });
+
+        if (StatusBits.IsVisible)
+            result.AddAction("Hide", "btn-danger", () => 
+            {
+                SetVisible(false, true);
+            });
+        else
+            result.AddAction("Show", "btn-success", () => 
+            {
+                SetVisible(true, true);
+            });
+
+        return result;
+    }
+
+
+
+    public override bool SetVisible(bool visible, bool deep = true)
+    {
+
+        //$"SetVisible {visible} {GetTitle()}  {GetTreeNodeTitle()}".WriteInfo();
+
+        base.SetVisible(visible,deep);
+
+        foreach (var item in Members<KnEditor2DParameter>())
+        {
+            var editor = item.GetCurrentValueAs<IComponentViewer>();
+            editor?.SetVisible(visible, deep);
+        }
+
+        if (!deep)
+            return visible;
+        
+        foreach (var item in this.ModelComponents<Base_710>())
+            item.SetVisible(visible, deep);
+        
+        return visible;
+    }
+
+    public bool ShowChildren = true;
+    public virtual bool ToggleShowChildren()
+    {
+        ShowChildren = !ShowChildren;
+        return ShowChildren;
+    }
+
+    public void SmashAllGeometry()
+    {
+        foreach (var item in Members<KnEditor2DParameter>()) 
+            item.Smash();
+
+    }
+
+    public void ClearAllGeometry()
+    {
+        SmashAllGeometry();
+
+        foreach (var item in this.ModelComponents<Base_710>())
+            item.ClearAllGeometry();
+    }
+
+    public virtual bool Trace(Dictionary<string,Base_710> pathway)
+    {
+        return false;
+    }
+    
+    public override List<T> Subcomponents<T>()
+    {
+        var list = HasSub.Members<T>();
+        return list;
+    }
+
+
+
+    public override string GetTreeNodeTitle()
+    {
+        var depth = GetKnDepth();
+        if (Source == null)
+            return $"{Name} [{depth}:{ItemIndex}] ({Category})  ({GetType().Name})";
+
+        var sheet = Source.SystemName;
+        return $"{Name} [{depth}:{ItemIndex}:{sheet}] ({Category})  ({GetType().Name})";
+    }
+    
+   public override string ModelReference(ReferenceFormat format, int depth)
+    {
+        if ( depth == 0 || !HasKnParent())
+            return Name ?? "...";
+
+        if (format == ReferenceFormat.Local)
+            return Name ?? "...";
+
+        var path = GetKnParent().ModelReference(format, depth-1);
+        return $"{path}.{Name}";
+    }
+
+    public void AddNonNullProperty(string name, string value, string unit = "")
+    {
+        if (!string.IsNullOrEmpty(value))
+            Parameter(name, value, unit);
+    }
+
+
+
+    public string UniversalID()
+    {
+        if ( Source == null)
+            return "";
+        return Source.GetPart()?.StructureReference ?? "";
+    }
+
+    public int StructureDepth()
+    {
+        var leg = Source.GetPart()?.StructureReference ?? "";
+        return leg.Split('.').Length;
+    }
+
+
+
+
+
+    public string ComputeTitle()
+    {
+        var result = UniversalID();
+        var parent = GetKnParent() as Base_710;
+        if ( parent == null)
+        {
+            $"ComputeTitle: Parent is NULL  {result}".WriteError();
+            return result;
+        }
+
+        var mask = parent.UniversalID() + ".";
+        result = result.Replace(mask, "");
+        return result;
+    }
+
+
+    public (string start, string finish, string address) MetaEndpoints(DT_Component item)
+    {
+        var meta = item.MetaData();
+
+        var start = meta.GetValue("Start")!;
+        var finish = meta.GetValue("Finish")!;
+        var address = meta.GetValue("Address");
+        return (start, finish, address);
+    }
+
+    public (OPResult start, OPResult finish) Endpoints(DT_Component item, Dictionary<string, Base_710> lookup, bool reportProblems = true)
+    {
+        var (start,finish,address) = MetaEndpoints(item);
+
+        //$"Endpoints MetaData: {address} {item.name} Start:{start} => Finish:{finish}".WriteInfo();
+
+        var startRef = Common_710.SubComponentReference<Base_710>(this, start, lookup);
+        startRef.Tag = start;
+        var finishRef = Common_710.SubComponentReference<Base_710>(this, finish, lookup);
+        finishRef.Tag = finish;
+
+        if (startRef.IsReference() && finishRef.IsReference())
+        {
+            return (startRef, finishRef);
+        }
+
+
+        if (startRef.IsError($"{address} {item.Name}: start [{start}]: ") && reportProblems)
+            AddProblem(startRef);
+
+        if (finishRef.IsError($"{address} {item.Name}: finish [{finish}]: ") && reportProblems)
+            AddProblem(finishRef);
+            
+        return (startRef, finishRef);
+    }
+
+    public T CreateInFolder<T>(Base_710 parent, DT_Component component, int index, Dictionary<string, Base_710> lookup) where T : Base_710
+    {
+        var name = typeof(T).Name.Replace("_710","s");
+        var folder = Common_710.EstablishFolder(name,parent);
+        var obj = FindOrBuild<Folder_710,T>(folder,component, index, lookup);
+        return obj;
+    }
+
+    public List<T> BuildAndConnect<U,T>(U parent, IEnumerable<DT_Component> items, Dictionary<string, Base_710> lookup) where U: Base_710 where T: Base_710
+    {
+        var list = new List<T>();
+        if ( items == null || items.Count() == 0) return list;
+
+        var count = 0;
+        foreach (var item in items)
+        {
+            var obj = FindBuildAndConnect<U,T>(parent,item,count++,lookup);
+            list.Add(obj);
+        }
+
+        return list;
+    }
+
+    public T FindBuildAndConnect<U,T>(U parent, DT_Component item, int index, Dictionary<string, Base_710> lookup) where U: Base_710 where T: Base_710
+    {
+
+        // now do the linking between the components
+        var (startRef, finishRef) = Endpoints(item,lookup,true);
+        //$"ENDPOINTS: {startRef.GetCategory()} {startRef.Name} => {finishRef.GetCategory()} {finishRef.Name}".WriteInfo(1);
+
+        //var obj = CreateInFolder<T>(parent,item,index,lookup);
+        var obj = FindOrBuild<U,T>(parent,item, index, lookup);
+        obj.Title = item.Description ?? "";
+
+        if (startRef.IsReference() && finishRef.IsReference())
+        {
+            obj.BuildConnection(startRef, finishRef, parent, lookup);
+        } 
+        else if (obj != null)
+        {
+            // need to verify that the endpoints are compatable with the type of connection we are creating
+            // if not lets queue future work to fix the problem
+            if (obj.VerifyEndpoints(startRef, finishRef, lookup))
+            {
+                obj.BuildConnection(startRef, finishRef, parent, lookup);
+            }
+
+        }
+
+        obj?.BuildStructure(item.GetMembers(), obj, lookup);  //build out structure for cables
+        return obj!;
+    }
+
+    public V FindOrBuild<U,V>(U parent, DT_Component component, int index, Dictionary<string, Base_710> lookup) where U: Base_710 where V : Base_710
+    {
+        var key = component.GetPart().StructureReference ?? "";
+        if (lookup.TryGetValue(key, out Base_710? value) == false)
+        {
+            V obj = (V)Activator.CreateInstance(typeof(V), component, index, this)!;
+            Common_710.AddHasSubpart<U, V>(parent, obj);
+            lookup.TryAdd(obj.UniversalID(), obj);
+            return obj;
+        }
+        else 
+        {
+            value.ExtendWithSource(component);
+        }
+
+        //the structure may be different, try a merge also
+
+        //$"Finding {value.GetTreeNodeTitle()} {value.GetType().Name}".WriteInfo();
+        if ( value is V)
+            return (V)value;
+
+        var other = component.ShallowCopy();
+        var part = other.GetPart();
+        part.StructureReference += "*";
+        $"Creating Alterate,  New Name: {part.StructureReference} of type {typeof(V).Name}".WriteInfo(1);   
+        return FindOrBuild<U,V>(parent, other, index, lookup);
+
+
+
+
+        //$"---Building {obj.GetTreeNodeTitle()}".WriteInfo();
+
+    }
+
+    public virtual void BuildStructure(IEnumerable<DT_Component> members, Base_710 parent, Dictionary<string, Base_710> lookup)
+    {
+        // this is a stub
+    }
+    
+    public virtual void BuildConnection(OPResult start, OPResult finish, Base_710 parent, Dictionary<string, Base_710> lookup)
+    {
+        // this is a stub
+    }
+
+    public virtual bool ComputeHorizontalJustify(string view)
+    {
+        return true;
+    }
+
+    public virtual bool ComputeVerticalJustify(string view)
+    {
+        return true;
+    }
+
+    public virtual bool VerifyEndpoints(OPResult start, OPResult finish, Dictionary<string, Base_710> lookup)
+    {
+        var solution = GetParentOfType<Solution_710>();
+        if ( start.IsError() )
+            solution?.AddProblem(start);
+            
+        if ( finish.IsError() )
+            solution?.AddProblem(finish);
+
+        return !start.IsError() && !finish.IsError();
+    }
+
+    public List<Hyperlink> GetHyperlinks()
+    {
+        return new List<Hyperlink>();
+    }
+
+
+    public bool ReconnectPorts<T>(KnEditor2DParameter parameter, PortModel fromPort, PortModel toPort) where T : DiagramLink
+    {
+        if (!parameter.IsValid())
+            return false;
+        
+        //$"ReconnectPorts {typeof(T).Name} ".WriteInfo();
+        parameter.GetCurrentValueAs<T>((result) => 
+        {
+            var obj = result.ValueAs<T>();
+            obj.Reconnect(fromPort, toPort);
+        });
+        return true;
+    }
+
+    protected T EstablishConnectPorts<T>(KnEditor2DParameter parameter, string color,  PortModel fromPort, PortModel toPort, MentorDiagram diagram) where T : DiagramLink
+    {
+        if (parameter.IsValid())
+            return parameter.GetCurrentValueAs<T>();
+
+        //$"EstablishConnectPorts {typeof(T).Name} {color} ".WriteInfo();
+        var result = diagram.ConnectPorts<T>(this, color, fromPort, toPort);
+
+        parameter.SetValue(result);
+        parameter.BeforeSmash((p,r) => 
+        {
+            parameter.ClearCashe();
+            diagram.RemoveLink(result);
+            //$"Smashing {result.GetTreeNodeTitle()} EstablishConnectPorts".WriteInfo();
+        });
+        return result;
+    }
+
+    protected T EstablishConnectNodes<T>(KnEditor2DParameter parameter, DiagramNode fromNode, DiagramNode toNode, MentorDiagram diagram) where T : DiagramLink
+    {
+        if (parameter.IsValid())
+            return parameter.GetCurrentValueAs<T>();
+
+        //$"EstablishConnectNodes {typeof(T).Name} ".WriteInfo();
+        var result = diagram.ConnectNodes<T>(this, fromNode, toNode);
+        result.Visible = this.IsVisible;
+
+        parameter.SetValue(result);
+        parameter.BeforeSmash((p,r) => 
+        {
+            parameter.ClearCashe();
+            diagram.RemoveLink(result);
+            //$"Smashing {link.GetTreeNodeTitle()} EstablishConnectNodes".WriteInfo();
+        });
+        return result;
+    }
+
+
+    protected T EstablishDiagramNode<T>(KnEditor2DParameter parameter, MentorDiagram diagram) where T : DiagramNode
+    {
+        if (parameter.IsValid())
+            return parameter.GetCurrentValueAs<T>();
+
+        //$"EstablishDiagramNode {typeof(T).Name} ".WriteInfo();
+        var (pinX, pinY) = LocationParameters();
+        var result = diagram.CreateNode<T>(this, new Point(pinX, pinY))!;
+        result.Visible = this.IsVisible;
+
+        parameter.SetValue(result);
+        parameter.BeforeSmash((p,r) => {
+            parameter.ClearCashe();
+            diagram.RemoveNode(result);
+            //$"Smashing {node.GetTreeNodeTitle()} EstablishDiagramNode".WriteInfo();
+        });
+
+        var (width, height) = SizeParameters();
+        result.Size = new Blazor.Diagrams.Core.Geometry.Size(width, height);
+
+        result.Moving += (obj) => {
+            var x = obj.Position.X;
+            var y = obj.Position.Y;
+            UpdateParameter("sPinX", x);
+            UpdateParameter("sPinY", y);
+            // $"Moving {x} {y}".WriteSuccess();
+            GetParentOfType<Model_710>()?.RefreshModelTree(ParameterRefreshAction.Moving, this);
+        };
+
+        result.SizeChanged += (obj) => {
+            var w = obj.Size?.Width ?? 10.0;
+            var h = obj.Size?.Height ?? 10.0;
+            UpdateParameter("sWidth", w);
+            UpdateParameter("sHeight", h);
+            // $"Resizing {w} {h}".WriteSuccess();
+             GetParentOfType<Model_710>()?.RefreshModelTree(ParameterRefreshAction.Resizing, this);
+        };
+
+        return result;
+    }
+
+    protected T EstablishDiagramGroup<T>(KnEditor2DParameter parameter, MentorDiagram diagram) where T : DiagramGroup
+    {
+        if (parameter.IsValid())
+            return parameter.GetCurrentValueAs<T>();
+
+        //$"EstablishDiagramGroup {typeof(T).Name} ".WriteInfo();
+        var (pinX, pinY) = LocationParameters();
+        var result = diagram.CreateGroup<T>(this, new Point(pinX, pinY))!;
+        result.Visible = this.IsVisible;
+
+        parameter.SetValue(result);
+        parameter.BeforeSmash((p,r) => {
+            parameter.ClearCashe();
+            diagram.RemoveGroup(result);
+            //$"Smashing {group.GetTreeNodeTitle()} EstablishDiagramGroup".WriteInfo();
+        });
+
+        var (width, height) = SizeParameters();
+        result.Size = new Blazor.Diagrams.Core.Geometry.Size(width, height);
+
+        result.Moving += (obj) => {
+            var x = obj.Position.X;
+            var y = obj.Position.Y;
+            UpdateParameter("sPinX", x);
+            UpdateParameter("sPinY", y);
+            //$"Moving EstablishDiagramGroup {x} {y}".WriteSuccess();
+            GetParentOfType<Model_710>()?.RefreshModelTree(ParameterRefreshAction.Moving,this);
+  
+        };
+
+        result.SizeChanged += (obj) => {
+            var w = obj.Size?.Width ?? 10.0;
+            var h = obj.Size?.Height ?? 10.0;
+            UpdateParameter("sWidth", w);
+            UpdateParameter("sHeight", h);
+            // $"Resizing {w} {h}".WriteSuccess();
+             GetParentOfType<Model_710>()?.RefreshModelTree(ParameterRefreshAction.Resizing,this);
+        };
+
+        return result;
+    }
+}

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using BlazorComponentBus;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 using FoundryWorldsAndDrawings;
@@ -24,11 +25,12 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     [Inject] public IWorkspace Workspace { get; init; } = null!;
     [Inject] public IFoundryService FoundryService { get; init; } = null!;
     [Inject] public IMentorServices MentorServices { get; init; } = null!;
+    [Inject] public ComponentBus PubSub { get; init; } = null!;
 
     public Canvas3DComponent? Canvas3DReference = null;
     public Canvas2DComponent? Canvas2DReference = null;
-    [Parameter] public int CanvasWidth { get; set; } = 600;
-    [Parameter] public int CanvasHeight { get; set; } = 1000;
+    [Parameter] public int CanvasWidth { get; set; } = 800;
+    [Parameter] public int CanvasHeight { get; set; } = 600;
     
     // KnModel instance - created on load, handles its own animation events
     protected AnimatedKnModel _knModel { get; set; } = null!;
@@ -39,6 +41,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
 
     // Stage for 3D objects
     private FoStage3D? _testStage;
+    private FoPage2D? _testPage;
     private int _shapeCount = 0;
 
     protected override void OnInitialized()
@@ -53,6 +56,9 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         
         $"KnModelAnimationTest: KnModel '{_knModel.Name}' ready".WriteSuccess();
         AddLog("System", $"KnModel '{_knModel.Name}' ready - events flow through MentorServices");
+        
+        // Signal MentorTreeView to refresh after model is created
+        PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.Refresh(null));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -62,22 +68,14 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
             $"KnModelAnimationTest OnAfterRenderAsync: Setting up".WriteInfo();
             
             await Task.Delay(200); // Wait for canvas initialization
+
+            var drawing = Workspace.GetDrawing();
+            _testPage = drawing.EstablishPage<FoPage2D>("KnModelTest2D");
             
-            // Setup 3D stage
-            var (found3D, scene3D) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
-            if (found3D && scene3D != null && Canvas3DReference?.SceneName != null)
-            {
-                var arena = Workspace.GetArena();
-                _testStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
-                
-                $"KnModelAnimationTest: Stage '{_testStage.Key}' established".WriteSuccess();
-                AddLog("System", $"Stage '{_testStage.Key}' ready for shapes");
-            }
-            else
-            {
-                $"KnModelAnimationTest: Failed to get active scene".WriteError();
-                AddLog("Error", "Failed to initialize 3D scene");
-            }
+            var arena = Workspace.GetArena();
+            _testStage = arena.EstablishStage<FoStage3D>("KnModelTest3D");
+
+
         }
         
         await base.OnAfterRenderAsync(firstRender);
@@ -119,7 +117,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         InvokeAsync(StateHasChanged);
     }
 
-    protected void AddAnimatedBox()
+    protected void AddAnimatedBoxOBSOLITE()
     {
         if (_testStage == null)
         {
@@ -145,7 +143,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         $"KnModelAnimationTest: Added box '{box.Key}'".WriteSuccess();
     }
 
-    protected void AddRotatingGroup()
+    protected void AddRotatingGroupOBSOLITE()
     {
         if (_testStage == null)
         {
@@ -189,6 +187,17 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         AddLog("Scene", "Cleared all shapes from scene");
     }
 
+    protected void RenderToCanvas()
+    {
+        if (Canvas3DReference != null)
+        {
+            _knModel.RenderArena3D("KnModelTest3D", true, () => AddLog("Model", "3D render complete"));
+        }
+        if (Canvas2DReference != null)
+        {
+            _knModel.RenderDrawing2D("KnModelTest2D", true, () => AddLog("Model", "2D render complete"));
+        }
+    }
     protected void RefreshTree()
     {
         AddLog("Tree", "Tree refresh requested");
@@ -228,8 +237,8 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         $"AddChildComponent: After Add, Members count = {_knModel.Members<KnComponent>().Count()}".WriteSuccess();
         
         // Create and add geometry to stage
-        var shape = component.CreateGeometry();
-        _testStage.AddShape(shape);
+        // var shape = component.CreateGeometry();
+        // _testStage.AddShape(shape);
         
         // Ensure model is expanded so tree shows children
         _knModel.SetExpanded(true);
@@ -238,25 +247,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         InvokeAsync(StateHasChanged);
     }
 
-    protected IEnumerable<ITreeNode> GetModelTreeNodes()
-    {
-        // Return the model itself as the root node - it implements ITreeNode
-        // The tree component will call GetTreeChildren() to get its children
-        var componentCount = _knModel.Members<KnComponent>().Count();
-        var children = _knModel.GetTreeChildren().ToList();
-        $"GetModelTreeNodes: Model has {componentCount} components, GetTreeChildren returns {children.Count} items".WriteInfo();
-        foreach (var child in children)
-        {
-            $"  - TreeChild: {child.GetTreeNodeTitle()} (expanded={child.GetIsExpanded()})".WriteInfo();
-        }
-        return new List<ITreeNode> { _knModel };
-    }
 
-    protected void OnTreeNodeSelected(ITreeNode node)
-    {
-        AddLog("Tree", $"Selected: {node.GetTreeNodeTitle()}");
-        $"KnModelAnimationTest: Selected tree node '{node.GetTreeNodeTitle()}'".WriteInfo();
-    }
 
     protected void ClearEventLog()
     {
