@@ -32,8 +32,8 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
     private FoShape3D _topBox;     // Blue box glued to green
     
     // Glue objects - track them separately
-    private FoGlue3D? _glue1;
-    private FoGlue3D? _glue2;
+    private FoGlue3D _glue1;
+    private FoGlue3D _glue2;
     
     // Dynamic pipes that update as objects move
     private FoGluePipe3D _pipe1;

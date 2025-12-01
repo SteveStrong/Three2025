@@ -23,7 +23,7 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
-    private FoStage3D? _spacialBoxStage; // ✅ Phase 0.5: Track this page's stage
+    private FoStage3D _spacialBoxStage; // ✅ Phase 0.5: Track this page's stage
     protected SpacialBox3D CurrentBox;
 
     private string _mainBoxGuid = Guid.NewGuid().ToString();

@@ -45,9 +45,11 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     {
         base.OnInitialized();
         
-        _knModel = MentorServices.CreateModel<AnimatedKnModel>("KnModelAnimationTestModel");
+        _knModel = MentorServices.EstablishModel<AnimatedKnModel>("KnModelAnimationTestModel");
         // Set up logging callback so model can report to our log
         _knModel.SetLogAction((msg) => AddLog("Model", msg));
+        // Start expanded so tree children are visible
+        _knModel.SetExpanded(true);
         
         $"KnModelAnimationTest: KnModel '{_knModel.Name}' ready".WriteSuccess();
         AddLog("System", $"KnModel '{_knModel.Name}' ready - events flow through MentorServices");
@@ -195,10 +197,44 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
 
     protected void AddChildComponent()
     {
-        var componentCount = _knModel.Members<AnimatedKnComponent>().Count() + 1;
-        var component = new AnimatedKnComponent($"Component_{componentCount}");
-        _knModel.Add<AnimatedKnComponent>(component);
-        AddLog("Component", $"Added KnComponent '{component.Name}' to model");
+        if (_testStage == null)
+        {
+            AddLog("Error", "Stage not ready - cannot add component with geometry");
+            return;
+        }
+        
+        var componentCount = _knModel.Members<KnComponent>().Count() + 1;
+        
+        // Position components in a row
+        var xPosition = (componentCount - 1) * 2.5 - 2.5;
+        var colors = new[] { "Blue", "Green", "Red", "Purple", "Orange", "Cyan" };
+        var color = colors[(componentCount - 1) % colors.Length];
+        
+        // Create component with position and color
+        var component = new AnimatedKnComponent(
+            $"Component_{componentCount}", 
+            color, 
+            new Vector3(xPosition, 1.0, 0)
+        )
+        {
+            GeometryType = "Box",
+            Width = 1.0,
+            Height = 1.5,
+            Depth = 0.8
+        };
+        
+        // Add to model
+        _knModel.Add<KnComponent>(component);
+        $"AddChildComponent: After Add, Members count = {_knModel.Members<KnComponent>().Count()}".WriteSuccess();
+        
+        // Create and add geometry to stage
+        var shape = component.CreateGeometry();
+        _testStage.AddShape(shape);
+        
+        // Ensure model is expanded so tree shows children
+        _knModel.SetExpanded(true);
+        
+        AddLog("Component", $"Added KnComponent '{component.Name}' with {color} {component.GeometryType} geometry");
         InvokeAsync(StateHasChanged);
     }
 
@@ -206,6 +242,13 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     {
         // Return the model itself as the root node - it implements ITreeNode
         // The tree component will call GetTreeChildren() to get its children
+        var componentCount = _knModel.Members<KnComponent>().Count();
+        var children = _knModel.GetTreeChildren().ToList();
+        $"GetModelTreeNodes: Model has {componentCount} components, GetTreeChildren returns {children.Count} items".WriteInfo();
+        foreach (var child in children)
+        {
+            $"  - TreeChild: {child.GetTreeNodeTitle()} (expanded={child.GetIsExpanded()})".WriteInfo();
+        }
         return new List<ITreeNode> { _knModel };
     }
 
@@ -230,6 +273,9 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         {
             _eventLogs.RemoveRange(0, 50);
         }
+        
+        // Trigger UI update - needed when called from animation callbacks
+        InvokeAsync(StateHasChanged);
     }
 
     protected string GetLogColor(string type)

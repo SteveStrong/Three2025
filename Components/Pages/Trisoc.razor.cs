@@ -17,7 +17,7 @@ namespace Three2025.Components.Pages;
 public partial class TrisocBase : ComponentBase
 {
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
-    private FoStage3D? _trisocStage; // ✅ Phase 0.5: Track this page's stage
+    private FoStage3D _trisocStage; // ✅ Phase 0.5: Track this page's stage
 
     [Inject] public NavigationManager Navigation { get; set; }
 

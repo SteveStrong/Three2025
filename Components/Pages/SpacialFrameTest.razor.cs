@@ -19,8 +19,8 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
-    public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
-    private FoStage3D? _frameStage; // ✅ Phase 0.5: Track this page's stage
+    public Canvas3DComponent Canvas3DReference = null;
+    private FoStage3D _frameStage; // ✅ Phase 0.5: Track this page's stage
     protected SpacialFrame3D CurrentFrame;
     protected FoShape3D CurrentShape;
 

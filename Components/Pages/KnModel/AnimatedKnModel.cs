@@ -1,5 +1,7 @@
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryMentorModeler.Model;
+using FoundryRulesAndUnits.Extensions;
+using FoundryRulesAndUnits.Models;
 
 #nullable enable
 
@@ -13,16 +15,9 @@ public class AnimatedKnModel : KnModel
 {
     private Action<string>? _logAction;
 
-    public AnimatedKnModel() : base("AnimatedKnModel")
+    public AnimatedKnModel(string name) : base(name)
     {
-        Calculations([
-            "X: 10",
-            "Y: 100",
-            "Z: 10000",
-            "GeomType: 'Box'",
-            "Material: 'Blue'"
-        ]);
-        
+
         // Use composition pattern - set up the pre-animation action
         PreAnimationRefresh((comp, evt) =>
         {
@@ -33,6 +28,37 @@ public class AnimatedKnModel : KnModel
             }
         });
     }
+    
+    public AnimatedKnModel(string name, IMentorServices mentorServices) : base(name, mentorServices)
+    {
+        $"AnimatedKnModel: Constructor called for '{name}'".WriteSuccess();
+        
+        Calculations([
+            "X: 10",
+            "Y: 100",
+            "Z: 10000",
+            "GeomType: 'Box'",
+            "Material: 'Blue'"
+        ]);
+
+        var param = this.EstablishParameter("Param1");
+        param.SetValue(42);
+        
+
+        // Use composition pattern - set up the pre-animation action
+        PreAnimationRefresh((comp, evt) =>
+        {
+            // Log every 60 frames to avoid spam
+            if (evt.tick % 60 == 0)
+            {
+                param.SetValue(evt.tick);
+                $"AnimatedKnModel.PreAnimationRefresh: tick={evt.tick}".WriteInfo();
+                _logAction?.Invoke($"Model '{Name}' PreAnim tick={evt.tick}, fps={evt.fps:F1}, children={Members<KnComponent>().Count()}");
+            }
+        });
+        
+        $"AnimatedKnModel: PreAnimationRefresh set up, PreContextLink is {(PreContextLink != null ? "SET" : "NULL")}".WriteInfo();
+    }
 
 
 
@@ -41,8 +67,26 @@ public class AnimatedKnModel : KnModel
         _logAction = logAction;
     }
 
-    public override string GetTreeNodeTitle()
+    /// <summary>
+    /// Override to properly return KnComponent children.
+    /// The base class uses EstablishFolderForAllOfType which doesn't add to the list.
+    /// </summary>
+    public override IEnumerable<ITreeNode> GetTreeChildren()
     {
-        return Name ?? "AnimatedKnModel";
+        var list = new List<ITreeNode>();
+        
+        // Add folders for parameters (like base class)
+        EstablishFolderIfNotEmpty<KnParameter>(list);
+        
+        // Directly add KnComponent members as tree children
+        var components = Members<KnComponent>().ToList();
+        foreach (var component in components)
+        {
+            list.Add(component);
+        }
+        
+        $"AnimatedKnModel.GetTreeChildren: returning {list.Count} items ({components.Count} components)".WriteInfo();
+        return list;
     }
+
 }

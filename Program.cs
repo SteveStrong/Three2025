@@ -3,6 +3,7 @@ using Three2025.Components;
 using FoundryRulesAndUnits.Units;
 using Radzen;
 using FoundryRulesAndUnits.Extensions;
+using FoundryMentorModeler;
 
 using Microsoft.AspNetCore.StaticFiles;
 
@@ -63,6 +64,7 @@ builder.Services.Configure<StaticFileOptions>(options =>
 
 var envConfig = new EnvConfig("./.env");
 builder.Services.AddFoundryWorldsAndDrawingsServices(envConfig);
+builder.Services.AddFoundryMentorModelerServices();
 
 builder.Services.AddScoped<IApprenticeAI, ApprenticeAI>();
 builder.Services.AddScoped<IRackTech, RackTech>();

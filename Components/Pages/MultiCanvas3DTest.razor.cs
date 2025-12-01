@@ -12,9 +12,9 @@ public partial class MultiCanvas3DTest : IDisposable
 
     private IArena arena => Foundry.Arena();
 
-    private FoShape3D? _cubeA;
-    private FoShape3D? _sphereB1, _sphereB2, _sphereB3;
-    private FoShape3D? _cylinderC, _coneC;
+    private FoShape3D _cubeA;
+    private FoShape3D _sphereB1, _sphereB2, _sphereB3;
+    private FoShape3D _cylinderC, _coneC;
 
     private double _rotationA = 0;
     private double _timeB = 0;

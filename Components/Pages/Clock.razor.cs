@@ -36,7 +36,7 @@ public partial class ClockBase : ComponentBase, IDisposable
     protected MockDataGenerator DataGenerator { get; set; } = new();
     
     // ✅ Phase 0.5: Per-page stage (matches 2D's ManagedPage pattern)
-    private FoStage3D? _clockStage;
+    private FoStage3D _clockStage;
     
     // Guard flags to prevent duplicate additions
     private HashSet<string> _addedModels = new();  // Track models added (unused now)

@@ -17,7 +17,7 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
-    private FoStage3D? _legoStage; // ✅ Phase 0.5: Track this page's stage
+    private FoStage3D _legoStage; // ✅ Phase 0.5: Track this page's stage
     
     // Universal geometry snapping components - work with any FoShape3D
     protected FoShape3D ComponentA;

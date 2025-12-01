@@ -29,7 +29,7 @@ public partial class MatrixTest : ComponentBase, IDisposable
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
-    private FoStage3D? _matrixStage; // ✅ Phase 0.5: Track this page's stage
+    private FoStage3D _matrixStage; // ✅ Phase 0.5: Track this page's stage
     protected SpacialBox3D CurrentBox;
 
     // Box properties for UI binding
