@@ -34,20 +34,7 @@ public class AnimatedKnModel : KnModel
         });
     }
 
-    public AnimatedKnModel(string title, Action<string>? logAction = null) : base(title)
-    {
-        _logAction = logAction;
-        
-        // Use composition pattern - set up the pre-animation action
-        PreAnimationRefresh((comp, evt) =>
-        {
-            // Log every 60 frames to avoid spam
-            if (evt.tick % 60 == 0)
-            {
-                _logAction?.Invoke($"Model '{Name}' PreAnim tick={evt.tick}, fps={evt.fps:F1}, children={Members<KnComponent>().Count()}");
-            }
-        });
-    }
+
 
     public void SetLogAction(Action<string> logAction)
     {

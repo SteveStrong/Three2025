@@ -7,6 +7,7 @@ using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.Shared;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryWorldsAndDrawings.ThreeD.Core;
+using FoundryMentorModeler.Model;
 
 #nullable enable
 
@@ -22,6 +23,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     [Inject] public NavigationManager Navigation { get; set; } = null!;
     [Inject] public IWorkspace Workspace { get; init; } = null!;
     [Inject] public IFoundryService FoundryService { get; init; } = null!;
+    [Inject] public IMentorServices MentorServices { get; init; } = null!;
 
     public Canvas3DComponent? Canvas3DReference = null;
     public Canvas2DComponent? Canvas2DReference = null;
@@ -29,7 +31,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     [Parameter] public int CanvasHeight { get; set; } = 1000;
     
     // KnModel instance - created on load, handles its own animation events
-    protected AnimatedKnModel _knModel = new AnimatedKnModel("AnimationTestModel");
+    protected AnimatedKnModel _knModel { get; set; } = null!;
     
     // Event logging
     protected List<EventLogEntry> _eventLogs = new();
@@ -43,6 +45,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     {
         base.OnInitialized();
         
+        _knModel = MentorServices.CreateModel<AnimatedKnModel>("KnModelAnimationTestModel");
         // Set up logging callback so model can report to our log
         _knModel.SetLogAction((msg) => AddLog("Model", msg));
         
