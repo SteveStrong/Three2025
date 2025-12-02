@@ -26,6 +26,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     [Inject] public IFoundryService FoundryService { get; init; } = null!;
     [Inject] public IMentorServices MentorServices { get; init; } = null!;
     [Inject] public ComponentBus PubSub { get; init; } = null!;
+    [Inject] public IModelEditor ModelEditor { get; init; } = null!;
 
     public Canvas3DComponent? Canvas3DReference = null;
     public Canvas2DComponent? Canvas2DReference = null;
@@ -232,9 +233,10 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
             Depth = 0.8
         };
         
-        // Add to model
-        _knModel.Add<KnComponent>(component);
-        $"AddChildComponent: After Add, Members count = {_knModel.Members<KnComponent>().Count()}".WriteSuccess();
+        // Add to model via ModelEditor (fires ModelEditChanged event, triggers tree refresh)
+        ModelEditor.AddChild(_knModel, component);
+        $"AddChildComponent: After ModelEditor.AddChild, Members count = {_knModel.Members<KnComponent>().Count()}".WriteSuccess();
+        AddLog("Model", $"Added {component.Name} via ModelEditor - tree should auto-refresh");
         
         // Create and add geometry to stage
         // var shape = component.CreateGeometry();
