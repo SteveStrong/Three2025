@@ -65,29 +65,25 @@ public class AnimatedKnModel : KnModel
     /// <summary>
     /// Override to properly return KnComponent children.
     /// The base class uses EstablishFolderForAllOfType which doesn't add to the list.
+    /// Note: Must include AnimatedKnComponent specifically since it has its own slot.
     /// </summary>
-    // public override IEnumerable<ITreeNode> GetTreeChildren()
-    // {
-    //     var list = base.GetTreeChildren();
+    public override IEnumerable<ITreeNode> GetTreeChildren()
+    {
+        var list = base.GetTreeChildren();
+        //var list = new List<ITreeNode>();
         
-    //     // Add folders for parameters (like base class)
-    //     EstablishFolderIfNotEmpty<KnParameter>(list);
+        // Add folders for parameters (like base class)
+        //EstablishFolderIfNotEmpty<KnParameter>(list);
+        //EstablishFolderForAllOfType<KnComponent>(list);        
+
         
-    //     // Try to get components directly from slot
-    //     var componentSlot = GetSlot<KnComponent>();
-    //     var slotCount = componentSlot?.Count() ?? 0;
-    //     $"AnimatedKnModel.GetTreeChildren: KnComponent slot has {slotCount} items".WriteInfo();
+        // // Also add AnimatedKnComponent members (stored in separate slot due to generic Add<T>)
+        // foreach (var component in Members<AnimatedKnComponent>())
+        // {
+        //     list.Add(component);
+        // }
         
-    //     // Directly add KnComponent members as tree children
-    //     var components = Members<KnComponent>().ToList();
-    //     foreach (var component in components)
-    //     {
-    //         $"  - Found component: {component.Name}".WriteInfo();
-    //         list.Add(component);
-    //     }
-        
-    //     $"AnimatedKnModel.GetTreeChildren: returning {list.Count} items ({components.Count} components)".WriteInfo();
-    //     return list;
-    // }
+        return list;
+    }
 
 }

@@ -53,8 +53,14 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         // Set up refresh callback so model triggers UI update when parameters change
         _knModel.SetRefreshAction(() => InvokeAsync(StateHasChanged));
         // Start expanded so tree children are visible
+
+        AddChildComponent();
+        AddChildComponent();
+        AddChildComponent();
         _knModel.SetExpanded(true);
-        
+        var list = _knModel.Members<KnComponent>().ToList();
+        var xxx = _knModel.GetTreeChildren();
+
         $"KnModelAnimationTest: KnModel '{_knModel.Name}' ready".WriteSuccess();
         AddLog("System", $"KnModel '{_knModel.Name}' ready - events flow through MentorServices");
         
@@ -206,13 +212,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     }
 
     protected void AddChildComponent()
-    {
-        if (_testStage == null)
-        {
-            AddLog("Error", "Stage not ready - cannot add component with geometry");
-            return;
-        }
-        
+    {        
         var componentCount = _knModel.Members<KnComponent>().Count() + 1;
         
         // Position components in a row
@@ -235,7 +235,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         
         // Add to model via ModelEditor (fires ModelEditChanged event, triggers tree refresh)
         ModelEditor.AddChild(_knModel, component);
-        $"AddChildComponent: After ModelEditor.AddChild, Members count = {_knModel.Members<KnComponent>().Count()}".WriteSuccess();
+        $"AddChildComponent: After ModelEditor.AddChild, AnimatedKnComponent count = {_knModel.Members<AnimatedKnComponent>().Count()}".WriteSuccess();
         AddLog("Model", $"Added {component.Name} via ModelEditor - tree should auto-refresh");
         
         // Create and add geometry to stage
