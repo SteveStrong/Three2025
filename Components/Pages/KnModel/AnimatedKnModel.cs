@@ -13,18 +13,17 @@ namespace Three2025.Components.Pages;
 /// </summary>
 public class AnimatedKnModel : KnModel
 {
-    private Action<string>? _logAction;
+    private Action? _onRefresh;
 
     public AnimatedKnModel(string name) : base(name)
     {
-
         // Use composition pattern - set up the pre-animation action
         PreAnimationRefresh((comp, evt) =>
         {
-            // Log every 60 frames to avoid spam
+            // Refresh every 60 frames to avoid spam
             if (evt.tick % 60 == 0)
             {
-                _logAction?.Invoke($"Model '{Name}' PreAnim tick={evt.tick}, fps={evt.fps:F1}, children={Members<KnComponent>().Count()}");
+                _onRefresh?.Invoke();
             }
         });
     }
@@ -43,28 +42,24 @@ public class AnimatedKnModel : KnModel
 
         var param = this.EstablishParameter("Param1");
         param.SetValue(42);
-        
 
         // Use composition pattern - set up the pre-animation action
         PreAnimationRefresh((comp, evt) =>
         {
-            // Log every 60 frames to avoid spam
+            // Update param and refresh UI every 60 frames
             if (evt.tick % 60 == 0)
             {
                 param.SetValue(evt.tick);
-                $"AnimatedKnModel.PreAnimationRefresh: tick={evt.tick}".WriteInfo();
-                _logAction?.Invoke($"Model '{Name}' PreAnim tick={evt.tick}, fps={evt.fps:F1}, children={Members<KnComponent>().Count()}");
+                _onRefresh?.Invoke();
             }
         });
         
         $"AnimatedKnModel: PreAnimationRefresh set up, PreContextLink is {(PreContextLink != null ? "SET" : "NULL")}".WriteInfo();
     }
 
-
-
-    public void SetLogAction(Action<string> logAction)
+    public void SetRefreshAction(Action onRefresh)
     {
-        _logAction = logAction;
+        _onRefresh = onRefresh;
     }
 
     /// <summary>

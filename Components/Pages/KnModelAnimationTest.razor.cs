@@ -49,8 +49,8 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         base.OnInitialized();
         
         _knModel = MentorServices.EstablishModel<AnimatedKnModel>("KnModelAnimationTestModel");
-        // Set up logging callback so model can report to our log
-        _knModel.SetLogAction((msg) => AddLog("Model", msg));
+        // Set up refresh callback so model triggers UI update when parameters change
+        _knModel.SetRefreshAction(() => InvokeAsync(StateHasChanged));
         // Start expanded so tree children are visible
         _knModel.SetExpanded(true);
         

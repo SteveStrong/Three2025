@@ -16,6 +16,7 @@ public partial class MultiCanvas3DTest : IDisposable
     private FoShape3D _sphereB1, _sphereB2, _sphereB3;
     private FoShape3D _cylinderC, _coneC;
 
+    // Animation state - captured in closures
     private double _rotationA = 0;
     private double _timeB = 0;
     private double _timeC = 0;
@@ -36,12 +37,21 @@ public partial class MultiCanvas3DTest : IDisposable
         }
         
         var stage = arena.EstablishStage<FoStage3D>("SceneA");
-        // ❌ REMOVED: arena.SetCurrentStage(stage); // Don't set as current - add directly to stage
 
         // Create a rotating cube - add DIRECTLY to this specific stage
         _cubeA = new FoShape3D("RotatingCube", "red").CreateBox("RotatingCube", 2, 2, 2);
         _cubeA.Transform.Position.Y = 0;
-        stage.AddShape(_cubeA);  // Add to SceneA's stage specifically
+        
+        // Animation via BeforeAnimationRefresh - invoked automatically during RenderStage
+        _cubeA.BeforeAnimationRefresh((shape, tick, fps) => {
+            var deltaTime = 1.0 / Math.Max(fps, 1);
+            _rotationA += deltaTime * 1.0; // 1 radian per second
+            _rotationA %= (2 * Math.PI);
+            var rot = shape.Transform.Rotation;
+            shape.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rot.X, _rotationA, rot.Z);
+        });
+        
+        stage.AddShape(_cubeA);
 
         $"Scene A setup complete - stage has {stage.Members<FoShape3D>().Count()} shapes".WriteSuccess();
     }
@@ -56,20 +66,33 @@ public partial class MultiCanvas3DTest : IDisposable
         }
         
         var stage = arena.EstablishStage<FoStage3D>("SceneB");
-        // ❌ REMOVED: arena.SetCurrentStage(stage); // Don't set as current - add directly to stage
 
-        // Create three spheres - add DIRECTLY to this specific stage
+        // Create three spheres with animation callbacks
         _sphereB1 = new FoShape3D("SphereRed", "red").CreateSphere("SphereRed", 1, 1, 1);
         _sphereB1.Transform.Position.Set(-3, 0, 0);
-        stage.AddShape(_sphereB1);  // Add to SceneB's stage specifically
+        _sphereB1.BeforeAnimationRefresh((shape, tick, fps) => {
+            var deltaTime = 1.0 / Math.Max(fps, 1);
+            _timeB += deltaTime;
+            var pos = shape.Transform.Position;
+            shape.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos.X, Math.Sin(_timeB * 2) * 2, pos.Z);
+        });
+        stage.AddShape(_sphereB1);
 
         _sphereB2 = new FoShape3D("SphereGreen", "green").CreateSphere("SphereGreen", 1, 1, 1);
         _sphereB2.Transform.Position.Set(0, 0, 0);
-        stage.AddShape(_sphereB2);  // Add to SceneB's stage specifically
+        _sphereB2.BeforeAnimationRefresh((shape, tick, fps) => {
+            var pos = shape.Transform.Position;
+            shape.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos.X, Math.Sin(_timeB * 2 + Math.PI * 2/3) * 2, pos.Z);
+        });
+        stage.AddShape(_sphereB2);
 
         _sphereB3 = new FoShape3D("SphereBlue", "blue").CreateSphere("SphereBlue", 1, 1, 1);
         _sphereB3.Transform.Position.Set(3, 0, 0);
-        stage.AddShape(_sphereB3);  // Add to SceneB's stage specifically
+        _sphereB3.BeforeAnimationRefresh((shape, tick, fps) => {
+            var pos = shape.Transform.Position;
+            shape.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos.X, Math.Sin(_timeB * 2 + Math.PI * 4/3) * 2, pos.Z);
+        });
+        stage.AddShape(_sphereB3);
 
         $"Scene B setup complete - stage has {stage.Members<FoShape3D>().Count()} shapes".WriteSuccess();
     }
@@ -84,16 +107,26 @@ public partial class MultiCanvas3DTest : IDisposable
         }
         
         var stage = arena.EstablishStage<FoStage3D>("SceneC");
-        // ❌ REMOVED: arena.SetCurrentStage(stage); // Don't set as current - add directly to stage
 
-        // Create shapes - add DIRECTLY to this specific stage
+        // Create shapes with animation callbacks
         _cylinderC = new FoShape3D("Cylinder", "orange").CreateCylinder("Cylinder", 1, 3, 1);
         _cylinderC.Transform.Position.Set(-2, 0, 0);
-        stage.AddShape(_cylinderC);  // Add to SceneC's stage specifically
+        _cylinderC.BeforeAnimationRefresh((shape, tick, fps) => {
+            var deltaTime = 1.0 / Math.Max(fps, 1);
+            _timeC += deltaTime * 0.5;
+            _timeC %= (2 * Math.PI);
+            var rot = shape.Transform.Rotation;
+            shape.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rot.X, _timeC, rot.Z);
+        });
+        stage.AddShape(_cylinderC);
 
         _coneC = new FoShape3D("Cone", "purple").CreateCone("Cone", 1.5, 3, 1.5);
         _coneC.Transform.Position.Set(2, 0, 0);
-        stage.AddShape(_coneC);  // Add to SceneC's stage specifically
+        _coneC.BeforeAnimationRefresh((shape, tick, fps) => {
+            var rot = shape.Transform.Rotation;
+            shape.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rot.X, -_timeC, rot.Z);
+        });
+        stage.AddShape(_coneC);
 
         $"Scene C setup complete - stage has {stage.Members<FoShape3D>().Count()} shapes".WriteSuccess();
     }
@@ -117,68 +150,17 @@ public partial class MultiCanvas3DTest : IDisposable
             SetupSceneB();
             SetupSceneC();
 
-            // Subscribe to PreAnimation for updates
-            AnimationFrameBus.SubscribeToPreAnimation(HandleAnimationFrame);
+            // No event subscription needed - animation happens via BeforeAnimationRefresh callbacks
+            // which are invoked automatically during stage.RenderStage() → glyph.UpdateForAnimation()
 
             "MultiCanvas3DTest: All scenes setup and connected".WriteSuccess();
         });
     }
 
-    private void HandleAnimationFrame(PreAnimationEvent message)
-    {
-        if (!message.IsWorld3D()) return;
-
-        var deltaTime = 1.0 / Math.Max(message.fps, 1);
-
-        // Animate Scene A - Rotating cube
-        if (_cubeA != null)
-        {
-            _rotationA += deltaTime * 1.0; // 1 radian per second
-            _rotationA %= (2 * Math.PI); // Keep within 0 to 2π
-            
-            // Use object replacement pattern to trigger dirty flag
-            var rot = _cubeA.Transform.Rotation;
-            _cubeA.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rot.X, _rotationA, rot.Z);
-        }
-
-        // Animate Scene B - Bouncing spheres
-        if (_sphereB1 != null && _sphereB2 != null && _sphereB3 != null)
-        {
-            _timeB += deltaTime;
-            
-            // Use object replacement pattern for positions
-            var pos1 = _sphereB1.Transform.Position;
-            _sphereB1.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos1.X, Math.Sin(_timeB * 2) * 2, pos1.Z);
-            
-            var pos2 = _sphereB2.Transform.Position;
-            _sphereB2.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos2.X, Math.Sin(_timeB * 2 + Math.PI * 2/3) * 2, pos2.Z);
-            
-            var pos3 = _sphereB3.Transform.Position;
-            _sphereB3.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos3.X, Math.Sin(_timeB * 2 + Math.PI * 4/3) * 2, pos3.Z);
-        }
-
-        // Animate Scene C - Rotating shapes
-        if (_cylinderC != null && _coneC != null)
-        {
-            _timeC += deltaTime * 0.5;
-            _timeC %= (2 * Math.PI); // Keep within 0 to 2π
-            
-            // Use object replacement pattern for rotations
-            var rotC = _cylinderC.Transform.Rotation;
-            _cylinderC.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rotC.X, _timeC, rotC.Z);
-            
-            var rotCone = _coneC.Transform.Rotation;
-            _coneC.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rotCone.X, -_timeC, rotCone.Z);
-        }
-    }
-
     public void Dispose()
     {
         "MultiCanvas3DTest: Disposing".WriteInfo();
-
-        AnimationFrameBus.UnSubscribeFromPreAnimation(HandleAnimationFrame);
-
-        // Don't clear arena here - let page navigation handle it
+        // No event unsubscription needed - shapes clean up their own callbacks
         "MultiCanvas3DTest: Disposed".WriteInfo();
     }
 }

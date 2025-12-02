@@ -17,6 +17,7 @@ public partial class MultiCanvas2DTest : IDisposable
     private FoShape2D _boxC1 = null!, _boxC2 = null!;
     private FoShape1D _connectorC = null!;
 
+    // Animation state - captured in closures
     private double _rotationA = 0;
     private double _timeB = 0;
     private double _positionC = 0;
@@ -38,11 +39,17 @@ public partial class MultiCanvas2DTest : IDisposable
         
         var page = drawing.EstablishPage<FoPage2D>("PageA");
         page.Color = "LightCoral";  // Subtle background color
-        // DON'T call SetCurrentPage - let Canvas2DComponent manage that per canvas
 
-        // Create a rotating rectangle
+        // Create a rotating rectangle with animation callback
         _rectA = new FoShape2D(100, 100, "DarkBlue");
         _rectA.MoveTo(400, 300);
+        _rectA.BeforeShapeRefresh((shape, tick) => {
+            var fps = AnimationFrameBus.GetCurrentFps();
+            var deltaTime = 1.0 / Math.Max(fps, 1);
+            _rotationA += deltaTime * 45.0; // 45 degrees per second
+            _rotationA %= 360.0;
+            shape.Angle = _rotationA;
+        });
         page.AddShape(_rectA);
 
         $"Page A setup complete - page has {page.Members<FoShape2D>().Count()} shapes".WriteSuccess();
@@ -59,19 +66,36 @@ public partial class MultiCanvas2DTest : IDisposable
         
         var page = drawing.EstablishPage<FoPage2D>("PageB");
         page.Color = "LightSkyBlue";  // Subtle background to verify it's rendering
-        // DON'T call SetCurrentPage - let Canvas2DComponent manage that per canvas
 
-        // Create three circles  
+        // Create three circles with animation callbacks
         _circleB1 = new FoShape2D(60, 60, "red");
         _circleB1.MoveTo(200, 300);
+        _circleB1.BeforeShapeRefresh((shape, tick) => {
+            var fps = AnimationFrameBus.GetCurrentFps();
+            var deltaTime = 1.0 / Math.Max(fps, 1);
+            _timeB += deltaTime;
+            var baseY = 300;
+            var amplitude = 100;
+            shape.PinY = baseY + (int)(Math.Sin(_timeB * 2) * amplitude);
+        });
         page.AddShape(_circleB1);
 
         _circleB2 = new FoShape2D(60, 60, "green");
         _circleB2.MoveTo(400, 300);
+        _circleB2.BeforeShapeRefresh((shape, tick) => {
+            var baseY = 300;
+            var amplitude = 100;
+            shape.PinY = baseY + (int)(Math.Sin(_timeB * 2 + Math.PI * 2/3) * amplitude);
+        });
         page.AddShape(_circleB2);
 
         _circleB3 = new FoShape2D(60, 60, "blue");
         _circleB3.MoveTo(600, 300);
+        _circleB3.BeforeShapeRefresh((shape, tick) => {
+            var baseY = 300;
+            var amplitude = 100;
+            shape.PinY = baseY + (int)(Math.Sin(_timeB * 2 + Math.PI * 4/3) * amplitude);
+        });
         page.AddShape(_circleB3);
 
         $"Page B setup complete - page has {page.Members<FoShape2D>().Count()} shapes".WriteSuccess();
@@ -88,18 +112,30 @@ public partial class MultiCanvas2DTest : IDisposable
         
         var page = drawing.EstablishPage<FoPage2D>("PageC");
         page.Color = "LightGreen";  // Subtle background to verify it's rendering
-        // DON'T call SetCurrentPage - let Canvas2DComponent manage that per canvas
 
-        // Create two boxes and a connector
+        // Create two boxes with animation callbacks
         _boxC1 = new FoShape2D(80, 80, "orange");
         _boxC1.MoveTo(200, 300);
+        _boxC1.BeforeShapeRefresh((shape, tick) => {
+            var fps = AnimationFrameBus.GetCurrentFps();
+            var deltaTime = 1.0 / Math.Max(fps, 1);
+            _positionC += deltaTime * 50; // 50 pixels per second
+            var baseX1 = 200;
+            var offset = (int)(Math.Sin(_positionC * 0.02) * 50);
+            shape.PinX = baseX1 + offset;
+        });
         page.AddShape(_boxC1);
 
         _boxC2 = new FoShape2D(80, 80, "purple");
         _boxC2.MoveTo(600, 300);
+        _boxC2.BeforeShapeRefresh((shape, tick) => {
+            var baseX2 = 600;
+            var offset = (int)(Math.Sin(_positionC * 0.02) * 50);
+            shape.PinX = baseX2 - offset;
+        });
         page.AddShape(_boxC2);
 
-        // Create a 1D connector between them
+        // Create a 1D connector between them - no animation needed, follows glued shapes
         _connectorC = new FoShape1D("Arrow", "cyan");
         _connectorC.Height = 50;
         _connectorC.GlueStartTo(_boxC1, "RIGHT");
@@ -127,62 +163,17 @@ public partial class MultiCanvas2DTest : IDisposable
             SetupPageB();
             SetupPageC();
 
-            // Subscribe to PreAnimation for updates
-            AnimationFrameBus.SubscribeToPreAnimation(HandleAnimationFrame);
+            // No event subscription needed - animation happens via BeforeShapeRefresh callbacks
+            // which are invoked automatically during page.RenderDetailed() → shape.UpdateContext()
 
             "MultiCanvas2DTest: All pages setup and connected".WriteSuccess();
         });
     }
 
-    private void HandleAnimationFrame(PreAnimationEvent message)
-    {
-        if (!message.IsDrawing2D()) return;
-
-        var deltaTime = 1.0 / Math.Max(message.fps, 1);
-
-        // Animate Page A - Rotating rectangle
-        if (_rectA != null)
-        {
-            _rotationA += deltaTime * 45.0; // 45 degrees per second
-            _rotationA %= 360.0;
-            _rectA.Angle = _rotationA;
-        }
-
-        // Animate Page B - Moving circles vertically
-        if (_circleB1 != null && _circleB2 != null && _circleB3 != null)
-        {
-            _timeB += deltaTime;
-            
-            var baseY = 300;
-            var amplitude = 100;
-            
-            _circleB1.PinY = baseY + (int)(Math.Sin(_timeB * 2) * amplitude);
-            _circleB2.PinY = baseY + (int)(Math.Sin(_timeB * 2 + Math.PI * 2/3) * amplitude);
-            _circleB3.PinY = baseY + (int)(Math.Sin(_timeB * 2 + Math.PI * 4/3) * amplitude);
-        }
-
-        // Animate Page C - Moving boxes horizontally (connector follows)
-        if (_boxC1 != null && _boxC2 != null)
-        {
-            _positionC += deltaTime * 50; // 50 pixels per second
-            
-            var baseX1 = 200;
-            var baseX2 = 600;
-            var offset = (int)(Math.Sin(_positionC * 0.02) * 50);
-            
-            _boxC1.PinX = baseX1 + offset;
-            _boxC2.PinX = baseX2 - offset;
-            // Connector automatically updates because it's glued to the boxes
-        }
-    }
-
     public void Dispose()
     {
         "MultiCanvas2DTest: Disposing".WriteInfo();
-
-        AnimationFrameBus.UnSubscribeFromPreAnimation(HandleAnimationFrame);
-
-        // Don't clear drawing here - let page navigation handle it
+        // No event unsubscription needed - shapes clean up their own callbacks
         "MultiCanvas2DTest: Disposed".WriteInfo();
     }
 }
