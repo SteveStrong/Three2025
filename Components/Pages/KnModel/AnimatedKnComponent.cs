@@ -49,96 +49,80 @@ public class AnimatedKnComponent : PartComponent
     /// <summary>
     /// Initialize KnParameters for geometry configuration.
     /// Parameters drive geometry creation through the dependency system.
+    /// Uses Calculations() API for consistent parameter establishment.
     /// </summary>
     private void InitializeParameters()
     {
-        // Geometry type parameter
-        var geomType = new KnParameter("GeometryType", "Box");
-        Add<KnParameter>(geomType);
-        
-        // Color parameter
-        var color = new KnParameter("Color", "Blue");
-        Add<KnParameter>(color);
-        
-        // Dimension parameters with units
-        var width = new KnParameter("Width", 1.0, "m");
-        Add<KnParameter>(width);
-        
-        var height = new KnParameter("Height", 1.0, "m");
-        Add<KnParameter>(height);
-        
-        var depth = new KnParameter("Depth", 1.0, "m");
-        Add<KnParameter>(depth);
-        
-        // Position parameters with units
-        var posX = new KnParameter("PositionX", 0.0, "m");
-        Add<KnParameter>(posX);
-        
-        var posY = new KnParameter("PositionY", 0.0, "m");
-        Add<KnParameter>(posY);
-        
-        var posZ = new KnParameter("PositionZ", 0.0, "m");
-        Add<KnParameter>(posZ);
-        
-        // Animation offset parameter (modified during animation)
-        var animOffset = new KnParameter("AnimationOffset", 0.0, "m");
-        Add<KnParameter>(animOffset);
-        
-        // Rotation parameter for animation
-        var rotation = new KnParameter("RotationY", 0.0, "deg");
-        Add<KnParameter>(rotation);
+        Calculations([
+            // Geometry type and appearance
+            "GeometryType: 'Box'",
+            "Color: 'Blue'",
+            
+            // Dimension parameters with units
+            "Width: units(1.0, 'm')",
+            "Height: units(1.0, 'm')",
+            "Depth: units(1.0, 'm')",
+            
+            // Position parameters with units
+            "PositionX: units(0.0, 'm')",
+            "PositionY: units(0.0, 'm')",
+            "PositionZ: units(0.0, 'm')",
+            
+            // Animation parameters
+            "AnimationOffset: units(0.0, 'm')",
+            "RotationY: units(0.0, 'deg')"
+        ]);
     }
 
     /// <summary>
-    /// Helper to set a parameter value (smashes dependents)
+    /// Helper to set a parameter value using UpdateParameter API (smashes dependents)
     /// </summary>
     private void SetParameterValue(string name, object value, string? units = null)
     {
-        var param = FindParameter(name);
-        if (param != null)
+        if (units != null && value is double d)
         {
-            if (units != null && value is double d)
-            {
-                param.ApplyFormula($"units({d}, '{units}')", KnBase.UnitService);
-            }
-            else
-            {
-                param.SetValue(value);
-            }
+            UpdateParameter(name, d, units);
+        }
+        else
+        {
+            UpdateParameter(name, value);
         }
     }
 
     private void SetupAnimationBehavior()
     {
+        // TEMPORARILY DISABLED: Focus on verifying basic geometry rendering first
+        // Once geometry renders correctly, re-enable animation
+        
         // Use composition pattern - set up the pre-animation action
         // Animation updates parameters, which invalidates geometry cache
-        PreAnimationRefresh((comp, evt) =>
-        {
-            EventCount++;
-            // Simulate some computation based on animation tick
-            CurrentValue = Math.Sin(evt.tick * 0.05) * 100;
-            
-            // Update animation parameters - this will invalidate geometry cache
-            var baseY = FindLengthValue("PositionY", 0.0).Value();
-            var animatedOffset = Math.Sin(evt.tick * 0.02) * 0.5;
-            SetParameterValue("AnimationOffset", animatedOffset, "m");
-            
-            // Update rotation parameter
-            var rotation = evt.tick * 0.5;
-            SetParameterValue("RotationY", rotation, "deg");
-            
-            // Update the cached shape's transform directly for smooth animation
-            // (The parameter changes mark geometry dirty for next full render)
-            if (Shape3D?.Transform != null)
-            {
-                Shape3D.Transform.Position = new Vector3(
-                    FindLengthValue("PositionX", 0.0).Value(),
-                    baseY + animatedOffset,
-                    FindLengthValue("PositionZ", 0.0).Value()
-                );
-                Shape3D.Transform.Rotation = Euler.FromDegrees(0, rotation, 0);
-            }
-        });
+        // PreAnimationRefresh((comp, evt) =>
+        // {
+        //     EventCount++;
+        //     // Simulate some computation based on animation tick
+        //     CurrentValue = Math.Sin(evt.tick * 0.05) * 100;
+        //     
+        //     // Update animation parameters - this will invalidate geometry cache
+        //     var baseY = FindLengthValue("PositionY", 0.0).Value();
+        //     var animatedOffset = Math.Sin(evt.tick * 0.02) * 0.5;
+        //     SetParameterValue("AnimationOffset", animatedOffset, "m");
+        //     
+        //     // Update rotation parameter
+        //     var rotation = evt.tick * 0.5;
+        //     SetParameterValue("RotationY", rotation, "deg");
+        //     
+        //     // Update the cached shape's transform directly for smooth animation
+        //     // (The parameter changes mark geometry dirty for next full render)
+        //     if (Shape3D?.Transform != null)
+        //     {
+        //         Shape3D.Transform.Position = new Vector3(
+        //             FindLengthValue("PositionX", 0.0).Value(),
+        //             baseY + animatedOffset,
+        //             FindLengthValue("PositionZ", 0.0).Value()
+        //         );
+        //         Shape3D.Transform.Rotation = Euler.FromDegrees(0, rotation, 0);
+        //     }
+        // });
     }
 
     /// <summary>
@@ -147,6 +131,7 @@ public class AnimatedKnComponent : PartComponent
     /// </summary>
     public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view, IArena? page)
     {
+        $"AnimatedKnComponent.EstablishGeometry3D: Called for view '{view}'".WriteInfo();
         var result = Compute3DGeometry(view, geom => 
         {
             geom.ApplyMethod("ComputeGeometry", ComputeShape3D, null, null);
@@ -161,6 +146,8 @@ public class AnimatedKnComponent : PartComponent
     /// </summary>
     private bool ComputeShape3D(KnInstance context, List<OPResult> args, OPResult result)
     {
+
+        $"AnimatedKnComponent.ComputeShape3D: Called".WriteInfo();
         var geometry = context as KnGeometry;
         if (geometry == null)
             return false;
@@ -197,6 +184,7 @@ public class AnimatedKnComponent : PartComponent
     /// </summary>
     protected override FoShape3D? CreateComponentGeometry(KnInstance context, string name, string title)
     {
+        $"AnimatedKnComponent.CreateComponentGeometry: Creating geometry for '{name}'".WriteInfo();
         // Read configuration from parameters
         var geomType = FindParameterValue<string>("GeometryType") ?? "Box";
         var color = FindParameterValue<string>("Color") ?? "Blue";

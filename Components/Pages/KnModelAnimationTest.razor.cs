@@ -211,6 +211,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
             _knModel.RenderDrawing2D("KnModelTest2D", true, () => AddLog("Model", "2D render complete"));
         }
     }
+    
     protected void RefreshTree()
     {
         AddLog("Tree", "Tree refresh requested");
