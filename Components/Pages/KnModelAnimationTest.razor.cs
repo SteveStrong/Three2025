@@ -42,6 +42,9 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     
     // Tree tab selection
     protected string _activeTreeTab = "model";
+    
+    // Canvas tab selection
+    protected string _activeCanvasTab = "3d";
 
     // Stage for 3D objects
     private FoStage3D? _testStage;
