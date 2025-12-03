@@ -43,8 +43,8 @@
                 <button class="btn btn-success btn-sm" @onclick="AddRotatingGroup">Add Group</button>
                 <button class="btn btn-danger btn-sm" @onclick="ClearScene">Clear</button>
             </div> *@
-            <div style="flex: 1; border: 1px solid #ccc; border-radius: 5px; overflow: hidden;">
-                <Canvas3DComponent SceneName="KnModelTest3D" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+            <div style="flex: 1; border: 1px solid #ccc; border-radius: 5px; overflow: hidden; min-height: 0;">
+                <Canvas3DComponent SceneName="KnModelTest3D" @ref="Canvas3DReference" CanvasWidth=100 CanvasHeight=100 style="width: 100%; height: 100%;" />
             </div>
         </div>
         @* 2D Canvas *@
@@ -53,8 +53,8 @@
             @* <div style="margin-bottom: 8px;">
                 <button class="btn btn-outline-secondary btn-sm" disabled>2D shapes coming soon</button>
             </div> *@
-            <div style="flex: 1; border: 1px solid #ccc; border-radius: 5px; overflow: hidden;">
-                <Canvas2DComponent SceneName="KnModelTest2D" @ref="Canvas2DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+            <div style="flex: 1; border: 1px solid #ccc; border-radius: 5px; overflow: hidden; min-height: 0;">
+                <Canvas2DComponent SceneName="KnModelTest2D" @ref="Canvas2DReference" CanvasWidth=100 CanvasHeight=100 style="width: 100%; height: 100%;" />
             </div>
         </div>
     </div>
@@ -79,9 +79,33 @@
             }
         </div>
         
-        <div style="flex: 1; overflow: auto; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 15px; border-radius: 8px; border: 2px solid #1976d2; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <MentorTreeView/>
-            @* <ShapeTreeView/> *@
+        <div style="flex: 2; overflow: hidden; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 15px; border-radius: 8px; border: 2px solid #1976d2; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-height: 0; display: flex; flex-direction: column;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(_activeTreeTab == "model" ? "active" : "")" 
+                            @onclick="@(() => _activeTreeTab = "model")" 
+                            type="button" role="tab">
+                        📊 Model Tree
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(_activeTreeTab == "shape" ? "active" : "")" 
+                            @onclick="@(() => _activeTreeTab = "shape")" 
+                            type="button" role="tab">
+                        🔷 Shape Tree
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content" style="flex: 1; overflow: auto; padding-top: 10px;">
+                @if (_activeTreeTab == "model")
+                {
+                    <MentorTreeView/>
+                }
+                else
+                {
+                    <ShapeTreeView/>
+                }
+            </div>
         </div>
     </div>
 

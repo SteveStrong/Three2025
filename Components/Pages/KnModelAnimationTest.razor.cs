@@ -39,6 +39,9 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     // Event logging
     protected List<EventLogEntry> _eventLogs = new();
     protected bool _logAllEvents = false;
+    
+    // Tree tab selection
+    protected string _activeTreeTab = "model";
 
     // Stage for 3D objects
     private FoStage3D? _testStage;

@@ -69,19 +69,26 @@ public class AnimatedKnModel : KnModel
     /// </summary>
     public override IEnumerable<ITreeNode> GetTreeChildren()
     {
-        var list = base.GetTreeChildren();
-        //var list = new List<ITreeNode>();
+        var list = new List<ITreeNode>();
         
         // Add folders for parameters (like base class)
-        //EstablishFolderIfNotEmpty<KnParameter>(list);
-        //EstablishFolderForAllOfType<KnComponent>(list);        
-
+        EstablishFolderIfNotEmpty<KnParameter>(list);
         
-        // // Also add AnimatedKnComponent members (stored in separate slot due to generic Add<T>)
-        // foreach (var component in Members<AnimatedKnComponent>())
-        // {
-        //     list.Add(component);
-        // }
+        // Add KnComponent members as tree children
+        var components = Members<KnComponent>();
+        $"AnimatedKnModel.GetTreeChildren: Members<KnComponent> count = {components.Count}".WriteInfo();
+        foreach (var component in components)
+        {
+            list.Add(component);
+        }
+        
+        // Also add AnimatedKnComponent members (stored in separate slot due to generic Add<T>)
+        var animatedComponents = Members<AnimatedKnComponent>();
+        $"AnimatedKnModel.GetTreeChildren: Members<AnimatedKnComponent> count = {animatedComponents.Count}".WriteInfo();
+        foreach (var component in animatedComponents)
+        {
+            list.Add(component);
+        }
         
         return list;
     }
