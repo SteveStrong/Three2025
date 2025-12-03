@@ -2,6 +2,7 @@ using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryMentorModeler.Model;
+using FoundryMentorModeler.Evaluator;
 using FoundryRulesAndUnits.Extensions;
 
 #nullable enable
@@ -9,100 +10,255 @@ using FoundryRulesAndUnits.Extensions;
 namespace Three2025.Components.Pages;
 
 /// <summary>
-/// A KnComponent subclass that creates and animates 3D geometry.
-/// Demonstrates using the PreContextLink composition pattern with geometry creation.
-/// Similar pattern to FoRack - creates shapes that can be added to a stage.
+/// A PartComponent subclass that creates and animates 3D geometry.
+/// Uses proper KN→FO pattern: KnParameters → EstablishGeometry3D → ComputeShape3D → FoShape3D
+/// Reference pattern: Rack_710.cs
 /// </summary>
-public class AnimatedKnComponent : KnComponent
+public class AnimatedKnComponent : PartComponent
 {
     public int EventCount { get; set; } = 0;
     public double CurrentValue { get; set; } = 0;
     
-    // The 3D geometry this component manages
+    // The 3D geometry this component manages (cached via KnGeometry)
     public FoShape3D? Shape3D { get; private set; }
-    
-    // Configuration for the geometry
-    public string GeometryType { get; set; } = "Box";
-    public string Color { get; set; } = "Blue";
-    public double Width { get; set; } = 1.0;
-    public double Height { get; set; } = 1.0;
-    public double Depth { get; set; } = 1.0;
-    public Vector3 Position { get; set; } = new Vector3(0, 0, 0);
 
     public AnimatedKnComponent() : base("AnimatedComponent")
     {
+        InitializeParameters();
         SetupAnimationBehavior();
     }
 
     public AnimatedKnComponent(string name) : base(name)
     {
+        InitializeParameters();
         SetupAnimationBehavior();
     }
     
     public AnimatedKnComponent(string name, string color, Vector3 position) : base(name)
     {
-        Color = color;
-        Position = position;
+        InitializeParameters();
         SetupAnimationBehavior();
+        
+        // Set initial parameter values
+        SetParameterValue("Color", color);
+        SetParameterValue("PositionX", position.X, "m");
+        SetParameterValue("PositionY", position.Y, "m");
+        SetParameterValue("PositionZ", position.Z, "m");
+    }
+
+    /// <summary>
+    /// Initialize KnParameters for geometry configuration.
+    /// Parameters drive geometry creation through the dependency system.
+    /// </summary>
+    private void InitializeParameters()
+    {
+        // Geometry type parameter
+        var geomType = new KnParameter("GeometryType", "Box");
+        Add<KnParameter>(geomType);
+        
+        // Color parameter
+        var color = new KnParameter("Color", "Blue");
+        Add<KnParameter>(color);
+        
+        // Dimension parameters with units
+        var width = new KnParameter("Width", 1.0, "m");
+        Add<KnParameter>(width);
+        
+        var height = new KnParameter("Height", 1.0, "m");
+        Add<KnParameter>(height);
+        
+        var depth = new KnParameter("Depth", 1.0, "m");
+        Add<KnParameter>(depth);
+        
+        // Position parameters with units
+        var posX = new KnParameter("PositionX", 0.0, "m");
+        Add<KnParameter>(posX);
+        
+        var posY = new KnParameter("PositionY", 0.0, "m");
+        Add<KnParameter>(posY);
+        
+        var posZ = new KnParameter("PositionZ", 0.0, "m");
+        Add<KnParameter>(posZ);
+        
+        // Animation offset parameter (modified during animation)
+        var animOffset = new KnParameter("AnimationOffset", 0.0, "m");
+        Add<KnParameter>(animOffset);
+        
+        // Rotation parameter for animation
+        var rotation = new KnParameter("RotationY", 0.0, "deg");
+        Add<KnParameter>(rotation);
+    }
+
+    /// <summary>
+    /// Helper to set a parameter value (smashes dependents)
+    /// </summary>
+    private void SetParameterValue(string name, object value, string? units = null)
+    {
+        var param = FindParameter(name);
+        if (param != null)
+        {
+            if (units != null && value is double d)
+            {
+                param.ApplyFormula($"units({d}, '{units}')", KnBase.UnitService);
+            }
+            else
+            {
+                param.SetValue(value);
+            }
+        }
     }
 
     private void SetupAnimationBehavior()
     {
         // Use composition pattern - set up the pre-animation action
+        // Animation updates parameters, which invalidates geometry cache
         PreAnimationRefresh((comp, evt) =>
         {
             EventCount++;
             // Simulate some computation based on animation tick
             CurrentValue = Math.Sin(evt.tick * 0.05) * 100;
             
-            // Update geometry if it exists - animate the Y position with a sine wave
+            // Update animation parameters - this will invalidate geometry cache
+            var baseY = FindLengthValue("PositionY", 0.0).Value();
+            var animatedOffset = Math.Sin(evt.tick * 0.02) * 0.5;
+            SetParameterValue("AnimationOffset", animatedOffset, "m");
+            
+            // Update rotation parameter
+            var rotation = evt.tick * 0.5;
+            SetParameterValue("RotationY", rotation, "deg");
+            
+            // Update the cached shape's transform directly for smooth animation
+            // (The parameter changes mark geometry dirty for next full render)
             if (Shape3D?.Transform != null)
             {
-                var baseY = Position.Y;
-                var animatedY = baseY + Math.Sin(evt.tick * 0.02) * 0.5;
-                Shape3D.Transform.Position = new Vector3(Position.X, animatedY, Position.Z);
-                
-                // Also rotate slowly
-                var rotation = evt.tick * 0.5;
+                Shape3D.Transform.Position = new Vector3(
+                    FindLengthValue("PositionX", 0.0).Value(),
+                    baseY + animatedOffset,
+                    FindLengthValue("PositionZ", 0.0).Value()
+                );
                 Shape3D.Transform.Rotation = Euler.FromDegrees(0, rotation, 0);
             }
         });
     }
 
     /// <summary>
-    /// Creates the 3D geometry for this component.
-    /// Call this after the component is configured and before adding to a stage.
+    /// Override EstablishGeometry3D following Rack_710 pattern.
+    /// Uses Compute3DGeometry with ApplyMethod for lazy geometry creation.
     /// </summary>
-    public FoShape3D CreateGeometry()
+    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view, IArena? page)
     {
-        var shapeName = Name ?? "AnimatedShape";
-        $"AnimatedKnComponent.CreateGeometry: Creating {GeometryType} '{shapeName}' at ({Position.X}, {Position.Y}, {Position.Z})".WriteInfo();
-        
-        Shape3D = new FoShape3D(shapeName, Color)
+        var result = Compute3DGeometry(view, geom => 
         {
-            Transform = new Transform3($"{shapeName}Transform")
+            geom.ApplyMethod("ComputeGeometry", ComputeShape3D, null, null);
+        });
+
+        return (result, result.GetParameter());
+    }
+
+    /// <summary>
+    /// Compute shape following proper IsCasheEmpty pattern from Rack_710.
+    /// Creates geometry on first call, updates on subsequent calls.
+    /// </summary>
+    private bool ComputeShape3D(KnInstance context, List<OPResult> args, OPResult result)
+    {
+        var geometry = context as KnGeometry;
+        if (geometry == null)
+            return false;
+
+        var shape = geometry.GetCashe<FoShape3D>();
+
+        if (geometry.IsCasheEmpty())
+        {
+            // First time: Create geometry from parameters
+            var name = context.GetName();
+            var title = context.Title ?? Name ?? "AnimatedShape";
+            
+            shape = CreateComponentGeometry(context, name, title);
+            
+            if (shape != null)
             {
-                Position = Position,
-                Rotation = Euler.FromDegrees(0, 0, 0),
+                geometry.SetCashe(shape);
+                Shape3D = shape; // Keep reference for animation updates
+            }
+        }
+        else
+        {
+            // Update existing geometry from parameters
+            UpdateShape3D(geometry, shape);
+        }
+
+        result.SetValue(ResultStatus.Shape3D, shape);
+        return true;
+    }
+
+    /// <summary>
+    /// Create the 3D geometry for this component.
+    /// Reads from KnParameters to configure geometry.
+    /// </summary>
+    protected override FoShape3D? CreateComponentGeometry(KnInstance context, string name, string title)
+    {
+        // Read configuration from parameters
+        var geomType = FindParameterValue<string>("GeometryType") ?? "Box";
+        var color = FindParameterValue<string>("Color") ?? "Blue";
+        var width = FindLengthValue("Width", 1.0).Value();
+        var height = FindLengthValue("Height", 1.0).Value();
+        var depth = FindLengthValue("Depth", 1.0).Value();
+        var posX = FindLengthValue("PositionX", 0.0).Value();
+        var posY = FindLengthValue("PositionY", 0.0).Value();
+        var posZ = FindLengthValue("PositionZ", 0.0).Value();
+        var animOffset = FindLengthValue("AnimationOffset", 0.0).Value();
+        var rotY = FindAngleValue("RotationY", 0.0).Value();
+
+        $"AnimatedKnComponent.CreateComponentGeometry: Creating {geomType} '{name}' at ({posX}, {posY}, {posZ})".WriteInfo();
+        
+        var shape = new FoShape3D(name, color)
+        {
+            Transform = new Transform3($"{name}Transform")
+            {
+                Position = new Vector3(posX, posY + animOffset, posZ),
+                Rotation = Euler.FromDegrees(0, rotY, 0),
             }
         };
         
         // Create the appropriate geometry type
-        switch (GeometryType.ToLower())
+        switch (geomType.ToLower())
         {
             case "sphere":
-                Shape3D.CreateSphere(shapeName, Width, Height, Depth);
+                shape.CreateSphere(name, width, height, depth);
                 break;
             case "cylinder":
-                Shape3D.CreateCylinder(shapeName, Width, Height, Depth);
+                shape.CreateCylinder(name, width, height, depth);
                 break;
             case "box":
             default:
-                Shape3D.CreateBox(shapeName, Width, Height, Depth);
+                shape.CreateBox(name, width, height, depth);
                 break;
         }
         
-        return Shape3D;
+        return shape;
+    }
+
+    /// <summary>
+    /// Update existing shape from current parameter values.
+    /// Called when cache exists but parameters may have changed.
+    /// </summary>
+    private bool UpdateShape3D(KnGeometry geometry, FoShape3D? shape)
+    {
+        if (shape?.Transform == null)
+            return false;
+
+        // Update transform from current parameter values
+        var posX = FindLengthValue("PositionX", 0.0).Value();
+        var posY = FindLengthValue("PositionY", 0.0).Value();
+        var posZ = FindLengthValue("PositionZ", 0.0).Value();
+        var animOffset = FindLengthValue("AnimationOffset", 0.0).Value();
+        var rotY = FindAngleValue("RotationY", 0.0).Value();
+
+        shape.Transform.Position = new Vector3(posX, posY + animOffset, posZ);
+        shape.Transform.Rotation = Euler.FromDegrees(0, rotY, 0);
+        shape.SetDirty(true);
+
+        return true;
     }
     
     /// <summary>
@@ -112,25 +268,33 @@ public class AnimatedKnComponent : KnComponent
     public FoGroup3D CreateGroupGeometry()
     {
         var shapeName = Name ?? "AnimatedGroup";
+        var color = FindParameterValue<string>("Color") ?? "Blue";
+        var width = FindLengthValue("Width", 1.0).Value();
+        var height = FindLengthValue("Height", 1.0).Value();
+        var depth = FindLengthValue("Depth", 1.0).Value();
+        var posX = FindLengthValue("PositionX", 0.0).Value();
+        var posY = FindLengthValue("PositionY", 0.0).Value();
+        var posZ = FindLengthValue("PositionZ", 0.0).Value();
+
         $"AnimatedKnComponent.CreateGroupGeometry: Creating group '{shapeName}'".WriteInfo();
         
         var group = new FoGroup3D(shapeName)
         {
             Transform = new Transform3($"{shapeName}Transform")
             {
-                Position = Position,
+                Position = new Vector3(posX, posY, posZ),
                 Rotation = Euler.FromDegrees(0, 0, 0),
             }
         };
         
         // Create main body
-        var body = new FoShape3D($"{shapeName}_Body", Color)
+        var body = new FoShape3D($"{shapeName}_Body", color)
         {
             Transform = new Transform3("BodyTransform")
             {
                 Position = new Vector3(0, 0, 0),
             }
-        }.CreateBox($"{shapeName}_Body", Width, Height, Depth);
+        }.CreateBox($"{shapeName}_Body", width, height, depth);
         group.AddSubGlyph3D(body);
         
         // Add a decorative top (sphere uses width/height/depth for ellipsoid dimensions)
@@ -139,7 +303,7 @@ public class AnimatedKnComponent : KnComponent
         {
             Transform = new Transform3("TopTransform")
             {
-                Position = new Vector3(0, Height / 2 + 0.1, 0),
+                Position = new Vector3(0, height / 2 + 0.1, 0),
             }
         }.CreateSphere($"{shapeName}_Top", sphereSize, sphereSize, sphereSize);
         group.AddSubGlyph3D(top);
@@ -147,10 +311,10 @@ public class AnimatedKnComponent : KnComponent
         // Add corner markers
         var cornerOffset = 0.4;
         var corners = new[] {
-            new Vector3(-cornerOffset, -Height/2, -cornerOffset),
-            new Vector3(cornerOffset, -Height/2, -cornerOffset),
-            new Vector3(-cornerOffset, -Height/2, cornerOffset),
-            new Vector3(cornerOffset, -Height/2, cornerOffset),
+            new Vector3(-cornerOffset, -height/2, -cornerOffset),
+            new Vector3(cornerOffset, -height/2, -cornerOffset),
+            new Vector3(-cornerOffset, -height/2, cornerOffset),
+            new Vector3(cornerOffset, -height/2, cornerOffset),
         };
         
         for (int i = 0; i < corners.Length; i++)
@@ -171,9 +335,25 @@ public class AnimatedKnComponent : KnComponent
         return group;
     }
 
+    /// <summary>
+    /// Helper to find a parameter value by name
+    /// </summary>
+    private T? FindParameterValue<T>(string name)
+    {
+        var param = FindParameter(name);
+        if (param != null)
+        {
+            var value = param.GetValue().Value();
+            if (value is T typedValue)
+                return typedValue;
+        }
+        return default;
+    }
+
     public override string GetTreeNodeTitle()
     {
-        var shapeInfo = Shape3D != null ? $", Shape:{GeometryType}" : "";
+        var geomType = FindParameterValue<string>("GeometryType") ?? "Box";
+        var shapeInfo = Shape3D != null ? $", Shape:{geomType}" : "";
         return $"{Name} (Events:{EventCount}, Value:{CurrentValue:F2}{shapeInfo})";
     }
 }

@@ -11,7 +11,7 @@ namespace Three2025.Components.Pages;
 /// A KnModel subclass that reacts to animation loop events.
 /// This demonstrates how KnModels can respond to PreAnimationEvent for geometry updates.
 /// </summary>
-public class AnimatedKnModel : KnModel
+public class AnimatedKnModel : PartModel
 {
     private Action? _onRefresh;
 

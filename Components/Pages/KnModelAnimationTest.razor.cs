@@ -226,18 +226,20 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         var colors = new[] { "Blue", "Green", "Red", "Purple", "Orange", "Cyan" };
         var color = colors[(componentCount - 1) % colors.Length];
         
-        // Create component with position and color
+        // Create component with position and color (constructor initializes KnParameters)
         var component = new AnimatedKnComponent(
             $"Component_{componentCount}", 
             color, 
             new Vector3(xPosition, 1.0, 0)
-        )
-        {
-            GeometryType = "Box",
-            Width = 1.0,
-            Height = 1.5,
-            Depth = 0.8
-        };
+        );
+        
+        // Set geometry configuration via parameters (replaces object initializer)
+        // The constructor already sets these parameters, but we can override:
+        // - GeometryType: "Box" (default)
+        // - Width: 1.0m (default) 
+        // - Height: 1.0m (default)
+        // - Depth: 1.0m (default)
+        // Custom dimensions can be set via: component.FindParameter("Width")?.ApplyFormula("units(1.5, 'm')", KnBase.UnitService);
         
         // Add to model via ModelEditor (fires ModelEditChanged event, triggers tree refresh)
         ModelEditor.AddChild(_knModel, component);
@@ -251,7 +253,9 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         // Ensure model is expanded so tree shows children
         _knModel.SetExpanded(true);
         
-        AddLog("Component", $"Added KnComponent '{component.Name}' with {color} {component.GeometryType} geometry");
+        // Get geometry type from parameter for logging
+        var geomType = component.FindParameter("GeometryType")?.GetValue().Value()?.ToString() ?? "Box";
+        AddLog("Component", $"Added KnComponent '{component.Name}' with {color} {geomType} geometry");
         InvokeAsync(StateHasChanged);
     }
 
