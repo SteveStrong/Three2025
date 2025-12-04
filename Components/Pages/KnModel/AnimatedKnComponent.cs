@@ -320,6 +320,21 @@ public class AnimatedKnComponent : PartComponent
         // Store reference for animation updates
         Shape3D = body;
         
+        body.BeforeAnimationRefresh((self, tick, fps) =>
+        {
+            bool move = tick % 10 == 0;
+            if (!move) return;
+
+            var delta = Math.Sin(tick * 0.05) * 100;
+
+
+            var pos = self.Transform.MoveBy(0, 0, delta);
+            if (pos.Z > 10 || pos.Z < -10)
+            {
+                delta = -delta;
+            }
+            //self.SetTransformStale();
+        });
         return group;
     }
 

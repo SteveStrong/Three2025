@@ -382,8 +382,9 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var box = AddCone(name,x,z);
         var arena = Workspace.GetArena();
 
-        arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShapeToStage<Node3D>(box);
+        var stage ="Main Stage";
+        arena.EstablishStage<FoStage3D>(stage);
+        arena.AddShapeToStage<Node3D>(box, stage);
     }
 
 

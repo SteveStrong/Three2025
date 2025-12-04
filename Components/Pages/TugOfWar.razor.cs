@@ -147,8 +147,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         s2.MoveTo(500, 300);
         
         // Add shapes to drawing (without selection to avoid debug lines)
-        drawing.AddShape(s1);
-        drawing.AddShape(s2);
+        drawing.AddShapeToPage<FoShape2D>(s1, page.GetName());
+        drawing.AddShapeToPage<FoShape2D>(s2, page.GetName());
 
 
         // Create connecting arrow
@@ -159,14 +159,14 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         };
         wire.GlueStartTo(s1, "RIGHT");
         wire.GlueFinishTo(s2, "LEFT");
-        drawing.AddShape(wire);
+        drawing.AddShapeToPage<FoShape1D>(wire, page.GetName());
 
         var text = new FoText2D(100, 50, "Green")
         {
             Text = "Tug of War!",
         };
         text.MoveTo(400, 400);
-        drawing.AddShape(text);
+        drawing.AddShapeToPage<FoText2D>(text, page.GetName());
         
         
         // Animate both shapes

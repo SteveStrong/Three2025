@@ -193,25 +193,20 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         AddLog("Shape", $"Added rotating group '{group.Key}' with 3 children");
     }
 
-    protected void ClearScene()
-    {
-        _testStage?.ClearStage();
-        _shapeCount = 0;
-        AddLog("Scene", "Cleared all shapes from scene");
-    }
+
 
     protected void RenderToCanvas()
     {
         if (Canvas3DReference != null)
         {
-            _knModel.RenderArena3D("KnModelTest3D", true, () => AddLog("Model", "3D render complete"));
+            _knModel.RenderArena3D("KnModelTest3D", false, () => AddLog("Model", "3D render complete"));
         }
         if (Canvas2DReference != null)
         {
-            _knModel.RenderDrawing2D("KnModelTest2D", true, () => AddLog("Model", "2D render complete"));
+            _knModel.RenderDrawing2D("KnModelTest2D", false, () => AddLog("Model", "2D render complete"));
         }
     }
-    
+
     protected void RefreshTree()
     {
         AddLog("Tree", "Tree refresh requested");

@@ -301,7 +301,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         };
  
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage(shape);
+        arena.AddShapeToStage(shape,"Home3D");
     }
 
     public void OnAddText()
@@ -321,8 +321,9 @@ public partial class HomeBase : ComponentBase, IDisposable
             }
         };
 
+
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage(shape);
+        arena.AddShapeToStage(shape,"Home3D");
     }
 
     public Node3D AddBox(string name, double x=0, double z=0)
