@@ -89,9 +89,10 @@ public class VisioWorkbook : FoWorkbook
     {
         var drawing = Workspace.GetDrawing();
         if (drawing == null || menu == null) return;
+        var page = drawing.CurrentPage();
 
         menu.ToggleLayout();
-        drawing.AddShape<FoMenu2D>(menu).AnimatedMoveTo(x, y);
+        drawing.AddShapeToPage<FoMenu2D>(menu, page.GetName()).AnimatedMoveTo(x, y);
     }
 
     public override void CreateMenus(IWorkspace space, IJSRuntime js, NavigationManager nav)

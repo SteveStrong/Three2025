@@ -1,0 +1,57 @@
+@page "/multi-canvas-2d-test"
+@using FoundryWorldsAndDrawings.Shared
+@rendermode InteractiveServer
+
+<PageTitle>Multi-Canvas 2D Test</PageTitle>
+
+<style>
+    .canvas2dContainer {
+        width: 100% !important;
+        height: 100% !important;
+        position: relative !important;
+    }
+</style>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; height: 100vh; gap: 10px; padding: 10px;">
+    
+    <!-- Top-Left: Page A -->
+    <div style="border: 2px solid #4CAF50; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="background: #4CAF50; color: white; padding: 8px; font-weight: bold;">
+            Page A - Animated Rectangle
+        </div>
+        <div style="flex: 1; position: relative;">
+            <Canvas2DComponent SceneName="PageA" PageName="PageA" CanvasWidth="800" CanvasHeight="600" />
+        </div>
+    </div>
+
+    <!-- Top-Right: Page B -->
+    <div style="border: 2px solid #2196F3; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="background: #2196F3; color: white; padding: 8px; font-weight: bold;">
+            Page B - Moving Circles
+        </div>
+        <div style="flex: 1; position: relative;">
+            <Canvas2DComponent SceneName="PageB" PageName="PageB" CanvasWidth="800" CanvasHeight="600" />
+        </div>
+    </div>
+
+    <!-- Bottom-Left: Page C -->
+    <div style="border: 2px solid #FF9800; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="background: #FF9800; color: white; padding: 8px; font-weight: bold;">
+            Page C - Connector Demo
+        </div>
+        <div style="flex: 1; position: relative;">
+            <Canvas2DComponent SceneName="PageC" PageName="PageC" CanvasWidth="800" CanvasHeight="600" />
+        </div>
+    </div>
+
+    <!-- Bottom-Right: Tree View -->
+    <div style="border: 2px solid #9C27B0; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="background: #9C27B0; color: white; padding: 8px; font-weight: bold;">
+            Drawing/Page Hierarchy
+        </div>
+        <div style="flex: 1; overflow: auto; background: #f5f5f5; padding: 10px;">
+            <ShapeTreeView />
+        </div>
+    </div>
+
+</div>

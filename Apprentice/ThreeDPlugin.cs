@@ -24,7 +24,7 @@ public class ThreeDPlugin
       var arena = Foundry.Arena();
       var stage = arena.EstablishStage<FoStage3D>("Main Stage");
 
-      arena.AddShapeToStage<FoShape3D>(shape);  //this is what the world publish is doing
+      arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());  //this is what the world publish is doing
 
       //stage.PreRender(arena);
 

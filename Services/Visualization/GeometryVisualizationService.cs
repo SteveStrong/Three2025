@@ -102,7 +102,8 @@ public class GeometryVisualizationService : IGeometryVisualizationService
         group.AddSubGlyph3D<FoShape3D>(yAxis);
         group.AddSubGlyph3D<FoShape3D>(zAxis);
 
-        arena.AddShapeToStage<FoShape3D>(group);
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage<FoShape3D>(group, stage.GetName());
         return group;
     }
     public void ShowLabeledVertices(IArena arena, IEnumerable<Point3D> points)
@@ -131,7 +132,8 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             vertexShape.AddSubGlyph3D<FoText3D>(label);
             label.Text.WriteSuccess();
 
-            arena.AddShapeToStage<FoShape3D>(vertexShape);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<FoShape3D>(vertexShape, stage.GetName());
             i++;
         }
     }
@@ -160,7 +162,8 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             edgeShape.AddSubGlyph3D<FoText3D>(label);
             label.Text.WriteSuccess();
 
-            arena.AddShapeToStage<FoPipe3D>(edgeShape);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<FoPipe3D>(edgeShape, stage.GetName());
         }
     }
 
@@ -193,7 +196,8 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             normalShape.AddSubGlyph3D<FoText3D>(LabelName);
             LabelName.Text.WriteSuccess();
 
-            arena.AddShapeToStage<FoShape3D>(normalShape);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<FoShape3D>(normalShape, stage.GetName());
         }
     }
 
@@ -237,7 +241,8 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             normalShape.AddSubGlyph3D<FoText3D>(LabelName);
             LabelName.Text.WriteSuccess();
 
-            arena.AddShapeToStage<FoShape3D>(normalShape);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<FoShape3D>(normalShape, stage.GetName());
         }
     }
 
@@ -285,9 +290,10 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             Transform = zAxisTransform
         }.CreateCylinder("ZAxis", axisRadius, axisLength, axisRadius);
 
-        arena.AddShapeToStage<FoShape3D>(xAxis);
-        arena.AddShapeToStage<FoShape3D>(yAxis);
-        arena.AddShapeToStage<FoShape3D>(zAxis);
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage<FoShape3D>(xAxis, stage.GetName());
+        arena.AddShapeToStage<FoShape3D>(yAxis, stage.GetName());
+        arena.AddShapeToStage<FoShape3D>(zAxis, stage.GetName());
     }
 
     public void ShowAll(IArena arena, IEnumerable<Point3D> vertices, IEnumerable<Edge3D> edges, IEnumerable<Face3D> faces)
@@ -321,7 +327,8 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             }
         }.CreateSphere(name, radius, radius, radius);
         
-        arena?.AddShapeToStage<FoShape3D>(shape);
+        var stage = arena.CurrentStage();
+        arena?.AddShapeToStage<FoShape3D>(shape, stage.GetName());
         return shape;
     }
     
@@ -338,7 +345,8 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             }
         }.CreateCylinder(name, radius, height, radius);
         
-        arena?.AddShapeToStage<FoShape3D>(shape);
+        var stage = arena.CurrentStage();
+        arena?.AddShapeToStage<FoShape3D>(shape, stage.GetName());
         return shape;
     }
     
@@ -356,7 +364,8 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             Opacity = opacity
         }.CreatePlane(name, width, height, depth);
         
-        arena?.AddShapeToStage<FoShape3D>(shape);
+        var stage = arena.CurrentStage();
+        arena?.AddShapeToStage<FoShape3D>(shape, stage.GetName());
         return shape;
     }
     

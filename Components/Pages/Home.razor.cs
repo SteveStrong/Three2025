@@ -48,15 +48,8 @@ public partial class HomeBase : ComponentBase, IDisposable
     {
         if (firstRender)
         {
-            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false,null!);
-
-            scene?.SetAfterUpdateAction((s,j) =>
-            {
-                FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-            });
-
-            var arena = Workspace.GetArena();
-            arena.SetScene(scene);
+            // Wait for Canvas to initialize (Canvas handles stage-scene linkage)
+            await Task.Delay(100);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -76,8 +69,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void DoAddTubeToScene()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if ( !found ) return;
 
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -109,13 +101,12 @@ public partial class HomeBase : ComponentBase, IDisposable
         };
 
         shape.CreateTube("TheTube", 0.15f, path);
-        shape.RefreshToScene(scene);
+
     }
 
     public void DoAddConeToScene()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if ( !found ) return;
 
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -128,9 +119,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
 
         var mesh = new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Name = DataGenerator.GenerateWord(),
+        {            Name = DataGenerator.GenerateWord(),
             Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
             Transform = new Transform3("ConeTransform")
             {
@@ -152,9 +141,9 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void OnAddCageToRacks()
     {
-        RackTech.ComputeHitBoundaries(() => {
+        //RackTech.ComputeHitBoundaries(() => {
             CageTech.CreateRoutingCage();
-        });
+        //});
     }
 
     public void DoAddRacksArena()
@@ -184,12 +173,12 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void DoAddRoutesArena()
     {
-        RackTech.ComputeHitBoundaries(() => {
+        //RackTech.ComputeHitBoundaries(() => {
             for (int i = 0; i < 20; i++)
             {
                 TryAddRoutesArena();
             }
-        });
+        //});
 
     }
 
@@ -198,11 +187,12 @@ public partial class HomeBase : ComponentBase, IDisposable
     public void TryAddRoutesArena()
     {
         var arena = Workspace.GetArena();
+        var stage = arena.CurrentStage();
 
         var (success, pipe) = RackTech.TryCreatePipe(GeneratePath(), GeneratePath());
         
         if ( success ) 
-            arena.AddShapeToStage<FoPipe3D>(pipe);
+            arena.AddShapeToStage<FoPipe3D>(pipe, stage.GetName());
 
     }
 
@@ -225,7 +215,8 @@ public partial class HomeBase : ComponentBase, IDisposable
         shape.CreateTube("hello", 0.25, path);
 
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage(shape);  
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage(shape, stage.GetName());  
 
     }
     public void DoAddWiresArena()
@@ -240,10 +231,10 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void TryAddWiresArena()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if ( !found ) return;
 
+        var arena = Workspace.GetArena();
         var stage = arena.CurrentStage();
     
         
@@ -258,9 +249,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
 
         var mesh = new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+        {            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
             Material = new MeshStandardMaterial("yellow", 1.0)
         };
         scene.AddChild(mesh);
@@ -314,7 +303,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         };
  
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage(shape);
+        arena.AddShapeToStage(shape,"Home3D");
     }
 
     public void OnAddText()
@@ -334,8 +323,9 @@ public partial class HomeBase : ComponentBase, IDisposable
             }
         };
 
+
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage(shape);
+        arena.AddShapeToStage(shape,"Home3D");
     }
 
     public Node3D AddBox(string name, double x=0, double z=0)
@@ -398,15 +388,12 @@ public partial class HomeBase : ComponentBase, IDisposable
 
    public async Task DoAddAxisToScene()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if (!found) return;
 
         var model = new Model3D()
         {
-            Name = "Axis",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Name = "Axis",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
         };
 
@@ -423,8 +410,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void DoRequestAddTextToScene()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if (!found) return;
 
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -433,9 +419,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
 
         var text3d = new Text3D()
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Text = DataGenerator.GenerateText(),
+        {            Text = DataGenerator.GenerateText(),
             Color = DataGenerator.GenerateColor(),
             Transform = new Transform3("Text3DTransform")
             {
@@ -448,8 +432,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public async Task DoRequestAddJetToScene()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = arena.CurrentScene();
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if (!found) return;
 
         var x = DataGenerator.GenerateDouble(-10, 10);
@@ -458,9 +441,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 
         var model = new Model3D()
         {
-            Name = $"JET:{DataGenerator.GenerateWord()}",
-            Uuid = Guid.NewGuid().ToString(),
-            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
+            Name = $"JET:{DataGenerator.GenerateWord()}",            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
             Transform = new Transform3("JetTransform")
             {

@@ -40,8 +40,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
     public (bool, Scene3D) GetCurrentScene()
     {
-        var arena = Workspace.GetArena();
-        return arena.CurrentScene();
+        return Canvas3DReference?.GetActiveScene() ?? (false, null!);
     }
  
 
@@ -55,21 +54,8 @@ public partial class DrawingBase : ComponentBase, IDisposable
     {
         if (firstRender)
         {
-            // Initialize the 3D scene connection
-            await Task.Delay(100); // Give canvas time to initialize
-            
-            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
-            
-            if (found && scene != null)
-            {
-                scene.SetAfterUpdateAction((s, j) =>
-                {
-                    FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-                });
-
-                var arena = Workspace.GetArena();
-                arena.SetScene(scene);
-            }
+            // Wait for Canvas to initialize (Canvas handles stage-scene linkage)
+            await Task.Delay(100);
             
             CreateMenus(Workspace);
         }
@@ -95,7 +81,8 @@ public partial class DrawingBase : ComponentBase, IDisposable
             //BoundingBox = new Vector3(bx, by, bz),
         };
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage<FoShape3D>(shape);
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
         return shape;
     }
 
@@ -141,26 +128,29 @@ public partial class DrawingBase : ComponentBase, IDisposable
         {
 
             var box = AddBox(DataGenerator.GenerateName());
-            arena.AddShapeToStage<FoShape3D>(box);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<FoShape3D>(box, stage.GetName());
         });
 
         world.AddAction("TRex", "btn-primary", () =>
         {
             var url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb");
             var shape = DoLoad3dModel(url, -2, 6, -2);
-            arena.AddShapeToStage<FoShape3D>(shape);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
         });
 
         world.AddAction("Porsche", "btn-primary", () =>
         {
             var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
             var shape = DoLoad3dModel(url, 2, 6, 2);
-            arena.AddShapeToStage<FoShape3D>(shape);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
         });
         
         world.AddAction("Render Tube", "btn-primary", () =>
         {
-            var (found, scene) = arena.CurrentScene();
+            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
             if ( !found ) return;
 
 
@@ -174,9 +164,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
 
             scene.AddChild(new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+            {                Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
               
                 Material = new MeshStandardMaterial("yellow", 1.0)
             });
@@ -206,7 +194,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShapeToStage<FoShape3D>(shape);
+        arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
         //stage.PreRender(arena);
 
         // var (found, scene) = GetCurrentScene();
@@ -258,7 +246,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShapeToStage<FoShape3D>(shape);
+        arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
 
         // var (found, scene) = GetCurrentScene();
         // if (found)
@@ -285,7 +273,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShapeToStage<FoText3D>(shape);
+        arena.AddShapeToStage<FoText3D>(shape, stage.GetName());
 
         // var (found, scene) = GetCurrentScene();
         // if (found)
@@ -297,7 +285,8 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
         var shape = DoLoad3dModel(url, 2, 6, 2);
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage<FoShape3D>(shape);
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
     }
 
     public void OnRenderTube()
@@ -314,9 +303,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         };
 
         scene.AddChild(new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+        {            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
             Material = new MeshStandardMaterial("yellow", 1.0)
         });
     }
@@ -400,8 +387,9 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var box = AddCone(name,x,z);
         var arena = Workspace.GetArena();
 
-        arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShapeToStage<Node3D>(box);
+        var stage ="Main Stage";
+        arena.EstablishStage<FoStage3D>(stage);
+        arena.AddShapeToStage<Node3D>(box, stage);
     }
 
 
@@ -444,9 +432,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var model = new Model3D()
         {
-            Name = $"Axis:{DataGenerator.GenerateWord()}",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Name = $"Axis:{DataGenerator.GenerateWord()}",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
         };
 
@@ -466,9 +452,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
     {
         var model = new Model3D()
         {
-            Name = $"JET:{DataGenerator.GenerateWord()}",
-            Uuid = Guid.NewGuid().ToString(),
-            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
+            Name = $"JET:{DataGenerator.GenerateWord()}",            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
         };
 

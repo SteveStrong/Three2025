@@ -1,0 +1,268 @@
+
+using FoundryBlazor.Shape;
+using FoundryAppStore.Extensions;
+
+namespace Plugin_710.Model;
+
+public class CircuitBlock_710 : Base_710
+{
+
+
+    public CircuitBlock_710(DT_Component source): base(source)
+    {
+
+    }
+
+
+    public CircuitBlock_710(DT_Component component, int index, Base_710 parent): this(component)
+    {
+        ItemIndex = index;
+        SetKnParent(parent);
+    }
+
+
+    //equipment can have connectors, sockets, and subsystems
+    public override void BuildStructure(IEnumerable<DT_Component> members, Base_710 parent, Dictionary<string, Base_710> lookup)
+    {
+        var i = 0;
+        var list = members.Where(x => x.IsConnector()).ToList();
+        foreach (var item in list)
+        {
+            var obj = FindOrBuild<CircuitBlock_710,Connector_710>(this,item, i++,lookup);
+            obj.BuildStructure(item.GetMembers(), this, lookup);
+        }
+
+        list = members.Where(x => x.IsSocket()).ToList();
+        foreach (var item in list)
+        {
+            var obj = FindOrBuild<CircuitBlock_710, Socket_710>(this, item, i++, lookup);
+            obj.BuildStructure(item.GetMembers(), this, lookup);
+        }
+
+        list = members.Where(x => x.IsBlock("")).ToList();
+        foreach (var item in list)
+        {
+            var obj = FindOrBuild<CircuitBlock_710, CircuitBlock_710>(this, item, i++, lookup);
+            obj.BuildStructure(item.GetMembers(), this, lookup);
+        }
+                
+        list = members.Where(x => x.IsBlock("Reference")).ToList();
+        foreach (var item in list)
+        {
+            var obj = FindOrBuild<CircuitBlock_710, CircuitNode_710>(this, item, i++, lookup);
+            obj.BuildStructure(item.GetMembers(), this, lookup);
+        }
+
+        list = members.Where(x => x.IsBlock("Circuit")).ToList();
+        foreach (var item in list)
+        {
+            var obj = FindBuildAndConnect<CircuitBlock_710,CircuitLink_710>(this, item, i++, lookup);
+            obj.ComputeHorizontalJustify("System");
+            obj.ComputeVerticalJustify("System");
+        }
+    }
+
+    public override KnEditor2DParameter EstablishEditor(string view, MentorDiagram diagram)
+    {
+        var result = base.EstablishEditor(view, diagram);
+        if ( result.IsValid())
+            return result;
+        
+
+        var node = EstablishDiagramGroup<CircuitGroupEditor>(result, diagram)!;
+
+        // diagram.Controls.AddFor(node, ControlsType.OnSelection);
+        // diagram.RegisterComponent<NodeInformationControl, NodeInformationControlWidget>(true);
+        // diagram.Controls.AddFor(node, ControlsType.OnSelection).Add(new NodeInformationControl(this));
+
+        //$"{GetTreeNodeTitle()} Created EquipmentEditor".WriteNote(2);
+
+        return result;
+    } 
+
+
+
+    public override void MoveTo(double x, double y)
+    {
+        base.MoveTo(x, y);
+        var result = Members<KnEditor2DParameter>().FirstOrDefault(); // item => view.Matches(item.Name!));
+        if (result != null && result.IsValid())
+        {
+            var shape = result.GetCurrentValueAs<CircuitGroupEditor>();
+            shape?.SetPosition(x,y);
+        }
+    }
+
+    public void RepositionChildren(string view, CircuitGroupEditor group, JustifyPosition justify)
+    {
+        var width = 550;
+        var step = 50;
+        var (pinX, pinY) = LocationParameters();
+
+        var list = this.ModelComponents<CircuitNode_710>();
+        var column = list.Where(obj => obj.JustifyPort == justify).ToList();
+           
+        var top = pinY + step + 20;
+        var left = justify switch {
+            JustifyPosition.Left => pinX + 1,
+            JustifyPosition.Right => pinX + 340,
+            JustifyPosition.Center => pinX + 210,
+            _ => pinX
+        };
+
+        foreach (var obj in column)
+        {
+            (_, top) = obj.FinalizeSelfAndChildren(view, group, left, top, width);
+            top += step;
+        };     
+    }
+
+    public override KnEditor2DParameter FinalizeEditor(string view)
+    {
+        var result = base.FinalizeEditor(view);
+        if (result == null || !result.IsValid())
+            return result!;
+
+        var group = result.GetCurrentValueAs<CircuitGroupEditor>();
+        RepositionChildren(view, group, JustifyPosition.Left);
+        RepositionChildren(view, group, JustifyPosition.Right);
+        RepositionChildren(view, group, JustifyPosition.Center);
+        RepositionChildren(view, group, JustifyPosition.Unknown);
+
+        var list = this.ModelComponents<CircuitBlock_710>();
+        foreach (var obj in list)
+        {
+            var shape = obj.FinalizeEditor(view);
+            if (shape != null)
+            {
+                var child = shape.GetCurrentValueAs<CircuitGroupEditor>();
+                group.RemoveChild(child);
+                group.AddChild(child);
+            }
+        }
+
+
+        return result!;
+    } 
+
+    public override IEnumerable<ITreeNode> GetTreeChildren()
+    {
+        var list = base.GetTreeChildren().ToList();
+        return list;
+    }
+
+ 
+    public override (KnGeometry, KnGeometryParameter) EstablishGeometry2D(string view, FoPage2D? page)
+    {
+        var result = Compute2DGeometry( view, geom => 
+        {
+            geom.ApplyMethod("ComputeBackpanel", ComputeShape, null, null); //, null, (p,v) => page.DeleteShape(v.AsGlyph2D()));
+        });
+
+        return (result, result.GetParameter());
+    }   
+
+
+    private bool UpdateShape(KnGeometry geometry, ModelShape2D shape)
+    {
+        if (geometry == null)
+            return false;
+
+
+        return true;
+    }
+
+    private bool ComputeShape(KnInstance context, List<OPResult> args, OPResult result)
+    {
+        var geometry = context as KnGeometry;
+        if (geometry == null)
+            return false;
+
+
+        var shape = geometry.GetCashe<ModelShape2D>();
+
+        if ( geometry.IsCasheEmpty())
+        {
+            var model = context.GetKnParentOfType<Model_710>();
+            if ( model == null)
+                return false;
+            var page = model.GetPage();
+
+            var w = context.FindLengthValue("Width", 0);
+            var h = context.FindLengthValue("Height", 0);
+            var color = context.FindStringValue("Color", "White");
+  
+            var width = page.MapToPageYScale(w);
+            var height = page.MapToPageYScale(h);
+            var (x, y) = page.DefaultDropLocation(.2);
+
+            var name = context.Name ?? context.Title;
+            
+            shape = new ModelShape2D(name, width, height, color)
+            {
+                PinX = x,
+                PinY = y,
+                GlyphId = GetKnowId(),
+                Title = context.Title,
+            };
+            shape.SetKnowledge(this);
+
+            // var connectors = ModelComponents<Connector_710>();
+            // var step = 1.0 / (connectors.Count() + 3);
+            // var i = 0;
+            // foreach (var connector in connectors)
+            // {
+            //     var geom = connector.Geometry2DValueFor(view);
+            //     var port = geom.ValueAs<ModelSubShape2D>();
+            //     shape.AddPortShape<ModelSubShape2D>(port, 0.1 + step * i++, .5, page);
+            //     port.GetParent = () => shape;
+            // }
+
+
+
+
+
+            // node.AfterMatrixRefresh(shape =>
+            // {
+            //     var x = page.MapToModelXLoc(shape.PinX);
+            //     var y = page.MapToModelYLoc(shape.PinY);
+            //     geometry.UpdateParameter("LocX", x, "m");
+            //     geometry.UpdateParameter("LocY", y, "m");
+            // });
+            
+            page.AddShape<ModelShape2D>(shape);
+            geometry.SetCashe(shape);
+
+            geometry.ApplyBeforeDelete(() => {
+                page.DeleteShape(shape);
+                geometry.ClearCashe();
+            });
+        }
+        else
+        {
+            UpdateShape(geometry, shape);
+        }
+    
+        result.SetValue(ResultStatus.Shape2D, shape);
+
+        return true;
+    }
+
+    public override IEnumerable<TreeNodeAction>? GetTreeNodeActions()
+    {
+        var result = base.GetTreeNodeActions()!.ToList();
+
+        // result.AddAction("System", "btn-primary", () => 
+        // {
+        //     RenderSystem.Invoke();
+        // });
+        
+
+        // result.AddAction("Detail", "btn-primary", () => 
+        // {
+        //     RenderDetails.Invoke();
+        // });
+
+        return result;
+    }
+}

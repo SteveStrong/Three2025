@@ -1,6 +1,7 @@
 ﻿using FoundryWorldsAndDrawings.Shared;
 using FoundryWorldsAndDrawings.Solutions;
 using Microsoft.AspNetCore.Components;
+using FoundryRulesAndUnits.Extensions; // ✅ Phase 0.5: For WriteSuccess extension
 
 
 using FoundryWorldsAndDrawings.PubSub;
@@ -8,6 +9,7 @@ using FoundryRulesAndUnits.Models;
 using Three2025.Apprentice;
 using FoundryWorldsAndDrawings.ThreeD.Viewers;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
+using FoundryWorldsAndDrawings.Shape; // ✅ Phase 0.5: For FoStage3D
 
 
 namespace Three2025.Components.Pages;
@@ -15,6 +17,7 @@ namespace Three2025.Components.Pages;
 public partial class TrisocBase : ComponentBase
 {
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
+    private FoStage3D _trisocStage; // ✅ Phase 0.5: Track this page's stage
 
     [Inject] public NavigationManager Navigation { get; set; }
 
@@ -45,15 +48,12 @@ public partial class TrisocBase : ComponentBase
         {
             var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false,null!);
 
-            scene?.SetAfterUpdateAction((s,j) =>
-            {
-                FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-            });
-
             var arena = Workspace.GetArena();
             if (found)
             {
-                arena.SetScene(scene!);
+                // ✅ Phase 0.5: Get this page's stage (Canvas already linked it to scene)
+                _trisocStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                $"Trisoc: Retrieved stage '{_trisocStage?.Name}' from Canvas".WriteSuccess();
                 DoRequestAxisToScene(scene!);
             }
                 
@@ -66,9 +66,7 @@ public partial class TrisocBase : ComponentBase
     {
         var model = new Model3D()
         {
-            Name = "Axis",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Name = "Axis",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
         };
 
@@ -112,10 +110,10 @@ public partial class TrisocBase : ComponentBase
     front.Transform.MoveBy(0, 0, 10);
 
 
-        var arena = Workspace.GetArena();
-        arena.AddShapeToStage(center);
-        arena.AddShapeToStage(top);        
-        arena.AddShapeToStage(front);       
+        // ✅ Phase 0.5: Add shapes to this page's stage
+        _trisocStage?.AddShape(center);
+        _trisocStage?.AddShape(top);        
+        _trisocStage?.AddShape(front);       
 
 
     }

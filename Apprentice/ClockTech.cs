@@ -15,21 +15,10 @@ using FoundryWorldsAndDrawings.ThreeD.Materials;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryWorldsAndDrawings.ThreeD.Geometires;
 
-// public class FoRack : FoShape3D
-// {
-//     public FoRack(string name) : base(name)
-//     {
-//     }
-
-//     public FoRack(string name, string color) : base(name, color)
-//     {
-//     }
-// }
 namespace Three2025.Apprentice;
 
 public interface IClockTech : ITechnician
 {
-    Mesh3D CreateClockFaceMesh();
     FoShape3D CreateClockOnArena();
     void RunClock();
 }
@@ -52,15 +41,7 @@ public class ClockTech : IClockTech
         FoundryService = foundry;
     }
 
-    public bool ComputeHitBoundaries(Action OnComplete)
-    {
-        var arena = FoundryService.Arena();
-        var (success, scene) = arena.CurrentScene();
 
-        if (!success) return false;
-        scene.UpdateHitBoundaries(OnComplete);
-        return true;
-    } 
 
     public void UpdateClock(object state)
     {
@@ -83,9 +64,10 @@ public class ClockTech : IClockTech
         }
     }
 
+
+
     public FoText3D LetterText3D(FoShape3D parent, double angle, double radius, double height, double size,  string text)
     {
-
         var x = radius * Math.Cos(angle);
         var y = height;
         var z = radius * Math.Sin(angle);
@@ -109,7 +91,7 @@ public class ClockTech : IClockTech
     public FoShape3D CreateClockOnArena()
     {
         var radius = 12.0f;
-        var height = 0.2;
+        var height = 0.6;
         var fontSize = 1.2;
         var diameter = 2 * radius;
 
@@ -118,7 +100,7 @@ public class ClockTech : IClockTech
         {
             Transform = new Transform3("ClockTransform")
             {
-                Position = new Vector3(0, 0, 0),
+                Position = new Vector3(0, 1.2 * radius, 0),
                 Rotation = new Euler(Math.PI / 2, 0, 0),
             }
         };
@@ -131,20 +113,8 @@ public class ClockTech : IClockTech
         {
             var letter = $"{i}";
             var angle = i * (2 * Math.PI / 12) - Math.PI / 2;
-            LetterText3D(clock, angle, radius - 1.0, height + 1.0, fontSize, letter);
+            LetterText3D(clock, angle, radius - 1.0, height, fontSize, letter);
         }
-
-        //now lets add the trailing text
-        var globalText = new FoText3D("TimeText", "white")
-        {
-            Text = "Ready",
-            FontSize = 5.0,
-            Transform = new Transform3("GlobalTextTransform")
-            {
-                Position = new Vector3(0, 2, 0),
-            }
-        };
-        clock.AddSubGlyph3D(globalText);
 
         //now lets add the center post
         var centerPost = new FoShape3D("Post", "red")
@@ -163,11 +133,23 @@ public class ClockTech : IClockTech
         {
             Transform = new Transform3("HandTransform")
             {
-                Position = new Vector3(0.5 * radius, 1, 0),
+                Position = new Vector3(0.6 * radius, 1, 0),
             }
         }.CreateBox("Hand", 1.2 * radius, 2.0, .1);
 
         centerPost.AddSubGlyph3D(secondHand);
+
+        //now lets add the time text at the end of the hand
+        var timeText = new FoText3D("TimeText", "white")
+        {
+            Text = "Ready",
+            FontSize = 1.5,
+            Transform = new Transform3("TimeTextTransform")
+            {
+                Position = new Vector3(0.6 * radius, 0, 0),
+            }
+        };
+        secondHand.AddSubGlyph3D(timeText);
 
         return clock;
     }
@@ -197,27 +179,28 @@ public class ClockTech : IClockTech
 
             }
 
-            var globalText = Clock.FindSubGlyph3D<FoText3D>("TimeText");
-
-            if (globalText != null)
+            // Find the time text (now a child of the hand)
+            var hand = post.FindSubGlyph3D<FoShape3D>("Hand");
+            if (hand != null)
             {
-                var currentTime = time.ToString("HH:mm:ss");
-                globalText.Text = currentTime;
-                var pos = globalText.Transform.Position;
-                globalText.Transform.MoveBy(x - pos.X, y - pos.Y, z - pos.Z);
+                var timeText = hand.FindSubGlyph3D<FoText3D>("TimeText");
+                if (timeText != null)
+                {
+                    var currentTime = time.ToString("HH:mm:ss");
+                    timeText.Text = currentTime;
+                }
             }
 
-            var rot = Clock.Transform.Rotation;
-            var deltaX = Math.PI / 2 - rot.X;
-            var deltaZ = angle - rot.Z;
-            Clock.Transform.RotateBy(deltaX, 0, deltaZ, AngleUnit.Radians);
+            // Rotate the entire clock face around global Y to keep numbers facing the hand
+            Clock.Transform.RotateTo(Math.PI / 2, 0, angle, AngleUnit.Radians);
 
         }
         else
         {
             Clock = CreateClockOnArena();
             var arena = FoundryService.Arena();
-            arena.AddShapeToStage<FoShape3D>(Clock);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<FoShape3D>(Clock, stage.GetName());
         }
 
     }
@@ -225,9 +208,9 @@ public class ClockTech : IClockTech
 
    public void UpdateSceneClock(object state)
     {
-        var arena = FoundryService.Arena();
-        var (found, scene) = arena.CurrentScene();
-        if (!found) return;
+        // Get scene from the Clock shape's stage
+        var scene = Clock?.ParentStage?.GetAssociatedScene();
+        if (scene == null) return;
 
         var time = DateTime.Now;
         var angle = time.Second * (2 * Math.PI / 60) - Math.PI / 2; // Convert seconds to radians
@@ -254,7 +237,6 @@ public class ClockTech : IClockTech
         {
             GlobalText = new Text3D()
             {
-                Uuid = Guid.NewGuid().ToString(),
                 Text = currentTime,
                 Color = DataGenerator.GenerateColor(),
                 FontSize = 3.0,
@@ -265,7 +247,6 @@ public class ClockTech : IClockTech
             };
             CenterPost = new Mesh3D
             {
-                Uuid = Guid.NewGuid().ToString(),
                 Name = "CenterPost",
                 Geometry = new BoxGeometry(width: 0.5, depth: 0.5, height: 2.5),
                 Transform = new Transform3("CenterPostTransform")
@@ -277,7 +258,6 @@ public class ClockTech : IClockTech
             };
             var secondHand = new Mesh3D
             {
-                Uuid = Guid.NewGuid().ToString(),
                 Name = "Second Hand",
                 Geometry = new BoxGeometry(width: 1.2 * radius, depth: 0.1, height: 2),
                 Transform = new Transform3("SecondHandTransform")
@@ -293,66 +273,6 @@ public class ClockTech : IClockTech
             scene.AddChild(CenterPost);
         }
     }
-
-
-    public void PlaceTextAtPosition(Object3D parent, double angle, double radius, double height, double size,  string text)
-    {
-        var arena = FoundryService.Arena();
-        var (found, scene) = arena.CurrentScene();
-        if (!found) return;
-
-        var x = radius * Math.Cos(angle);
-        var y = height;
-        var z = radius * Math.Sin(angle);
-
-        var letter = new Text3D()
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Name = text,
-            Text = text,
-            Color = "white",
-            FontSize = size,
-            Transform = new Transform3("LetterTransform")
-            {
-                Position = new Vector3(x, y, z),
-            },
-        };
-
-        parent.AddChild(letter);     
-    }
-
-    public Mesh3D CreateClockFaceMesh()
-    {
-
-        var radius = 18.0f;
-        var height = 0.1f;
-
-        var mesh = new Mesh3D
-        {
-            Uuid = Guid.NewGuid().ToString(),
-            Name = "Clock Face",
-            Geometry = new CylinderGeometry(radiusTop: radius-1.0, radiusBottom: radius, height: height,  radialSegments: 36),
-            Transform = new Transform3("ClockFaceTransform")
-            {
-                Position = new Vector3(0, 0, 0),
-            },
-            Material = new MeshStandardMaterial("blue", .3)
-        };
-
-
-
-        for (int i = 1; i <= 12; i++)
-        {
-            var letter = $"{i}";
-            var angle = i * (2 * Math.PI / 12) - Math.PI / 2;
-
-            PlaceTextAtPosition(mesh, angle, radius-1.0, height + 1.0, 1.2, letter);
-        }
-
-        return mesh;
-
-    }
-
 
 
 }

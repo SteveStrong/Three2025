@@ -2,23 +2,28 @@
 @inherits NavMenuBase
 
 <div class="navbar-container">
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween"
-        Class="rz-p-4 rz-shadow-1 rz-card-background-color">
-        <RadzenLink Path="" Text="Visio 2025" />
-        <RadzenLink Path="/aichat" Text="AI Chat" />
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center"
+        Class="rz-p-2 rz-shadow-1 rz-card-background-color">
+        <RadzenLink Path="" Text="Three 2025" />
+        @* <RadzenLink Path="/becanvas" Text="BE Canvas" /> *@
+        @* <RadzenLink Path="/aichat" Text="AI Chat" /> *@
         @* <RadzenLink Path="/matrixtest" Text="Matrix Test" /> *@
-        <RadzenLink Path="/becanvas" Text="BE Canvas" />
         <RadzenLink Path="/spacialboxtest" Text="SpacialBox Test" />
-        <RadzenLink Path="/spacialframetest" Text="SpacialFrame Test" />
+        @* <RadzenLink Path="/spacialframetest" Text="SpacialFrame Test" /> *@
         <RadzenLink Path="/legosnaptest" Text="LEGO Snapping Test" />
         <RadzenLink Path="/Index" Text="Index (ViewerThreeD)" />
         <RadzenLink Path="/Home" Text="Home (Canvas 2D/3D)" />
+        @* <RadzenLink Path="/debugcanvas" Text="Debug Canvas" /> *@
         <RadzenLink Path="/Drawing" Text="Drawing (Canvas2D)" />
         <RadzenLink Path="/Clock" Text="Clock" />
         <RadzenLink Path="/tugofwar" Text="Tug of War" />
+        <RadzenLink Path="/knmodel-animation" Text="KnModel Animation" />
+        <RadzenLink Path="/gluetest3d" Text="3D Glue Test" />
+        <RadzenLink Path="/multi-canvas-3d-test" Text="Multi-Canvas 3D" />
+        <RadzenLink Path="/multi-canvas-2d-test" Text="Multi-Canvas 2D" />
         <RadzenLink Path="/Trisoc" Text="Trisoc" />
         <RadzenLink Path="/Storage" Text="Storage" />
-        <RadzenLink Path="/animation-control" Text="Animation Control" />
+        @* <RadzenLink Path="/animation-control" Text="Animation Control" /> *@
         <RadzenText TextStyle="TextStyle.Body2" Text="@VersionDisplay()" />
     </RadzenStack>
 </div>

@@ -58,7 +58,9 @@ public class CageTech : ICageTech
                 continue;
 
             var link = new Link3D($"Link:{start.GetTitle()}->{finish.GetTitle()}", color, start, finish);
-            arena.AddShapeToStage<Link3D>(link);
+            
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<Link3D>(link, stage.GetName());
 
             start.AddLink(link);
             finish.AddLink(link);
@@ -128,14 +130,16 @@ public class CageTech : ICageTech
         var connections = equip.GetConnectors();
         foreach (var item in connections)
         {
-            var (success, data) = item.GetValue3D();
-            if (!success || data.HitBoundary == null) continue;
+            //var (success, data) = item.GetComputedMesh();
+            if (!item.IsWorldPositionUpdateRequired()) continue;
+            var (found, pos) = item.GetWorldPosition();
+            if ( !found ) continue;
 
             var node = new Node3D(item.GetName(), "Blue")
             {
                 Transform = new Transform3("NodeTransform")
                 {
-                    Position = data.HitBoundary.GetPosition(),
+                    Position = pos,
                 }
             };
             node.CreateBox(item.GetName(), .2, .2, .3);
@@ -159,14 +163,16 @@ public class CageTech : ICageTech
         var connections = tray.GetConnectors();
         foreach (var item in connections)
         {
-            var (success, data) = item.GetValue3D();
-            if (!success || data.HitBoundary == null) continue;
+            //var (success, data) = item.GetComputedMesh();
+            if (!item.IsWorldPositionUpdateRequired()) continue;
+            var (found, pos) = item.GetWorldPosition();
+            if ( !found ) continue;
 
             var node = new Node3D(item.GetName(), "Blue")
             {
                 Transform = new Transform3("NodeTransform")
                 {
-                    Position = data.HitBoundary.GetPosition(),
+                    Position = pos,
                 }
             };
             node.CreateSphere(item.GetName(), 0.3, 0.3, 0.3);
@@ -184,12 +190,13 @@ public class CageTech : ICageTech
 
     private void AddLinksBetween(FoShape3D parent, IArena arena, List<Node3D> nodes, string color)
     {
+        var stage = arena.CurrentStage();
         for (int i = 1; i < nodes.Count; i++)
         {
             var start = nodes[i - 1];
             var finish = nodes[i];
             var link = new Link3D($"Link:{parent.GetName()}:{start.GetTitle()}->{finish.GetTitle()}", color, start, finish);
-            arena.AddShapeToStage<Link3D>(link);
+            arena.AddShapeToStage<Link3D>(link, stage.GetName());
 
             start.AddLink(link);
             finish.AddLink(link);
@@ -198,17 +205,7 @@ public class CageTech : ICageTech
         }
     }
 
-    public bool ComputeHitBoundaries(Action OnComplete)
-    {
-        var arena = FoundryService.Arena();
-        var (success, scene) = arena.CurrentScene();
 
-        if (!success) return false;
-        scene.UpdateHitBoundaries(OnComplete);
-        return true;
-    } 
-
- 
 
 
 
@@ -246,8 +243,7 @@ public class CageTech : ICageTech
 
     private static FoGlyph3D DrawFace(FoShape3D root, string name, Mesh3D face)
     {
-        var shape = new FoGlyph3D(name);
-        shape.SetValue3D(face);
+        var shape = new FoGlyph3D(name, face);
         root.AddSubGlyph3D(shape);
         return shape;
     }

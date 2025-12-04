@@ -1,0 +1,200 @@
+using FoundryBlazor.Shape;
+namespace Plugin_710.Model;
+
+public static class Common_710
+{
+    public static V MakeSubpart<U,V>(U parent, DT_Component component, int index) where U : Base_710 where V : Base_710
+    {
+        V obj = (V)Activator.CreateInstance(typeof(V), component, index, parent)!;
+        Common_710.AddHasSubpart<U, V>(parent, obj);
+        return obj;
+    }
+
+    public static void AddHasSubpart<U, V>(U parent, V child) where U : Base_710 where V : Base_710
+    {
+        //$"AddHasSubpart {typeof(U).Name} {parent.Name} to  {typeof(V).Name} {child.Name}".WriteInfo();
+        child.SetKnParent(parent);
+        //$"AddConnect {typeof(U).Name} {parent.Name} to  {typeof(V).Name} {child.Name}".WriteInfo();
+        parent.Add<V>(child);
+
+        parent.HasSub.EstablishMember<KnComponent>(child);
+        child.SubOf.EstablishMember<KnComponent>(parent);
+
+        //Connect<U, V>(parent, ConnectType.HasSubcomponent, child);
+    }
+
+    public static void RemoveHasSubpart<U, V>(U parent, V child) where U : Base_710 where V : Base_710
+    {
+        //$"RemoveHasSubpart {typeof(U).Name} {parent.Name} to  {typeof(V).Name} {child.Name}".WriteInfo();
+        child.SetKnParent(null!);
+        //$"RemoveConnect {typeof(U).Name} {parent.Name} to  {typeof(V).Name} {child.Name}".WriteInfo();
+        parent.Remove<V>(child);
+
+
+        parent.HasSub.RemoveMember<KnComponent>(child);
+        child.SubOf.RemoveMember<KnComponent>(parent);
+
+        //Connect<U, V>(parent, ConnectType.HasSubcomponent, child);
+    }
+
+
+
+    public static OPResult SubComponentReference<T>(T source, string reference, Dictionary<string, Base_710> lookup) where T : Base_710
+    {
+        // make sure you walk throug the Subcomponent
+        OPResult result = new OPResult(reference, source);
+
+        if ( lookup.TryGetValue(reference, out Base_710? answer))
+        {
+            if ( answer is T found)
+            {
+                result.SetValue(ResultStatus.Instance, found);
+                $"{reference} Found".WriteSuccess(2);
+                return result;
+            }
+            
+            result.SetError(reference + $" Found but not the right type {answer.GetType().Name} {typeof(T).Name}");
+        }
+        else 
+        {
+            result.SetError(reference + " Not Found in Lookup Table");
+        }
+
+        result.GetTreeNodeTitle().WriteError(3);
+
+        T val = source;
+        string[] array = reference.Split('.');
+        foreach (string name in array)
+        {
+            //$"SubComponentReference {name} {val.GetTreeNodeTitle()}".WriteNote();
+            if (!val.IsNamed(name))
+            {
+                //walk through the reference   KnComponent collection!!
+                var found = val.FindSubcomponent<KnComponent>(name);
+                if (found.IsError())
+                {
+                    $"SubComponentReference {name} {val.GetTreeNodeTitle()} Not Found".WriteError();
+                    return found;
+                }
+                
+                val = found.ValueAs<T>();
+                $"Found {name} {val.GetTreeNodeTitle()}".WriteNote();
+            }
+        }
+
+        result.SetValue(ResultStatus.Instance, val);
+        //$"Result {reference} {val.GetTreeNodeTitle()}".WriteSuccess();
+        return result;
+    }
+
+    public static DT_Component New_DT_ComponentChild(DT_Component parent, string name)
+    {
+        var leg = parent.GetPart().StructureReference;
+        var childLeg = $"{leg}.{name}";
+        return New_DT_Component(childLeg);
+    }
+
+    public static DT_Component New_DT_Component(string leg)
+    {
+        return new DT_Component()
+        {
+            Name = DT_Part.SelfName(leg),
+            ParentName = DT_Part.ParentName(leg),
+            Part = new DT_Part()
+            {
+                StructureReference = leg,
+            }
+        };
+    }
+
+    public static bool HasStructure(this Base_710 source) 
+    {
+        var list = source.Subcomponents<KnComponent>();
+        return list.Count > 0;
+    }
+
+    public static List<T> ModelComponents<T>(this Base_710 source) where T : Base_710
+    {
+        var list = source.Subcomponents<KnComponent>();            
+        var found = list.Where(x => x is T).Cast<T>().ToList();
+        return found;
+    }
+
+    public static Folder_710 EstablishFolder(string name, Base_710 target )
+    {
+        var found = target.Members<Folder_710>().Where(x => x.Name!.Matches(name)).FirstOrDefault();
+        if (found == null)
+        {
+            found = new Folder_710(name)
+            {
+                Category = "Group"
+            };
+            target.Add<Folder_710>(found);
+            found.SetKnParent(target);
+            target.HasSub.EstablishMember<KnComponent>(found);
+        }
+        return found;
+    }
+
+
+
+    public static string GetCategory(this OPResult source)
+    {
+        var result = source.ValueAs<Base_710>();
+        if ( result != null)
+            return result.Category;
+
+        var data = source.Value();
+        return data == null ? "NULL" : data.GetType().Name;
+    }
+
+    public static LayoutTree_710<V> CreateDiagramParentTree<V>(V model) where V : Base_710
+    {
+        var node = new LayoutTree_710<V>(model);
+        return CreateDiagramChildTree<V>(model, node);
+    }
+
+
+    public static LayoutTree_710<V> CreateDiagramChildTree<V>(V model,  LayoutTree_710<V> node) where V : Base_710
+    {
+        var children = model.ModelComponents<V>();
+        children?.ForEach(step =>
+        {
+            var subNode = CreateDiagramParentTree<V>(step);
+            node.AddChildNode(subNode);
+        });
+        
+
+        return node;
+    }
+
+    public static FoLayoutTree<V> CreateShapeParentTree<V>(Base_710 model, string view) where V : FoGlyph2D
+    {
+        var (geom, param) = model.EstablishGeometry2D(view);
+        var value = geom!.GetCurrentValue();
+        var shape = value.AsShape2D();
+
+        // Cast or convert the shape to type V if possible
+        if (shape is not V typedShape)
+        {
+            throw new InvalidCastException($"Cannot convert FoShape2D to {typeof(V).Name}");
+        }
+
+        var node = new FoLayoutTree<V>(typedShape);
+        return CreateShapeChildTree<V>(model, node, view);
+    }
+
+
+    public static FoLayoutTree<V> CreateShapeChildTree<V>(Base_710 model, FoLayoutTree<V> node, string view) where V : FoGlyph2D
+    {
+        var children = model.ModelComponents<Base_710>();
+        children?.ForEach(step =>
+        {
+            var subNode = CreateShapeParentTree<V>(step,view);
+            node.AddChildNode(subNode);
+        });
+        
+
+        return node;
+    }
+}

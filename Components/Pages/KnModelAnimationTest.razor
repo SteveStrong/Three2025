@@ -1,0 +1,165 @@
+@page "/knmodel-animation"
+@page "/"
+
+@using FoundryMentorModeler.Shared
+
+@using FoundryWorldsAndDrawings.Solutions
+@using FoundryWorldsAndDrawings.Shared
+@using FoundryWorldsAndDrawings.Shape
+
+@rendermode InteractiveServer
+
+@namespace Three2025.Components.Pages
+
+<style>
+    .viewer3dContainer {
+        width: 100% !important;
+        height: 100% !important;
+        position: absolute !important;
+        top: 0;
+        left: 0;
+    }
+    
+    .viewer3dContainer canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+    
+    .canvas2d-container canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+</style>
+
+<h3>KnModel Animation Test - Animation Loop Event Experiment</h3>
+
+<div style="margin-bottom: 15px; padding: 10px; background-color: #e3f2fd; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 20px;">
+    <div style="display: flex; gap: 10px; align-items: center; flex-shrink: 0;">
+        <button class="btn btn-success" @onclick="StartAnimation">Start Animation</button>
+        <button class="btn btn-warning" @onclick="PauseAnimation">Pause</button>
+        <button class="btn btn-info" @onclick="ResumeAnimation">Resume</button>
+        <button class="btn btn-secondary" @onclick="ResetTest">Reset</button>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center; padding: 0 15px; background-color: #fff3cd; border-radius: 5px; flex-shrink: 0;">
+        <span style="font-weight: bold;">Animation State:</span>
+        <div style="font-family: monospace; font-size: 14px; font-weight: bold; padding: 5px 10px; background-color: #fff; border-radius: 3px; margin-left: 10px;">
+            @AnimationFrameBus.GetAnimationState()
+        </div>
+    </div>
+    <div style="font-family: monospace; font-size: 16px; font-weight: bold; flex-shrink: 0;">
+        <span style="margin-right: 20px;">FPS: @AnimationFrameBus.GetCurrentFps().ToString("F1")</span>
+        <span style="margin-right: 20px;">Tick: @AnimationFrameBus.GetCurrentTick()</span>
+    </div>
+</div>
+
+<div style="display: flex; gap: 15px; margin-top: 15px; height: calc(100vh - 160px);">
+    @* Left Panel - Tabbed 3D and 2D Canvases *@
+    <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column;">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link @(_activeCanvasTab == "3d" ? "active" : "")" 
+                        @onclick="@(() => _activeCanvasTab = "3d")" 
+                        type="button" role="tab">
+                    🎮 3D Canvas
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link @(_activeCanvasTab == "2d" ? "active" : "")" 
+                        @onclick="@(() => _activeCanvasTab = "2d")" 
+                        type="button" role="tab">
+                    📐 2D Canvas
+                </button>
+            </li>
+        </ul>
+        <div style="flex: 1; border: 1px solid #ccc; border-radius: 0 5px 5px 5px; overflow: hidden; min-height: 0; position: relative;">
+            @* Use CSS visibility instead of @if to prevent component disposal on tab switch *@
+            <div style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; @(_activeCanvasTab == "3d" ? "" : "display: none;")">
+                <Canvas3DComponent SceneName="KnModelTest3D" @ref="Canvas3DReference" />
+            </div>
+            <div class="canvas2d-container" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; @(_activeCanvasTab == "2d" ? "" : "display: none;")">
+                <Canvas2DComponent SceneName="KnModelTest2D" @ref="Canvas2DReference" />
+            </div>
+        </div>
+    </div>
+
+    @* Center Panel - KnModel Tree *@
+    <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column;">
+        <h5 style="margin-bottom: 8px; color: #1976d2;">📊 KnModel Tree View</h5>
+        <div style="margin-bottom: 8px; flex-shrink: 0;">
+            <button class="btn btn-success btn-sm" @onclick="RenderToCanvas">Render to Canvas</button>
+            <button class="btn btn-primary btn-sm" @onclick="RefreshTree">Refresh Tree</button>
+            <button class="btn btn-warning btn-sm" @onclick="AddChildComponent">Add KnComponent</button>
+        </div>
+        
+        <div style="flex: 1; overflow: hidden; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 15px; border-radius: 8px; border: 2px solid #1976d2; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-height: 0; display: flex; flex-direction: column;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(_activeTreeTab == "model" ? "active" : "")" 
+                            @onclick="@(() => _activeTreeTab = "model")" 
+                            type="button" role="tab">
+                        📊 Model Tree
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(_activeTreeTab == "shape" ? "active" : "")" 
+                            @onclick="@(() => _activeTreeTab = "shape")" 
+                            type="button" role="tab">
+                        🔷 Shape Tree
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(_activeTreeTab == "params" ? "active" : "")" 
+                            @onclick="@(() => _activeTreeTab = "params")" 
+                            type="button" role="tab">
+                        ⚙️ Parameters
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content" style="flex: 1; overflow: auto; padding-top: 10px;">
+                @if (_activeTreeTab == "model")
+                {
+                    <MentorTreeView/>
+                }
+                else if (_activeTreeTab == "shape")
+                {
+                    <ShapeTreeView/>
+                }
+                else
+                {
+                    <div style="padding: 10px; background-color: #e8f5e9; border-radius: 5px; border: 1px solid #4caf50;">
+                        <strong>Live Parameters:</strong>
+                        @foreach (var param in _knModel.Members<FoundryMentorModeler.Model.KnParameter>())
+                        {
+                            <div style="font-family: monospace; margin-top: 5px;">
+                                @param.Name: <span style="color: #1976d2; font-weight: bold;">@param.GetValue()</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* Right Panel - Event Log *@
+    <div style="flex: 0.5; min-width: 150px; display: flex; flex-direction: column;">
+        <h5 style="margin-bottom: 8px;">Animation Event Log</h5>
+        <div style="margin-bottom: 8px; flex-shrink: 0;">
+            <button class="btn btn-outline-secondary btn-sm" @onclick="ClearEventLog">Clear Log</button>
+            <label style="margin-left: 10px; font-size: 12px;">
+                <input type="checkbox" @bind="_logAllEvents" /> Log All
+            </label>
+        </div>
+        <div style="flex: 1; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 10px; border-radius: 5px; font-family: 'Consolas', monospace; font-size: 11px;">
+            @foreach (var log in _eventLogs.TakeLast(50).Reverse())
+            {
+                <div style="margin-bottom: 4px; border-bottom: 1px solid #333; padding-bottom: 4px;">
+                    <span style="color: @GetLogColor(log.Type);">[@log.Type]</span>
+                    <span style="color: #808080;">@log.Timestamp.ToString("HH:mm:ss.fff")</span>
+                    <br/>
+                    <span>@log.Message</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+

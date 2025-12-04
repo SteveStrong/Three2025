@@ -1,6 +1,6 @@
 
 using FoundryWorldsAndDrawings.Shape;
-using FoundryRulesAndUnits.Extensions;
+using FoundryRulesAndUnits.Extensions; // ✅ Phase 0.5: For WriteSuccess extension
 using Microsoft.AspNetCore.Components;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shared;
@@ -11,6 +11,7 @@ using FoundryWorldsAndDrawings.ThreeD.Viewers;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using Unglide;
+// ✅ Phase 0.5: FoStage3D already available via FoundryWorldsAndDrawings.Shape
 
 
 namespace Three2025.Components.Pages;
@@ -22,9 +23,13 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
+    private FoStage3D _spacialBoxStage; // ✅ Phase 0.5: Track this page's stage
     protected SpacialBox3D CurrentBox;
 
-    // Box properties for UI binding
+    private string _mainBoxGuid = Guid.NewGuid().ToString();
+    private Scene3D _scene;
+    private IArena Arena => FoundryService?.Arena();
+
     protected double BoxWidth { get; set; } = 2.0;
     protected double BoxHeight { get; set; } = 1.5;
     protected double BoxDepth { get; set; } = 1.0;
@@ -33,6 +38,8 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
     [Parameter] public int CanvasHeight { get; set; } = 1000;
 
     protected string StatusMessage { get; set; } = string.Empty;
+
+    private bool IsReady => Arena != null && _scene != null;
 
 
 
@@ -47,187 +54,114 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
     {
         if (firstRender)
         {
-            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false,null!);
+            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
+            if (!found || scene == null) return base.OnAfterRenderAsync(firstRender);
 
-            scene?.SetAfterUpdateAction((s,j) =>
-            {
-                FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-            });
+            _scene = scene;
 
-            var arena = FoundryService.Arena();
-            if (found)
-            {
-                arena.SetScene(scene!);
-                DoRequestAxisToScene(scene!);
-                CreateSpacialBox();
-            }
+            // ✅ Phase 0.5: Get this page's stage (Canvas already linked it to scene)
+            _spacialBoxStage = Arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+            $"SpacialBoxTest: Retrieved stage '{_spacialBoxStage?.Name}' from Canvas".WriteSuccess();
+            
+            AddAxisToScene();
+            CreateSpacialBox();
         }
         return base.OnAfterRenderAsync(firstRender);
     }
 
-    public void DoRequestAxisToScene(Scene3D scene)
+    private void AddAxisToScene()
     {
-        var model = new Model3D()
+        var axis = new Model3D
         {
-            Name = "Axis",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
-            Format = Model3DFormats.Gltf,
+            Name = "Axis",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Format = Model3DFormats.Gltf
         };
-
-        scene.AddChild(model);
+        _scene.AddChild(axis);
     }
 
     public void CreateSpacialBox()
     {
+        if (!EnsureReady()) return;
+
         try
         {
-            var arena = FoundryService.Arena();
-            if (arena == null)
+            if (CurrentBox?.Shape != null)
             {
-                StatusMessage = "Arena not ready yet. Try again in a moment.";
-                StateHasChanged();
-                return;
+                UpdateExistingBox();
             }
-
-            arena.ClearArena();
-
-            //ok you need to remember that for spacialbox it is in a local coord system with 0,0,0 being the 
-            // left , bottom, back corner
-            //we should test by drawing the axis and then drawing the box
-            //then we can see where the box is in relation to the axis
-
-            // 🎯 PIVOT SYSTEM: The key to our 3D positioning
-            // Pivot = Shifted Center of Gravity - where the object's center should be
-            // JavaScript creates a group and OFFSETS the geometry so pivot becomes the new center
-            // This allows natural floor contact, door hinges, corner balancing, etc.
-
-            var boxShape = new FoShape3D()
+            else
             {
-                Name = "SpacialBoxMain",
-                GlyphId = Guid.NewGuid().ToString(),
-                Color = "#4CAF50",
-                Opacity = 0.8,
-                Transform = new Transform3("BoxTransform")  // ⚠️ Transform assigned in object initializer
-            }.CreateBox("SpacialBoxMain", BoxWidth, BoxHeight, BoxDepth);
-
-            // 🚨 CRITICAL INITIALIZATION FIX: Properties set AFTER transform is assigned to shape
-            // This ensures the parent-child relationship exists for dirty flag propagation
-            boxShape.Transform.Position = new Vector3(0, 0, 0);
-            boxShape.Transform.Rotation = Euler.FromDegrees(0, 0, 0);
-            boxShape.Transform.Scale = new Vector3(1, 1, 1);
-            boxShape.Transform.Pivot = new Vector3(0, -BoxHeight/2, 0);  // 🏠 FLOOR CONTACT
-
-            $"� Transform properties set via property setters (should trigger dirty flags)".WriteInfo();
-
-            // Debug: Log the transform values to verify floor positioning
-            $"📦 Box Created - Position: {boxShape.Transform.Position}, Pivot: {boxShape.Transform.Pivot}".WriteInfo();
-            $"📦 Pivot shifts geometry so bottom face sits at group center (floor contact at Y=0)".WriteInfo();
-
-            // 🚨 INITIALIZATION FIX: Force transform matrix calculation and ensure dirty flag is set
-            var matrix = boxShape.Transform.ToMatrix3();  // Force matrix calculation
-            boxShape.SetDirty(true);  // Ensure shape is marked dirty for initial render
-            $"🔧 Initial transform matrix calculated and shape marked dirty for rendering".WriteInfo();
-
-             arena.AddShapeToStage<FoShape3D>(boxShape);
-
-            CurrentBox = new SpacialBox3D(boxShape, "m");
-
-            // 🔗 Setup transform change monitoring
-            SetupTransformMonitoring(boxShape);
-
-            StatusMessage = $"Created SpacialBox3D: {BoxWidth}×{BoxHeight}×{BoxDepth}m with bottom face on floor (Y=0)";
-            StateHasChanged();
+                CreateNewBox();
+            }
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error creating box: {ex.Message}";
-            StateHasChanged();
+            SetStatus($"Error: {ex.Message}");
         }
     }
 
-    /// <summary>
-    /// 🔗 Setup transform change monitoring to verify dirty flag propagation
-    /// </summary>
-    private void SetupTransformMonitoring(FoShape3D shape)
+    private void UpdateExistingBox()
     {
-        if (shape?.Transform != null)
+        CurrentBox.Shape.Width = BoxWidth;
+        CurrentBox.Shape.Height = BoxHeight;
+        CurrentBox.Shape.Depth = BoxDepth;
+        CurrentBox.Shape.Transform.Pivot = new Vector3(0, -BoxHeight / 2, 0);
+        
+        CurrentBox = new SpacialBox3D(CurrentBox.Shape, "m");
+        SetStatus($"Updated: {BoxWidth}×{BoxHeight}×{BoxDepth}m");
+    }
+
+    private void CreateNewBox()
+    {
+        var boxShape = new FoShape3D
         {
-            // Monitor transform changes
-            shape.Transform.OnChange = (isDirty) => {
-                $"🔔 Transform.OnChange fired: isDirty={isDirty} for {shape.Transform.OwnerName}".WriteInfo();
-                if (isDirty)
-                {
-                    $"   ✅ Transform marked dirty - cache invalidated".WriteInfo();
-                }
-                else
-                {
-                    $"   ✅ Transform marked clean - matrix calculated".WriteInfo();
-                }
-            };
+            Name = "SpacialBoxMain",
+            GlyphId = _mainBoxGuid,
+            Color = "#4CAF50",
+            Opacity = 0.8,
+            Transform = new Transform3("BoxTransform")
+        }.CreateBox("SpacialBoxMain", BoxWidth, BoxHeight, BoxDepth);
 
-            // Monitor matrix computation completion
-            shape.Transform.OnComputed = (matrix) => {
-                $"🎯 Transform.OnComputed fired for {shape.Transform.OwnerName}".WriteInfo();
-                $"   Matrix computed and cached - transform is now stable".WriteInfo();
-            };
+        boxShape.Transform.Position = new Vector3(0, 0, 0);
+        boxShape.Transform.Rotation = Euler.FromDegrees(0, 0, 0);
+        boxShape.Transform.Scale = new Vector3(1, 1, 1);
+        boxShape.Transform.Pivot = new Vector3(0, -BoxHeight / 2, 0);
 
-            $"🔗 Transform monitoring setup for {shape.Transform.OwnerName}".WriteInfo();
-        }
+        // ✅ Phase 0.5: Add shape to this page's stage
+        _spacialBoxStage?.AddShape(boxShape);
+        CurrentBox = new SpacialBox3D(boxShape, "m");
+        
+        SetStatus($"Created: {BoxWidth}×{BoxHeight}×{BoxDepth}m");
     }
 
 
     public void ClearAll()
     {
-        var arena = FoundryService.Arena();
-        if (arena == null)
-        {
-            StatusMessage = "Arena not ready yet. Try again in a moment.";
-            StateHasChanged();
-            return;
-        }
-
-        arena.ClearArena();
+        if (!EnsureReady()) return;
+        // ✅ Phase 0.5: Clear only this page's stage
+        _spacialBoxStage?.ClearStage();
         StateHasChanged();
     }
 
-
-
-
-
     public void Dispose()
     {
-        // Cleanup resources if needed
+        // Component cleanup - scene lifecycle managed by Canvas3DComponent
+        CurrentBox = null;
+        _scene = null;
     }
 
     // === PRESET SHAPES ===
-    protected void CreateCube()
-    {
-        BoxWidth = BoxHeight = BoxDepth = 2.0;
-        CreateSpacialBox();
-    }
+    protected void CreateCube() => SetDimensionsAndCreate(2.0, 2.0, 2.0);
+    protected void CreateLongBox() => SetDimensionsAndCreate(4.0, 1.0, 1.0);
+    protected void CreateTallBox() => SetDimensionsAndCreate(1.0, 4.0, 1.0);
+    protected void CreateWideBox() => SetDimensionsAndCreate(1.0, 1.0, 4.0);
+    protected void CreateTinyBox() => SetDimensionsAndCreate(0.5, 0.5, 0.5);
 
-    protected void CreateLongBox()
+    private void SetDimensionsAndCreate(double width, double height, double depth)
     {
-        BoxWidth = 4.0; BoxHeight = 1.0; BoxDepth = 1.0;
-        CreateSpacialBox();
-    }
-
-    protected void CreateTallBox()
-    {
-        BoxWidth = 1.0; BoxHeight = 4.0; BoxDepth = 1.0;
-        CreateSpacialBox();
-    }
-
-    protected void CreateWideBox()
-    {
-        BoxWidth = 1.0; BoxHeight = 1.0; BoxDepth = 4.0;
-        CreateSpacialBox();
-    }
-
-    protected void CreateTinyBox()
-    {
-        BoxWidth = BoxHeight = BoxDepth = 0.5;
+        BoxWidth = width;
+        BoxHeight = height;
+        BoxDepth = depth;
         CreateSpacialBox();
     }
 
@@ -235,389 +169,160 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
 
     public void ShowQuadrants()
     {
-        if (CurrentBox == null)
-        {
-            StatusMessage = "No box created yet. Please create a box first.";
-            StateHasChanged();
-            return;
-        }
-
-        var arena = FoundryService.Arena();
-        if (arena == null) return;
+        if (!EnsureBoxCreated()) return;
 
         var center = CurrentBox.Center;
-        var quadrantSize = 0.2;
+        var offset = 0.2;
         var colors = new[] { "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FFA500", "#800080" };
-
-        // Create 8 quadrant markers (for a 3D box)
+        
         var quadrants = new[]
         {
-            new Point3D(center.X + quadrantSize, center.Y + quadrantSize, center.Z + quadrantSize),
-            new Point3D(center.X - quadrantSize, center.Y + quadrantSize, center.Z + quadrantSize),
-            new Point3D(center.X + quadrantSize, center.Y - quadrantSize, center.Z + quadrantSize),
-            new Point3D(center.X - quadrantSize, center.Y - quadrantSize, center.Z + quadrantSize),
-            new Point3D(center.X + quadrantSize, center.Y + quadrantSize, center.Z - quadrantSize),
-            new Point3D(center.X - quadrantSize, center.Y + quadrantSize, center.Z - quadrantSize),
-            new Point3D(center.X + quadrantSize, center.Y - quadrantSize, center.Z - quadrantSize),
-            new Point3D(center.X - quadrantSize, center.Y - quadrantSize, center.Z - quadrantSize)
+            new Point3D(center.X + offset, center.Y + offset, center.Z + offset),
+            new Point3D(center.X - offset, center.Y + offset, center.Z + offset),
+            new Point3D(center.X + offset, center.Y - offset, center.Z + offset),
+            new Point3D(center.X - offset, center.Y - offset, center.Z + offset),
+            new Point3D(center.X + offset, center.Y + offset, center.Z - offset),
+            new Point3D(center.X - offset, center.Y + offset, center.Z - offset),
+            new Point3D(center.X + offset, center.Y - offset, center.Z - offset),
+            new Point3D(center.X - offset, center.Y - offset, center.Z - offset)
         };
 
         for (int i = 0; i < quadrants.Length; i++)
-        {
-            VisualizationService.CreateMarkerSphere(arena, $"Quadrant{i}", quadrants[i], colors[i], 0.04);
-        }
+            VisualizationService.CreateMarkerSphere(Arena, $"Quadrant{i}", quadrants[i], colors[i], 0.04);
 
-        StatusMessage = "Showing 8 3D quadrants around center";
-        StateHasChanged();
+        SetStatus("Showing 8 quadrants around center");
     }
 
-        public void ShowSubModel()
-        {
-            var arena = FoundryService.Arena();
-            if (arena == null)
-            {
-                StatusMessage = "Arena not ready yet. Try again in a moment.";
-                StateHasChanged();
-                return;
-            }
+    public void ShowSubModel()
+    {
+        if (!EnsureReady()) return;
 
-            var model = new FoModel3D()
-            {
-                Name = "Submarine",
-                Url = GetReferenceTo(@"storage/StaticFiles/sub.glb"),
+        var url = GetReferenceTo(@"storage/StaticFiles/sub.glb");
+        var model = new FoModel3D { Name = "Submarine", Url = url }
+            .CreateModel("sub", url, 12.0, 4.5, 4.5);
 
-            }.CreateModel("sub", GetReferenceTo(@"storage/StaticFiles/sub.glb"), 12.0, 4.5, 4.5);
+        // ✅ Phase 0.5: Add model to this page's stage
+        _spacialBoxStage?.AddShape(model);
 
-            arena.AddShapeToStage<FoModel3D>(model);
+        var frame = new SpacialFrame3D(model, "m");
+        VisualizationService.ShowLabeledVertices(Arena, frame.GetVertices());
+        VisualizationService.ShowLabeledEdges(Arena, frame.GetEdges());
+        VisualizationService.ShowLabeledFaces(Arena, frame.GetFaces());
+        VisualizationService.ShowLabeledNormals(Arena, frame.GetFaces());
 
-            var box = new SpacialFrame3D(model, "m");
-
-            var vertices = box.GetVertices();
-            VisualizationService.ShowLabeledVertices(arena, vertices);
-
-            var edges = box.GetEdges();
-            VisualizationService.ShowLabeledEdges(arena, edges);
-
-            var faces = box.GetFaces();
-            VisualizationService.ShowLabeledFaces(arena, faces);
-            VisualizationService.ShowLabeledNormals(arena, faces);
-
-            StatusMessage = "Submarine model added to scene.";
-            StateHasChanged();
-        }
+        SetStatus("Submarine model added");
+    }
  
 
 
 
 
-        // === VISUALIZATION TEST METHODS ===
-        public void ShowVertices()
-        {
-            if (CurrentBox == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-            var arena = FoundryService.Arena();
-            if (arena == null)
-            {
-                StatusMessage = "Arena not ready yet. Try again in a moment.";
-                StateHasChanged();
-                return;
-            }
-            
-            var vertices = CurrentBox.GetLocalVertices();
-            VisualizationService.ShowLabeledVertices(arena, vertices);
-            StatusMessage = $"Showing {vertices.Count} vertices as labeled spheres.";
-            StateHasChanged();
-        }
+    // === VISUALIZATION METHODS ===
+    public void ShowVertices()
+    {
+        if (!EnsureBoxCreated()) return;
+        var vertices = CurrentBox.GetLocalVertices();
+        VisualizationService.ShowLabeledVertices(Arena, vertices);
+        SetStatus($"Showing {vertices.Count} vertices");
+    }
 
-        public void ShowEdges()
-        {
-            if (CurrentBox == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-           var arena = FoundryService.Arena();
-            if (arena == null)
-            {
-                StatusMessage = "Arena not ready yet. Try again in a moment.";
-                StateHasChanged();
-                return;
-            }
+    public void ShowEdges()
+    {
+        if (!EnsureBoxCreated()) return;
+        var edges = CurrentBox.GetLocalEdges();
+        VisualizationService.ShowLabeledEdges(Arena, edges);
+        SetStatus($"Showing {edges.Count} edges");
+    }
 
-            var edges = CurrentBox.GetLocalEdges();
-            VisualizationService.ShowLabeledEdges(arena, edges);
-            StatusMessage = $"Showing {edges.Count} edges as labeled tubes.";
-            StateHasChanged();
-        }
+    public void ShowFaces()
+    {
+        if (!EnsureBoxCreated()) return;
+        var faces = CurrentBox.GetLocalFaces();
+        VisualizationService.ShowLabeledFaces(Arena, faces);
+        SetStatus($"Showing {faces.Count} faces");
+    }
 
-        public void ShowFaces()
-        {
-            if (CurrentBox == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-            var arena = FoundryService.Arena();
-            if (arena == null)
-            {
-                StatusMessage = "Arena not ready yet. Try again in a moment.";
-                StateHasChanged();
-                return;
-            }
-            
-            var faces = CurrentBox.GetLocalFaces();
-            VisualizationService.ShowLabeledFaces(arena, faces);
-            StatusMessage = $"Showing {faces.Count} faces as wireframe outlines with labels.";
-            StateHasChanged();
-        }
+    public void ShowNormals()
+    {
+        if (!EnsureBoxCreated()) return;
+        var faces = CurrentBox.GetLocalFaces();
+        VisualizationService.ShowLabeledNormals(Arena, faces);
+        SetStatus($"Showing {faces.Count} normals");
+    }
 
-        public void ShowNormals()
-        {
-            if (CurrentBox == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-            var arena = FoundryService.Arena();
-            if (arena == null)
-            {
-                StatusMessage = "Arena not ready yet. Try again in a moment.";
-                StateHasChanged();
-                return;
-            }
-            
-            var faces = CurrentBox.GetLocalFaces();
-            VisualizationService.ShowLabeledNormals(arena, faces);
-            StatusMessage = $"Showing {faces.Count} face normals as red cylinders, aligned with normals.";
-            StateHasChanged();
-        }
-
-        // === ANIMATED PIVOT TESTS ===
+    // === ANIMATION METHODS ===
+    protected void AnimateDoorHinge()
+    {
+        if (!EnsureBoxCreated()) return;
         
-        /// <summary>
-        /// 🚪 Door Hinge Animation - Pivot on left edge and swing open like a door
-        /// 
-        /// 🎯 PIVOT CONCEPT: Sets pivot to left-bottom edge, making that the new center of gravity.
-        /// JavaScript shifts the box geometry so the edge becomes the rotation center.
-        /// When we rotate around Y-axis, box swings like a real door on hinges.
-        /// </summary>
-        protected void AnimateDoorHinge()
-        {
-            if (CurrentBox == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
+        SetPivotAndReset(new Vector3(-BoxWidth/2, -BoxHeight/2, 0), "Door Hinge");
+        
+        var tweener = new Tweener();
+        tweener.Tween(CurrentBox.Shape.Transform.Rotation, new { Y = Math.PI/2 }, 2.0f)
+            .Ease(Ease.BackOut)
+            .OnComplete(() => SetStatus("Door swung open"));
+        
+        SetStatus("Door hinge animation started");
+    }
 
-            // Set pivot to left edge bottom (door hinge position)
-            // 🚪 SHIFTED GRAVITY: Left edge becomes the new center - box rotates around this point
-            var pivotPosition = new Vector3(-BoxWidth/2, -BoxHeight/2, 0);
-            SetPivotAndReset(pivotPosition, "Door Hinge");
+    protected void AnimateCornerBalance()
+    {
+        if (!EnsureBoxCreated()) return;
+        
+        SetPivotAndReset(new Vector3(-BoxWidth/2, -BoxHeight/2, -BoxDepth/2), "Corner Balance");
+        
+        var tweener = new Tweener();
+        tweener.Tween(CurrentBox.Shape.Transform.Rotation, new { X = Math.PI/8 }, 1.0f)
+            .Ease(Ease.SineInOut).Repeat().Reflect();
+        tweener.Tween(CurrentBox.Shape.Transform.Rotation, new { Z = Math.PI/12 }, 1.3f, 0.2f)
+            .Ease(Ease.SineInOut).Repeat().Reflect();
 
-            // Animate Y-rotation to swing the door open (90 degrees over 2 seconds)
-            if (CurrentBox.Shape?.Transform != null)
-        {
-                var transform = CurrentBox.Shape.Transform;
-                var tweener = new Tweener();
-                tweener.Tween(transform.Rotation, new { Y = Math.PI/2 }, 2.0f)
-                    .Ease(Ease.BackOut)
-                    .OnComplete(() => {
-                        CurrentBox.Shape.SetDirty(true); // Mark shape dirty after animation
-                        StatusMessage = "🚪 Door swung open! Pivot at left edge.";
-                        StateHasChanged();
-                    });
-                
-                StatusMessage = "🚪 Door hinge animation started...";
-                StateHasChanged();
-            }
-        }
+        SetStatus("Box balancing on corner");
+    }
 
-        /// <summary>
-        /// ⚖️ Corner Balance Animation - Pivot on bottom corner and wobble
-        /// 
-        /// 🎯 PIVOT CONCEPT: Sets pivot to corner, making that the new center of gravity.
-        /// JavaScript shifts the box so the corner becomes the balance point.
-        /// Perfect for simulating balancing on a single point like real physics.
-        /// </summary>
-        protected void AnimateCornerBalance()
-        {
-            if (CurrentBox == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
+    protected void AnimateCenterSpin()
+    {
+        if (!EnsureBoxCreated()) return;
+        
+        SetPivotAndReset(new Vector3(0, 0, 0), "Center Spin");
+        
+        var tweener = new Tweener();
+        tweener.Tween(CurrentBox.Shape.Transform.Rotation, new { Y = Math.PI * 4 }, 4.0f)
+            .Rotation().Repeat();
+        tweener.Tween(CurrentBox.Shape.Transform.Rotation, new { X = Math.PI/4 }, 3.0f, 0.5f)
+            .Ease(Ease.SineInOut).Repeat().Reflect();
 
-            // Set pivot to bottom corner (dramatic balancing point)
-            // ⚖️ CORNER BALANCE: Extreme shifted gravity - box balances on single corner
-            var pivotPosition = new Vector3(-BoxWidth/2, -BoxHeight/2, -BoxDepth/2);
-            SetPivotAndReset(pivotPosition, "Corner Balance");
+        SetStatus("Box spinning around center");
+    }
 
-            // Animate a wobbling effect around X and Z axes
-            if (CurrentBox.Shape?.Transform != null)
-            {
-                var tweener = new Tweener();
-                
-                // Wobble around X axis
-                tweener.Tween(CurrentBox.Shape.Transform.Rotation, new { X = Math.PI/8 }, 1.0f)
-                    .Ease(Ease.SineInOut)
-                    .Repeat()
-                    .Reflect();
+    protected void AnimateResetToFloor()
+    {
+        if (!EnsureBoxCreated()) return;
 
-                // Wobble around Z axis (slightly offset timing)
-                tweener.Tween(CurrentBox.Shape.Transform.Rotation, new { Z = Math.PI/12 }, 1.3f, 0.2f)
-                    .Ease(Ease.SineInOut)
-                    .Repeat()
-                    .Reflect();
+        var transform = CurrentBox.Shape.Transform;
+        var tweener = new Tweener();
+        
+        var floorPivot = new Vector3(0, -BoxHeight/2, 0);
+        tweener.Tween(transform.Pivot, new { X = floorPivot.X, Y = floorPivot.Y, Z = floorPivot.Z }, 1.5f)
+            .Ease(Ease.BackOut);
+        tweener.Tween(transform.Rotation, new { X = 0.0, Y = 0.0, Z = 0.0 }, 1.5f)
+            .Ease(Ease.BackOut);
+        tweener.Tween(transform.Position, new { X = 0.0, Y = 0.0, Z = 0.0 }, 1.5f)
+            .Ease(Ease.BackOut)
+            .OnComplete(() => SetStatus("Reset to floor"));
+    }
 
-                StatusMessage = "⚖️ Box balancing on corner! Watch it wobble!";
-                StateHasChanged();
-            }
-        }
+    private void SetPivotAndReset(Vector3 newPivot, string testName)
+    {
+        if (!EnsureBoxCreated()) return;
 
-        /// <summary>
-        /// 🌀 Center Spin Animation - Pivot at center and rotate continuously
-        /// </summary>
-        protected void AnimateCenterSpin()
-        {
-            if (CurrentBox == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
+        var transform = CurrentBox.Shape.Transform;
+        transform.Pivot = newPivot;
+        transform.Position = new Vector3(0, 0, 0);
+        transform.Rotation = Euler.FromDegrees(0, 0, 0);
 
-            // Set pivot to center (geometric center)
-            var pivotPosition = new Vector3(0, 0, 0);
-            SetPivotAndReset(pivotPosition, "Center Spin");
-
-            // Animate continuous rotation around all axes
-            if (CurrentBox.Shape?.Transform != null)
-            {
-                var tweener = new Tweener();
-                
-                // Rotate around Y axis (main spin)
-                tweener.Tween(CurrentBox.Shape.Transform.Rotation, new { Y = Math.PI * 4 }, 4.0f)
-                    .Rotation()
-                    .Repeat();
-
-                // Slight tumble around X axis
-                tweener.Tween(CurrentBox.Shape.Transform.Rotation, new { X = Math.PI/4 }, 3.0f, 0.5f)
-                    .Ease(Ease.SineInOut)
-                    .Repeat()
-                    .Reflect();
-
-                StatusMessage = "🌀 Box spinning around its center!";
-                StateHasChanged();
-            }
-        }
-
-        /// <summary>
-        /// 🏠 Reset to Floor Animation - Smooth return to floor position
-        /// </summary>
-        protected void AnimateResetToFloor()
-        {
-            if (CurrentBox == null)
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-                return;
-            }
-
-            if (CurrentBox.Shape?.Transform != null)
-            {
-                var tweener = new Tweener();
-                
-                // Animate back to floor position (bottom pivot)
-                var floorPivot = new Vector3(0, -BoxHeight/2, 0);
-                var floorRotation = Euler.FromDegrees(0, 0, 0);
-                var floorPosition = new Vector3(0, 0, 0);
-
-                // Animate pivot change
-                tweener.Tween(CurrentBox.Shape.Transform.Pivot, new { 
-                        X = floorPivot.X, 
-                        Y = floorPivot.Y, 
-                        Z = floorPivot.Z 
-                    }, 1.5f)
-                    .Ease(Ease.BackOut);
-
-                // Animate rotation reset
-                tweener.Tween(CurrentBox.Shape.Transform.Rotation, new { 
-                        X = floorRotation.X, 
-                        Y = floorRotation.Y, 
-                        Z = floorRotation.Z 
-                    }, 1.5f)
-                    .Ease(Ease.BackOut);
-
-                // Animate position reset
-                tweener.Tween(CurrentBox.Shape.Transform.Position, new { 
-                        X = floorPosition.X, 
-                        Y = floorPosition.Y, 
-                        Z = floorPosition.Z 
-                    }, 1.5f)
-                    .Ease(Ease.BackOut)
-                    .OnComplete(() => {
-                        StatusMessage = "🏠 Box reset to floor position with bottom pivot.";
-                        StateHasChanged();
-                    });
-            }
-        }
-
-        /// <summary>
-        /// Helper method to set pivot and reset position/rotation
-        /// </summary>
-        private void SetPivotAndReset(Vector3 newPivot, string testName)
-        {
-            if (CurrentBox?.Shape?.Transform != null)
-            {
-                // 🧪 Test dirty flag system
-                var transform = CurrentBox.Shape.Transform;
-                var shapeBeforeDirty = CurrentBox.Shape.IsDirty;
-                var transformBeforeDirty = transform.IsDirty;
-                
-                $"🧪 BEFORE {testName} - Shape.IsDirty: {shapeBeforeDirty}, Transform.IsDirty: {transformBeforeDirty}".WriteInfo();
-
-                // Set new pivot
-                transform.Pivot = newPivot;
-                $"🔄 After Pivot Set - Shape.IsDirty: {CurrentBox.Shape.IsDirty}, Transform.IsDirty: {transform.IsDirty}".WriteInfo();
-                
-                transform.Position = new Vector3(0, 0, 0);
-                $"🔄 After Position Set - Shape.IsDirty: {CurrentBox.Shape.IsDirty}, Transform.IsDirty: {transform.IsDirty}".WriteInfo();
-                
-                transform.Rotation = Euler.FromDegrees(0, 0, 0);
-                $"🔄 After Rotation Set - Shape.IsDirty: {CurrentBox.Shape.IsDirty}, Transform.IsDirty: {transform.IsDirty}".WriteInfo();
-
-                // 🔄 Force transform matrix calculation and refresh
-                var matrix = transform.ToMatrix3();
-                
-                // 🎯 Refresh the shape to the scene
-                var arena = FoundryService.Arena();
-                if (arena != null)
-                {
-                    var (found, scene) = arena.CurrentScene();
-                    if (found)
-                    {
-                        CurrentBox.Shape.RefreshToScene(scene);
-                    }
-                }
-
-                StatusMessage = $"🎯 {testName} pivot set to ({newPivot.X:F2}, {newPivot.Y:F2}, {newPivot.Z:F2}) - Dirty flags verified";
-                StateHasChanged();
-            }
-            else
-            {
-                StatusMessage = "No box created yet. Please create a box first.";
-                StateHasChanged();
-            }
-        }
+        SetStatus($"{testName} pivot set to ({newPivot.X:F2}, {newPivot.Y:F2}, {newPivot.Z:F2})");
+    }
 
         /// <summary>
         /// 🧪 Verify that dirty flags are working correctly
@@ -842,5 +547,26 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
                 StateHasChanged();
             }
         }
+
+    // === HELPER METHODS ===
+    private bool EnsureReady()
+    {
+        if (IsReady) return true;
+        SetStatus("Scene not ready yet");
+        return false;
+    }
+
+    private bool EnsureBoxCreated()
+    {
+        if (CurrentBox != null) return true;
+        SetStatus("No box created yet. Please create a box first");
+        return false;
+    }
+
+    private void SetStatus(string message)
+    {
+        StatusMessage = message;
+        StateHasChanged();
+    }
 
     }
