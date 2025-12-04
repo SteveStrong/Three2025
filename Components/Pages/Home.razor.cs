@@ -23,6 +23,7 @@ public partial class HomeBase : ComponentBase, IDisposable
 {
     public Canvas3DComponent Canvas3DReference = null;
     public Canvas2DComponent Canvas2DReference = null;
+    private FoStage3D _homeStage; // Stage-centric pattern
 
     [Inject] public NavigationManager Navigation { get; set; }
 
@@ -50,6 +51,9 @@ public partial class HomeBase : ComponentBase, IDisposable
         {
             // Wait for Canvas to initialize (Canvas handles stage-scene linkage)
             await Task.Delay(100);
+            
+            // Stage-centric pattern: Get stage from canvas
+            _homeStage = Canvas3DReference?.Stage;
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -186,13 +190,13 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void TryAddRoutesArena()
     {
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
+        if (_homeStage == null) _homeStage = Canvas3DReference?.Stage;
+        if (_homeStage == null) return;
 
         var (success, pipe) = RackTech.TryCreatePipe(GeneratePath(), GeneratePath());
         
         if ( success ) 
-            arena.AddShapeToStage<FoPipe3D>(pipe, stage.GetName());
+            _homeStage.AddShape(pipe);
 
     }
 
@@ -214,9 +218,8 @@ public partial class HomeBase : ComponentBase, IDisposable
         };
         shape.CreateTube("hello", 0.25, path);
 
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
-        arena.AddShapeToStage(shape, stage.GetName());  
+        if (_homeStage == null) _homeStage = Canvas3DReference?.Stage;
+        _homeStage?.AddShape(shape);  
 
     }
     public void DoAddWiresArena()
@@ -234,8 +237,7 @@ public partial class HomeBase : ComponentBase, IDisposable
         var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if ( !found ) return;
 
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
+        if (_homeStage == null) _homeStage = Canvas3DReference?.Stage;
     
         
         var (s1, cn1, v1) = RackTech.TryFindHitPosition<FoGlyph3D>(GeneratePath());
@@ -302,8 +304,8 @@ public partial class HomeBase : ComponentBase, IDisposable
             _ => shape.CreateBox(label, w, h, d),
         };
  
-        var arena = Workspace.GetArena();
-        arena.AddShapeToStage(shape,"Home3D");
+        if (_homeStage == null) _homeStage = Canvas3DReference?.Stage;
+        _homeStage?.AddShape(shape);
     }
 
     public void OnAddText()
@@ -324,8 +326,8 @@ public partial class HomeBase : ComponentBase, IDisposable
         };
 
 
-        var arena = Workspace.GetArena();
-        arena.AddShapeToStage(shape,"Home3D");
+        if (_homeStage == null) _homeStage = Canvas3DReference?.Stage;
+        _homeStage?.AddShape(shape);
     }
 
     public Node3D AddBox(string name, double x=0, double z=0)
@@ -376,11 +378,10 @@ public partial class HomeBase : ComponentBase, IDisposable
         var x = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
+        if (_homeStage == null) _homeStage = Canvas3DReference?.Stage;
 
         var box = AddBox(name,x,z);
-        stage.AddShape<Node3D>(box);
+        _homeStage?.AddShape(box);
         
     }
 

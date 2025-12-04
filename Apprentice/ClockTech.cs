@@ -199,8 +199,8 @@ public class ClockTech : IClockTech
         {
             Clock = CreateClockOnArena();
             var arena = FoundryService.Arena();
-            var stage = arena.CurrentStage();
-            arena.AddShapeToStage<FoShape3D>(Clock, stage.GetName());
+            var stage = arena.EstablishStage<FoStage3D>("Clock");
+            stage.AddShape(Clock);
         }
 
     }
@@ -209,7 +209,8 @@ public class ClockTech : IClockTech
    public void UpdateSceneClock(object state)
     {
         // Get scene from the Clock shape's stage
-        var scene = Clock?.ParentStage?.GetAssociatedScene();
+        var parentStage = Clock?.GetParentOfType<FoStage3D>();
+        var scene = parentStage?.GetAssociatedScene();
         if (scene == null) return;
 
         var time = DateTime.Now;

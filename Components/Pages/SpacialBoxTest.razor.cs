@@ -59,8 +59,8 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
 
             _scene = scene;
 
-            // ✅ Phase 0.5: Get this page's stage (Canvas already linked it to scene)
-            _spacialBoxStage = Arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+            // ✅ Phase 0.5: Get this page's stage from Canvas
+            _spacialBoxStage = Canvas3DReference?.Stage;
             $"SpacialBoxTest: Retrieved stage '{_spacialBoxStage?.Name}' from Canvas".WriteSuccess();
             
             AddAxisToScene();
@@ -139,7 +139,7 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
     {
         if (!EnsureReady()) return;
         // ✅ Phase 0.5: Clear only this page's stage
-        _spacialBoxStage?.ClearStage();
+        _ = _spacialBoxStage?.ClearAll();
         StateHasChanged();
     }
 

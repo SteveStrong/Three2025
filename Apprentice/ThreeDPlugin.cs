@@ -14,17 +14,33 @@ public class ThreeDPlugin
 
    private IFoundryService Foundry;
    private MockDataGenerator DataGenerator { get; set; } = new();
+   private FoStage3D? Stage { get; set; }
+
    public ThreeDPlugin(IFoundryService service)
    {
       Foundry = service;
    }
 
+   /// <summary>
+   /// Set the stage to use. Call this from a page to inject its stage.
+   /// </summary>
+   public void SetStage(FoStage3D stage)
+   {
+      Stage = stage;
+   }
+
+   private FoStage3D GetStage()
+   {
+      if (Stage != null) return Stage;
+      var arena = Foundry.Arena();
+      return arena.EstablishStage<FoStage3D>("Main Stage");
+   }
+
    private FoShape3D LoadIntoArena(FoShape3D shape)
    {
-      var arena = Foundry.Arena();
-      var stage = arena.EstablishStage<FoStage3D>("Main Stage");
+      var stage = GetStage();
 
-      arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());  //this is what the world publish is doing
+      stage.AddShape(shape);  //this is what the world publish is doing
 
       //stage.PreRender(arena);
 
@@ -71,9 +87,8 @@ public class ThreeDPlugin
    [return: Description("FoShape3D or nothing")]
    public FoShape3D? FindShapeByName(string name)
    {
-      var Arena = Foundry.Arena();
-      var Stage = Arena.CurrentStage();
-      var result = Stage.FindShape<FoShape3D>(name);
+      var stage = GetStage();
+      var result = stage.FindShape<FoShape3D>(name);
       return result.success ? result.found : null;
    }
 
@@ -82,9 +97,8 @@ public class ThreeDPlugin
    [return: Description("List of all the shapes that match the color")]
    public List<FoShape3D> FindShapeByColor(string color)
    {
-      var Arena = Foundry.Arena();
-      var Stage = Arena.CurrentStage();
-      var shapes = Stage.Members<FoShape3D>().Where(x => x.Color == color).ToList();
+      var stage = GetStage();
+      var shapes = stage.Members<FoShape3D>().Where(x => x.Color == color).ToList();
       return shapes;
    }
 
@@ -93,9 +107,8 @@ public class ThreeDPlugin
     [return: Description("List of all the shapes")]
     public List<FoShape3D> GetAllTheShapes()
     {
-        var Arena = Foundry.Arena();
-        var Stage = Arena.CurrentStage();
-        var shapes = Stage.Members<FoShape3D>();
+        var stage = GetStage();
+        var shapes = stage.Members<FoShape3D>();
 
         foreach (var item in shapes)
         {

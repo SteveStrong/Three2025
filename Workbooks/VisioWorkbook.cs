@@ -43,7 +43,7 @@ public class VisioWorkbook : FoWorkbook
     
 
         //Drawing.Pages().RemovePage(page);
-        var page = Drawing.CurrentPage();
+        var page = Drawing.FirstPage();
         $"Current Page {page.GetName()}".WriteSuccess();
 
         var pages = Drawing.Pages().GetAllPages();
@@ -89,10 +89,11 @@ public class VisioWorkbook : FoWorkbook
     {
         var drawing = Workspace.GetDrawing();
         if (drawing == null || menu == null) return;
-        var page = drawing.CurrentPage();
+        var page = drawing.FirstPage();
 
         menu.ToggleLayout();
-        drawing.AddShapeToPage<FoMenu2D>(menu, page.GetName()).AnimatedMoveTo(x, y);
+        page.AddShape(menu);
+        menu.AnimatedMoveTo(x, y);
     }
 
     public override void CreateMenus(IWorkspace space, IJSRuntime js, NavigationManager nav)

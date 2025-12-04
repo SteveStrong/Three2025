@@ -15,6 +15,8 @@ namespace Three2025.Apprentice;
 
 public interface ILightingTech : ITechnician
 {
+   void SetStage(FoStage3D stage);
+
    FoStage3D EstablishLightingStage();
 
    void ClearLights();
@@ -53,6 +55,14 @@ public class LightingTech :ILightingTech
    public LightingTech(IWorkspace workspace)
    {
       Workspace = workspace;
+   }
+
+   /// <summary>
+   /// Set the stage to use. Call this from a page to inject its stage.
+   /// </summary>
+   public void SetStage(FoStage3D stage)
+   {
+      Stage = stage;
    }
 
    [KernelFunction("RefreshUI")]
@@ -98,7 +108,7 @@ public class LightingTech :ILightingTech
    public void ClearLights()
    {
       var stage = EstablishLightingStage();
-      stage.ClearStage();
+      _ = stage.ClearAll();
       RefreshUI();
    }
 
@@ -122,12 +132,11 @@ public class LightingTech :ILightingTech
       
    
       var stage = EstablishLightingStage();
-      stage.ClearStage();
+      _ = stage.ClearAll();
 
-      var arena = Workspace.GetArena();
       foreach (var item in list)
       {
-         arena.AddShapeToStage<LightingComponent>(item, stage.GetName());
+         stage.AddShape(item);
       }
       RefreshUI();
 
@@ -165,8 +174,7 @@ public class LightingTech :ILightingTech
             Color = color
          };
 
-         var arena = Workspace.GetArena();
-         arena.AddShapeToStage<LightingComponent>(newLight, stage.GetName());
+         stage.AddShape(newLight);
 
          RefreshUI();
 
