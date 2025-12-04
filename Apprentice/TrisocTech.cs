@@ -82,7 +82,8 @@ public class TrisocTech : ITrisocTech
             };
 
             var arena = FoundryService.Arena();
-            arena.AddShapeToStage<Label3D>(GlobalText);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<Label3D>(GlobalText, stage.GetName());
         }
         else
         {
@@ -171,7 +172,8 @@ public class TrisocTech : ITrisocTech
         CreateTextLabel3D(CurrentModel, "xxx", "Test", Text3DAlign.Left, 1.5);
 
         var arena = FoundryService.Arena();
-        arena.AddShapeToStage<FoModel3D>(CurrentModel);
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage<FoModel3D>(CurrentModel, stage.GetName());
         return CurrentModel;
     }
 
@@ -194,7 +196,8 @@ public class TrisocTech : ITrisocTech
         CreateTextLabel3D(model, name, name, Text3DAlign.Left, 1.5);
 
         var arena = FoundryService.Arena();
-        arena.AddShapeToStage<FoModel3D>(model);
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage<FoModel3D>(model, stage.GetName());
         return model;
     }
 

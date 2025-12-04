@@ -81,7 +81,8 @@ public partial class DrawingBase : ComponentBase, IDisposable
             //BoundingBox = new Vector3(bx, by, bz),
         };
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage<FoShape3D>(shape);
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
         return shape;
     }
 
@@ -127,21 +128,24 @@ public partial class DrawingBase : ComponentBase, IDisposable
         {
 
             var box = AddBox(DataGenerator.GenerateName());
-            arena.AddShapeToStage<FoShape3D>(box);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<FoShape3D>(box, stage.GetName());
         });
 
         world.AddAction("TRex", "btn-primary", () =>
         {
             var url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb");
             var shape = DoLoad3dModel(url, -2, 6, -2);
-            arena.AddShapeToStage<FoShape3D>(shape);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
         });
 
         world.AddAction("Porsche", "btn-primary", () =>
         {
             var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
             var shape = DoLoad3dModel(url, 2, 6, 2);
-            arena.AddShapeToStage<FoShape3D>(shape);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
         });
         
         world.AddAction("Render Tube", "btn-primary", () =>
@@ -190,7 +194,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShapeToStage<FoShape3D>(shape);
+        arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
         //stage.PreRender(arena);
 
         // var (found, scene) = GetCurrentScene();
@@ -242,7 +246,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShapeToStage<FoShape3D>(shape);
+        arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
 
         // var (found, scene) = GetCurrentScene();
         // if (found)
@@ -269,7 +273,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
 
         var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShapeToStage<FoText3D>(shape);
+        arena.AddShapeToStage<FoText3D>(shape, stage.GetName());
 
         // var (found, scene) = GetCurrentScene();
         // if (found)
@@ -281,7 +285,8 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
         var shape = DoLoad3dModel(url, 2, 6, 2);
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage<FoShape3D>(shape);
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
     }
 
     public void OnRenderTube()

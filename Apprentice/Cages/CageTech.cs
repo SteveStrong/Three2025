@@ -58,7 +58,9 @@ public class CageTech : ICageTech
                 continue;
 
             var link = new Link3D($"Link:{start.GetTitle()}->{finish.GetTitle()}", color, start, finish);
-            arena.AddShapeToStage<Link3D>(link);
+            
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<Link3D>(link, stage.GetName());
 
             start.AddLink(link);
             finish.AddLink(link);
@@ -188,12 +190,13 @@ public class CageTech : ICageTech
 
     private void AddLinksBetween(FoShape3D parent, IArena arena, List<Node3D> nodes, string color)
     {
+        var stage = arena.CurrentStage();
         for (int i = 1; i < nodes.Count; i++)
         {
             var start = nodes[i - 1];
             var finish = nodes[i];
             var link = new Link3D($"Link:{parent.GetName()}:{start.GetTitle()}->{finish.GetTitle()}", color, start, finish);
-            arena.AddShapeToStage<Link3D>(link);
+            arena.AddShapeToStage<Link3D>(link, stage.GetName());
 
             start.AddLink(link);
             finish.AddLink(link);

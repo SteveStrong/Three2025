@@ -253,7 +253,7 @@ public class AnimatedKnComponent : PartComponent
     /// Creates a more complex group geometry with sub-shapes.
     /// Similar to how FoRack creates a rack with equipment.
     /// </summary>
-    public FoGroup3D CreateGroupGeometry()
+    public FoGroup3D CreateGroupGeometryxxxx()
     {
         var shapeName = Name ?? "AnimatedGroup";
         var color = FindParameterValue<string>("Color") ?? "Blue";

@@ -42,9 +42,10 @@ public class RackTech : IRackTech
         };
 
         var arena = Workspace.GetArena();
+        var stage = arena.CurrentStage();
         foreach (var box in list)
         {
-            arena.AddShapeToStage(box);
+            arena.AddShapeToStage(box, stage.GetName());
         }
 
     }
@@ -56,7 +57,8 @@ public class RackTech : IRackTech
         var rack = FoRack.CreateRack(name, x, z, height, angle);
                 
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage<FoRack>(rack);  
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage<FoRack>(rack, stage.GetName());  
   
         return rack;
     }

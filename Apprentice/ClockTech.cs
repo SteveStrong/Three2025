@@ -199,7 +199,8 @@ public class ClockTech : IClockTech
         {
             Clock = CreateClockOnArena();
             var arena = FoundryService.Arena();
-            arena.AddShapeToStage<FoShape3D>(Clock);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<FoShape3D>(Clock, stage.GetName());
         }
 
     }

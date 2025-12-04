@@ -83,7 +83,8 @@ public partial class DebugCanvasBase : ComponentBase
                 new Vector3(5, 5, 0)
             });
 
-            arena.AddShapeToStage(pipe);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage(pipe, stage.GetName());
             DebugInfo = $"✅ Added pipe to scene '{scene.Title}'";
             StateHasChanged();
         }
@@ -129,7 +130,8 @@ public partial class DebugCanvasBase : ComponentBase
                 new Vector3(-5, -5, 0)
             });
 
-            arena.AddShapeToStage(pipe2);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage(pipe2, stage.GetName());
             DebugInfo = $"✅ Added pipe2 to scene '{scene.Title}'";
             StateHasChanged();
         }

@@ -151,6 +151,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             return;
         }
 
+        var stage = arena.CurrentStage();
         // Clear existing objects and glue
         _animationTime = 0;
         _isAnimating = false;
@@ -166,7 +167,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             },
         };
         _baseBox.CreateBox("BaseBox", 2.0, 1.0, 2.0);
-        arena.AddShapeToStage<FoShape3D>(_baseBox);
+        arena.AddShapeToStage<FoShape3D>(_baseBox, stage.GetName());
         AddFaceMarkers(_baseBox);
 
         // Create middle box (green) - also on floor initially
@@ -178,7 +179,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             },
         };
         _middleBox.CreateBox("MiddleBox", 1.5, 1.0, 1.5);
-        arena.AddShapeToStage<FoShape3D>(_middleBox);
+        arena.AddShapeToStage<FoShape3D>(_middleBox, stage.GetName());
         AddFaceMarkers(_middleBox);
 
         // Create top box (blue) - also on floor initially
@@ -190,7 +191,8 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             },
         };
         _topBox.CreateBox("TopBox", 1.0, 1.0, 1.0);
-        arena.AddShapeToStage<FoShape3D>(_topBox);
+        arena.AddShapeToStage<FoShape3D>(_topBox, stage.GetName());
+
         AddFaceMarkers(_topBox);
 
         $"Three boxes created with face markers:".WriteSuccess();
@@ -488,6 +490,12 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
         }
 
         var arena = Workspace.GetArena();
+        if (arena == null)
+        {
+            $"No arena available".WriteError();
+            return;
+        }
+        var stage = arena.CurrentStage();
         
         // Create pipe connecting base to middle box
         _pipe1 = new FoGluePipe3D($"Pipe1-{Guid.NewGuid().ToString().Substring(0, 8)}", "orange");
@@ -496,7 +504,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             _middleBox, "BottomFaceCenter",
             radius: 0.08
         );
-        arena.AddShapeToStage<FoGluePipe3D>(_pipe1);
+        arena.AddShapeToStage<FoGluePipe3D>(_pipe1, stage.GetName());
         
         $"Created dynamic pipe between boxes - will update as they move!".WriteSuccess();
         StateHasChanged();
@@ -513,6 +521,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
         }
 
         var arena = Workspace.GetArena();
+        var stage = arena.CurrentStage();
         
         // Pipe 1: Base top to Middle bottom
         _pipe1 = new FoGluePipe3D($"Pipe1-{Guid.NewGuid().ToString().Substring(0, 8)}", "orange");
@@ -521,7 +530,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             _middleBox, "LeftBottomBack",
             radius: 0.06
         );
-        arena.AddShapeToStage<FoGluePipe3D>(_pipe1);
+        arena.AddShapeToStage<FoGluePipe3D>(_pipe1, stage.GetName());
         
         // Pipe 2: Middle side to Top side
         _pipe2 = new FoGluePipe3D($"Pipe2-{Guid.NewGuid().ToString().Substring(0, 8)}", "cyan");
@@ -530,7 +539,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             _topBox, "BackFaceCenter",
             radius: 0.06
         );
-        arena.AddShapeToStage<FoGluePipe3D>(_pipe2);
+        arena.AddShapeToStage<FoGluePipe3D>(_pipe2, stage.GetName());
         
         $"Created 2 dynamic pipes - watch them update during animation!".WriteSuccess();
         StateHasChanged();

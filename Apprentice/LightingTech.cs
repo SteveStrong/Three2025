@@ -127,7 +127,7 @@ public class LightingTech :ILightingTech
       var arena = Workspace.GetArena();
       foreach (var item in list)
       {
-         arena.AddShapeToStage<LightingComponent>(item);
+         arena.AddShapeToStage<LightingComponent>(item, stage.GetName());
       }
       RefreshUI();
 
@@ -166,7 +166,7 @@ public class LightingTech :ILightingTech
          };
 
          var arena = Workspace.GetArena();
-         arena.AddShapeToStage<LightingComponent>(newLight);
+         arena.AddShapeToStage<LightingComponent>(newLight, stage.GetName());
 
          RefreshUI();
 

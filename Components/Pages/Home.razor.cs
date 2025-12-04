@@ -187,11 +187,12 @@ public partial class HomeBase : ComponentBase, IDisposable
     public void TryAddRoutesArena()
     {
         var arena = Workspace.GetArena();
+        var stage = arena.CurrentStage();
 
         var (success, pipe) = RackTech.TryCreatePipe(GeneratePath(), GeneratePath());
         
         if ( success ) 
-            arena.AddShapeToStage<FoPipe3D>(pipe);
+            arena.AddShapeToStage<FoPipe3D>(pipe, stage.GetName());
 
     }
 
@@ -214,7 +215,8 @@ public partial class HomeBase : ComponentBase, IDisposable
         shape.CreateTube("hello", 0.25, path);
 
         var arena = Workspace.GetArena();
-        arena.AddShapeToStage(shape);  
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage(shape, stage.GetName());  
 
     }
     public void DoAddWiresArena()
