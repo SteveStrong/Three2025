@@ -4,11 +4,12 @@ using FoundryWorldsAndDrawings.Shared;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.PubSub;
 using Three2025.Services.Visualization;
-using FoundryRulesAndUnits.Extensions;
+using FoundryRulesAndUnits.Extensions; // ✅ Phase 0.5: For WriteSuccess extension
 
 using FoundryWorldsAndDrawings.ThreeD.Viewers;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
+// ✅ Phase 0.5: FoStage3D already available via FoundryWorldsAndDrawings.Shape
 
 namespace Three2025.Components.Pages;
 
@@ -18,7 +19,8 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
-    public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
+    public Canvas3DComponent Canvas3DReference = null;
+    private FoStage3D _frameStage; // ✅ Phase 0.5: Track this page's stage
     protected SpacialFrame3D CurrentFrame;
     protected FoShape3D CurrentShape;
 
@@ -64,15 +66,13 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
         {
             var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
 
-            scene?.SetAfterUpdateAction((s, j) =>
-            {
-                FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-            });
 
             var arena = FoundryService.Arena();
             if (found)
             {
-                arena.SetScene(scene!);
+                // ✅ Phase 0.5: Get this page's stage (Canvas already linked it to scene)
+                _frameStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                $"SpacialFrameTest: Retrieved stage '{_frameStage?.Name}' from Canvas".WriteSuccess();
                 DoRequestAxisToScene(scene!);
                 CreateSpacialFrame();
             }
@@ -84,9 +84,7 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
     {
         var model = new Model3D()
         {
-            Name = "Axis",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Name = "Axis",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
         };
 
@@ -111,7 +109,8 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
                 return;
             }
 
-            arena.ClearArena();
+            // ✅ Phase 0.5: Clear only this page's stage
+            _frameStage?.ClearStage();
 
             $"Creating SpacialFrame3D with Rotation {RotationX}×{RotationY}×{RotationZ}° at Position ({PositionX}, {PositionY}, {PositionZ}), Pivot ({PivotX}, {PivotY}, {PivotZ}), Scale ({ScaleX}, {ScaleY}, {ScaleZ})".WriteInfo();
 
@@ -141,7 +140,8 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
                 }
             }.CreateBox("SourceShape", BoxWidth, BoxHeight, BoxDepth);
 
-            arena.AddShapeToStage<FoShape3D>(CurrentShape);
+            // ✅ Phase 0.5: Add shape to this page's stage
+            _frameStage?.AddShape(CurrentShape);
 
             CurrentFrame = new SpacialFrame3D(CurrentShape, "m");
 

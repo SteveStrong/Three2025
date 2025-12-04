@@ -68,9 +68,7 @@ public class IndexBase : ComponentBase, IDisposable
     {
         var model = new Model3D()
         {
-            Name = "Axis",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Name = "Axis",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
         };
 
@@ -102,9 +100,7 @@ public class IndexBase : ComponentBase, IDisposable
     {
         var model = new Model3D()
         {
-            Name = "TRex",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
+            Name = "TRex",            Url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
             Format = Model3DFormats.Gltf,
             Transform = new Transform3("T-Rex")
             {
@@ -121,9 +117,7 @@ public class IndexBase : ComponentBase, IDisposable
     {
         var model = new Model3D()
         {
-            Name = "Jet",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
+            Name = "Jet",            Url = GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
 
         };
@@ -137,9 +131,7 @@ public class IndexBase : ComponentBase, IDisposable
     {
         var model = new Model3D()
         {
-            Name = "Car",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/StaticFiles/mustang_1965.glb"),
+            Name = "Car",            Url = GetReferenceTo(@"storage/StaticFiles/mustang_1965.glb"),
             Format = Model3DFormats.Gltf,
         };
 
@@ -151,17 +143,23 @@ public class IndexBase : ComponentBase, IDisposable
 
     public async Task OnAddText()
     {
+        var scene = GetCurrentScene();
+        
+        // Remove existing text if present
+        if (TestText != null)
+        {
+            scene.RemoveChild(TestText);
+        }
+        
         TestText = new Text3D(DataGenerator.GenerateText())  
         { 
             Transform = new Transform3("Text")
             {   
                 Position = new Vector3(3, 2, 3), 
             },
-            Color = DataGenerator.GenerateColor(),  //"#33333a" 
-            Uuid = Guid.NewGuid().ToString()
+            Color = DataGenerator.GenerateColor(),  //"#33333a"        
         };
 
-        var scene = GetCurrentScene();
         scene.AddChild(TestText);
 
         await Task.CompletedTask;
@@ -247,9 +245,7 @@ public class IndexBase : ComponentBase, IDisposable
 
         var panel = new PanelMenu3D
         {
-            Name = "MENU1",
-            Uuid = Guid.NewGuid().ToString(),
-            Width = 1.0,
+            Name = "MENU1",            Width = 1.0,
             Height = 3.0,
             Transform = new Transform3("Menu")
             {
@@ -384,15 +380,11 @@ public class IndexBase : ComponentBase, IDisposable
         var scene = GetCurrentScene();
         var group = new Group3D()
         {
-            Name = "Group1",
-            Uuid = Guid.NewGuid().ToString(),
-        };
+            Name = "Group1",        };
 
         group.AddChild(new Mesh3D
         {
-            Name = "Box1",
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
+            Name = "Box1",            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
             Transform = new Transform3("Box1")
             {
                 Position = new Vector3(-5, 0, 0),
@@ -407,9 +399,7 @@ public class IndexBase : ComponentBase, IDisposable
 
         group.AddChild(new Mesh3D
         {
-            Name = "Box2",
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
+            Name = "Box2",            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
             Transform = new Transform3("Box2")
             {
                 Position = new Vector3(5, 0, 5),
@@ -433,17 +423,13 @@ public class IndexBase : ComponentBase, IDisposable
 
         var group = new Mesh3D
         {
-            Name = "Group2",
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
+            Name = "Group2",            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
             Material = new MeshStandardMaterial("red", 1.0),
         };
 
         group.AddChild(new Mesh3D
         {
-            Name = "Box3",
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
+            Name = "Box3",            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
             Transform = new Transform3("Box3")
             {
                 Position = new Vector3(-5, 0, -5),
@@ -455,9 +441,7 @@ public class IndexBase : ComponentBase, IDisposable
 
         group.AddChild(new Mesh3D
         {
-            Name = "Box4",
-            Uuid = Guid.NewGuid().ToString(),
-            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
+            Name = "Box4",            Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
             Transform = new Transform3("Box4")
             {
                 Position = new Vector3(5, 0, 5),
@@ -470,15 +454,23 @@ public class IndexBase : ComponentBase, IDisposable
         await Task.CompletedTask;
     }
 
+    private List<Mesh3D> _geometryMeshes = new List<Mesh3D>();
+    
     public async Task DoMeshTest()
     {
         var scene = GetCurrentScene();
+        
+        // Remove previously added geometry meshes
+        foreach (var mesh in _geometryMeshes)
+        {
+            scene.RemoveChild(mesh);
+        }
+        _geometryMeshes.Clear();
+        
         var list = new List<Mesh3D>
         {
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                Name = DataGenerator.GenerateWord(),
+            {                Name = DataGenerator.GenerateWord(),
                 Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
                 Transform = new Transform3("Box3")
                 {
@@ -489,9 +481,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("magenta", 1.0)
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new CircleGeometry(radius: 0.75f, segments: 12),
                 Transform = new Transform3("Circle")
                 {
@@ -502,9 +492,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("#98AFC7", 1.0)
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new CapsuleGeometry(radius: 0.5f, length: 2),
                 Transform = new Transform3("Capsule")
                 {
@@ -515,9 +503,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("darkgreen", 1.0)
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
                 Transform = new Transform3("Cone")
                 {
@@ -534,9 +520,7 @@ public class IndexBase : ComponentBase, IDisposable
                 }
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new CylinderGeometry(radiusTop: 0.5f, height: 1.2f, radialSegments: 16),
                 Transform = new Transform3("Cylinder")
                 {
@@ -551,9 +535,7 @@ public class IndexBase : ComponentBase, IDisposable
                 }
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new DodecahedronGeometry(radius: 0.8f),
                 Transform = new Transform3("Dodecahedron")
                 {
@@ -568,9 +550,7 @@ public class IndexBase : ComponentBase, IDisposable
                 }
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new IcosahedronGeometry(radius: 0.8f),
                 Transform = new Transform3("Icosahedron")
                 {
@@ -581,9 +561,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("violet", 1.0)
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new OctahedronGeometry(radius: 0.75f),
                 Transform = new Transform3("Octahedron")
                 {
@@ -595,9 +573,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("aqua", 1.0)
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new PlaneGeometry(width: 0.5f, height: 2),
                 Transform = new Transform3("Plane")
                 {
@@ -608,9 +584,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("purple", 1.0)
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new RingGeometry(innerRadius: 0.6f, outerRadius: 0.7f),
                  Transform = new Transform3("Ring")
                 {
@@ -621,9 +595,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("DodgerBlue", 1.0)
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new SphereGeometry(radius: 0.6f),
                 Transform = new Transform3("Sphere")
                 {
@@ -634,9 +606,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("darkgreen", 1.0)
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new TetrahedronGeometry(radius: 0.75f),
                 Transform = new Transform3("Tetrahedron")
                 {
@@ -647,9 +617,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("lightblue", 1.0)
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new TorusGeometry(radius: 0.6f, tube: 0.4f, radialSegments: 12, tubularSegments: 12),
                 Transform = new Transform3("Torus")
                 {
@@ -660,9 +628,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("lightgreen", 1.0)
             },
             new Mesh3D
-            {
-                Uuid = Guid.NewGuid().ToString(),
-                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.GenerateWord(),
                 Geometry = new TorusKnotGeometry(radius: 0.6f, tube: 0.1f),
                 Transform = new Transform3("TorusKnot")
                 {
@@ -676,6 +642,7 @@ public class IndexBase : ComponentBase, IDisposable
         };
 
         list.ForEach(mesh => scene.AddChild(mesh));
+        _geometryMeshes = list; // Track for later removal
 
         await Task.CompletedTask;
     }

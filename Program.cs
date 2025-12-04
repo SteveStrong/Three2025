@@ -3,6 +3,7 @@ using Three2025.Components;
 using FoundryRulesAndUnits.Units;
 using Radzen;
 using FoundryRulesAndUnits.Extensions;
+using FoundryMentorModeler;
 
 using Microsoft.AspNetCore.StaticFiles;
 
@@ -18,6 +19,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Configure Blazor Server circuit options to prevent disconnections
+builder.Services.AddServerSideBlazor()
+    .AddCircuitOptions(options =>
+    {
+        options.DetailedErrors = true; // Enable detailed error messages
+        options.DisconnectedCircuitMaxRetained = 100;
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
+        options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(1);
+        options.MaxBufferedUnacknowledgedRenderBatches = 20;
+    });
 
 builder.Services.AddRadzenComponents();
 
@@ -53,6 +64,7 @@ builder.Services.Configure<StaticFileOptions>(options =>
 
 var envConfig = new EnvConfig("./.env");
 builder.Services.AddFoundryWorldsAndDrawingsServices(envConfig);
+builder.Services.AddFoundryMentorModelerServices();
 
 builder.Services.AddScoped<IApprenticeAI, ApprenticeAI>();
 builder.Services.AddScoped<IRackTech, RackTech>();

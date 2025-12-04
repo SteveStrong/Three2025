@@ -1,0 +1,204 @@
+using FoundryBlazor.Shape;
+using FoundryBlazor.Solutions;
+
+using FoundryVault.Services;
+using FoundryMentorModeler.Model;
+
+using Plugin710.Apprentice;
+
+namespace Plugin_710.Model;
+
+
+public class Model_710 : KnModel
+{
+    protected Solution_710 solution { get; set; }
+    protected Dijkstra_Solution solution_Dijkstra { get; set; }
+
+    public Model_710():base()
+    {
+
+    }
+    public Model_710(string title):base(title)
+    {
+
+    }
+    public Model_710(string title, IMentorServices Mentor):base(title,Mentor)
+    {
+    }
+
+
+
+    public override IEnumerable<ITreeNode> GetTreeChildren()
+    {
+        var list = base.GetTreeChildren().ToList();
+        AddTreeNodeFolderOf<Solution_710>(list);
+        EstablishFolderIfNotEmpty<KnFactory>(list);
+        EstablishFolderIfNotEmpty<KnContextComponent>(list);
+        EstablishFolderIfNotEmpty<KnParameter>(list);
+        EstablishFolderForAllOfType<KnComponent>(list);
+        return list;
+    }
+
+    public virtual Solution_710 EstablishSolution()
+    {
+        if ( solution == null )
+        {
+            solution = new Solution_710( Common_710.New_DT_Component("Solution_710"));
+            AddChildComponent<Solution_710>(solution);
+        }
+        return solution;
+    }
+
+    public virtual Dijkstra_Solution EstablishDijkstraSolution()
+    {
+        if ( solution_Dijkstra == null )
+        {
+            solution_Dijkstra = new Dijkstra_Solution( Common_710.New_DT_Component("Dijkstra"));
+            AddChildComponent<Solution_710>(solution_Dijkstra);
+        }
+        return solution_Dijkstra;
+    }
+
+    public bool HasDijkstraSolution()
+    {
+        return solution_Dijkstra != null;
+    }
+
+
+
+    public override void RenderGeometry2D(string view, FoPage2D page, bool deep)
+    {
+        var solution = EstablishSolution();
+        solution.RenderGeometry2D(view, page,deep);
+    }
+
+    public override void RenderGeometry3D(string view, IArena arena, bool deep)
+    {
+        var solution = EstablishSolution();
+        solution.RenderGeometry3D(view, arena,deep);
+    }
+
+
+
+
+
+    public Model_710 Create_Cage()
+    {
+        GetMentorServices().Toast.Success("Cage");
+
+  
+        return this;
+    }
+
+
+
+
+    public (bool found, MentorDiagram diagram) ClearDiagram(bool clear = true)
+    {
+        var (found, diagram) = _services.CurrentDiagram();
+        if ( clear ) 
+            diagram.ClearAll();
+
+        return (found, diagram);
+    }
+
+    public override MentorDiagram RenderDiagram(string view, bool clear, Action OnComplete)
+    {
+        var (found, diagram) = ClearDiagram(clear);
+        if ( !found ) 
+            return diagram;
+            
+        var solution = EstablishSolution();
+        solution.RenderEditor(view, diagram, true);
+        OnComplete?.Invoke();
+        return diagram;
+    }
+
+    // public override IPage2D RenderDrawing2D(string view, bool clear)
+    // {
+    //     var page = _services.EstablishPage<FoPage2D>(view,clear);
+    //     Solution.Render2DGeometry(view,page,true);
+    //     return page;
+    // }
+    // public override IStage RenderArena3D(string view, bool clear)
+    // {
+    //     base.RenderArena3D(view, clear);
+    //     return arena.CurrentStage();
+    // }
+
+
+
+    //public override IEnumerable<KnTreeNodeAction>? GetKnTreeNodeActions()
+    //{
+    //    var result = base.GetKnTreeNodeActions()?.ToList();
+    //    result?.AddKnAction("Diagram", "btn-primary", (service) => 
+    //    {
+    //        RenderDiagram("Diagram",true);
+    //    });
+    //    result?.AddKnAction("Drawing", "btn-primary", (service) => 
+    //    {
+    //        RenderDrawing2D("Drawing",true);
+    //    });
+    //    result?.AddKnAction("Arena", "btn-primary", (service) => 
+    //    {
+    //        RenderArena3D("Arena",true);
+    //    });
+    //    return result;
+
+    //}
+
+    
+    //public override IEnumerable<TreeNodeAction>? GetTreeNodeActions()
+    //{
+    //    var result = base.GetTreeNodeActions()?.ToList() ??  new List<TreeNodeAction>()!;
+
+
+    //    result.AddAction("World Report", "btn-primary", () => 
+    //    {
+    //        var info = new VersionInfo()
+    //        {
+    //            author = "eDesign",
+    //            name = "UserArrangement",
+    //            description = "User Generated Arrangement",
+    //            filename = "UserArrangement_0000.json"
+    //        };
+    //        info = info.GenerateNewVersion();
+
+    //        var manifest = new Import_Manifest()
+    //        {
+    //            filename = "User Arrangement World Report",
+    //            World = list,
+    //            Info = new ManifestInfo()
+    //            {
+    //                author = info.author,
+    //                filename = info.filename,
+    //                versionInfo = info.versionInfo,
+    //                knowledgeCenter = "User Arrangement"
+    //            }
+    //        };
+
+    //        var worldService = _vault.ImportWorldService();
+    //        var world = worldService.FillWorldFromImportManifest("UserArrangement",manifest).First();
+
+    //        var builder = _vault.WorkbookBuilder();
+    //        builder.SaveWorkbookFrom_World(world, info, true);
+
+    //        var appStoreService = _vault.AppStoremanager();
+    //        appStoreService.UpdateAppStore_World(world, manifest.Info, true);
+
+    //        // var serviceScope = ApplicationServices
+    //        //     .GetRequiredService<IServiceScopeFactory>()
+    //        //     .CreateScope();
+
+    //        //     var unitsystem = serviceScope.ServiceProvider.GetService<IUnitSystem>();
+
+    //    });
+
+
+
+    //    return result;
+    //}
+
+
+
+}

@@ -62,15 +62,7 @@ public class TrisocTech : ITrisocTech
 
 
 
-    public bool ComputeHitBoundaries(Action OnComplete)
-    {
-        var arena = FoundryService.Arena();
-        var (success, scene) = arena.CurrentScene();
 
-        if (!success) return false;
-        scene.UpdateHitBoundaries(OnComplete);
-        return true;
-    } 
 
     private void UpdateClock(object state)
     {
@@ -90,7 +82,8 @@ public class TrisocTech : ITrisocTech
             };
 
             var arena = FoundryService.Arena();
-            arena.AddShapeToStage<Label3D>(GlobalText);
+            var stage = arena.CurrentStage();
+            arena.AddShapeToStage<Label3D>(GlobalText, stage.GetName());
         }
         else
         {
@@ -179,7 +172,8 @@ public class TrisocTech : ITrisocTech
         CreateTextLabel3D(CurrentModel, "xxx", "Test", Text3DAlign.Left, 1.5);
 
         var arena = FoundryService.Arena();
-        arena.AddShapeToStage<FoModel3D>(CurrentModel);
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage<FoModel3D>(CurrentModel, stage.GetName());
         return CurrentModel;
     }
 
@@ -202,7 +196,8 @@ public class TrisocTech : ITrisocTech
         CreateTextLabel3D(model, name, name, Text3DAlign.Left, 1.5);
 
         var arena = FoundryService.Arena();
-        arena.AddShapeToStage<FoModel3D>(model);
+        var stage = arena.CurrentStage();
+        arena.AddShapeToStage<FoModel3D>(model, stage.GetName());
         return model;
     }
 
@@ -241,8 +236,7 @@ public class TrisocTech : ITrisocTech
 
     private static FoGlyph3D DrawFace(FoShape3D root, string name, Mesh3D face)
     {
-        var shape = new FoGlyph3D(name);
-        shape.SetValue3D(face);
+        var shape = new FoGlyph3D(name, face);
         root.AddSubGlyph3D(shape);
         return shape;
     }

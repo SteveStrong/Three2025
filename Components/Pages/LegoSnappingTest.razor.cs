@@ -5,6 +5,7 @@ using FoundryWorldsAndDrawings.PubSub;
 using Three2025.Services.Visualization;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryWorldsAndDrawings.Shared;
+using FoundryRulesAndUnits.Extensions; // ✅ Phase 0.5: For WriteSuccess extension
 
 namespace Three2025.Components.Pages;
 
@@ -16,6 +17,7 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     [Inject] public IGeometryVisualizationService VisualizationService { get; set; }
 
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
+    private FoStage3D _legoStage; // ✅ Phase 0.5: Track this page's stage
     
     // Universal geometry snapping components - work with any FoShape3D
     protected FoShape3D ComponentA;
@@ -54,15 +56,13 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
         {
             var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
 
-            scene?.SetAfterUpdateAction((s, j) =>
-            {
-                FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-            });
 
             var arena = Workspace.GetArena();
             if (found)
             {
-                arena.SetScene(scene!);
+                // ✅ Phase 0.5: Get this page's stage (Canvas already linked it to scene)
+                _legoStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                $"LegoSnappingTest: Retrieved stage '{_legoStage?.Name}' from Canvas".WriteSuccess();
                 // Create initial components for demonstration
                 CreateComponentA();
                 CreateComponentB();
@@ -93,7 +93,8 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
                 return;
             }
 
-            arena.AddShapeToStage<FoShape3D>(ComponentA);
+            // ✅ Phase 0.5: Add component to this page's stage
+            _legoStage?.AddShape(ComponentA);
 
             // Get face count using the new universal engine
             StateHasChanged();
@@ -127,7 +128,8 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
                 return;
             }
 
-            arena.AddShapeToStage<FoShape3D>(ComponentB);
+            // ✅ Phase 0.5: Add component to this page's stage
+            _legoStage?.AddShape(ComponentB);
             
             StateHasChanged();
         }
@@ -142,16 +144,10 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     {
         if (ComponentA == null) return;
         
-    // Use MoveBy for proper dirty flag handling
-    ComponentA.Transform.Position = Vector3.Zero;
-    ComponentA.Transform.MoveBy(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
-        
-        var arena = Workspace?.GetArena();
-        var (found, scene) = arena?.CurrentScene() ?? (false, null);
-        if (found && scene != null)
-        {
-            ComponentA.RefreshToScene(scene);
-        }
+        // Use MoveBy for proper dirty flag handling
+        ComponentA.Transform.Position = Vector3.Zero;
+        ComponentA.Transform.MoveBy(ComponentAPosX, ComponentAPosY, ComponentAPosZ);
+
         
         StatusMessage = $"Updated Component A position to ({ComponentAPosX},{ComponentAPosY},{ComponentAPosZ}) using Universal Snapping";
         StateHasChanged();
@@ -161,16 +157,10 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
     {
         if (ComponentB == null) return;
         
-    // Use MoveBy for proper dirty flag handling
-    ComponentB.Transform.Position = Vector3.Zero;
-    ComponentB.Transform.MoveBy(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
-        
-        var arena = Workspace?.GetArena();
-        var (found, scene) = arena?.CurrentScene() ?? (false, null);
-        if (found && scene != null)
-        {
-            ComponentB.RefreshToScene(scene);
-        }
+        // Use MoveBy for proper dirty flag handling
+        ComponentB.Transform.Position = Vector3.Zero;
+        ComponentB.Transform.MoveBy(ComponentBPosX, ComponentBPosY, ComponentBPosZ);
+
         
         StatusMessage = $"Updated Component B position to ({ComponentBPosX},{ComponentBPosY},{ComponentBPosZ}) using Universal Snapping";
         StateHasChanged();
@@ -188,10 +178,11 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
 
         try
         {
-
-
-            CurrentConstraintStatus = "Ready to apply";
-            StatusMessage = $"Ready to snap: A.{SelectedFaceA} → B.{SelectedFaceB}";
+            var faceAName = $"{SelectedFaceA}FaceCenter";
+            var faceBName = $"{SelectedFaceB}FaceCenter";
+            
+            CurrentConstraintStatus = $"Ready to glue: A.{faceAName} → B.{faceBName}";
+            StatusMessage = $"Ready to snap: A.{SelectedFaceA} → B.{SelectedFaceB} (will align and rotate)";
             StateHasChanged();
         }
         catch (Exception ex)
@@ -214,9 +205,14 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
 
         try
         {
-            // Use the new universal snapping engine
-
+            var faceAName = $"{SelectedFaceA}FaceCenter";
+            var faceBName = $"{SelectedFaceB}FaceCenter";
             
+            // Use glue system with rotation alignment
+            ComponentA.GlueTo(ComponentB, faceBName, offset: 0.0, alignRotation: true);
+            
+            CurrentConstraintStatus = $"Applied: A glued to B.{faceBName} with rotation alignment";
+            StatusMessage = $"✓ Snapped A.{SelectedFaceA} to B.{SelectedFaceB} with proper alignment!";
             StateHasChanged();
         }
         catch (Exception ex)
@@ -237,7 +233,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
             return;
         }
         
-       StateHasChanged();
+        ComponentA.GlueTo(ComponentB, "TopFaceCenter", offset: 0.0, alignRotation: true);
+        StatusMessage = "✓ Stacked A on top of B with rotation alignment!";
+        StateHasChanged();
     }
 
     public void PlaceASideBySideWithB()
@@ -249,7 +247,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
             return;
         }
         
-       StateHasChanged();
+        ComponentA.GlueTo(ComponentB, "RightFaceCenter", offset: 0.0, alignRotation: true);
+        StatusMessage = "✓ Placed A beside B (to the right) with rotation alignment!";
+        StateHasChanged();
     }
 
     public void AttachAToFrontOfB()
@@ -261,7 +261,9 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
             return;
         }
         
-         StateHasChanged();
+        ComponentA.GlueTo(ComponentB, "FrontFaceCenter", offset: 0.0, alignRotation: true);
+        StatusMessage = "✓ Attached A in front of B with rotation alignment!";
+        StateHasChanged();
     }
 
     public void AttachAToBackOfB()
@@ -273,6 +275,8 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
             return;
         }
         
+        ComponentA.GlueTo(ComponentB, "BackFaceCenter", offset: 0.0, alignRotation: true);
+        StatusMessage = "✓ Attached A behind B with rotation alignment!";
         StateHasChanged();
     }
 
@@ -326,7 +330,8 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
         var arena = Workspace?.GetArena();
         if (arena == null) return;
         
-        arena.ClearArena();
+        // ✅ Phase 0.5: Clear only this page's stage
+        _legoStage?.ClearStage();
         
         // Reset components and status
         ComponentA = null;

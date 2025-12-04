@@ -11,14 +11,14 @@ using FoundryRulesAndUnits.Extensions;
 using FoundryWorldsAndDrawings.ThreeD.Viewers;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
-using BlazorComponentBus;
+
 
 
 namespace Three2025.Components.Pages;
 
 public partial class ClockBase : ComponentBase, IDisposable
 {
-    public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
+    public Canvas3DComponent Canvas3DReference = null;
 
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] protected IJSRuntime JsRuntime { get; set; }
@@ -34,24 +34,34 @@ public partial class ClockBase : ComponentBase, IDisposable
     protected int _currentTick = 0;
 
     protected MockDataGenerator DataGenerator { get; set; } = new();
+    
+    // ✅ Phase 0.5: Per-page stage (matches 2D's ManagedPage pattern)
+    private FoStage3D _clockStage;
+    
+    // Guard flags to prevent duplicate additions
+    private HashSet<string> _addedModels = new();  // Track models added (unused now)
+    private HashSet<string> _loadingModels = new(); // Track URLs currently loading (unused now)
+    private bool _tRexRequested = false;  // Simple flag: has T-Rex been requested at all?
 
 
     public (bool, Scene3D) GetCurrentScene()
     {
-        var arena = Workspace.GetArena();
-        return arena.CurrentScene();
+        return Canvas3DReference?.GetActiveScene() ?? (false, null!);
     }
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         Workspace.SetBaseUrl(Navigation?.BaseUri ?? "");
+        
+        // ✅ Phase 0.5: Don't clear arena - stage doesn't exist yet
+        // Canvas will create stage in its OnAfterRenderAsync
         
         // Subscribe directly to AnimationFrameBus for animation events
         $"Clock: Subscribing to AnimationEvent on AnimationFrameBus".WriteSuccess();
         AnimationFrameBus.SubscribeToAnimation(OnAnimationFrame);
         
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
     private void OnAnimationFrame(AnimationEvent animEvent)
@@ -60,17 +70,20 @@ public partial class ClockBase : ComponentBase, IDisposable
         {
             _currentFps = animEvent.fps;
             _currentTick = animEvent.tick;
-            //$"Clock OnAnimationFrame: Tick {_currentTick}, FPS {_currentFps:F1}".WriteInfo();
             
-            // Only update UI every 15 frames to avoid overwhelming Blazor
-
+            // Update UI every frame for smooth display
             InvokeAsync(StateHasChanged);
-            
         }
     }
 
     public void Dispose()
     {
+        // ✅ Phase 0.5: Clear only this page's stage
+        _clockStage?.ClearStage();
+        $"Clock: Cleared ClockStage on dispose".WriteInfo();
+        
+        _addedModels.Clear(); // Clear guard flags
+        _tRexRequested = false; // Reset T-Rex guard for restart
         // Unsubscribe when component is disposed
         AnimationFrameBus.UnSubscribeFromAnimation(OnAnimationFrame);
     }
@@ -79,10 +92,10 @@ public partial class ClockBase : ComponentBase, IDisposable
     {
         if (firstRender)
         {
-            Console.WriteLine($"Clock OnAfterRenderAsync: Canvas3DReference is {(Canvas3DReference == null ? "null" : "not null")}");
-            Console.WriteLine($"Clock OnAfterRenderAsync: Workspace is {(Workspace == null ? "null" : "available")}");
-            Console.WriteLine($"Clock OnAfterRenderAsync: FoundryService is {(FoundryService == null ? "null" : "available")}");
-            Console.WriteLine($"Clock OnAfterRenderAsync: Tech is {(Tech == null ? "null" : "available")}");
+            $"Clock OnAfterRenderAsync: Canvas3DReference is {(Canvas3DReference == null ? "null" : "not null")}".WriteInfo();
+            $"Clock OnAfterRenderAsync: Workspace is {(Workspace == null ? "null" : "available")}".WriteInfo();
+            $"Clock OnAfterRenderAsync: FoundryService is {(FoundryService == null ? "null" : "available")}".WriteInfo();
+            $"Clock OnAfterRenderAsync: Tech is {(Tech == null ? "null" : "available")}".WriteInfo();
             
             // Wait a bit for the canvas to initialize
             await Task.Delay(500); // Increased delay for better initialization
@@ -91,39 +104,37 @@ public partial class ClockBase : ComponentBase, IDisposable
             {
                 var (found, scene) = Canvas3DReference.GetActiveScene();
                 
-                Console.WriteLine($"Clock OnAfterRenderAsync: GetActiveScene returned found={found}, scene={scene?.Name ?? "null"}");
+                $"Clock OnAfterRenderAsync: GetActiveScene returned found={found}, scene={scene?.Name ?? "null"}".WriteInfo();
 
                 if (found && scene != null)
                 {
-                    scene.SetAfterUpdateAction((s, j) =>
-                    {
-                        FoundryService.PubSub().Publish<RefreshUIEvent>(new RefreshUIEvent("ShapeTree"));
-                    });
-
+                    // ✅ Phase 0.5: Get stage created by Canvas (matches 2D pattern)
                     var arena = Workspace.GetArena();
-                    arena.SetScene(scene);
-                    Console.WriteLine($"Clock OnAfterRenderAsync: Scene set in arena successfully");
+                    _clockStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                    
+                    // Stage already linked to scene by Canvas - no need to link again
+                    $"Clock: Retrieved ClockStage '{_clockStage.Key}' from arena".WriteSuccess();
                     
                     // Try to add a simple object to test rendering
-                    try
-                    {
-                        DoClockFaceOnScene();
-                        Console.WriteLine($"Clock OnAfterRenderAsync: Clock face added successfully");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Clock OnAfterRenderAsync: Error adding clock face: {ex.Message}");
-                        Console.WriteLine($"Clock OnAfterRenderAsync: Stack trace: {ex.StackTrace}");
-                    }
+                    // try
+                    // {
+                    //     //DoClockFaceOnScene();
+                    //     $"Clock OnAfterRenderAsync: Clock face added successfully".WriteSuccess();
+                    // }
+                    // catch (Exception ex)
+                    // {
+                    //     $"Clock OnAfterRenderAsync: Error adding clock face: {ex.Message}".WriteError();
+                    //     $"Clock OnAfterRenderAsync: Stack trace: {ex.StackTrace}".WriteError();
+                    // }
                 }
                 else
                 {
-                    Console.WriteLine($"Clock OnAfterRenderAsync: Canvas3DReference.GetActiveScene() failed to return valid scene");
+                    $"Clock OnAfterRenderAsync: Canvas3DReference.GetActiveScene() failed to return valid scene".WriteError();
                 }
             }
             else
             {
-                Console.WriteLine($"Clock OnAfterRenderAsync: Canvas3DReference is null - component not properly bound");
+                $"Clock OnAfterRenderAsync: Canvas3DReference is null - component not properly bound".WriteError();
             }
         }
 
@@ -157,19 +168,27 @@ public partial class ClockBase : ComponentBase, IDisposable
             }
         };
 
-
-        var arena = Workspace.GetArena();
-        arena.AddShapeToStage<FoModel3D>(shape);
+        // ✅ Phase 0.5: Add to this page's stage
+        _clockStage?.AddShape(shape);
+        $"Clock: Added TRISOC to ClockStage".WriteInfo();
     }
 
-
-    public void DoClockFaceOnScene()
+    public void DoClockFace()
     {
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
+        var clockFace = new FoClockFace3D("ArenaClockFace")
+        {
+            Radius = 12.0,
+            Height = 0.2,
+            FontSize = 1.2,
+            Transform = new Transform3("ClockTransform")
+            {
+                Position = new Vector3(0, 0, 0),
+            }
+        };
 
-        var mesh = Tech.CreateClockFaceMesh();
-        scene.AddChild(mesh);
+        // ✅ Phase 0.5: Add to this page's stage
+        _clockStage?.AddShape(clockFace);
+        $"Clock: Added clock face to ClockStage".WriteInfo();
     }
 
     public void DoRunClock()
@@ -186,8 +205,7 @@ public partial class ClockBase : ComponentBase, IDisposable
 
         var model = new Model3D()
         {
-            Name = "Axis",
-            Uuid = Guid.NewGuid().ToString(),
+            Name = "Axis",            
             Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
         };
@@ -200,10 +218,6 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public void DoAddTextToArena()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
-
         var delta = 0.5;
         var x = DataGenerator.GenerateDouble(-10, 10);
         var y = DataGenerator.GenerateDouble(-10, 10);
@@ -231,10 +245,13 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
         };
         text3d.AddSubGlyph3D(label);
-        arena.AddShapeToStage<FoText3D>(text3d);
+        
+        // ✅ Phase 0.5: Add to this page's stage
+        _clockStage?.AddShape(text3d);
+        $"Clock: Added text to ClockStage".WriteInfo();
 
         // Animation using MoveBy for proper dirty flag handling
-        text3d.SetAnimationUpdate((self, tick, fps) =>
+        text3d.BeforeAnimationRefresh((self, tick, fps) =>
         {
             bool move = tick % 10 == 0;
             if (!move) return;
@@ -255,10 +272,6 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public void DoAddBoxGLBToArena()
     {
-        var arena = Workspace.GetArena();
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
-
         var x = DataGenerator.GenerateDouble(-10, 10);
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
@@ -287,10 +300,11 @@ public partial class ClockBase : ComponentBase, IDisposable
         };
         model3d.AddSubGlyph3D(label);
 
+        // ✅ Phase 0.5: Add to this page's stage
+        _clockStage?.AddShape(model3d);
+        $"Clock: Added BoxAnimated to ClockStage".WriteInfo();
 
-        arena.AddShapeToStage<FoModel3D>(model3d);
-
-        model3d.SetAnimationUpdate((self, tick, fps) =>
+        model3d.BeforeAnimationRefresh((self, tick, fps) =>
         {
             bool move = tick % 10 == 0;
             if (!move) return;
@@ -309,57 +323,67 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     }
 
-    public async Task DoRequestAddBoxGLBToScene()
-    {
-        var (found, scene) = GetCurrentScene();
-        if (!found) return;
+    // public async Task DoRequestAddBoxGLBToScene()
+    // {
+    //     var (found, scene) = GetCurrentScene();
+    //     if (!found) return;
 
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+    //     var x = DataGenerator.GenerateDouble(-10, 10);
+    //     var y = DataGenerator.GenerateDouble(-10, 10);
+    //     var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var angle = 0.0;
-        var delta = 0.5;
+    //     var angle = 0.0;
+    //     var delta = 0.5;
 
-        var model = new Model3D()
-        {
-            Name = "Box Animated",
-            Uuid = Guid.NewGuid().ToString(),
-            Url = GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
-            Format = Model3DFormats.Gltf,
-            Transform = new Transform3("BoxTransform")
-            {
-                Position = new Vector3(x, y, z),
-            },
-        };
+    //     var model = new Model3D()
+    //     {
+    //         Name = "Box Animated",
+    //    //         Url = GetReferenceTo(@"storage/staticfiles/BoxAnimated.glb"),
+    //         Format = Model3DFormats.Gltf,
+    //         Transform = new Transform3("BoxTransform")
+    //         {
+    //             Position = new Vector3(x, y, z),
+    //         },
+    //     };
 
-        model.SetAnimationUpdate((self, tick, fps) =>
-        {
-            bool move = tick % 10 == 0;
-            if (!move) return;
+    //     model.SetAnimationUpdate((self, tick, fps) =>
+    //     {
+    //         bool move = tick % 10 == 0;
+    //         if (!move) return;
 
-            var pos = self.Transform.MoveBy(delta, 0, 0);
-            if (pos.X > 10 || pos.X < -10)
-            {
-                delta = -delta;
-                if (pos.X > 10) angle = Math.PI;
-                else angle = 0.0;
-                self.Transform.RotateTo(0, angle, 0, AngleUnit.Radians);
-            }
+    //         var pos = self.Transform.MoveBy(delta, 0, 0);
+    //         if (pos.X > 10 || pos.X < -10)
+    //         {
+    //             delta = -delta;
+    //             if (pos.X > 10) angle = Math.PI;
+    //             else angle = 0.0;
+    //             self.Transform.RotateTo(0, angle, 0, AngleUnit.Radians);
+    //         }
 
-            self.SetTransformStale();
-        });
+    //         self.SetTransformStale();
+    //     });
 
 
-        await scene.Request3DModel(model, async (uuid) =>
-        {
-            scene.AddChild(model);
-            await Task.CompletedTask;
-        });
-    }
+        // await scene.Request3DModel(model, async (uuid) =>
+        // {
+        //     scene.AddChild(model);
+        //     await Task.CompletedTask;
+        // });
+    //}
 
     public void DoAddTRexToArena()
     {
+        // ✅ Guard against animation loop calling this multiple times
+        if (_tRexRequested)
+        {
+            // Silent return - this gets called every frame in animation loop
+            return;
+        }
+        
+        // Mark immediately to prevent subsequent animation frames from re-entering
+        _tRexRequested = true;
+        
+        var url = GetReferenceTo(@"storage/staticfiles/T_Rex.glb");
         var arena = Workspace.GetArena();
 
         var range = 20.0;
@@ -371,7 +395,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         
         var model = new FoModel3D(uniqueName)
         {
-            Url = GetReferenceTo(@"storage/staticfiles/sub.glb"), // Use sub instead of T-Rex
+            Url = url,
             Transform = new Transform3("SubWalkTransform")
             {
                 Position = new Vector3(0, 5, 0), // Start at center, raised up
@@ -379,7 +403,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
         };
 
-        model.SetAnimationUpdate((self, tick, fps) =>
+        model.BeforeAnimationRefresh((self, tick, fps) =>
         {
             // Move every frame to make it obvious
             var delta = state[0];
@@ -388,27 +412,28 @@ public partial class ClockBase : ComponentBase, IDisposable
             
             if (tick % 30 == 0) // Log every 30 frames
             {
-                Console.WriteLine($"{uniqueName} at Z={loc:F2}, delta={delta}");
+                $"{uniqueName} BeforeAnimationRefresh called: Z={loc:F2}, delta={delta}, calling SetTransformStale()".WriteInfo();
             }
 
             if (loc > range)
             {
                 state[0] = -Math.Abs(state[0]);
                 self.Transform.RotateTo(0, Math.PI, 0, AngleUnit.Radians);
-                Console.WriteLine($"{uniqueName} turned around at Z={loc:F2}, delta now {state[0]}");
+                //Console.WriteLine($"{uniqueName} turned around at Z={loc:F2}, delta now {state[0]}");
             }
             else if (loc < -range)
             {
                 state[0] = Math.Abs(state[0]);
                 self.Transform.RotateTo(0, 0, 0, AngleUnit.Radians);
-                Console.WriteLine($"{uniqueName} turned around at Z={loc:F2}, delta now {state[0]}");
+                //Console.WriteLine($"{uniqueName} turned around at Z={loc:F2}, delta now {state[0]}");
             }
 
             self.SetTransformStale();
         });
 
-        arena.AddShapeToStage<FoModel3D>(model);
-        Console.WriteLine($"Added {uniqueName} to arena - submarine walking back and forth");
+        // ✅ Phase 0.5: Add to this page's stage
+        _clockStage?.AddShape(model);
+        $"Added {uniqueName} to ClockStage - T-Rex walking (animation loop protected by flag)".WriteSuccess();
     }
 
 
@@ -418,7 +443,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         var arena = Workspace.GetArena();
         
         var name = "Sub";
-        var angle = 0.0;
+        var state = new double[] { 0.0 }; // Use array for mutable state (reference type)
         var radius = 22.0;
         var y = -3.0;
 
@@ -433,26 +458,25 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
         };
 
-        model.SetAnimationUpdate((self, tick, fps) =>
+        model.BeforeAnimationRefresh((self, tick, fps) =>
         {
-            Console.WriteLine($"Sub animation callback - tick: {tick}, angle: {angle}");
-
-            angle += Math.PI / 120;
+            // Update angle using array reference
+            state[0] += Math.PI / 120;
+            var angle = state[0];
+            
             var x = radius * Math.Cos(angle);
             var z = radius * Math.Sin(angle);
             self.Transform.Position = new Vector3(x, y, z);
-            
-            Console.WriteLine($"Sub moved to position: X={x:F2}, Y={y:F2}, Z={z:F2}");
             
             var direction = new Vector3(-Math.Sin(angle), 0, Math.Cos(angle));
             var rotationY = Math.Atan2(direction.X, direction.Z);
             rotationY += Math.PI/2;
             self.Transform.Rotation = new Euler(0, rotationY, 0, AngleUnit.Radians);
             self.SetTransformStale();
-            
-            Console.WriteLine($"Sub transform stale flag: {self.IsTransformStale}");
         });
 
-        arena.AddShapeToStage<FoModel3D>(model);
+        // ✅ Phase 0.5: Add to this page's stage
+        _clockStage?.AddShape(model);
+        $"Clock: Added submarine to ClockStage".WriteInfo();
     }
 }
