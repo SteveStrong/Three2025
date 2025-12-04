@@ -58,11 +58,14 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         _knModel = MentorServices.EstablishModel<AnimatedKnModel>("KnModelAnimationTestModel");
         // Set up refresh callback so model triggers UI update when parameters change
         _knModel.SetRefreshAction(() => InvokeAsync(StateHasChanged));
-        // Start expanded so tree children are visible
-
-        AddChildComponent();
-        AddChildComponent();
-        AddChildComponent();
+        
+        // Create initial child components using bulk add
+        var initialComponents = CreateChildComponents(3);
+        foreach (var component in initialComponents)
+        {
+            ModelEditor.AddChild(_knModel, component);
+        }
+        
         _knModel.SetExpanded(true);
         var list = _knModel.Members<KnComponent>().ToList();
         var xxx = _knModel.GetTreeChildren();
@@ -82,13 +85,8 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
             
             await Task.Delay(200); // Wait for canvas initialization
 
-            var drawing = Workspace.GetDrawing();
-            _testPage = drawing.EstablishPage<FoPage2D>("KnModelTest2D");
-            
-            var arena = Workspace.GetArena();
-            _testStage = arena.EstablishStage<FoStage3D>("KnModelTest3D");
-
-
+            _testPage = Canvas2DReference?.Page;
+            _testStage = Canvas3DReference?.Stage;
         }
         
         await base.OnAfterRenderAsync(firstRender);
@@ -122,7 +120,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         // Clear components from model but keep the model
         _knModel.GetSlot<AnimatedKnComponent>()?.Clear();
         
-        _testStage?.ClearStage();
+        _ = _testStage?.ClearAll();
         _shapeCount = 0;
         _eventLogs.Clear();
         
@@ -255,6 +253,34 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// Creates multiple child components in bulk for efficient initialization
+    /// </summary>
+    protected List<AnimatedKnComponent> CreateChildComponents(int count)
+    {
+        var colors = new[] { "Blue", "Green", "Red", "Purple", "Orange", "Cyan" };
+        var components = new List<AnimatedKnComponent>();
+        var existingCount = _knModel.Members<KnComponent>().Count();
+        
+        for (int i = 0; i < count; i++)
+        {
+            var componentIndex = existingCount + i + 1;
+            var xPosition = (componentIndex - 1) * 2.5 - 2.5;
+            var color = colors[(componentIndex - 1) % colors.Length];
+            
+            var component = new AnimatedKnComponent(
+                $"Component_{componentIndex}", 
+                color, 
+                new Vector3(xPosition, 1.0, 0)
+            );
+            
+            components.Add(component);
+        }
+        
+        $"CreateChildComponents: Created {count} components".WriteInfo();
+        return components;
+    }
+
 
 
     protected void ClearEventLog()
@@ -304,7 +330,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        _testStage?.ClearStage();
+        _ = _testStage?.ClearAll();
         
         $"KnModelAnimationTest: Disposed".WriteInfo();
         

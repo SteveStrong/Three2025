@@ -66,12 +66,10 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
         {
             var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
 
-
-            var arena = FoundryService.Arena();
             if (found)
             {
-                // ✅ Phase 0.5: Get this page's stage (Canvas already linked it to scene)
-                _frameStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                // ✅ Phase 0.5: Get this page's stage from Canvas
+                _frameStage = Canvas3DReference?.Stage;
                 $"SpacialFrameTest: Retrieved stage '{_frameStage?.Name}' from Canvas".WriteSuccess();
                 DoRequestAxisToScene(scene!);
                 CreateSpacialFrame();
@@ -101,16 +99,16 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
     {
         try
         {
-            var arena = FoundryService.Arena();
-            if (arena == null)
+            if (_frameStage == null) _frameStage = Canvas3DReference?.Stage;
+            if (_frameStage == null)
             {
-                StatusMessage = "Arena not ready yet. Try again in a moment.";
+                StatusMessage = "Stage not ready yet. Try again in a moment.";
                 StateHasChanged();
                 return;
             }
 
             // ✅ Phase 0.5: Clear only this page's stage
-            _frameStage?.ClearStage();
+            _ = _frameStage.ClearAll();
 
             $"Creating SpacialFrame3D with Rotation {RotationX}×{RotationY}×{RotationZ}° at Position ({PositionX}, {PositionY}, {PositionZ}), Pivot ({PivotX}, {PivotY}, {PivotZ}), Scale ({ScaleX}, {ScaleY}, {ScaleZ})".WriteInfo();
 
@@ -158,15 +156,15 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
 
     public void ClearAll()
     {
-        var arena = FoundryService.Arena();
-        if (arena == null)
+        if (_frameStage == null) _frameStage = Canvas3DReference?.Stage;
+        if (_frameStage == null)
         {
-            StatusMessage = "Arena not ready yet. Try again in a moment.";
+            StatusMessage = "Stage not ready yet. Try again in a moment.";
             StateHasChanged();
             return;
         }
 
-        arena.ClearArena();
+        _ = _frameStage.ClearAll();
         StateHasChanged();
     }
 

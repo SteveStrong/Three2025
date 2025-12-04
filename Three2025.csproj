@@ -9,9 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ApprenticeFoundryMentorModeler" Version="25.4.0" />
+    <!-- <PackageReference Include="ApprenticeFoundryMentorModeler" Version="25.4.0" />
     <PackageReference Include="ApprenticeFoundryRulesAndUnits" Version="10.8.2" />
-    <PackageReference Include="ApprenticeFoundryWorldsAndDrawings" Version="25.4.0" />
+    <PackageReference Include="ApprenticeFoundryWorldsAndDrawings" Version="25.4.0" /> -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
@@ -27,11 +27,11 @@
     <PackageReference Include="BlazorComponentBus" Version="2.2.0" />
   </ItemGroup>
 
-  <!-- <ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\FoundryRulesAndUnits\FoundryRulesAndUnits.csproj" />
    <ProjectReference Include="..\FoundryMentorModeler\FoundryMentorModeler.csproj" />
    <ProjectReference Include="..\FoundryWorldsAndDrawings\FoundryWorldsAndDrawings.csproj" />
-  </ItemGroup> -->
+  </ItemGroup>
 
   <ItemGroup>
     <!-- Exclude reference pattern file from Plugin_710 project -->

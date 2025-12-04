@@ -13,6 +13,8 @@ using FoundryWorldsAndDrawings.ThreeD.Core;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
 
+#nullable enable
+
 public class Label3D : FoText3D
 {
 
@@ -33,6 +35,7 @@ public class Label3D : FoText3D
 
 public interface ITrisocTech : ITechnician
 {
+    void SetStage(FoStage3D stage);
     FoModel3D GetTrisocModel(string url);
     
     FoModel3D CreateModel(string name, string url);
@@ -46,8 +49,9 @@ public class TrisocTech : ITrisocTech
 
     protected IFoundryService FoundryService { get; init; }
     protected MockDataGenerator DataGenerator { get; set; } = new();
+    protected FoStage3D? Stage { get; set; }
 
-    private Timer _timer = null!;
+    private Timer? _timer = null;
     private Label3D GlobalText = null!;
     private FoPipe3D GlobalPipe = null!;
 
@@ -60,11 +64,23 @@ public class TrisocTech : ITrisocTech
         FoundryService = foundry;
     }
 
+    /// <summary>
+    /// Set the stage to use. Call this from a page to inject its stage.
+    /// </summary>
+    public void SetStage(FoStage3D stage)
+    {
+        Stage = stage;
+    }
+
+    private FoStage3D GetStage()
+    {
+        if (Stage != null) return Stage;
+        var arena = FoundryService.Arena();
+        return arena.EstablishStage<FoStage3D>("Trisoc");
+    }
 
 
-
-
-    private void UpdateClock(object state)
+    private void UpdateClock(object? state)
     {
         if ( GlobalText == null )
         {
@@ -81,9 +97,8 @@ public class TrisocTech : ITrisocTech
                 },
             };
 
-            var arena = FoundryService.Arena();
-            var stage = arena.CurrentStage();
-            arena.AddShapeToStage<Label3D>(GlobalText, stage.GetName());
+            var stage = GetStage();
+            stage.AddShape(GlobalText);
         }
         else
         {
@@ -171,9 +186,8 @@ public class TrisocTech : ITrisocTech
 
         CreateTextLabel3D(CurrentModel, "xxx", "Test", Text3DAlign.Left, 1.5);
 
-        var arena = FoundryService.Arena();
-        var stage = arena.CurrentStage();
-        arena.AddShapeToStage<FoModel3D>(CurrentModel, stage.GetName());
+        var stage = GetStage();
+        stage.AddShape(CurrentModel);
         return CurrentModel;
     }
 
@@ -195,9 +209,8 @@ public class TrisocTech : ITrisocTech
 
         CreateTextLabel3D(model, name, name, Text3DAlign.Left, 1.5);
 
-        var arena = FoundryService.Arena();
-        var stage = arena.CurrentStage();
-        arena.AddShapeToStage<FoModel3D>(model, stage.GetName());
+        var stage = GetStage();
+        stage.AddShape(model);
         return model;
     }
 

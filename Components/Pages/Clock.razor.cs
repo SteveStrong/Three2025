@@ -79,7 +79,7 @@ public partial class ClockBase : ComponentBase, IDisposable
     public void Dispose()
     {
         // ✅ Phase 0.5: Clear only this page's stage
-        _clockStage?.ClearStage();
+        _ = _clockStage?.ClearAll();
         $"Clock: Cleared ClockStage on dispose".WriteInfo();
         
         _addedModels.Clear(); // Clear guard flags
@@ -108,12 +108,11 @@ public partial class ClockBase : ComponentBase, IDisposable
 
                 if (found && scene != null)
                 {
-                    // ✅ Phase 0.5: Get stage created by Canvas (matches 2D pattern)
-                    var arena = Workspace.GetArena();
-                    _clockStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                    // ✅ Stage-centric pattern: Get stage from Canvas
+                    _clockStage = Canvas3DReference.Stage;
                     
                     // Stage already linked to scene by Canvas - no need to link again
-                    $"Clock: Retrieved ClockStage '{_clockStage.Key}' from arena".WriteSuccess();
+                    $"Clock: Retrieved ClockStage '{_clockStage?.Key}' from Canvas".WriteSuccess();
                     
                     // Try to add a simple object to test rendering
                     // try

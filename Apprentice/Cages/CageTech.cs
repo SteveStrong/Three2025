@@ -6,11 +6,14 @@ using Three2025.Apprentice;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 
+#nullable enable
+
 
 
 
 public interface ICageTech : ITechnician
 {
+    void SetStage(FoStage3D stage);
     void CreateRoutingCage();
     void CreateCageForRack(string name);
     (int j, FoShape3D shape) GetSpacialBox(string name, int i, string section);
@@ -21,6 +24,7 @@ public class CageTech : ICageTech
     protected IWorkspace Workspace { get; init; }
     protected IFoundryService FoundryService { get; init; }
     protected MockDataGenerator DataGenerator { get; set; } = new();
+    protected FoStage3D? Stage { get; set; }
 
 
 
@@ -30,24 +34,38 @@ public class CageTech : ICageTech
         FoundryService = foundry;
     }
 
+    /// <summary>
+    /// Set the stage to use. Call this from a page to inject its stage.
+    /// </summary>
+    public void SetStage(FoStage3D stage)
+    {
+        Stage = stage;
+    }
+
+    private FoStage3D GetStage()
+    {
+        if (Stage != null) return Stage;
+        var arena = Workspace.GetArena();
+        return arena.EstablishStage<FoStage3D>("Cage");
+    }
+
     public void CreateRoutingCage()
     {
         var trayNodes = new List<Node3D>();
 
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
+        var stage = GetStage();
 
         var racks = stage.GetMembers<FoRack>();
-        foreach (var rack in racks)
+        foreach (var rack in racks ?? Enumerable.Empty<FoRack>())
         {
             var nodes = CreateCageForRack(rack);
             trayNodes.AddRange(nodes);
         }
 
-        AddLinksBetweenTrays(arena, trayNodes, "Aqua");
+        AddLinksBetweenTrays(stage, trayNodes, "Aqua");
     }
 
-    private void AddLinksBetweenTrays(IArena arena, List<Node3D> nodes, string color)
+    private void AddLinksBetweenTrays(FoStage3D stage, List<Node3D> nodes, string color)
     {
         for (int i = 1; i < nodes.Count; i++)
         {
@@ -59,8 +77,7 @@ public class CageTech : ICageTech
 
             var link = new Link3D($"Link:{start.GetTitle()}->{finish.GetTitle()}", color, start, finish);
             
-            var stage = arena.CurrentStage();
-            arena.AddShapeToStage<Link3D>(link, stage.GetName());
+            stage.AddShape(link);
 
             start.AddLink(link);
             finish.AddLink(link);
@@ -72,8 +89,7 @@ public class CageTech : ICageTech
     public void CreateCageForRack(string name)
     {
 
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
+        var stage = GetStage();
 
         var (success, rack) = stage.FindMember<FoRack>(name);
         if (!success) {
@@ -88,8 +104,7 @@ public class CageTech : ICageTech
         var trayNodes = new List<Node3D>();
         var allNodes = new List<Node3D>();
 
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
+        var stage = GetStage();
 
         
         var equip = rack.GetEquipment();
@@ -111,10 +126,10 @@ public class CageTech : ICageTech
 
         //get the nodes for the rack left rail
         var leftRail = allNodes.Where(p => p.GetName().Matches("L")).OrderBy(p => p.GetPosition().Y).ToList();
-        AddLinksBetween(rack, arena, leftRail, "Blue");
+        AddLinksBetween(rack, stage, leftRail, "Blue");
 
         var rightRail = allNodes.Where(p => p.GetName().Matches("R")).OrderBy(p => p.GetPosition().Y).ToList();
-        AddLinksBetween(rack, arena, rightRail, "Blue");
+        AddLinksBetween(rack, stage, rightRail, "Blue");
 
         return trayNodes;
 
@@ -122,8 +137,7 @@ public class CageTech : ICageTech
 
     public List<Node3D> CreateCageForEquipment(FoEquipment equip)
     {
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
+        var stage = GetStage();
 
         var nodes = new List<Node3D>();
 
@@ -148,15 +162,14 @@ public class CageTech : ICageTech
             nodes.Add(node);
         }
 
-        AddLinksBetween(equip, arena, nodes, "Blue");
+        AddLinksBetween(equip, stage, nodes, "Blue");
 
         return nodes;
     }
 
     public List<Node3D> CreateCageForTray(FoTray tray)
     {
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
+        var stage = GetStage();
 
         var nodes = new List<Node3D>();
 
@@ -181,22 +194,21 @@ public class CageTech : ICageTech
             nodes.Add(node);
         }
 
-        AddLinksBetween(tray, arena, nodes, "Blue");
+        AddLinksBetween(tray, stage, nodes, "Blue");
 
         return nodes;
     }
 
 
 
-    private void AddLinksBetween(FoShape3D parent, IArena arena, List<Node3D> nodes, string color)
+    private void AddLinksBetween(FoShape3D parent, FoStage3D stage, List<Node3D> nodes, string color)
     {
-        var stage = arena.CurrentStage();
         for (int i = 1; i < nodes.Count; i++)
         {
             var start = nodes[i - 1];
             var finish = nodes[i];
             var link = new Link3D($"Link:{parent.GetName()}:{start.GetTitle()}->{finish.GetTitle()}", color, start, finish);
-            arena.AddShapeToStage<Link3D>(link, stage.GetName());
+            stage.AddShape(link);
 
             start.AddLink(link);
             finish.AddLink(link);

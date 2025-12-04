@@ -22,6 +22,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
     [Inject] protected IJSRuntime JsRuntime { get; set; }
 
     public Canvas3DComponent Canvas3DReference = null;
+    private FoStage3D _pageStage; // Track this page's stage (stage-centric pattern)
 
     [Parameter] public int CanvasWidth { get; set; } = 800;
     [Parameter] public int CanvasHeight { get; set; } = 600;
@@ -59,6 +60,13 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
 
             // Wait for Canvas3DComponent to initialize
             await Task.Delay(100);
+
+            // Get this page's stage from the Canvas (stage-centric pattern)
+            _pageStage = Canvas3DReference?.Stage;
+            if (_pageStage != null)
+            {
+                $"GlueTest3D: Retrieved stage '{_pageStage.GetName()}' from Canvas".WriteSuccess();
+            }
 
             // Don't auto-create - let user click button to create boxes
             //$"GlueTest3D: Ready. Click 'Create Boxes' to begin.".WriteInfo();
@@ -144,14 +152,17 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
         
         $"Creating boxes on the floor - ready for gluing".WriteInfo();
         
-        var arena = Workspace.GetArena();
-        if (arena == null)
+        // Use stage-centric pattern - get stage from canvas
+        if (_pageStage == null)
         {
-            $"No arena available".WriteError();
+            _pageStage = Canvas3DReference?.Stage;
+        }
+        if (_pageStage == null)
+        {
+            $"No stage available - canvas not initialized".WriteError();
             return;
         }
 
-        var stage = arena.CurrentStage();
         // Clear existing objects and glue
         _animationTime = 0;
         _isAnimating = false;
@@ -167,7 +178,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             },
         };
         _baseBox.CreateBox("BaseBox", 2.0, 1.0, 2.0);
-        arena.AddShapeToStage<FoShape3D>(_baseBox, stage.GetName());
+        _pageStage.AddShape(_baseBox);
         AddFaceMarkers(_baseBox);
 
         // Create middle box (green) - also on floor initially
@@ -179,7 +190,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             },
         };
         _middleBox.CreateBox("MiddleBox", 1.5, 1.0, 1.5);
-        arena.AddShapeToStage<FoShape3D>(_middleBox, stage.GetName());
+        _pageStage.AddShape(_middleBox);
         AddFaceMarkers(_middleBox);
 
         // Create top box (blue) - also on floor initially
@@ -191,7 +202,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             },
         };
         _topBox.CreateBox("TopBox", 1.0, 1.0, 1.0);
-        arena.AddShapeToStage<FoShape3D>(_topBox, stage.GetName());
+        _pageStage.AddShape(_topBox);
 
         AddFaceMarkers(_topBox);
 
@@ -308,12 +319,12 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
         $"Animation stopped".WriteInfo();
     }
 
-    public void Reset()
+    public async void Reset()
     {
         StopAnimation();
         
-        var arena = Workspace?.GetArena();
-        arena?.ClearArena();
+        // Stage-centric pattern: clear only this page's stage
+        await (_pageStage?.ClearAll() ?? Task.CompletedTask);
         
         _baseBox = null;
         _middleBox = null;
@@ -489,13 +500,16 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             CreateStackedTower();
         }
 
-        var arena = Workspace.GetArena();
-        if (arena == null)
+        // Use stage-centric pattern
+        if (_pageStage == null)
         {
-            $"No arena available".WriteError();
+            _pageStage = Canvas3DReference?.Stage;
+        }
+        if (_pageStage == null)
+        {
+            $"No stage available - canvas not initialized".WriteError();
             return;
         }
-        var stage = arena.CurrentStage();
         
         // Create pipe connecting base to middle box
         _pipe1 = new FoGluePipe3D($"Pipe1-{Guid.NewGuid().ToString().Substring(0, 8)}", "orange");
@@ -504,7 +518,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             _middleBox, "BottomFaceCenter",
             radius: 0.08
         );
-        arena.AddShapeToStage<FoGluePipe3D>(_pipe1, stage.GetName());
+        _pageStage.AddShape(_pipe1);
         
         $"Created dynamic pipe between boxes - will update as they move!".WriteSuccess();
         StateHasChanged();
@@ -520,8 +534,16 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             CreateStackedTower();
         }
 
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
+        // Use stage-centric pattern
+        if (_pageStage == null)
+        {
+            _pageStage = Canvas3DReference?.Stage;
+        }
+        if (_pageStage == null)
+        {
+            $"No stage available - canvas not initialized".WriteError();
+            return;
+        }
         
         // Pipe 1: Base top to Middle bottom
         _pipe1 = new FoGluePipe3D($"Pipe1-{Guid.NewGuid().ToString().Substring(0, 8)}", "orange");
@@ -530,7 +552,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             _middleBox, "LeftBottomBack",
             radius: 0.06
         );
-        arena.AddShapeToStage<FoGluePipe3D>(_pipe1, stage.GetName());
+        _pageStage.AddShape(_pipe1);
         
         // Pipe 2: Middle side to Top side
         _pipe2 = new FoGluePipe3D($"Pipe2-{Guid.NewGuid().ToString().Substring(0, 8)}", "cyan");
@@ -539,7 +561,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
             _topBox, "BackFaceCenter",
             radius: 0.06
         );
-        arena.AddShapeToStage<FoGluePipe3D>(_pipe2, stage.GetName());
+        _pageStage.AddShape(_pipe2);
         
         $"Created 2 dynamic pipes - watch them update during animation!".WriteSuccess();
         StateHasChanged();
