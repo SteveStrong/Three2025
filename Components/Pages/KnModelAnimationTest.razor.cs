@@ -128,68 +128,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         InvokeAsync(StateHasChanged);
     }
 
-    protected void AddAnimatedBoxOBSOLITE()
-    {
-        if (_testStage == null)
-        {
-            AddLog("Error", "Stage not ready - cannot add box");
-            return;
-        }
 
-        _shapeCount++;
-        var boxIndex = _shapeCount;
-        var x = (boxIndex - 1) * 3.0 - 3.0; // Spread boxes horizontally
-        
-        var box = new FoShape3D().CreateBox($"AnimatedBox_{boxIndex}", 1.0, 1.0, 1.0);
-        box.Color = GetColorForIndex(boxIndex);
-        box.Transform = new Transform3($"BoxTransform_{boxIndex}")
-        {
-            Position = new Vector3(x, 0.5, 0),
-            Rotation = Euler.FromDegrees(0, 0, 0),
-        };
-
-        _testStage.AddShape(box);
-        
-        AddLog("Shape", $"Added box '{box.Key}' at position ({x:F1}, 0.5, 0)");
-        $"KnModelAnimationTest: Added box '{box.Key}'".WriteSuccess();
-    }
-
-    protected void AddRotatingGroupOBSOLITE()
-    {
-        if (_testStage == null)
-        {
-            AddLog("Error", "Stage not ready - cannot add group");
-            return;
-        }
-
-        _shapeCount++;
-        var groupIndex = _shapeCount;
-        
-        var group = new FoGroup3D($"RotatingGroup_{groupIndex}")
-        {
-            Transform = new Transform3($"GroupTransform_{groupIndex}")
-            {
-                Position = new Vector3(0, 2, 0),
-                Rotation = Euler.FromDegrees(0, 0, 0),
-            }
-        };
-
-        // Add some child boxes to the group
-        for (int i = 0; i < 3; i++)
-        {
-            var angle = i * (2 * Math.PI / 3);
-            var childBox = new FoShape3D().CreateBox($"GroupChild_{groupIndex}_{i}", 0.5, 0.5, 0.5);
-            childBox.Color = GetColorForIndex(i + 1);
-            childBox.Transform = new Transform3($"ChildTransform_{groupIndex}_{i}")
-            {
-                Position = new Vector3(Math.Cos(angle) * 1.5, 0, Math.Sin(angle) * 1.5),
-            };
-            group.AddShape(childBox);
-        }
-
-        _testStage.AddShape(group);
-        AddLog("Shape", $"Added rotating group '{group.Key}' with 3 children");
-    }
 
 
 
