@@ -56,8 +56,6 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         base.OnInitialized();
         
         _knModel = MentorServices.EstablishModel<AnimatedKnModel>("KnModelAnimationTestModel");
-        // Set up refresh callback so model triggers UI update when parameters change
-        _knModel.SetRefreshAction(() => InvokeAsync(StateHasChanged));
         
         // Create initial child components using bulk add
         var initialComponents = CreateChildComponents(3);
@@ -157,13 +155,19 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         // Position components in a row
         var xPosition = (componentCount - 1) * 2.5 - 2.5;
         var colors = new[] { "Blue", "Green", "Red", "Purple", "Orange", "Cyan" };
+        var amplitudes = new[] { 0.3, 0.5, 0.7, 0.4, 0.6, 0.8 };  // Different bounce heights
+        var frequencies = new[] { 0.04, 0.05, 0.06, 0.07, 0.03, 0.08 };  // Different speeds
         var color = colors[(componentCount - 1) % colors.Length];
+        var amplitude = amplitudes[(componentCount - 1) % amplitudes.Length];
+        var frequency = frequencies[(componentCount - 1) % frequencies.Length];
         
-        // Create component with position and color (constructor initializes KnParameters)
+        // Create component with position, color, amplitude, and frequency (constructor initializes KnParameters)
         var component = new AnimatedKnComponent(
             $"Component_{componentCount}", 
             color, 
-            new Vector3(xPosition, 1.0, 0)
+            new Vector3(xPosition, 1.0, 0),
+            amplitude,
+            frequency
         );
         
         // Set geometry configuration via parameters (replaces object initializer)
@@ -198,6 +202,8 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     protected List<AnimatedKnComponent> CreateChildComponents(int count)
     {
         var colors = new[] { "Blue", "Green", "Red", "Purple", "Orange", "Cyan" };
+        var amplitudes = new[] { 0.3, 0.5, 0.7, 0.4, 0.6, 0.8 };  // Different bounce heights
+        var frequencies = new[] { 0.04, 0.05, 0.06, 0.07, 0.03, 0.08 };  // Different speeds
         var components = new List<AnimatedKnComponent>();
         var existingCount = _knModel.Members<KnComponent>().Count();
         
@@ -206,11 +212,15 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
             var componentIndex = existingCount + i + 1;
             var xPosition = (componentIndex - 1) * 2.5 - 2.5;
             var color = colors[(componentIndex - 1) % colors.Length];
+            var amplitude = amplitudes[(componentIndex - 1) % amplitudes.Length];
+            var frequency = frequencies[(componentIndex - 1) % frequencies.Length];
             
             var component = new AnimatedKnComponent(
                 $"Component_{componentIndex}", 
                 color, 
-                new Vector3(xPosition, 1.0, 0)
+                new Vector3(xPosition, 1.0, 0),
+                amplitude,
+                frequency
             );
             
             components.Add(component);

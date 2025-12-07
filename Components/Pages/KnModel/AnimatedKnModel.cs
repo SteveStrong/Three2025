@@ -13,19 +13,8 @@ namespace Three2025.Components.Pages;
 /// </summary>
 public class AnimatedKnModel : PartModel
 {
-    private Action? _onRefresh;
-
     public AnimatedKnModel(string name) : base(name)
     {
-        // Use composition pattern - set up the pre-animation action
-        PreAnimationRefresh((comp, evt) =>
-        {
-            // Refresh every 60 frames to avoid spam
-            if (evt.tick % 60 == 0)
-            {
-                _onRefresh?.Invoke();
-            }
-        });
     }
     
     public AnimatedKnModel(string name, IMentorServices mentorServices) : base(name, mentorServices)
@@ -43,55 +32,25 @@ public class AnimatedKnModel : PartModel
         var param = this.EstablishParameter("Param1");
         param.SetValue(42);
 
-        // Use composition pattern - set up the pre-animation action
+        // Update param with tick count - child components are notified automatically
         PreAnimationRefresh((comp, evt) =>
         {
-            // Update param and refresh UI every 60 frames
             if (evt.tick % 60 == 0)
             {
                 param.SetValue(evt.tick);
-                _onRefresh?.Invoke();
+                $"AnimatedKnModel '{name}': PreAnimationRefresh tick={evt.tick}".WriteInfo();
             }
         });
         
         $"AnimatedKnModel: PreAnimationRefresh set up, PreContextLink is {(PreContextLink != null ? "SET" : "NULL")}".WriteInfo();
     }
 
-    public void SetRefreshAction(Action onRefresh)
-    {
-        _onRefresh = onRefresh;
-    }
-
     /// <summary>
     /// Override to properly return KnComponent children.
-    /// The base class uses EstablishFolderForAllOfType which doesn't add to the list.
-    /// Note: Must include AnimatedKnComponent specifically since it has its own slot.
     /// </summary>
     public override IEnumerable<ITreeNode> GetTreeChildren()
     {
-        //var list = new List<ITreeNode>();
         var list = base.GetTreeChildren().ToList();
-        
-        // Add folders for parameters (like base class)
-        //EstablishFolderIfNotEmpty<KnParameter>(list);
-        //EstablishFolderIfNotEmpty<KnComponent>(list);
-        
-        // // Add KnComponent members as tree children
-        // var components = Members<KnComponent>();
-        // //$"AnimatedKnModel.GetTreeChildren: Members<KnComponent> count = {components.Count}".WriteInfo();
-        // foreach (var component in components)
-        // {
-        //     list.Add(component);
-        // }
-        
-        // // Also add AnimatedKnComponent members (stored in separate slot due to generic Add<T>)
-        // var animatedComponents = Members<AnimatedKnComponent>();
-        // $"AnimatedKnModel.GetTreeChildren: Members<AnimatedKnComponent> count = {animatedComponents.Count}".WriteInfo();
-        // foreach (var component in animatedComponents)
-        // {
-        //     list.Add(component);
-        // }
-        
         return list;
     }
 

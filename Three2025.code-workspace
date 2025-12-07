@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../FoundryRulesAndUnits"
+		},
+		{
+			"path": "../Plugin710"
 		}
 	],
 	"settings": {}
