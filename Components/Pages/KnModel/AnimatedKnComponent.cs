@@ -223,6 +223,48 @@ public class AnimatedKnComponent : PartComponent
                 break;
         }
         
+        // Create text label as subshape positioned above the geometry
+        var label3D = new FoText3D("Label", "white")
+        {
+            Text = "Tick: 0",
+            FontSize = 0.3,
+            Transform = new Transform3("LabelTransform")
+            {
+                // Position relative to parent - offset above the box
+                Position = new Vector3(0, height + 0.3, depth + 0.3),
+            }
+        };
+        
+        // Animate the label to show current tick
+        label3D.BeforeAnimationRefresh((self, tick, fps) =>
+        {
+            if (self is FoText3D textShape)
+            {
+                textShape.Text = $"Tick: {tick}";
+            }
+        });
+        
+        shape.AddSubGlyph3D(label3D);
+        
+        // Add sinusoidal animation to the shape itself
+        // Capture base position for oscillation
+        var baseX = posX;
+        var baseY = posY + animOffset;
+        var baseZ = posZ;
+        var amplitude = 0.5; // How far up/down to move
+        var frequency = 0.05; // How fast to oscillate (radians per tick)
+        var phaseOffset = posX * 0.8; // Use X position to offset phase - creates wave effect
+        
+        shape.BeforeAnimationRefresh((self, tick, fps) =>
+        {
+            if (self is FoShape3D s && s.Transform != null)
+            {
+                // Sinusoidal Y position with phase offset for each component
+                var newY = baseY + amplitude * Math.Sin(frequency * tick + phaseOffset);
+                s.Transform.MoveTo(baseX, newY, baseZ);
+            }
+        });
+        
         return shape;
     }
 
