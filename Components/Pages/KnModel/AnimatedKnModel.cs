@@ -13,6 +13,8 @@ namespace Three2025.Components.Pages;
 /// </summary>
 public class AnimatedKnModel : PartModel
 {
+    private bool _animationSetup = false;
+    
     public AnimatedKnModel(string name) : base(name)
     {
     }
@@ -32,17 +34,35 @@ public class AnimatedKnModel : PartModel
         var param = this.EstablishParameter("Param1");
         param.SetValue(42);
 
-        // Update param with tick count - child components are notified automatically
-        PreAnimationRefresh((comp, evt) =>
-        {
-            if (evt.tick % 60 == 0)
-            {
-                param.SetValue(evt.tick);
-                $"AnimatedKnModel '{name}': PreAnimationRefresh tick={evt.tick}".WriteInfo();
-            }
-        });
+        EnsureAnimationSetup();
         
         $"AnimatedKnModel: PreAnimationRefresh set up, PreContextLink is {(PreContextLink != null ? "SET" : "NULL")}".WriteInfo();
+    }
+    
+    /// <summary>
+    /// Ensure animation callback is registered. Called from constructor and from page init
+    /// (in case model already existed and constructor didn't run).
+    /// </summary>
+    public void EnsureAnimationSetup()
+    {
+        if (_animationSetup) return;
+        _animationSetup = true;
+        
+        var param = this.EstablishParameter("Param1");
+        
+        // Update param with tick count and refresh tree
+        PreAnimationRefresh((comp, evt) =>
+        {
+            if (evt.tick % 120 == 0)
+            {
+                param.SetValue(evt.tick);
+                // Get services from model - no need to pass it in
+                var services = GetMentorServices();
+                // Targeted refresh - only update this specific parameter's tree node
+                services?.PubSub?.Publish<RefreshRenderMessage>(RefreshRenderMessage.RefreshValueChanged(param));
+                $"AnimatedKnModel '{Name}': PreAnimationRefresh tick={evt.tick}".WriteInfo();
+            }
+        });
     }
 
     /// <summary>
@@ -50,7 +70,9 @@ public class AnimatedKnModel : PartModel
     /// </summary>
     public override IEnumerable<ITreeNode> GetTreeChildren()
     {
-        var list = base.GetTreeChildren().ToList();
+        var list = new List<ITreeNode>();
+        EstablishFolderIfNotEmpty<KnParameter>(list);
+        EstablishFolderIfNotEmpty<KnRelationship>(list);
         return list;
     }
 

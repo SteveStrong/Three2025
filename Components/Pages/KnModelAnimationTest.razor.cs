@@ -55,7 +55,13 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     {
         base.OnInitialized();
         
+        // Subscribe to refresh messages from model parameter changes
+        MentorServices?.PubSub?.SubscribeTo<RefreshRenderMessage>(OnRefreshRender);
+        
         _knModel = MentorServices.EstablishModel<AnimatedKnModel>("KnModelAnimationTestModel");
+        
+        // Ensure animation callback is set up (may not run if model already exists)
+        _knModel.EnsureAnimationSetup();
         
         // Create initial child components using bulk add
         var initialComponents = CreateChildComponents(3);
@@ -279,10 +285,19 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
 
     public void Dispose()
     {
+        MentorServices?.PubSub?.UnSubscribeFrom<RefreshRenderMessage>(OnRefreshRender);
         _ = _testStage?.ClearAll();
         
         $"KnModelAnimationTest: Disposed".WriteInfo();
         
         GC.SuppressFinalize(this);
+    }
+    
+    /// <summary>
+    /// Handle refresh messages from model parameter changes
+    /// </summary>
+    private void OnRefreshRender(RefreshRenderMessage message)
+    {
+        InvokeAsync(StateHasChanged);
     }
 }

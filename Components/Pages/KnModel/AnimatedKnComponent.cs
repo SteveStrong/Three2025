@@ -50,23 +50,55 @@ public class AnimatedKnComponent : PartComponent
         {
             if (evt.tick > 0 && evt.tick % 120 == 0)
             {
+                var model = this.GetKnParentOfType<KnModel>();
+                var services = model?.GetMentorServices();
+
                 var colorParam = FindParameter("Color");
                 if (colorParam != null)
                 {
                     var currentColor = colorParam.GetValue().Value() as string ?? "Blue";
-                    var newColor = currentColor switch
-                    {
-                        "Blue" => "Green",
-                        "Green" => "Red",
-                        "Red" => "Blue",
-                        _ => "Blue"
-                    };
+                    var newColor = RecomputeNextColor(currentColor);
                     colorParam.SetValue(newColor);
-                    colorParam.Smash(); // Cascade to clear geometry cache
+
+
+                    services?.PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.RefreshColorChanged(colorParam));
                     $"AnimatedKnComponent '{Name}': Changed color from {currentColor} to {newColor} at tick={evt.tick}".WriteSuccess();
+                }
+
+                var shapeParam = FindParameter("GeometryType");
+                if (shapeParam != null)
+                {
+                    var currentShape = shapeParam.GetValue().Value() as string ?? "Box";
+                    var newShape = RecomputeNextShape(currentShape);
+                    shapeParam.SetValue(newShape);
+
+                    services?.PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.RefreshValueChanged(shapeParam));
+                    $"AnimatedKnComponent '{Name}': Changed shape from {currentShape} to {newShape} at tick={evt.tick}".WriteSuccess();
                 }
             }
         });
+    }
+
+    public string RecomputeNextColor(string currentColor)
+    {
+        return currentColor switch
+        {
+            "Blue" => "Green",
+            "Green" => "Red",
+            "Red" => "Blue",
+            _ => "Blue"
+        };
+    }
+
+    public string RecomputeNextShape(string currentShape)
+    {
+        return currentShape switch
+        {
+            "Box" => "Sphere",
+            "Sphere" => "Cylinder",
+            "Cylinder" => "Box",
+            _ => "Box"
+        };
     }
 
     /// <summary>
@@ -136,7 +168,7 @@ public class AnimatedKnComponent : PartComponent
         var posY = FindLengthValue("PositionY", 0.0).Value();
         var posZ = FindLengthValue("PositionZ", 0.0).Value();
         var animOffset = FindLengthValue("AnimationOffset", 0.0).Value();
-        var rotY = FindAngleValue("RotationY", 0.0).Value();
+        var rotY = 0.0;
 
         $"AnimatedKnComponent.CreateComponentGeometry: Creating {geomType} '{name}' at ({posX}, {posY}, {posZ})".WriteInfo();
         
