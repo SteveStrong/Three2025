@@ -132,9 +132,11 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         InvokeAsync(StateHasChanged);
     }
 
-
-
-
+    private void OnRefreshRender(RefreshRenderMessage message)
+    {
+        // Handle refresh messages from model parameter changes
+        InvokeAsync(StateHasChanged);
+    }
 
     protected void RenderToCanvas()
     {
@@ -293,11 +295,5 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         GC.SuppressFinalize(this);
     }
     
-    /// <summary>
-    /// Handle refresh messages from model parameter changes
-    /// </summary>
-    private void OnRefreshRender(RefreshRenderMessage message)
-    {
-        InvokeAsync(StateHasChanged);
-    }
+
 }

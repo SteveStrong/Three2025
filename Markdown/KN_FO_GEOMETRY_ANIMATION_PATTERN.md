@@ -47,31 +47,143 @@ GeometryType parameter ──ContributesTo──► Geometry parameter
 
 ## The Animation Flow
 
+### High-Level: Two-Phase Animation Cycle
+
 ```
-AnimationFrameBus
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                        BROWSER ANIMATION FRAME                               │
+│                    (requestAnimationFrame callback)                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PHASE 1: PreAnimationEvent                                                  │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  Purpose: KN Model parameter updates, geometry recreation                    │
+│  Target:  Knowledge layer (KnModel, KnComponent, KnParameter)                │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PHASE 2: AnimationEvent                                                     │
+│  ─────────────────────────────────────────────────────────────────────────── │
+│  Purpose: FO shape transform updates, Three.js rendering                     │
+│  Target:  Foundry Objects layer (FoShape3D, FoStage3D, Three.js)             │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detailed: Complete KN→FO Animation Flow
+
+This diagram shows exactly how a parameter change flows from the Knowledge Model
+through to a recreated 3D shape rendered in Three.js:
+
+```
+Browser Animation Frame (requestAnimationFrame)
     │
     ▼
-┌─────────────────────────────────────────────────────────────┐
-│ PreAnimationEvent (for KN model updates)                    │
-│   └─► MentorServices.OnPreAnimationEvent()                  │
-│        └─► model.OnPreAnimationEvent(evt)                   │
-│             ├─► PreAnimationRefresh callbacks               │
-│             │    └─► UpdateParameter("GeometryType", ...)   │
-│             │         └─► GeometryType.Smash()              │
-│             │              └─► Geometry.Smash() (via deps)  │
-│             │                   └─► BeforeSmash callback    │
-│             │                        └─► Delete old shape   │
-│             │                        └─► Clear cache        │
-│             └─► RenderGeometry3D(ctx)                       │
-│                  └─► ComputeShape3D recreates (cache empty) │
-└─────────────────────────────────────────────────────────────┘
+AnimationFrameBus.PreAnimationEvent
     │
     ▼
-┌─────────────────────────────────────────────────────────────┐
-│ AnimationEvent (for FO rendering)                           │
-│   └─► FoShape3D.BeforeAnimationRefresh (transform updates)  │
-│   └─► Three.js renders the scene                            │
-└─────────────────────────────────────────────────────────────┘
+MentorServices.OnPreAnimationEvent(evt)
+    │
+    ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ AnimatedKnModel.OnPreAnimationEvent(evt)                                     │
+│                                                                              │
+│   ┌────────────────────────────────────────────────────────────────────────┐ │
+│   │ STEP 1: base.OnPreAnimationEvent(evt)                                  │ │
+│   │         Propagates to all child components                             │ │
+│   └────────────────────────────────────────────────────────────────────────┘ │
+│       │                                                                      │
+│       ▼                                                                      │
+│   ┌────────────────────────────────────────────────────────────────────────┐ │
+│   │ AnimatedKnComponent.PreAnimationRefresh callback                       │ │
+│   │                                                                        │ │
+│   │   SetValue("Color", newColor)                                          │ │
+│   │       │                                                                │ │
+│   │       ▼                                                                │ │
+│   │   ColorParam.Smash()                                                   │ │
+│   │       │                                                                │ │
+│   │       ▼                                                                │ │
+│   │   ContributesTo.ForEach(p => p.Smash())                                │ │
+│   │       │                                                                │ │
+│   │       ▼                                                                │ │
+│   │   GeometryParam.Smash()  ◄── dependency link from IDependOn()          │ │
+│   │       │                                                                │ │
+│   │       ▼                                                                │ │
+│   │   BeforeSmash callback fires:                                          │ │
+│   │       ├─► oldShape.SetShouldDelete()  (marks for removal)              │ │
+│   │       └─► ClearCashe()                (allows recreation)              │ │
+│   │                                                                        │ │
+│   │   SetValue("GeometryType", newShape)                                   │ │
+│   │       └─► (same smash cascade as above)                                │ │
+│   └────────────────────────────────────────────────────────────────────────┘ │
+│       │                                                                      │
+│       ▼                                                                      │
+│   ┌────────────────────────────────────────────────────────────────────────┐ │
+│   │ STEP 2: RenderGeometry3D(ctx)  ◄── THE KEY STEP!                       │ │
+│   │         Without this, empty caches stay empty forever                  │ │
+│   │                                                                        │ │
+│   │   Geometry3DValueFor(view)                                             │ │
+│   │       │                                                                │ │
+│   │       ▼                                                                │ │
+│   │   GetCurrentValue()                                                    │ │
+│   │       │                                                                │ │
+│   │       ▼                                                                │ │
+│   │   Evaluate() ── IsUnknown()? YES (was smashed) ── run Formula          │ │
+│   │       │                                                                │ │
+│   │       ▼                                                                │ │
+│   │   ComputeShape3D()                                                     │ │
+│   │       │                                                                │ │
+│   │       ▼                                                                │ │
+│   │   IsCasheEmpty()? YES ── Create new FoShape3D                          │ │
+│   │       │                                                                │ │
+│   │       ▼                                                                │ │
+│   │   New shape added to stage with BeforeAnimationRefresh callback        │ │
+│   └────────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────────┘
+    │
+    ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ AnimationFrameBus.AnimationEvent                                             │
+│                                                                              │
+│   FoStage3D processes all shapes:                                            │
+│       │                                                                      │
+│       ▼                                                                      │
+│   FoShape3D.BeforeAnimationRefresh callbacks                                 │
+│       │   (for transform-only updates: position, rotation, scale)            │
+│       │                                                                      │
+│       ▼                                                                      │
+│   Three.js renders the scene                                                 │
+│       │                                                                      │
+│       ▼                                                                      │
+│   Canvas displays updated 3D view                                            │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Critical Insight: Why RenderGeometry3D Is Essential
+
+The smash cascade clears caches but **does not trigger re-evaluation**:
+
+```
+WITHOUT RenderGeometry3D:                  WITH RenderGeometry3D:
+─────────────────────────                  ─────────────────────────
+Parameter.SetValue()                       Parameter.SetValue()
+    │                                          │
+    ▼                                          ▼
+Smash cascade                              Smash cascade
+    │                                          │
+    ▼                                          ▼
+Cache cleared                              Cache cleared
+    │                                          │
+    ▼                                          ▼
+??? Nothing calls Evaluate()               RenderGeometry3D()
+    │                                          │
+    ▼                                          ▼
+Shape stays deleted!                       Evaluate() → ComputeShape3D()
+                                               │
+                                               ▼
+                                           New shape created!
 ```
 
 ## Implementation Pattern
@@ -178,26 +290,113 @@ For **animated** components where parameters change during the animation loop, y
 - Dependencies (`IDependOn`) to cascade the smash
 - `BeforeSmash` callback to clean up the old shape
 
-## The Two Missing Pieces (Without Dependencies)
+## The Three Critical Gotchas
 
-If you DON'T set up dependencies:
-1. `UpdateParameter("GeometryType", "Sphere")` smashes GeometryType
-2. Geometry parameter **doesn't know it should smash** - no `ContributesTo` link
-3. Cache stays valid with old shape
-4. Even calling `RenderGeometry3D` won't help - cache isn't empty!
+### Gotcha 1: Dependencies Are Cleared After Smash
 
-If you set up dependencies but NOT `BeforeSmash`:
-1. Parameter change smashes geometry (good!)
-2. But old shape stays in scene (duplicates appear)
+The `KnParameter.Smash()` method clears `ContributesTo` and `DependsOn` lists after cascading:
+
+```csharp
+// In KnParameter.Smash()
+ContributesTo.ForEach(p => p.Smash());
+ContributesTo.Clear();  // ← Dependencies gone!
+DependsOn.Clear();      // ← Dependencies gone!
+```
+
+**Solution**: Re-establish dependencies in `ComputeShape3D` every time a shape is created:
+
+```csharp
+if (geometry.IsCasheEmpty())
+{
+    shape = CreateComponentGeometry(...);
+    geometry.SetCashe(shape);
+    
+    // CRITICAL: Re-establish dependencies after each creation
+    SetupGeometryDependencies(geometry.GetParameter());
+}
+```
+
+### Gotcha 2: BeforeSmash Only Fires When Value Is Valid
+
+The `BeforeSmash` callback (`OnValueSmash`) only fires if `IsValid()` is true:
+
+```csharp
+// In KnParameter.Smash()
+if (IsValid())  // ← Only if not Unknown!
+    OnValueSmash?.Invoke(this, Value);
+```
+
+This means if you smash an already-unknown parameter, the callback won't fire.
+This is usually fine because an unknown parameter has no cache to clear.
+
+### Gotcha 3: View/Stage Name Must Match
+
+When `OnPreAnimationEvent` calls `RenderGeometry3D`, it must use the **same view name**
+that was used for the initial render:
+
+```
+Initial render:       RenderArena3D("KnModelTest3D", ...)  → shapes go to stage "KnModelTest3D"
+Animation re-render:  RenderGeometry3D(ctx with "default") → shapes go to stage "default" (WRONG!)
+```
+
+**Solution**: Iterate through arena stages with associated scenes:
+
+```csharp
+foreach (var stage in arena.GetAllStages())
+{
+    if (stage.GetAssociatedScene() == null) continue;  // Skip orphan stages
+    var ctx = RenderContext3D.Create(arena, stage.Name, deep: true);
+    RenderGeometry3D(ctx);
+}
+```
+
+### Gotcha 4: ClearCashe() Has Smart Caching for Text Shapes!
+
+**CRITICAL**: `KnGeometryParameter.ClearCashe()` has "smart caching" logic that 
+**preserves the cache** for shapes with FoText3D sub-elements!
+
+```csharp
+// In KnGeometryParameter.ClearCashe()
+if (hasTextElements)
+{
+    // Keep cache intact - no recreation needed!
+    return this;  // ← DOES NOT SET _cashe = null!
+}
+```
+
+If your shape has any text sub-elements (like labels), calling `ClearCashe()` 
+in your BeforeSmash callback **will NOT clear the cache**!
+
+**Solution**: Use `GetParameter().SetCashe(null!)` directly to force cache clear:
+
+```csharp
+geom.ApplyMethod("ComputeGeometry", ComputeShape3D, null, (param, opResult) => 
+{
+    var oldShape = geom.GetCashe<FoShape3D>();
+    oldShape?.Delete();  // Remove from scene
+    
+    // CRITICAL: Use SetCashe(null!) to FORCE cache clear
+    // Do NOT use ClearCashe() - it has smart caching for text shapes!
+    geom.GetParameter().SetCashe(null!);
+});
+```
 
 ## Summary: What Makes It Work
 
 | Component | Purpose |
 |-----------|---------|
 | `IDependOn(param)` | Creates ContributesTo link so smash cascades |
-| `BeforeSmash` callback | Deletes old shape AND clears cache |
-| `OnPreAnimationEvent` override | Calls `RenderGeometry3D` to recreate from empty cache |
-| `ComputeShape3D` | Checks `IsCasheEmpty()` and creates new shape |
+| `BeforeSmash` callback | Deletes old shape AND **forces** cache clear with `SetCashe(null!)` |
+| `OnPreAnimationEvent` override | Calls `RenderGeometry3D` for each stage with scene |
+| `ComputeShape3D` | Checks `IsCasheEmpty()`, creates shape, **re-establishes dependencies** |
+| `arena.GetAllStages()` | Gets stages to re-render (filter by `GetAssociatedScene()`) |
+
+## Critical Anti-Patterns to Avoid
+
+1. **DON'T use `ClearCashe()`** for shapes with text children - use `SetCashe(null!)` directly
+2. **DON'T forget to re-establish dependencies** after shape creation (smash clears them)
+3. **DON'T hardcode view names** - iterate stages with associated scenes
+4. **DON'T call `RenderGeometry3D` without an arena** - check for null first
 
 ## Files Reference
 
@@ -205,3 +404,4 @@ If you set up dependencies but NOT `BeforeSmash`:
 - `AnimatedKnComponent.cs` - Component with dependencies and BeforeSmash
 - `FoundryMentorModeler/Mentor/KnParameter.cs` - `IDependOn`, `ContributesTo`, `Smash`
 - `FoundryMentorModeler/Mentor/KnGeometry.cs` - `ApplyMethod` with BeforeSmash
+- `FoundryMentorModeler/Mentor/KnGeometryParameter.cs` - `ClearCashe()` smart caching logic

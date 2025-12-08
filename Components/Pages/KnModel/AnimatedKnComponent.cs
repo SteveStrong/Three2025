@@ -104,20 +104,66 @@ public class AnimatedKnComponent : PartComponent
     /// <summary>
     /// Override EstablishGeometry3D following Rack_710 pattern.
     /// Uses Compute3DGeometry with ApplyMethod for lazy geometry creation.
+    /// Sets up dependencies so geometry rebuilds when Color/GeometryType change.
     /// </summary>
     public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view, IArena? page)
     {
         var result = Compute3DGeometry(view, geom => 
         {
-            geom.ApplyMethod("ComputeGeometry", ComputeShape3D, null, null);
+            // Set up compute method WITH BeforeSmash callback for cleanup
+            geom.ApplyMethod("ComputeGeometry", ComputeShape3D, null, (param, opResult) => 
+            {
+                // Called when geometry parameter is smashed (via dependency cascade)
+                var oldShape = geom.GetCashe<FoShape3D>();
+                var hasOldShape = oldShape != null;
+                
+                // Delete the old shape from scene if it exists
+                oldShape?.Delete();
+                
+                // CRITICAL: Use GetParameter().SetCashe(null!) to force cache clear
+                // Do NOT use ClearCashe() - it has "smart caching" for text shapes
+                // that would prevent recreation when we change geometry type
+                geom.GetParameter().SetCashe(null!);
+                
+                $"AnimatedKnComponent '{Name}': BeforeSmash fired - had shape={hasOldShape}, cache FORCED cleared, view={geom.View}".WriteWarning();
+            });
+            
+            // Establish dependencies: geometry depends on these parameters
+            SetupGeometryDependencies(geom.GetParameter());
         });
 
         return (result, result.GetParameter());
     }
 
     /// <summary>
+    /// Register dependencies so that when Color or GeometryType parameters are smashed,
+    /// the geometry parameter is also smashed, triggering BeforeSmash cleanup.
+    /// </summary>
+    private void SetupGeometryDependencies(KnGeometryParameter geomParam)
+    {
+        var geomTypeParam = FindParameter("GeometryType");
+        var colorParam = FindParameter("Color");
+        
+        // IDependOn creates the ContributesTo link:
+        // geomTypeParam.ContributesTo.Add(geomParam)
+        // So when geomTypeParam.Smash() is called, it cascades to geomParam.Smash()
+        if (geomTypeParam != null)
+        {
+            geomParam.IDependOn(geomTypeParam);
+            $"AnimatedKnComponent '{Name}': Geometry depends on GeometryType".WriteInfo();
+        }
+        
+        if (colorParam != null)
+        {
+            geomParam.IDependOn(colorParam);
+            $"AnimatedKnComponent '{Name}': Geometry depends on Color".WriteInfo();
+        }
+    }
+
+    /// <summary>
     /// Compute shape following proper IsCasheEmpty pattern from Rack_710.
     /// Creates geometry on first call, updates on subsequent calls.
+    /// Re-establishes dependencies after each creation (they get cleared on smash).
     /// </summary>
     private bool ComputeShape3D(KnInstance context, List<OPResult> args, OPResult result)
     {
@@ -126,10 +172,13 @@ public class AnimatedKnComponent : PartComponent
             return false;
 
         var shape = geometry.GetCashe<FoShape3D>();
+        var isCacheEmpty = geometry.IsCasheEmpty();
+        
+        $"ComputeShape3D '{Name}': IsCasheEmpty={isCacheEmpty}, view={geometry.View}".WriteInfo();
 
-        if (geometry.IsCasheEmpty())
+        if (isCacheEmpty)
         {
-            // First time: Create geometry from parameters
+            // First time or after smash: Create geometry from parameters
             var name = context.GetName();
             var title = context.Title ?? Name ?? "AnimatedShape";
             
@@ -138,12 +187,23 @@ public class AnimatedKnComponent : PartComponent
             if (shape != null)
             {
                 geometry.SetCashe(shape);
-                $"AnimatedKnComponent.ComputeShape3D: Created and cached shape '{name}'".WriteSuccess();
+                
+                // CRITICAL: Re-establish dependencies after each creation
+                // Dependencies are cleared when Smash() cascades, so we must
+                // recreate them every time the geometry is evaluated
+                SetupGeometryDependencies(geometry.GetParameter());
+                
+                $"ComputeShape3D '{Name}': CREATED shape for view '{geometry.View}'".WriteSuccess();
+            }
+            else
+            {
+                $"ComputeShape3D '{Name}': CreateComponentGeometry returned NULL".WriteError();
             }
         }
         else
         {
             // Update existing geometry from parameters
+            $"ComputeShape3D '{Name}': Cache HIT - updating existing shape".WriteInfo();
             UpdateShape3D(geometry, shape);
         }
 
@@ -277,4 +337,5 @@ public class AnimatedKnComponent : PartComponent
         }
         return default;
     }
+
 }
