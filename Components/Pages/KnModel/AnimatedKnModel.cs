@@ -66,6 +66,68 @@ public class AnimatedKnModel : PartModel
     }
 
     /// <summary>
+    /// Override to trigger geometry re-rendering after parameter updates.
+    /// The dependency mechanism handles cache clearing via BeforeSmash,
+    /// but we still need to call RenderGeometry3D to recreate shapes.
+    /// </summary>
+    public override void OnPreAnimationEvent(PreAnimationEvent evt)
+    {
+        // Only log periodically to avoid flooding
+        var shouldLog = evt.tick % 120 == 0;
+        
+        if (shouldLog)
+            $"AnimatedKnModel '{Name}': OnPreAnimationEvent BEGIN tick={evt.tick}".WriteInfo();
+        
+        // 1. Let base class propagate to all children
+        //    This triggers PreAnimationRefresh callbacks which may update parameters
+        //    Parameter updates trigger smash cascade via dependencies
+        base.OnPreAnimationEvent(evt);
+        
+        if (shouldLog)
+            $"AnimatedKnModel '{Name}': After base.OnPreAnimationEvent, about to RenderGeometry3D".WriteInfo();
+        
+        // 2. Re-render geometry to pick up any cache invalidations
+        //    Only render to stages that have an associated scene (visible canvas)
+        var arena = GetArena();
+        if (arena != null)
+        {
+            // Get all stages from the arena - only those linked to a scene
+            var stageCount = 0;
+            var renderedCount = 0;
+            foreach (var stage in arena.GetAllStages())
+            {
+                stageCount++;
+                
+                // Skip stages without a scene - they have no canvas to display
+                if (stage.GetAssociatedScene() == null)
+                {
+                    if (shouldLog)
+                        $"AnimatedKnModel: Stage '{stage.Name}' has no scene - skipping".WriteInfo();
+                    continue;
+                }
+                
+                var view = stage.Name;
+                if (string.IsNullOrEmpty(view)) continue;
+                
+                if (shouldLog)
+                    $"AnimatedKnModel: RenderGeometry3D to stage/view '{view}'".WriteSuccess();
+                    
+                var ctx = RenderContext3D.Create(arena, view, deep: true);
+                RenderGeometry3D(ctx);
+                renderedCount++;
+            }
+            
+            if (shouldLog)
+                $"AnimatedKnModel: Total stages={stageCount}, rendered to={renderedCount}".WriteInfo();
+        }
+        else
+        {
+            if (shouldLog)
+                $"AnimatedKnModel '{Name}': GetArena() returned NULL".WriteError();
+        }
+    }
+
+    /// <summary>
     /// Override to properly return KnComponent children.
     /// </summary>
     public override IEnumerable<ITreeNode> GetTreeChildren()
