@@ -142,11 +142,15 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     {
         if (Canvas3DReference != null)
         {
-            _knModel.RenderArena3D("KnModelTest3D", false, () => AddLog("Model", "3D render complete"));
+            Task.Run(async () =>
+            {
+                await _knModel.RenderArena3D("KnModelTest3D", false, () => AddLog("Model", "3D render complete"));
+            });
         }
+
         if (Canvas2DReference != null)
         {
-            _knModel.RenderDrawing2D("KnModelTest2D", false, () => AddLog("Model", "2D render complete"));
+         _knModel.RenderDrawing2D("KnModelTest2D", false, () => AddLog("Model", "2D render complete"));
         }
     }
 
