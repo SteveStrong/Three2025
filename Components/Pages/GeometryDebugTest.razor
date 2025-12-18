@@ -1,0 +1,156 @@
+@page "/geometry-debug"
+@page "/"
+@using FoundryWorldsAndDrawings.Shared
+@using FoundryWorldsAndDrawings.Shape
+@using FoundryMentorModeler.Model
+
+@rendermode InteractiveServer
+
+<style>
+    .canvas3d-fill {
+        width: 100% !important;
+        height: 400px !important;
+    }
+    .canvas3d-fill canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+</style>
+
+<PageTitle>Geometry Debug Test</PageTitle>
+
+<div class="container-fluid">
+    <h3>Geometry Debug Test</h3>
+    <p class="text-muted">Fine-grained control to trace geometry lifecycle when parameters change</p>
+    
+    <div class="row">
+        <!-- Left: Controls -->
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header">Animation Control</div>
+                <div class="card-body">
+                    <div class="btn-group mb-2">
+                        <button class="btn btn-success btn-sm" @onclick="StartAnimation">▶ Start</button>
+                        <button class="btn btn-warning btn-sm" @onclick="PauseAnimation">⏸ Pause</button>
+                        <button class="btn btn-info btn-sm" @onclick="StepOneFrame">⏭ Step 1 Frame</button>
+                    </div>
+                    <div class="small">
+                        <strong>State:</strong> @_animationState<br/>
+                        <strong>Tick:</strong> @_currentTick<br/>
+                        <strong>FPS:</strong> @_currentFps.ToString("F1")
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">Parameter Controls</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Geometry Type</strong></label>
+                        <div class="btn-group d-block">
+                            <button class="btn @(_currentGeomType == "Box" ? "btn-primary" : "btn-outline-primary") btn-sm" 
+                                    @onclick="@(() => SetGeometryType("Box"))">Box</button>
+                            <button class="btn @(_currentGeomType == "Sphere" ? "btn-primary" : "btn-outline-primary") btn-sm" 
+                                    @onclick="@(() => SetGeometryType("Sphere"))">Sphere</button>
+                            <button class="btn @(_currentGeomType == "Cylinder" ? "btn-primary" : "btn-outline-primary") btn-sm" 
+                                    @onclick="@(() => SetGeometryType("Cylinder"))">Cylinder</button>
+                        </div>
+                        <div class="small text-muted mt-1">Current: @_currentGeomType</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Color</strong></label>
+                        <div class="btn-group d-block">
+                            <button class="btn btn-sm" style="background-color: blue; color: white;" 
+                                    @onclick="@(() => SetColor("Blue"))">Blue</button>
+                            <button class="btn btn-sm" style="background-color: green; color: white;" 
+                                    @onclick="@(() => SetColor("Green"))">Green</button>
+                            <button class="btn btn-sm" style="background-color: red; color: white;" 
+                                    @onclick="@(() => SetColor("Red"))">Red</button>
+                        </div>
+                        <div class="small text-muted mt-1">Current: @_currentColor</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">Manual Triggers</div>
+                <div class="card-body">
+                    <button class="btn btn-outline-secondary btn-sm mb-1 d-block w-100" @onclick="ManualSmashGeometry">
+                        1. Smash Geometry Cache
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm mb-1 d-block w-100" @onclick="ManualEvaluateGeometry">
+                        2. Evaluate Geometry (no render)
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm mb-1 d-block w-100" @onclick="ManualRenderToStage">
+                        3. Render to Stage
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm mb-1 d-block w-100" @onclick="ManualFullCycle">
+                        4. Full Cycle (Smash → Eval → Render)
+                    </button>
+                    <hr/>
+                    <button class="btn btn-danger btn-sm d-block w-100" @onclick="ClearStage">
+                        Clear Stage
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">Diagnostic Info</div>
+                <div class="card-body small">
+                    <div><strong>Stage:</strong> @(_testStage?.GetName() ?? "NULL")</div>
+                    <div><strong>Stage Shape Count:</strong> @_stageShapeCount</div>
+                    <div><strong>Geometry Cache:</strong> @_geometryCacheState</div>
+                    <div><strong>Dependencies:</strong> @_dependencyState</div>
+                    <div><strong>Arena Stages:</strong> @_arenaStageCount</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Middle: 3D Canvas -->
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header">3D View - "GeomDebug3D"</div>
+                <div class="card-body p-0 canvas3d-fill">
+                    <Canvas3DComponent SceneName="GeomDebug3D" @ref="Canvas3DReference" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right: Event Log -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Event Log</span>
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="ClearLog">Clear</button>
+                </div>
+                <div class="card-body p-0" style="height: 500px; overflow-y: auto;">
+                    <table class="table table-sm table-striped mb-0" style="font-size: 0.75rem;">
+                        <tbody>
+                            @foreach (var log in _eventLogs.TakeLast(50).Reverse())
+                            {
+                                <tr class="@GetLogClass(log.Type)">
+                                    <td style="width: 60px;">@log.Timestamp.ToString("HH:mm:ss")</td>
+                                    <td style="width: 70px;"><strong>@log.Type</strong></td>
+                                    <td>@log.Message</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string GetLogClass(string type) => type switch
+    {
+        "ERROR" => "table-danger",
+        "SMASH" => "table-warning",
+        "CREATE" => "table-success",
+        "RENDER" => "table-info",
+        "PARAM" => "table-primary",
+        _ => ""
+    };
+}

@@ -53,28 +53,28 @@ public class AnimatedKnComponent : PartComponent
                 var model = this.GetKnParentOfType<KnModel>();
                 var services = model?.GetMentorServices();
 
-                var colorParam = FindParameter("Color");
-                if (colorParam != null)
-                {
-                    var currentColor = colorParam.GetValue().Value() as string ?? "Blue";
-                    var newColor = RecomputeNextColor(currentColor);
-                    colorParam.SetValue(newColor);
+                // var colorParam = FindParameter("Color");
+                // if (colorParam != null)
+                // {
+                //     var currentColor = colorParam.GetValue().Value() as string ?? "Blue";
+                //     var newColor = RecomputeNextColor(currentColor);
+                //     colorParam.SetValue(newColor);
 
 
-                    services?.PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.RefreshColorChanged(colorParam));
-                    $"AnimatedKnComponent '{Name}': Changed color from {currentColor} to {newColor} at tick={evt.tick}".WriteSuccess();
-                }
+                //     services?.PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.RefreshColorChanged(colorParam));
+                //     $"AnimatedKnComponent '{Name}': Changed color from {currentColor} to {newColor} at tick={evt.tick}".WriteSuccess();
+                // }
 
-                var shapeParam = FindParameter("GeometryType");
-                if (shapeParam != null)
-                {
-                    var currentShape = shapeParam.GetValue().Value() as string ?? "Box";
-                    var newShape = RecomputeNextShape(currentShape);
-                    shapeParam.SetValue(newShape);
+                // var shapeParam = FindParameter("GeometryType");
+                // if (shapeParam != null)
+                // {
+                //     var currentShape = shapeParam.GetValue().Value() as string ?? "Box";
+                //     var newShape = RecomputeNextShape(currentShape);
+                //     shapeParam.SetValue(newShape);
 
-                    services?.PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.RefreshValueChanged(shapeParam));
-                    $"AnimatedKnComponent '{Name}': Changed shape from {currentShape} to {newShape} at tick={evt.tick}".WriteSuccess();
-                }
+                //     services?.PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.RefreshValueChanged(shapeParam));
+                //     $"AnimatedKnComponent '{Name}': Changed shape from {currentShape} to {newShape} at tick={evt.tick}".WriteSuccess();
+                // }
             }
         });
     }
