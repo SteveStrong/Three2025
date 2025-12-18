@@ -1,0 +1,192 @@
+@page "/geometry-test-harness"
+@page "/"
+
+@using FoundryMentorModeler.Model
+@using FoundryMentorModeler.Evaluator
+@using FoundryWorldsAndDrawings.Shape
+@using FoundryWorldsAndDrawings.Solutions
+
+@rendermode InteractiveServer
+
+@namespace Three2025.Components.Pages
+
+<h3>Phase 0: Geometry Parameter Test Harness</h3>
+<p class="text-muted">Proves KN layer spreadsheet mechanics via animation loop. Watch the geometry stay stable, then smash and recalculate when you change values.</p>
+
+<div class="container-fluid">
+    <div class="row">
+        @* Left Column - Animation Control & Parameter Inputs *@
+        <div class="col-md-3">
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <strong>Animation Control</strong>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2 mb-3">
+                        <button class="btn @(_isAnimating ? "btn-danger" : "btn-success")" @onclick="ToggleAnimation">
+                            @(_isAnimating ? "⏹ Stop Animation" : "▶ Start Animation")
+                        </button>
+                    </div>
+                    <div class="small">
+                        <div><strong>Tick:</strong> @_currentTick</div>
+                        <div><strong>Animation State:</strong> @AnimationFrameBus.GetAnimationState()</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <strong>Parameter Inputs</strong>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Width (meters)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" @bind="_widthInput" step="1" />
+                            <button class="btn btn-warning" @onclick="ApplyWidth">Apply</button>
+                        </div>
+                        <small class="text-muted">Current: @_widthValue</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Height (meters)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" @bind="_heightInput" step="1" />
+                            <button class="btn btn-warning" @onclick="ApplyHeight">Apply</button>
+                        </div>
+                        <small class="text-muted">Current: @_heightValue</small>
+                    </div>
+                    <hr/>
+                    <button class="btn btn-danger w-100" @onclick="ManualSmash">
+                        💥 Manual Smash
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @* Center Column - Live State Display *@
+        <div class="col-md-5">
+            <div class="card mb-3">
+                <div class="card-header @(_geomIsUnknown ? "bg-warning" : "bg-success text-white")">
+                    <strong>Geometry Parameter State</strong>
+                    <span class="float-end badge @(_geomIsUnknown ? "bg-dark" : "bg-light text-dark")">
+                        @(_geomIsUnknown ? "UNKNOWN (needs eval)" : "KNOWN (stable)")
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <table class="table table-sm table-bordered mb-0">
+                                <tbody>
+                                    <tr>
+                                        <th>IsUnknown()</th>
+                                        <td class="@(_geomIsUnknown ? "bg-warning" : "bg-success text-white") text-center">
+                                            <strong>@_geomIsUnknown</strong>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>IsCasheEmpty()</th>
+                                        <td class="text-center">@_geomCacheEmpty</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Shape Exists</th>
+                                        <td class="text-center">@_shapeExists</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-6">
+                            <table class="table table-sm table-bordered mb-0">
+                                <tbody>
+                                    <tr>
+                                        <th>Shape GlyphId</th>
+                                        <td><code>@(_shapeGuid ?? "(null)")</code></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Dimensions</th>
+                                        <td>@_shapeDimensions</td>
+                                    </tr>
+                                    <tr>
+                                        <th>DependsOn</th>
+                                        <td>@_dependsOnCount parameters</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <strong>Evaluation Statistics</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="display-6">@_evalCount</div>
+                            <small>Total Evals</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="display-6">@_noWorkCount</div>
+                            <small>No-Work (cached)</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="display-6">@_recreateCount</div>
+                            <small>Recreations</small>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div class="text-center">
+                        <small class="text-muted">
+                            Efficiency: @((_evalCount > 0 ? (100.0 * _noWorkCount / _evalCount) : 0).ToString("F1"))% cache hits
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <strong>Shape History</strong> (proves recreation)
+                </div>
+                <div class="card-body" style="max-height: 150px; overflow-y: auto;">
+                    @foreach (var entry in _shapeHistory.AsEnumerable().Reverse().Take(10))
+                    {
+                        <div class="small mb-1">
+                            <span class="badge @(entry.IsNew ? "bg-success" : "bg-secondary")">
+                                @(entry.IsNew ? "NEW" : "SAME")
+                            </span>
+                            <code>@entry.GlyphId</code>
+                            <span class="text-muted">@entry.Dimensions at tick @entry.Tick</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* Right Column - Event Log *@
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <strong>Event Log</strong>
+                    <div>
+                        <label class="form-check-label text-white me-2">
+                            <input type="checkbox" class="form-check-input" @bind="_showAllTicks" />
+                            Show all ticks
+                        </label>
+                        <button class="btn btn-sm btn-outline-light" @onclick="ClearLog">Clear</button>
+                    </div>
+                </div>
+                <div class="card-body p-0" style="max-height: 500px; overflow-y: auto;">
+                    @foreach (var entry in _eventLog.AsEnumerable().Reverse().Take(100))
+                    {
+                        <div class="px-2 py-1 border-bottom @GetLogClass(entry.Type)" style="font-size: 0.8rem;">
+                            <span class="text-muted">@entry.Tick</span>
+                            <span class="badge @GetLogBadge(entry.Type)">@entry.Type</span>
+                            @entry.Message
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
