@@ -84,7 +84,7 @@ public class ClockTech : IClockTech
             },
         };
 
-        parent.AddSubGlyph3D(letter);
+        parent.AddShape(letter);
         return letter;
     }
 
@@ -126,7 +126,7 @@ public class ClockTech : IClockTech
             // }
         }.CreateBox("Post", 0.2, 1.0, .2);
 
-        clock.AddSubGlyph3D(centerPost);
+        clock.AddShape(centerPost);
 
         //now lets add the secondHand
         var secondHand = new FoShape3D("Hand", "green")
@@ -137,7 +137,7 @@ public class ClockTech : IClockTech
             }
         }.CreateBox("Hand", 1.2 * radius, 2.0, .1);
 
-        centerPost.AddSubGlyph3D(secondHand);
+        centerPost.AddShape(secondHand);
 
         //now lets add the time text at the end of the hand
         var timeText = new FoText3D("TimeText", "white")
@@ -149,7 +149,7 @@ public class ClockTech : IClockTech
                 Position = new Vector3(0.6 * radius, 0, 0),
             }
         };
-        secondHand.AddSubGlyph3D(timeText);
+        secondHand.AddShape(timeText);
 
         return clock;
     }

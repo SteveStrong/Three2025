@@ -190,7 +190,7 @@ Clock.Transform.RotateTo(Math.PI / 2, 0, angle, AngleUnit.Radians);
 
 ### Issue: Hand doesn't rotate
 - **Cause**: Post rotation not working or hand not child of post
-- **Check**: Verify `centerPost.AddSubGlyph3D(secondHand)` is called
+- **Check**: Verify `centerPost.AddShape(secondHand)` is called
 - **Check**: Verify `post.Transform.RotateTo(0, -angle, 0)` is being called
 - **Check**: Verify `-angle` calculation: `time.Second * (2π/60) - π/2`
 
@@ -208,7 +208,7 @@ Clock.Transform.RotateTo(Math.PI / 2, 0, angle, AngleUnit.Radians);
 
 ### Issue: TimeText doesn't appear or is in wrong position
 - **Cause**: TimeText not child of hand, or position wrong
-- **Fix**: Verify `secondHand.AddSubGlyph3D(timeText)` is called
+- **Fix**: Verify `secondHand.AddShape(timeText)` is called
 - **Fix**: Verify position is `(0.6*radius, 0, 0)` in hand's local space
 
 ### Issue: Clock is at wrong height
@@ -220,7 +220,7 @@ Clock.Transform.RotateTo(Math.PI / 2, 0, angle, AngleUnit.Radians);
 
 1. **Scene Graph Hierarchy**: Clock (root) → Post → Hand → TimeText
 2. **Transform Inheritance**: Children inherit parent rotations and positions
-3. **Sub-Glyph System**: All components use `FoShape3D` and `FoText3D` with `AddSubGlyph3D()`
+3. **Shape System**: All components use `FoShape3D` and `FoText3D` with `AddShape()`
 4. **Animation via Transform**: Time calculation → angle computation → Transform.RotateTo()
 5. **Visitor Pattern**: `FindSubGlyph3D<T>()` locates children by name and type
 

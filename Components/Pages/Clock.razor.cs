@@ -243,7 +243,7 @@ public partial class ClockBase : ComponentBase, IDisposable
                 Position = new Vector3(0, 3, 0),
             },
         };
-        text3d.AddSubGlyph3D(label);
+        text3d.AddShape(label);
         
         // ✅ Phase 0.5: Add to this page's stage
         _clockStage?.AddShape(text3d);
@@ -297,7 +297,7 @@ public partial class ClockBase : ComponentBase, IDisposable
                 Position = new Vector3(0, 3, 0),
             },
         };
-        model3d.AddSubGlyph3D(label);
+        model3d.AddShape(label);
 
         // ✅ Phase 0.5: Add to this page's stage
         _clockStage?.AddShape(model3d);

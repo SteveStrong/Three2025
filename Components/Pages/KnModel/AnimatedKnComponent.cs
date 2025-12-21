@@ -44,126 +44,29 @@ public class AnimatedKnComponent : PartComponent
             "RotationY: units(0.0, 'deg')"
         ]);
 
-        // KN layer animation callback - for parameter updates
-        // Change color every 120 ticks to demonstrate dependency-driven geometry refresh
+        // KN layer animation callback - currently unused
+        // Could be used for parameter updates if needed
         PreAnimationRefresh((comp, evt) =>
         {
-            if (evt.tick > 0 && evt.tick % 120 == 0)
-            {
-                var model = this.GetKnParentOfType<KnModel>();
-                var services = model?.GetMentorServices();
-
-                // var colorParam = FindParameter("Color");
-                // if (colorParam != null)
-                // {
-                //     var currentColor = colorParam.GetValue().Value() as string ?? "Blue";
-                //     var newColor = RecomputeNextColor(currentColor);
-                //     colorParam.SetValue(newColor);
-
-
-                //     services?.PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.RefreshColorChanged(colorParam));
-                //     $"AnimatedKnComponent '{Name}': Changed color from {currentColor} to {newColor} at tick={evt.tick}".WriteSuccess();
-                // }
-
-                // var shapeParam = FindParameter("GeometryType");
-                // if (shapeParam != null)
-                // {
-                //     var currentShape = shapeParam.GetValue().Value() as string ?? "Box";
-                //     var newShape = RecomputeNextShape(currentShape);
-                //     shapeParam.SetValue(newShape);
-
-                //     services?.PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.RefreshValueChanged(shapeParam));
-                //     $"AnimatedKnComponent '{Name}': Changed shape from {currentShape} to {newShape} at tick={evt.tick}".WriteSuccess();
-                // }
-            }
+            // Reserved for future parameter animation
         });
     }
 
-    public string RecomputeNextColor(string currentColor)
-    {
-        return currentColor switch
-        {
-            "Blue" => "Green",
-            "Green" => "Red",
-            "Red" => "Blue",
-            _ => "Blue"
-        };
-    }
 
-    public string RecomputeNextShape(string currentShape)
-    {
-        return currentShape switch
-        {
-            "Box" => "Sphere",
-            "Sphere" => "Cylinder",
-            "Cylinder" => "Box",
-            _ => "Box"
-        };
-    }
 
     /// <summary>
-    /// Override EstablishGeometry3D following Rack_710 pattern.
-    /// Uses Compute3DGeometry with ApplyMethod for lazy geometry creation.
-    /// Sets up dependencies so geometry rebuilds when Color/GeometryType change.
+    /// Uses base PartComponent pattern - just apply the compute method.
+    /// Parameter system handles dependencies automatically.
     /// </summary>
-    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view, IArena? page)
+    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view)
     {
-        var result = Compute3DGeometry(view, geom => 
-        {
-            // Set up compute method WITH BeforeSmash callback for cleanup
-            geom.ApplyMethod("ComputeGeometry", ComputeShape3D, null, (param, opResult) => 
-            {
-                // Called when geometry parameter is smashed (via dependency cascade)
-                var oldShape = geom.GetCashe<FoShape3D>();
-                var hasOldShape = oldShape != null;
-                
-                // Delete the old shape from scene if it exists
-                oldShape?.Delete();
-                
-                // CRITICAL: Use GetParameter().SetCashe(null!) to force cache clear
-                // Do NOT use ClearCashe() - it has "smart caching" for text shapes
-                // that would prevent recreation when we change geometry type
-                geom.GetParameter().SetCashe(null!);
-                
-                $"AnimatedKnComponent '{Name}': BeforeSmash fired - had shape={hasOldShape}, cache FORCED cleared, view={geom.View}".WriteWarning();
-            });
-            
-            // Establish dependencies: geometry depends on these parameters
-            SetupGeometryDependencies(geom.GetParameter());
-        });
-
-        return (result, result.GetParameter());
+        var geometry = Compute3DGeometry(view, null);
+        geometry.ApplyMethod("ComputeGeometry", ComputeShape3D, null, null);
+        return (geometry, geometry.GetParameter());
     }
 
     /// <summary>
-    /// Register dependencies so that when Color or GeometryType parameters are smashed,
-    /// the geometry parameter is also smashed, triggering BeforeSmash cleanup.
-    /// </summary>
-    private void SetupGeometryDependencies(KnGeometryParameter geomParam)
-    {
-        var geomTypeParam = FindParameter("GeometryType");
-        var colorParam = FindParameter("Color");
-        
-        // IDependOn creates the ContributesTo link:
-        // geomTypeParam.ContributesTo.Add(geomParam)
-        // So when geomTypeParam.Smash() is called, it cascades to geomParam.Smash()
-        if (geomTypeParam != null)
-        {
-            geomParam.IDependOn(geomTypeParam);
-            $"AnimatedKnComponent '{Name}': Geometry depends on GeometryType".WriteInfo();
-        }
-        
-        if (colorParam != null)
-        {
-            geomParam.IDependOn(colorParam);
-            $"AnimatedKnComponent '{Name}': Geometry depends on Color".WriteInfo();
-        }
-    }
-
-    /// <summary>
-    /// Compute shape following proper IsCasheEmpty pattern from Rack_710.
-    /// Creates geometry on first call, updates on subsequent calls.
-    /// Re-establishes dependencies after each creation (they get cleared on smash).
+    /// Create or return existing shape using parameter value check.
     /// </summary>
     private bool ComputeShape3D(KnInstance context, List<OPResult> args, OPResult result)
     {
@@ -171,40 +74,24 @@ public class AnimatedKnComponent : PartComponent
         if (geometry == null)
             return false;
 
-        var shape = geometry.GetCashe<FoShape3D>();
-        var isCacheEmpty = geometry.IsCasheEmpty();
-        
-        $"ComputeShape3D '{Name}': IsCasheEmpty={isCacheEmpty}, view={geometry.View}".WriteInfo();
+        var parameter = geometry.GetParameter();
+        FoShape3D? shape = null;
 
-        if (isCacheEmpty)
+        if (parameter.IsValid())
         {
-            // First time or after smash: Create geometry from parameters
-            var name = context.GetName();
-            var title = context.Title ?? Name ?? "AnimatedShape";
-            
-            shape = CreateComponentGeometry(context, name, title);
-            
-            if (shape != null)
+            // Shape already exists - just use it
+            var currentValue = parameter.GetValue();
+            if (currentValue.IsSuccess())
             {
-                geometry.SetCashe(shape);
-                
-                // CRITICAL: Re-establish dependencies after each creation
-                // Dependencies are cleared when Smash() cascades, so we must
-                // recreate them every time the geometry is evaluated
-                SetupGeometryDependencies(geometry.GetParameter());
-                
-                $"ComputeShape3D '{Name}': CREATED shape for view '{geometry.View}'".WriteSuccess();
-            }
-            else
-            {
-                $"ComputeShape3D '{Name}': CreateComponentGeometry returned NULL".WriteError();
+                shape = currentValue.AsShape3D();
             }
         }
         else
         {
-            // Update existing geometry from parameters
-            $"ComputeShape3D '{Name}': Cache HIT - updating existing shape".WriteInfo();
-            UpdateShape3D(geometry, shape);
+            // Need to create new shape
+            var name = context.GetName();
+            var title = context.Title ?? Name ?? "AnimatedShape";
+            shape = CreateComponentGeometry(context, name, title);
         }
 
         result.SetValue(ResultStatus.Shape3D, shape);
@@ -216,7 +103,7 @@ public class AnimatedKnComponent : PartComponent
     /// Reads from KnParameters to configure geometry.
     /// Animation is set up via BeforeAnimationRefresh on the shape.
     /// </summary>
-    protected override FoShape3D? CreateComponentGeometry(KnInstance context, string name, string title)
+    protected  FoShape3D? CreateComponentGeometry(KnInstance context, string name, string title)
     {
         // Read configuration from parameters
         var geomType = FindParameterValue<string>("GeometryType") ?? "Box";
@@ -276,7 +163,7 @@ public class AnimatedKnComponent : PartComponent
             }
         });
         
-        shape.AddSubGlyph3D(label3D);
+        shape.AddShape(label3D);
         
         // Add sinusoidal animation to the shape itself (FO layer animation)
         // Capture base position for oscillation
@@ -298,29 +185,6 @@ public class AnimatedKnComponent : PartComponent
         });
         
         return shape;
-    }
-
-    /// <summary>
-    /// Update existing shape from current parameter values.
-    /// Called when cache exists but parameters may have changed.
-    /// </summary>
-    private bool UpdateShape3D(KnGeometry geometry, FoShape3D? shape)
-    {
-        if (shape?.Transform == null)
-            return false;
-
-        // Update transform from current parameter values
-        var posX = FindLengthValue("PositionX", 0.0).Value();
-        var posY = FindLengthValue("PositionY", 0.0).Value();
-        var posZ = FindLengthValue("PositionZ", 0.0).Value();
-        var animOffset = FindLengthValue("AnimationOffset", 0.0).Value();
-        var rotY = FindAngleValue("RotationY", 0.0).Value();
-
-        shape.Transform.Position = new Vector3(posX, posY + animOffset, posZ);
-        shape.Transform.Rotation = Euler.FromDegrees(0, rotY, 0);
-        shape.SetDirty(true);
-
-        return true;
     }
 
     /// <summary>

@@ -3,409 +3,248 @@ using FoundryMentorModeler.Model;
 using FoundryMentorModeler.Evaluator;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.Solutions;
+using FoundryWorldsAndDrawings.Shared;
 using FoundryRulesAndUnits.Extensions;
-using System.Timers;
-using Timer = System.Timers.Timer;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 #nullable enable
 
 namespace Three2025.Components.Pages;
 
 /// <summary>
-/// Phase 0 Test Harness: Proves KN layer spreadsheet mechanics via timer-driven evaluation.
+/// Phase 0 Test Harness with Canvas3D visualization.
 /// 
-/// Key behaviors demonstrated:
-/// 1. Geometry stays KNOWN (stable) across many ticks - no recalculation
-/// 2. Changing a parameter (Width/Height) triggers Smash cascade → geometry becomes UNKNOWN
-/// 3. Next tick evaluates the UNKNOWN geometry → creates NEW shape
-/// 4. Geometry returns to KNOWN state, stays stable again
+/// Proves the key distinction:
+/// - Width/Height/Depth/GeomType changes → RECREATE geometry (new GlyphId)
+/// - X/Y/Z position changes → MOVE existing geometry (same GlyphId)
 /// 
-/// This proves the spreadsheet model: pull-based, dependency-driven, idempotent.
-/// Uses a simple timer since we don't need a canvas for KN layer testing.
+/// This validates the spreadsheet model: only recreate when dependencies change.
 /// </summary>
 public partial class GeometryParameterTestHarness : ComponentBase, IDisposable
 {
+    [Inject] public IWorkspace Workspace { get; init; } = null!;
+    [Inject] public IFoundryService FoundryService { get; init; } = null!;
     [Inject] public IMentorServices MentorServices { get; init; } = null!;
+    [Inject] public IModelEditor ModelEditor { get; init; } = null!;
 
-    // Test component and geometry
-    private TestHarnessComponent? _testComponent;
-    private KnGeometry? _geometry;
-    private KnGeometryParameter? _geomParam;
+    // Canvas reference
+    public Canvas3DComponent? Canvas3DReference = null;
 
-    // Timer for driving evaluation (simulates animation loop without canvas)
-    private Timer? _evaluationTimer;
+    // Use the proper model pattern - model contains the component
+    private AnimatedKnModel? _testModel;
+    private AnimatedParameterTestComponent? _testComponent;
+
+    // Animation state
     private bool _isAnimating = false;
     private int _currentTick = 0;
 
-    // Parameter inputs
-    private double _widthInput = 10.0;
-    private double _heightInput = 20.0;
-    private double _widthValue = 10.0;
-    private double _heightValue = 20.0;
+    // Geometry inputs (these cause recreation)
+    private double _widthInput = 1.0;
+    private double _heightInput = 2.0;
+    private double _depthInput = 3.0;
+    private string _geomTypeInput = "Box";
+
+    // Position inputs (these just move, no recreation)
+    private double _posXInput = 0.0;
+    private double _posYInput = 0.0;
+    private double _posZInput = 0.0;
 
     // Live state display
     private bool _geomIsUnknown = true;
-    private bool _geomCacheEmpty = true;
-    private bool _shapeExists = false;
-    private string? _shapeGuid;
+
     private string _shapeDimensions = "(not evaluated)";
+    private string _shapePosition = "(0, 0, 0)";
     private int _dependsOnCount = 0;
 
     // Statistics
-    private int _evalCount = 0;
-    private int _noWorkCount = 0;
     private int _recreateCount = 0;
-    private string? _lastShapeGuid;
+    private int _moveCount = 0;
 
     // History and logging
     private List<ShapeHistoryEntry> _shapeHistory = new();
     private List<LogEntry> _eventLog = new();
-    private bool _showAllTicks = false;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        InitializeTest();
+        
+        // Create model using MentorServices - same pattern as KnModelAnimationTest
+        _testModel = MentorServices.EstablishModel<AnimatedKnModel>("GeomTestHarnessModel");
+        _testModel.EnsureAnimationSetup();
+        
+        // Create and add the test component to the model
+        _testComponent = new AnimatedParameterTestComponent("TestPart", _widthInput, _heightInput, _depthInput, _geomTypeInput);
+        ModelEditor.AddChild(_testModel, _testComponent);
+        
+        AddLog("INIT", "Created AnimatedKnModel with AnimatedParameterTestComponent - framework handles everything");
     }
 
-    private void InitializeTest()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Create a fresh test component
-        _testComponent = new TestHarnessComponent("TestPart", _widthValue, _heightValue);
-        
-        // Establish geometry (but DON'T evaluate yet - that happens in animation loop)
-        (_geometry, _geomParam) = _testComponent.EstablishGeometry3D("TestView", null);
-        
-        AddLog("INIT", "Created TestPart component");
-        AddLog("INIT", $"Geometry established with View={_geometry?.View}");
-        AddLog("INIT", "Geometry is UNKNOWN - waiting for animation to evaluate");
-        
-        RefreshState();
-    }
-
-    private void ToggleAnimation()
-    {
-        if (_isAnimating)
+        if (firstRender && Canvas3DReference != null)
         {
-            // Stop the timer
-            _evaluationTimer?.Stop();
-            _evaluationTimer?.Dispose();
-            _evaluationTimer = null;
-            _isAnimating = false;
-            AddLog("CTRL", "Animation STOPPED");
-        }
-        else
-        {
-            // Start a timer that fires every 100ms (10 Hz - plenty for testing)
-            _evaluationTimer = new Timer(100);
-            _evaluationTimer.Elapsed += OnTimerTick;
-            _evaluationTimer.AutoReset = true;
-            _evaluationTimer.Start();
-            _isAnimating = true;
-            AddLog("CTRL", "Animation STARTED - timer-driven evaluation loop");
-        }
-        InvokeAsync(StateHasChanged);
-    }
-
-    /// <summary>
-    /// Called by timer (not canvas animation). This drives the "pull" evaluation.
-    /// We use a timer instead of AnimationFrameBus because that requires a Canvas.
-    /// </summary>
-    private void OnTimerTick(object? sender, ElapsedEventArgs e)
-    {
-        if (_geomParam == null) return;
-
-        _currentTick++;
-        _evalCount++;
-
-        // Check state BEFORE evaluation
-        var wasUnknown = _geomParam.IsUnknown();
-        var wasCacheEmpty = _geomParam.IsCasheEmpty();
-        var previousGuid = _shapeGuid;
-
-        // Debug: Log state before evaluation
-        if (_currentTick % 50 == 1) // Every 50 ticks to reduce noise
-        {
-            $"Tick {_currentTick}: Before eval - IsUnknown={wasUnknown}, CacheEmpty={wasCacheEmpty}".WriteInfo();
-        }
-
-        // This is the key operation - the "pull" that triggers calculation if needed
-        // If Known: returns cached value immediately (no work)
-        // If Unknown: evaluates formula, creates new shape AND stores in cache
-        // NOTE: Must use GetCurrentValueAs<T>() to populate the _cashe field!
-        var shape = _geomParam.GetCurrentValueAs<FoShape3D>();
-
-        // Debug: Log state after evaluation
-        var isNowUnknown = _geomParam.IsUnknown();
-        var isCacheNowEmpty = _geomParam.IsCasheEmpty();
-        if (_currentTick % 50 == 1 || wasUnknown)
-        {
-            $"Tick {_currentTick}: After eval - IsUnknown={isNowUnknown}, CacheEmpty={isCacheNowEmpty}, Shape={shape?.GlyphId ?? "null"}".WriteInfo();
-        }
-
-        // Refresh state AFTER evaluation
-        RefreshState();
-
-        // Track what happened
-        if (wasUnknown)
-        {
-            // We did real work - created a new shape
-            _recreateCount++;
+            await Task.Delay(200);
             
-            var isNewShape = _shapeGuid != _lastShapeGuid;
-            _shapeHistory.Add(new ShapeHistoryEntry(_shapeGuid ?? "null", _shapeDimensions, _currentTick, isNewShape));
-            _lastShapeGuid = _shapeGuid;
+            AddLog("INIT", "Canvas ready - framework will handle all stage linkage");
             
-            AddLog("EVAL", $"Was UNKNOWN → evaluated → NEW shape: {_shapeGuid}");
+            await InvokeAsync(StateHasChanged);
         }
-        else
-        {
-            // No work needed - value was already known
-            _noWorkCount++;
-            
-            if (_showAllTicks)
-            {
-                AddLog("TICK", $"Already KNOWN → no work (shape: {_shapeGuid})");
-            }
-        }
-
-        InvokeAsync(StateHasChanged);
     }
 
     private void RefreshState()
     {
-        if (_geomParam == null) return;
-
-        _geomIsUnknown = _geomParam.IsUnknown();
-        _geomCacheEmpty = _geomParam.IsCasheEmpty();
+        if (_testComponent == null) return;
         
-        // Get shape info if it exists
-        var shape = _geomParam.GetCashe<FoShape3D>();
-        _shapeExists = shape != null;
-        
-        if (shape != null)
-        {
-            _shapeGuid = shape.GlyphId.Length > 8 ? shape.GlyphId.Substring(0, 8) + "..." : shape.GlyphId;
-            _shapeDimensions = $"{shape.Width:F1} × {shape.Height:F1} × {shape.Depth:F1}";
-        }
-        else
-        {
-            _shapeGuid = null;
-            _shapeDimensions = "(not evaluated)";
-        }
-
-        // Dependency info
-        _dependsOnCount = _geomParam.DependsOn?.Count ?? 0;
+        // TODO: Re-add component metrics if needed
+        // _currentTick = _testComponent.CurrentTick;
+        // _recreateCount = _testComponent.RecreateCount;
+        // _geomIsUnknown = _testComponent.GeomIsUnknown;
+        // _shapeGuid = _testComponent.ShapeGuid;
+        // _shapeDimensions = _testComponent.ShapeDimensions;
+        // _dependsOnCount = _testComponent.DependsOnCount;
     }
+
+    // ===================== GEOMETRY CHANGES (cause recreation) =====================
 
     private void ApplyWidth()
     {
         if (_testComponent == null) return;
-
-        var widthParam = _testComponent.FindParameter("Width");
-        if (widthParam == null)
-        {
-            AddLog("ERROR", "Width parameter not found!");
-            return;
-        }
-
-        var oldValue = _widthValue;
-        _widthValue = _widthInput;
-        
-        AddLog("CHANGE", $"Setting Width: {oldValue} → {_widthValue}");
-        
-        // This triggers the dependency cascade!
-        widthParam.SetValue(_widthValue);
-        
+        AddLog("GEOM", $"Width: {_widthInput} → triggers RECREATE");
+        _testComponent.SetWidth(_widthInput);
         RefreshState();
-        
-        AddLog("SMASH", $"Dependency cascade fired → Geometry IsUnknown = {_geomIsUnknown}");
-        
-        InvokeAsync(StateHasChanged);
     }
 
     private void ApplyHeight()
     {
         if (_testComponent == null) return;
+        AddLog("GEOM", $"Height: {_heightInput} → triggers RECREATE");
+        _testComponent.SetHeight(_heightInput);
+        RefreshState();
+    }
 
-        var heightParam = _testComponent.FindParameter("Height");
-        if (heightParam == null)
+    private void ApplyDepth()
+    {
+        if (_testComponent == null) return;
+        AddLog("GEOM", $"Depth: {_depthInput} → triggers RECREATE");
+        _testComponent.SetDepth(_depthInput);
+        RefreshState();
+    }
+
+    private void ApplyGeomType()
+    {
+        if (_testComponent == null) return;
+        AddLog("GEOM", $"GeomType: {_geomTypeInput} → triggers RECREATE");
+        _testComponent.SetGeomType(_geomTypeInput);
+        RefreshState();
+    }
+
+    // ===================== POSITION CHANGES (just move, no recreation) =====================
+
+    private void ApplyPosX()
+    {
+        if (_testComponent == null) return;
+        AddLog("MOVE", $"X: → {_posXInput:F0}");
+        _testComponent.SetPositionX(_posXInput);
+        _moveCount++;
+    }
+
+    private void ApplyPosY()
+    {
+        if (_testComponent == null) return;
+        AddLog("MOVE", $"Y: → {_posYInput:F0}");
+        _testComponent.SetPositionY(_posYInput);
+        _moveCount++;
+    }
+
+    private void ApplyPosZ()
+    {
+        if (_testComponent == null) return;
+        AddLog("MOVE", $"Z: → {_posZInput:F0}");
+        _testComponent.SetPositionZ(_posZInput);
+        _moveCount++;
+    }
+
+    // ===================== CONTROL BUTTONS =====================
+
+    private void ToggleAnimation()
+    {
+        if (_isAnimating)
         {
-            AddLog("ERROR", "Height parameter not found!");
-            return;
+            AnimationFrameBus.PauseAllAnimations();
+            _isAnimating = false;
+            AddLog("CTRL", "Animation PAUSED");
         }
-
-        var oldValue = _heightValue;
-        _heightValue = _heightInput;
-        
-        AddLog("CHANGE", $"Setting Height: {oldValue} → {_heightValue}");
-        
-        heightParam.SetValue(_heightValue);
-        
-        RefreshState();
-        
-        AddLog("SMASH", $"Dependency cascade fired → Geometry IsUnknown = {_geomIsUnknown}");
-        
-        InvokeAsync(StateHasChanged);
+        else
+        {
+            AnimationFrameBus.ResumeAllAnimations();
+            _isAnimating = true;
+            AddLog("CTRL", "Animation RESUMED");
+        }
     }
 
-    private void ManualSmash()
+    private void ResetTest()
     {
-        if (_geomParam == null) return;
-
-        AddLog("SMASH", "Manual Smash() called on geometry parameter");
+        // Reset inputs
+        _widthInput = 10.0;
+        _heightInput = 20.0;
+        _depthInput = 5.0;
+        _geomTypeInput = "Box";
+        _posXInput = 0;
+        _posYInput = 0;
+        _posZInput = 0;
         
-        _geomParam.Smash();
+        // Reset stats
+        _recreateCount = 0;
+        _moveCount = 0;
+        _currentTick = 0;
         
-        RefreshState();
-        
-        AddLog("SMASH", $"After Smash: IsUnknown = {_geomIsUnknown}, Cache empty = {_geomCacheEmpty}");
-        
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void ClearLog()
-    {
+        // Clear history
+        _shapeHistory.Clear();
         _eventLog.Clear();
-        InvokeAsync(StateHasChanged);
+        
+        // Recreate component with reset values
+        if (_testModel != null && _testComponent != null)
+        {
+            ModelEditor.RemoveChild(_testModel, _testComponent);
+            _testComponent = new AnimatedParameterTestComponent("TestPart", _widthInput, _heightInput, _depthInput, _geomTypeInput);
+            ModelEditor.AddChild(_testModel, _testComponent);
+        }
+        
+        AddLog("CTRL", "Test RESET - component recreated");
     }
+
+    // ===================== LOGGING =====================
 
     private void AddLog(string type, string message)
     {
         _eventLog.Add(new LogEntry(type, message, _currentTick));
-        
-        // Keep log from growing too large
-        if (_eventLog.Count > 500)
-            _eventLog.RemoveRange(0, 100);
+        if (_eventLog.Count > 200)
+            _eventLog.RemoveRange(0, 50);
     }
+
+    private void ClearLog() => _eventLog.Clear();
 
     private string GetLogClass(string type) => type switch
     {
-        "EVAL" => "bg-success bg-opacity-25",
-        "SMASH" => "bg-warning bg-opacity-25",
-        "CHANGE" => "bg-info bg-opacity-25",
-        "ERROR" => "bg-danger bg-opacity-25",
+        "MOVE" => "bg-success bg-opacity-10",
+        "GEOM" => "bg-danger bg-opacity-25",
         _ => ""
     };
 
     private string GetLogBadge(string type) => type switch
     {
-        "EVAL" => "bg-success",
-        "SMASH" => "bg-warning text-dark",
-        "CHANGE" => "bg-info",
-        "ERROR" => "bg-danger",
+        "MOVE" => "bg-success",
+        "GEOM" => "bg-danger",
         "CTRL" => "bg-primary",
         "INIT" => "bg-secondary",
-        "TICK" => "bg-light text-dark",
         _ => "bg-dark"
     };
 
     public void Dispose()
     {
-        _evaluationTimer?.Stop();
-        _evaluationTimer?.Dispose();
-        _evaluationTimer = null;
+        // Framework handles cleanup
     }
 
-    private record ShapeHistoryEntry(string GlyphId, string Dimensions, int Tick, bool IsNew);
+    private record ShapeHistoryEntry(string GlyphId, string Info, bool IsNew, bool IsMoved);
     private record LogEntry(string Type, string Message, int Tick);
-}
-
-/// <summary>
-/// Minimal test component for Phase 0 testing.
-/// Creates a simple geometry that depends on Width and Height parameters.
-/// NO rendering, NO animation callbacks - just parameter mechanics.
-/// </summary>
-public class TestHarnessComponent : KnComponent
-{
-    public TestHarnessComponent(string name, double width, double height) : base(name)
-    {
-        // Create simple parameters
-        Calculations([
-            $"Width: {width}",
-            $"Height: {height}",
-            "Depth: 5.0",
-            "GeometryType: 'Box'"
-        ]);
-    }
-
-    /// <summary>
-    /// Establish geometry with a formula that creates a FoShape3D.
-    /// Sets up dependencies so geometry depends on Width, Height, Depth.
-    /// </summary>
-    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view, IArena? arena)
-    {
-        var result = Compute3DGeometry(view, geom =>
-        {
-            // Set up compute method with BeforeSmash cleanup
-            geom.ApplyMethod("ComputeTestGeometry", ComputeTestShape3D, null, (param, opResult) =>
-            {
-                // BeforeSmash callback - cleanup old shape
-                var oldShape = geom.GetCashe<FoShape3D>();
-                if (oldShape != null)
-                {
-                    oldShape.SetShouldDelete();
-                    oldShape.OnDelete?.Invoke(oldShape);
-                }
-                geom.GetParameter().SetCashe(null!);
-                
-                $"TestHarnessComponent: BeforeSmash - old shape cleaned up".WriteInfo();
-            });
-
-            // Set up dependencies: geometry depends on Width, Height, Depth
-            SetupDependencies(geom.GetParameter());
-        });
-
-        return (result, result.GetParameter());
-    }
-
-    private void SetupDependencies(KnGeometryParameter geomParam)
-    {
-        var widthParam = FindParameter("Width");
-        var heightParam = FindParameter("Height");
-        var depthParam = FindParameter("Depth");
-
-        // When Width/Height/Depth change, geometry should be smashed
-        if (widthParam != null) geomParam.IDependOn(widthParam);
-        if (heightParam != null) geomParam.IDependOn(heightParam);
-        if (depthParam != null) geomParam.IDependOn(depthParam);
-        
-        $"TestHarnessComponent: Dependencies set up - DependsOn count = {geomParam.DependsOn?.Count ?? 0}".WriteInfo();
-    }
-
-    /// <summary>
-    /// Creates a simple FoShape3D using the parameter values.
-    /// This is the "formula" that gets evaluated when geometry is Unknown.
-    /// </summary>
-    private bool ComputeTestShape3D(KnInstance context, List<OPResult> args, OPResult result)
-    {
-        var width = FindNumberValue("Width", 1.0);
-        var height = FindNumberValue("Height", 1.0);
-        var depth = FindNumberValue("Depth", 1.0);
-        var geomType = FindStringValue("GeometryType", "Box");
-
-        $"TestHarnessComponent: Computing geometry - W={width}, H={height}, D={depth}".WriteSuccess();
-
-        // Create the shape (without any rendering context)
-        var shape = new FoShape3D($"TestShape_{Name}")
-        {
-            Width = width,
-            Height = height,
-            Depth = depth
-        };
-
-        // Create the geometry based on type
-        shape = geomType switch
-        {
-            "Box" => shape.CreateBox(shape.Name!, width, height, depth),
-            "Sphere" => shape.CreateSphere(shape.Name!, width, height, depth),
-            "Cylinder" => shape.CreateCylinder(shape.Name!, width, height, depth),
-            _ => shape.CreateBox(shape.Name!, width, height, depth)
-        };
-
-        $"TestHarnessComponent: Created {geomType} with GlyphId = {shape.GlyphId}".WriteSuccess();
-
-        result.SetValue(ResultStatus.Shape3D, shape);
-        return true;
-    }
 }

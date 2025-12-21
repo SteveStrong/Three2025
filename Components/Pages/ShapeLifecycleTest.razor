@@ -1,0 +1,137 @@
+#nullable enable
+@page "/"
+@page "/shape-lifecycle-test"
+@using FoundryWorldsAndDrawings.Shape
+
+@rendermode InteractiveServer
+
+@namespace Three2025.Components.Pages
+
+<PageTitle>Shape Lifecycle Test</PageTitle>
+
+<div class="container-fluid mt-4">
+    <h3>🧪 Shape Lifecycle Test - Manual Rendering</h3>
+    <p class="text-muted">Manual control with single-frame rendering (no animation loop)</p>
+    
+    <div class="row">
+        <!-- Canvas on left -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>3D Canvas</h5>
+                    <Canvas3DComponent SceneName="manual-test-stage" CanvasWidth="400" CanvasHeight="400" @ref="_canvasRef" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls in middle -->
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5>Test Controls</h5>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" @onclick="CreateComponent">2️⃣ Create Component</button>
+                        <button class="btn btn-success" @onclick="CreateGeometry">2️⃣ Create Geometry</button>
+                        <button class="btn btn-success" @onclick="CreateShape">2️⃣ Compute Shape value</button>
+                        <button class="btn btn-success" @onclick="RenderShape">2️⃣ Render</button>
+                       <button class="btn btn-warning" @onclick="RemoveShape" disabled="@(_testComponent == null)">3️⃣ Remove Shape (Smash)</button>
+                        <button class="btn btn-primary" @onclick="TriggerSingleFrame">🎬 Render Single Frame</button>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5>Current State</h5>
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <th>Stage:</th>
+                                <td>@(_stage != null ? $"✅ {_stage.Key}" : "❌ Not created")</td>
+                            </tr>
+                            <tr>
+                                <th>Current Component:</th>
+                                <td>@(_testComponent != null ? $"✅ '{_testComponent.Name}'" : "❌ None")</td>
+                            </tr>
+                            <tr>
+                                <th>Shapes in Stage:</th>
+                                <td>@(_stage != null ? GetShapeCount() : "N/A")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model tree on right -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(_activeTab == "model" ? "active" : "")" 
+                                    @onclick="@(() => _activeTab = "model")" 
+                                    type="button" role="tab">
+                                📊 Model Tree
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(_activeTab == "shape" ? "active" : "")" 
+                                    @onclick="@(() => _activeTab = "shape")" 
+                                    type="button" role="tab">
+                                🔷 Shape Tree
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(_activeTab == "slots" ? "active" : "")" 
+                                    @onclick="@(() => _activeTab = "slots")" 
+                                    type="button" role="tab">
+                                📦 Slots
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" style="max-height: 1000px; overflow-y: auto; padding-top: 10px;">
+                        @if (_activeTab == "model")
+                        {
+                            <MentorTreeView/>
+                        }
+                        else if (_activeTab == "shape")
+                        {
+                            <ShapeTreeView/>
+                        }
+                        else
+                        {
+                            <div style="font-family: monospace; font-size: 0.85rem; background: #f8f9fa; padding: 1rem;">
+                                @if (_stage != null)
+                                {
+                                    <div><strong>Stage: @_stage.Key</strong></div>
+                                    @foreach (var slot in _stage.AllSlotsOfType<FoGlyph3D>())
+                                    {
+                                        <div style="margin-left: 1rem; border-left: 2px solid #dee2e6; padding-left: 0.5rem;">
+                                            <div><strong>Slot:</strong> @slot.GetName()</div>
+                                            <div><strong>Count:</strong> @slot.Count()</div>
+                                            @foreach (var shape in slot.ValuesOfType<FoGlyph3D>())
+                                            {
+                                                <div style="margin-left: 1rem; border-left: 2px solid #adb5bd; padding-left: 0.5rem; margin-top: 0.5rem;">
+                                                    <div>📦 <strong>@shape.Name</strong></div>
+                                                    <div style="font-size: 0.75rem; color: #6c757d;">GlyphId: @shape.GlyphId[..8]...</div>
+                                                    <div style="font-size: 0.75rem; color: #6c757d;">Key: @shape.Key</div>
+                                                    <div style="font-size: 0.75rem; color: #6c757d;">OnDelete: @(shape.OnDelete != null ? "✅ SET" : "NULL")</div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="text-muted">No stage created</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

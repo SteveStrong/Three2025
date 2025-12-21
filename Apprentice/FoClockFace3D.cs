@@ -44,12 +44,12 @@ public class FoClockFace3D : FoShape3D
                 Position = new Vector3(0, 2, 0),
             }
         };
-        this.AddSubGlyph3D(_timeText);
+        this.AddShape(_timeText);
         
         // Add center post
         _centerPost = new FoShape3D("Post", "red")
             .CreateBox("PostBox", 1.2, 1.0, 0.2);
-        this.AddSubGlyph3D(_centerPost);
+        this.AddShape(_centerPost);
         
         // Add second hand
         _secondHand = new FoShape3D("Hand", "green")
@@ -59,7 +59,7 @@ public class FoClockFace3D : FoShape3D
                 Position = new Vector3(0.5 * Radius, 1, 0),
             }
         }.CreateBox("HandBox", 1.2 * Radius, 2.0, 0.1);
-        _centerPost.AddSubGlyph3D(_secondHand);
+        _centerPost.AddShape(_secondHand);
         
         // Set up animation to update every second
         BeforeAnimationRefresh(UpdateClockAnimation);
@@ -82,7 +82,7 @@ public class FoClockFace3D : FoShape3D
                 Position = new Vector3(x, y, z),
             }
         };
-        this.AddSubGlyph3D(number);
+        this.AddShape(number);
     }
     
     private void UpdateClockAnimation(FoGlyph3D self, int tick, double fps)

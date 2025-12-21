@@ -32,8 +32,8 @@ public class FoConnector : FoShape3D
                 Position = new Vector3(0, 0, -.2),
             }
         };
-        connect.AddSubGlyph3D<FoText3D>(connName);
-        box.AddSubGlyph3D<FoConnector>(connect);
+        connect.AddShape<FoText3D>(connName);
+        box.AddShape<FoConnector>(connect);
         
     }
 

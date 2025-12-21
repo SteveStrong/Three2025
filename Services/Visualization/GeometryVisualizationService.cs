@@ -39,7 +39,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
                 Position = new Vector3(axisOffset, 0, 0),
             }
         }.CreateBox($"head", headLength, headLength, headLength);
-        xAxis.AddSubGlyph3D<FoShape3D>(xHead);
+        xAxis.AddShape<FoShape3D>(xHead);
 
         // Y axis - Green  
         var yAxis = new FoShape3D
@@ -61,7 +61,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
                 Position = new Vector3(0, axisOffset, 0),
             }
         }.CreateBox($"head", headLength, headLength, headLength);
-        yAxis.AddSubGlyph3D<FoShape3D>(yHead);
+        yAxis.AddShape<FoShape3D>(yHead);
 
 
         // Z axis - Blue
@@ -84,7 +84,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
                 Position = new Vector3(0, 0, axisOffset),
             }
         }.CreateBox($"head", headLength, headLength, headLength);
-        zAxis.AddSubGlyph3D<FoShape3D>(zHead);
+        zAxis.AddShape<FoShape3D>(zHead);
 
         var groupTransform = new Transform3("GroupTransform");
         groupTransform.Position = Vector3.Zero;
@@ -98,9 +98,9 @@ public class GeometryVisualizationService : IGeometryVisualizationService
             Transform = groupTransform
         }.CreateGroup($"{name}_Axes", headLength, headLength, headLength);
 
-        group.AddSubGlyph3D<FoShape3D>(xAxis);
-        group.AddSubGlyph3D<FoShape3D>(yAxis);
-        group.AddSubGlyph3D<FoShape3D>(zAxis);
+        group.AddShape<FoShape3D>(xAxis);
+        group.AddShape<FoShape3D>(yAxis);
+        group.AddShape<FoShape3D>(zAxis);
 
         var stage = arena.EstablishStage<FoStage3D>("Visualization");
         stage.AddShape(group);
@@ -129,7 +129,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
                     Position = new Vector3(0, 0.15, 0),
                 }
             };
-            vertexShape.AddSubGlyph3D<FoText3D>(label);
+            vertexShape.AddShape<FoText3D>(label);
             label.Text.WriteSuccess();
 
             var stage = arena.EstablishStage<FoStage3D>("Visualization");
@@ -159,7 +159,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
                 Text = $"{edge.Name}: L={edge.Length:F2} M={mid.X:F2}, {mid.Y:F2}, {mid.Z:F2}",
                 Transform = labelTransform
             };
-            edgeShape.AddSubGlyph3D<FoText3D>(label);
+            edgeShape.AddShape<FoText3D>(label);
             label.Text.WriteSuccess();
 
             var stage = arena.EstablishStage<FoStage3D>("Visualization");
@@ -193,7 +193,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
                 Transform = new Transform3("LabelTransform"),
                 TextAlign = Text3DAlign.Center,
             };
-            normalShape.AddSubGlyph3D<FoText3D>(LabelName);
+            normalShape.AddShape<FoText3D>(LabelName);
             LabelName.Text.WriteSuccess();
 
             var stage = arena.EstablishStage<FoStage3D>("Visualization");
@@ -228,7 +228,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
                 }
             }.CreateCone($"NormalCone_{face.Name}", 0.1, 0.2, 0.1);
 
-            normalShape.AddSubGlyph3D<FoShape3D>(cone);
+            normalShape.AddShape<FoShape3D>(cone);
 
             var LabelName = new FoText3D("Name", "White")
             {
@@ -238,7 +238,7 @@ public class GeometryVisualizationService : IGeometryVisualizationService
                     Position = new Vector3(0, length, 0),
                 }
             };
-            normalShape.AddSubGlyph3D<FoText3D>(LabelName);
+            normalShape.AddShape<FoText3D>(LabelName);
             LabelName.Text.WriteSuccess();
 
             var stage = arena.EstablishStage<FoStage3D>("Visualization");

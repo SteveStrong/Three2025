@@ -159,7 +159,7 @@ public class TrisocTech : ITrisocTech
             FontSize = size,
         };
 
-        parent.AddSubGlyph3D(letter);
+        parent.AddShape(letter);
         return letter;
     }
 
@@ -250,7 +250,7 @@ public class TrisocTech : ITrisocTech
     private static FoGlyph3D DrawFace(FoShape3D root, string name, Mesh3D face)
     {
         var shape = new FoGlyph3D(name, face);
-        root.AddSubGlyph3D(shape);
+        root.AddShape(shape);
         return shape;
     }
 
@@ -264,7 +264,7 @@ public class TrisocTech : ITrisocTech
         };
         pipe.CreateTube(name, 0.1, path);
 
-        root.AddSubGlyph3D(pipe);
+        root.AddShape(pipe);
         return pipe;
     }
 
@@ -285,7 +285,7 @@ public class TrisocTech : ITrisocTech
             var label = CreateTextLabel3D(sphere, "tag",  name, align, 1.5);
             Tags.Add(name, (sphere, label));
 
-            root.AddSubGlyph3D(sphere);
+            root.AddShape(sphere);
         }
 
         return start;
