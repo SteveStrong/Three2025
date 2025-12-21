@@ -23,9 +23,9 @@ public class AnimatedParameterTestComponent : PartComponent
     {
         
         Calculations([
-            $"Width: {width}",
-            $"Height: {height}",
-            $"Depth: {depth}",
+            $"Width|m: {width}",
+            $"Height|m: {height}",
+            $"Depth|m: {depth}",
             $"GeometryType: '{geomType}'",
             $"X: 0",
             $"Y: 0",
@@ -60,7 +60,8 @@ public class AnimatedParameterTestComponent : PartComponent
         
         var shape = new FoShape3D($"TestShape_{Name}")
         {
-            GlyphId = GetKnowId(),
+            GlyphId = GetKnowId(), //Guid.NewGuid().ToString(), // 
+            
             Width = width,
             Height = height,
             Depth = depth
@@ -81,12 +82,5 @@ public class AnimatedParameterTestComponent : PartComponent
         return true;
     }
     
-    // Setters for test harness
-    public void SetWidth(double value) => FindParameter("Width")?.SetValue(value);
-    public void SetHeight(double value) => FindParameter("Height")?.SetValue(value);
-    public void SetDepth(double value) => FindParameter("Depth")?.SetValue(value);
-    public void SetGeomType(string value) => FindParameter("GeometryType")?.SetValue(value);
-    public void SetPositionX(double value) => FindParameter("X")?.SetValue(value);
-    public void SetPositionY(double value) => FindParameter("Y")?.SetValue(value);
-    public void SetPositionZ(double value) => FindParameter("Z")?.SetValue(value);
+
 }

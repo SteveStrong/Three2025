@@ -30,6 +30,12 @@ public partial class ShapeLifecycleTest : ComponentBase
     private AnimatedParameterTestComponent _testComponent;
 
     private string _activeTab = "model";
+    
+    // Track current parameter values for UI
+    private double _currentWidth = 1.0;
+    private double _currentHeight = 2.0;
+    private double _currentDepth = 3.0;
+    private string _currentGeomType = "Box";
 
     protected override void OnInitialized()
     {
@@ -68,10 +74,10 @@ public partial class ShapeLifecycleTest : ComponentBase
         // Create new test component with reasonable size
         _testComponent = new AnimatedParameterTestComponent(
             "TestComponent",
-            width: 1.0,    // 1x2x3 is much more visible than 100x100x100
-            height: 2.0,
-            depth: 3.0,
-            geomType: "Box"
+            width: _currentWidth,
+            height: _currentHeight,
+            depth: _currentDepth,
+            geomType: _currentGeomType
         );
 
         // Add component to model via ModelEditor (this is what we're testing)
@@ -175,7 +181,7 @@ public partial class ShapeLifecycleTest : ComponentBase
         $"🔵 RENDER SHAPE to stage".WriteInfo();
         
         // Wait a bit for SignalR connection to stabilize
-        await Task.Delay(500);
+        //await Task.Delay(500);
         
         // Check if still valid after delay
         if (_canvasRef == null)
@@ -186,7 +192,7 @@ public partial class ShapeLifecycleTest : ComponentBase
 
         // Render component's geometry to the stage
         var ctx3D = RenderContext3D.Create(_stage, _stage.GetName(), deep: true);
-        _testComponent.RenderGeometry3D(ctx3D);
+        _testModel.RenderGeometry3D(ctx3D);
         
         $"✅ Shape rendered - Stage now has {GetShapeCount()} shapes".WriteSuccess();
 
@@ -198,6 +204,76 @@ public partial class ShapeLifecycleTest : ComponentBase
     }
     
     private int _globalTick = 0;
+
+    // Parameter change handlers
+    private async Task OnGeometryTypeChanged(ChangeEventArgs e)
+    {
+        if (_testComponent == null || e.Value == null) return;
+        
+        _currentGeomType = e.Value.ToString()!;
+        $"🔄 Changing GeometryType to '{_currentGeomType}'".WriteInfo();
+        
+        ModelEditor!.SetParameter(_testComponent, "GeometryType", $"'{_currentGeomType}'");
+        await RefreshStage();
+    }
+
+    private async Task OnWidthChanged(ChangeEventArgs e)
+    {
+        if (_testComponent == null || e.Value == null) return;
+        
+        _currentWidth = double.Parse(e.Value.ToString()!);
+        $"🔄 Changing Width to {_currentWidth}".WriteInfo();
+        
+        ModelEditor!.SetParameter(_testComponent, "Width", $"{_currentWidth}");
+
+        await RefreshStage();
+    }
+
+    private async Task OnHeightChanged(ChangeEventArgs e)
+    {
+        if (_testComponent == null || e.Value == null) return;
+        
+        _currentHeight = double.Parse(e.Value.ToString()!);
+        $"🔄 Changing Height to {_currentHeight}".WriteInfo();
+        
+        ModelEditor!.SetParameter(_testComponent, "Height", $"{_currentHeight}");
+        await RefreshStage();
+    }
+
+    private async Task OnDepthChanged(ChangeEventArgs e)
+    {
+        if (_testComponent == null || e.Value == null) return;
+        
+        _currentDepth = double.Parse(e.Value.ToString()!);
+        $"🔄 Changing Depth to {_currentDepth}".WriteInfo();
+        
+        ModelEditor!.SetParameter(_testComponent, "Depth", $"{_currentDepth}");
+        await RefreshStage();
+    }
+
+    private async Task RefreshStage()
+    {
+        if ( _stage == null) return;
+        
+        // PHASE 1: Flush pending deletions from smashed parameters
+        // This sends the old shape's deletion to JavaScript BEFORE creating new one
+        await _stage.RenderStage(_globalTick++, 60.0);
+    }
+
+    private async Task UpdateShape()
+    {
+        if (_testComponent == null || _stage == null) return;
+        
+        
+        // PHASE 2: Re-render geometry with new parameter values (creates NEW shape)
+        var ctx3D = RenderContext3D.Create(_stage, _stage.GetName(), deep: true);
+        _testComponent.RenderGeometry3D(ctx3D);
+        
+        // PHASE 3: Send the new shape to JavaScript
+        await _stage.RenderStage(_globalTick++, 60.0);
+        
+        StateHasChanged();
+    }
 
 
 
@@ -213,8 +289,6 @@ public partial class ShapeLifecycleTest : ComponentBase
         $"📊 Stage has {GetShapeCount()} shapes BEFORE removal".WriteInfo();
 
 
-    
-        
         StateHasChanged();
     
         $"📊 Stage has {GetShapeCount()} shapes AFTER removal".WriteInfo();

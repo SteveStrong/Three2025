@@ -34,10 +34,45 @@
                         <button class="btn btn-success" @onclick="CreateGeometry">2️⃣ Create Geometry</button>
                         <button class="btn btn-success" @onclick="CreateShape">2️⃣ Compute Shape value</button>
                         <button class="btn btn-success" @onclick="RenderShape">2️⃣ Render</button>
-                       <button class="btn btn-warning" @onclick="RemoveShape" disabled="@(_testComponent == null)">3️⃣ Remove Shape (Smash)</button>
+                        <button class="btn btn-warning" @onclick="RemoveShape" disabled="@(_testComponent == null)">3️⃣ Remove Shape (Smash)</button>
                         <button class="btn btn-primary" @onclick="TriggerSingleFrame">🎬 Render Single Frame</button>
-
                     </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5>Parameter Controls</h5>
+                    @if (_testComponent != null)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Geometry Type</label>
+                            <select class="form-select" @onchange="OnGeometryTypeChanged">
+                                <option value="Box">Box</option>
+                                <option value="Sphere">Sphere</option>
+                                <option value="Cylinder">Cylinder</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Width: @_currentWidth</label>
+                            <input type="range" class="form-range" min="0.5" max="10" step="0.5" 
+                                   value="@_currentWidth" @onchange="OnWidthChanged" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Height: @_currentHeight</label>
+                            <input type="range" class="form-range" min="0.5" max="10" step="0.5" 
+                                   value="@_currentHeight" @onchange="OnHeightChanged" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Depth: @_currentDepth</label>
+                            <input type="range" class="form-range" min="0.5" max="10" step="0.5" 
+                                   value="@_currentDepth" @onchange="OnDepthChanged" />
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Create a component first</p>
+                    }
                 </div>
             </div>
 
