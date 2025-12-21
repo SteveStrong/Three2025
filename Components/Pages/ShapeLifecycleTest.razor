@@ -1,5 +1,4 @@
 #nullable enable
-@page "/"
 @page "/shape-lifecycle-test"
 @using FoundryWorldsAndDrawings.Shape
 
@@ -9,7 +8,42 @@
 
 <PageTitle>Shape Lifecycle Test</PageTitle>
 
-<div class="container-fluid mt-4">
+<div class="container-fluid mt-3">
+    <!-- Test Dashboard -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="border: 3px solid #2196F3; background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);">
+                <div class="card-body">
+                    <h2 class="text-center mb-4" style="color: #1565C0; font-weight: bold;">🧪 Three-Parameter Architecture Test Dashboard</h2>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100" style="border: 2px solid #4CAF50;">
+                                <div class="card-body text-center">
+                                    <h4 style="color: #2E7D32;">🔬 Shape Lifecycle Test</h4>
+                                    <p class="text-muted">Manual control with single-frame rendering (no animation loop)</p>
+                                    <p><strong>Tests:</strong> Mesh cache survival, Transform-only updates, Parameter propagation</p>
+                                    <span class="badge bg-success" style="font-size: 1rem; padding: 8px 16px;">◀️ CURRENT PAGE</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100" style="border: 2px solid #FF9800;">
+                                <div class="card-body text-center">
+                                    <h4 style="color: #E65100;">⏰ KN Model Clock Animation Test</h4>
+                                    <p class="text-muted">Continuous animation loop with parameter updates</p>
+                                    <p><strong>Tests:</strong> Clock motion, Periodic shape changes, KN layer animation</p>
+                                    <a href="/knmodel-animation" class="btn btn-warning btn-lg mt-2" style="font-weight: bold;">
+                                        ▶️ GO TO ANIMATION TEST
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <h3>🧪 Shape Lifecycle Test - Manual Rendering</h3>
     <p class="text-muted">Manual control with single-frame rendering (no animation loop)</p>
     

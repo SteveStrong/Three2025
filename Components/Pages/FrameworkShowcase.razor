@@ -1,3 +1,4 @@
+@page "/"
 @page "/showcase"
 @namespace Three2025.Components.Pages
 @using Radzen
@@ -8,20 +9,31 @@
     <div class="showcase-header">
         <h1>��� Foundry Framework Showcase</h1>
         <div class="version-badge">v4.0.0</div>
-        <p class="lead">Comprehensive test suite for 3D/2D rendering, animation, and model-driven architecture</p>        
-        <!-- Shape Lifecycle Test Alert -->
-        <div class="lifecycle-test-alert">
-            <div class="alert-content">
-                <div class="alert-icon">🧪</div>
-                <div class="alert-text">
-                    <strong>Shape Lifecycle Test Available</strong>
-                    <p>Manual testing for fundamental shape operations (create/remove/recreate)</p>
+        <p class="lead">Comprehensive test suite for 3D/2D rendering, animation, and model-driven architecture</p>
+        
+        <!-- Three-Parameter Architecture Tests -->
+        <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border-radius: 8px; border: 3px solid #2196F3;">
+            <h3 style="color: #1565C0; font-weight: bold; text-align: center; margin-bottom: 20px;">🧪 Three-Parameter Architecture Tests</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #FF9800; cursor: pointer; transition: transform 0.2s;" @onclick="@(() => Nav("/knmodel-animation"))">
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">⏰</div>
+                        <h4 style="color: #E65100; margin-bottom: 10px;">KN Model Clock Animation Test</h4>
+                        <p style="color: #666; margin-bottom: 15px;">Continuous animation loop with parameter updates. Tests clock motion, periodic shape changes, and KN layer animation.</p>
+                        <div style="color: #FF9800; font-weight: bold;">Click to Launch →</div>
+                    </div>
                 </div>
-                <button class="btn-lifecycle-test" @onclick="@(() => Nav("/shape-lifecycle-test"))">
-                    Go to Test Page
-                </button>
+                <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #4CAF50; cursor: pointer; transition: transform 0.2s;" @onclick="@(() => Nav("/shape-lifecycle-test"))">
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">🔬</div>
+                        <h4 style="color: #2E7D32; margin-bottom: 10px;">Shape Lifecycle Test</h4>
+                        <p style="color: #666; margin-bottom: 15px;">Manual control with single-frame rendering. Tests mesh cache survival, transform-only updates, and parameter propagation.</p>
+                        <div style="color: #4CAF50; font-weight: bold;">Click to Launch →</div>
+                    </div>
+                </div>
             </div>
-        </div>    </div>
+        </div>
+    </div>
 
     <RadzenTabs @bind-SelectedIndex="@selectedTabIndex" RenderMode="TabRenderMode.Client">
         
