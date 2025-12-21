@@ -55,20 +55,24 @@ public class AnimatedKnComponent : PartComponent
 
 
     /// <summary>
-    /// Uses base PartComponent pattern - just apply the compute method.
+    /// Three-parameter architecture: Mesh (geometry at origin) + Transform (position/rotation) + Body (composition)
     /// Parameter system handles dependencies automatically.
     /// </summary>
     public override (KnGeometry, KnParameter) EstablishGeometry3D(string view)
     {
         var geometry = Compute3DGeometry(view, null);
-        geometry.ApplyMeshMethod("ComputeGeometry", ComputeShape3D);
-        return (geometry, geometry.GetMeshParameter());
+        geometry.ApplyMeshMethod("ComputeMesh", ComputeMesh3D);
+        geometry.ApplyTransformMethod("ComputeTransform", ComputeTransform3D);
+        geometry.ApplyBodyMethod("ComputeBody", ComputeBody3D);
+        return (geometry, geometry.GetBodyParameter());
     }
 
     /// <summary>
-    /// Create or return existing shape using cache-based CREATE/UPDATE pattern.
+    /// MESH: Create or return cached geometry at origin.
+    /// Reads only geometry-defining parameters (Width, Height, Depth, GeometryType, Color).
+    /// Animation setup happens here since it's part of shape configuration.
     /// </summary>
-    private bool ComputeShape3D(KnInstance context, List<OPResult> args, OPResult result)
+    private bool ComputeMesh3D(KnInstance context, List<OPResult> args, OPResult result)
     {
         var geometry = context as KnGeometry;
         if (geometry == null)
@@ -80,29 +84,98 @@ public class AnimatedKnComponent : PartComponent
         if (parameter.IsCasheEmpty())
         {
             // ═══════════ CREATE MODE ═══════════
-            // Build new shape with all configuration
             var name = context.GetName();
             var title = context.Title ?? Name ?? "AnimatedShape";
             
-            $"🆕 CREATE MODE: Building animated shape '{name}'".WriteInfo();
-            shape = CreateComponentGeometry(context, name, title);
+            $"🆕 CREATE MESH: Building animated shape '{name}'".WriteInfo();
             
-            // Cache the newly created shape
+            // Read geometry parameters only (establishes Mesh dependencies)
+            var geomType = FindParameterValue<string>("GeometryType") ?? "Box";
+            var color = FindParameterValue<string>("Color") ?? "Blue";
+            var width = FindLengthValue("Width", 1.0).Value();
+            var height = FindLengthValue("Height", 1.0).Value();
+            var depth = FindLengthValue("Depth", 1.0).Value();
+            
+            // Create shape at origin (no position yet)
+            shape = new FoShape3D(name, color)
+            {
+                GlyphId = GetKnowId(),  // Stable UUID
+                Transform = new Transform3($"{name}Transform")
+            };
+            
+            // Create the geometry
+            switch (geomType.ToLower())
+            {
+                case "sphere":
+                    shape.CreateSphere(name, width, height, depth);
+                    break;
+                case "cylinder":
+                    shape.CreateCylinder(name, width, height, depth);
+                    break;
+                case "box":
+                default:
+                    shape.CreateBox(name, width, height, depth);
+                    break;
+            }
+            
+            // Create text label as subshape
+            var label3D = new FoText3D("Label", "white")
+            {
+                Text = "Tick: 0",
+                FontSize = 0.3,
+                Transform = new Transform3("LabelTransform")
+                {
+                    Position = new Vector3(0, height + 0.3, depth + 0.3),
+                }
+            };
+            
+            // Animate label to show tick
+            label3D.BeforeAnimationRefresh((self, tick, fps) =>
+            {
+                if (self is FoText3D textShape)
+                {
+                    textShape.Text = $"Tick: {tick}";
+                }
+            });
+            
+            shape.AddShape(label3D);
+            
+            // Setup sinusoidal animation (FO layer - direct manipulation)
+            // Read animation parameters (establishes dependencies)
+            var amplitude = FindLengthValue("Amplitude", 0.5).Value();
+            var frequency = FindParameterValue<double>("Frequency");
+            var phaseOffset = FindParameterValue<double>("PhaseOffset");
+            
+            // Animation callback captures base position (set by Body later)
+            // and applies oscillation directly
+            var capturedBaseY = 0.0;  // Will be updated by first Body evaluation
+            shape.BeforeAnimationRefresh((self, tick, fps) =>
+            {
+                if (self is FoShape3D s && s.Transform != null)
+                {
+                    // Use current Y as base on first frame
+                    if (tick == 0 || capturedBaseY == 0.0)
+                    {
+                        capturedBaseY = s.Transform.Position.Y;
+                    }
+                    
+                    // Apply sinusoidal oscillation
+                    var newY = capturedBaseY + amplitude * Math.Sin(frequency * tick + phaseOffset);
+                    var currentPos = s.Transform.Position;
+                    s.Transform.MoveTo(currentPos.X, newY, currentPos.Z);
+                }
+            });
+            
+            // Cache the shape
             parameter.SetCashe(shape);
             
-            $"✅ CREATE: Animated shape created and cached (GlyphId={shape.GlyphId})".WriteSuccess();
+            $"✅ CREATE MESH: Shape created and cached (GlyphId={shape.GlyphId})".WriteSuccess();
         }
         else
         {
-            // ═══════════ UPDATE MODE ═══════════
-            // Get existing shape - animations handle updates directly
+            // ═══════════ REUSE MODE ═══════════
             shape = parameter.GetCashe<FoShape3D>();
-            
-            $"🔄 UPDATE MODE: Using cached animated shape (GlyphId={shape?.GlyphId})".WriteInfo();
-            
-            // For animated shapes, the BeforeAnimationRefresh callbacks
-            // handle all updates directly - no parameter re-reading needed here.
-            // This is the key: animations bypass the evaluation system entirely!
+            $"♻️ REUSE MESH: Using cached shape (GlyphId={shape?.GlyphId})".WriteInfo();
         }
 
         result.SetValue(ResultStatus.Shape3D, shape);
@@ -110,93 +183,86 @@ public class AnimatedKnComponent : PartComponent
     }
 
     /// <summary>
-    /// Create the 3D geometry for this component.
-    /// Reads from KnParameters to configure geometry.
-    /// Animation is set up via BeforeAnimationRefresh on the shape.
+    /// TRANSFORM: Calculate Transform3 from position parameters.
+    /// Reads only position/rotation parameters (PositionX, PositionY, PositionZ, RotationY).
+    /// Lightweight - no cache needed.
     /// </summary>
-    protected  FoShape3D? CreateComponentGeometry(KnInstance context, string name, string title)
+    private bool ComputeTransform3D(KnInstance context, List<OPResult> args, OPResult result)
     {
-        // Read configuration from parameters
-        var geomType = FindParameterValue<string>("GeometryType") ?? "Box";
-        var color = FindParameterValue<string>("Color") ?? "Blue";
-        var width = FindLengthValue("Width", 1.0).Value();
-        var height = FindLengthValue("Height", 1.0).Value();
-        var depth = FindLengthValue("Depth", 1.0).Value();
+        var geometry = context as KnGeometry;
+        if (geometry == null)
+            return false;
+
+        var parameter = geometry.GetTransformParameter();
+        if (parameter == null)
+            return false;
+
+        // Read position parameters (establishes Transform dependencies)
         var posX = FindLengthValue("PositionX", 0.0).Value();
         var posY = FindLengthValue("PositionY", 0.0).Value();
         var posZ = FindLengthValue("PositionZ", 0.0).Value();
         var animOffset = FindLengthValue("AnimationOffset", 0.0).Value();
-        var rotY = 0.0;
+        var rotY = FindParameterValue<double>("RotationY");
 
-        $"AnimatedKnComponent.CreateComponentGeometry: Creating {geomType} '{name}' at ({posX}, {posY}, {posZ})".WriteInfo();
-        
-        var shape = new FoShape3D(name, color)
-        {
-            Transform = new Transform3($"{name}Transform")
-            {
-                Position = new Vector3(posX, posY + animOffset, posZ),
-                Rotation = Euler.FromDegrees(0, rotY, 0),
-            }
-        };
-        
-        // Create the appropriate geometry type
-        switch (geomType.ToLower())
-        {
-            case "sphere":
-                shape.CreateSphere(name, width, height, depth);
-                break;
-            case "cylinder":
-                shape.CreateCylinder(name, width, height, depth);
-                break;
-            case "box":
-            default:
-                shape.CreateBox(name, width, height, depth);
-                break;
-        }
-        
-        // Create text label as subshape positioned above the geometry
-        var label3D = new FoText3D("Label", "white")
-        {
-            Text = "Tick: 0",
-            FontSize = 0.3,
-            Transform = new Transform3("LabelTransform")
-            {
-                Position = new Vector3(0, height + 0.3, depth + 0.3),
-            }
-        };
-        
-        // Animate the label to show current tick
-        label3D.BeforeAnimationRefresh((self, tick, fps) =>
-        {
-            if (self is FoText3D textShape)
-            {
-                textShape.Text = $"Tick: {tick}";
-            }
-        });
-        
-        shape.AddShape(label3D);
-        
-        // Add sinusoidal animation to the shape itself (FO layer animation)
-        // Capture base position for oscillation
-        var baseX = posX;
-        var baseY = posY + animOffset;
-        var baseZ = posZ;
-        var amplitude = FindLengthValue("Amplitude", 0.5).Value();
-        var frequency = FindParameterValue<double>("Frequency");
-        var phaseOffset = FindParameterValue<double>("PhaseOffset");
-        
-        shape.BeforeAnimationRefresh((self, tick, fps) =>
-        {
-            if (self is FoShape3D s && s.Transform != null)
-            {
-                // Sinusoidal Y position with phase offset for each component
-                var newY = baseY + amplitude * Math.Sin(frequency * tick + phaseOffset);
-                s.Transform.MoveTo(baseX, newY, baseZ);
-            }
-        });
-        
-        return shape;
+        $"🔧 COMPUTE TRANSFORM: Position=({posX}, {posY + animOffset}, {posZ}), RotY={rotY}".WriteInfo();
+
+        // Create Transform3 object
+        var transform = new Transform3($"{Name}_Transform");
+        transform.MoveTo(posX, posY + animOffset, posZ);
+        transform.Rotation = Euler.FromDegrees(0, rotY, 0);
+
+        result.SetValue(ResultStatus.Transform3, transform);
+        return true;
     }
+
+    /// <summary>
+    /// BODY: Stateless composition of Mesh + Transform.
+    /// Reads Mesh and Transform parameters (establishes Body dependencies).
+    /// Applies transform in-place to the cached mesh.
+    /// </summary>
+    private bool ComputeBody3D(KnInstance context, List<OPResult> args, OPResult result)
+    {
+        var geometry = context as KnGeometry;
+        if (geometry == null)
+            return false;
+
+        var parameter = geometry.GetBodyParameter();
+        if (parameter == null)
+            return false;
+
+        // Read Mesh parameter (may return cached shape if Valid)
+        var meshResult = geometry.GetMeshParameter().GetCurrentValue();
+        var shape = meshResult.ValueAs<FoShape3D>();
+
+        if (shape == null)
+        {
+            "ERROR: No shape from Mesh parameter".WriteError();
+            return false;
+        }
+
+        // Read Transform parameter (fresh calculation)
+        var transformResult = geometry.GetTransformParameter().GetCurrentValue();
+        var transform = transformResult.ValueAs<Transform3>();
+
+        if (transform == null)
+        {
+            "ERROR: No transform from Transform parameter".WriteError();
+            return false;
+        }
+
+        $"🎯 COMPOSE BODY: Applying transform to shape (GlyphId={shape.GlyphId})".WriteInfo();
+
+        // Apply transform IN-PLACE (mutates mesh's Transform)
+        // Property setters automatically mark shape as stale
+        shape.Transform.Position = transform.Position;
+        shape.Transform.Rotation = transform.Rotation;
+        shape.Transform.Scale = transform.Scale;
+
+        result.SetValue(ResultStatus.Shape3D, shape);
+        return true;
+    }
+
+
 
     /// <summary>
     /// Helper to find a parameter value by name
