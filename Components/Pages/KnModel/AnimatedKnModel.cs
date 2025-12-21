@@ -24,15 +24,11 @@ public class AnimatedKnModel : PartModel
         $"AnimatedKnModel: Constructor called for '{name}'".WriteSuccess();
         
         Calculations([
-            "X: 10",
-            "Y: 100",
-            "Z: 10000",
-            "GeomType: 'Box'",
-            "Material: 'Blue'"
+            "UserName: 'Steve'",
+            "Model: 'Blue'",
+            "Param1: 42"
         ]);
 
-        var param = this.EstablishParameter("Param1");
-        param.SetValue(42);
 
         EnsureAnimationSetup();
         

@@ -110,7 +110,7 @@ public partial class GeometryParameterTestHarness : ComponentBase, IDisposable
     {
         if (_testComponent == null) return;
         AddLog("GEOM", $"Width: {_widthInput} → triggers RECREATE");
-        _testComponent.SetWidth(_widthInput);
+        ModelEditor!.SetParameter(_testComponent, "Width", _widthInput, "m");
         RefreshState();
     }
 
@@ -118,7 +118,7 @@ public partial class GeometryParameterTestHarness : ComponentBase, IDisposable
     {
         if (_testComponent == null) return;
         AddLog("GEOM", $"Height: {_heightInput} → triggers RECREATE");
-        _testComponent.SetHeight(_heightInput);
+        ModelEditor!.SetParameter(_testComponent, "Height", _heightInput, "m");
         RefreshState();
     }
 
@@ -126,7 +126,7 @@ public partial class GeometryParameterTestHarness : ComponentBase, IDisposable
     {
         if (_testComponent == null) return;
         AddLog("GEOM", $"Depth: {_depthInput} → triggers RECREATE");
-        _testComponent.SetDepth(_depthInput);
+        ModelEditor!.SetParameter(_testComponent, "Depth", _depthInput, "m");
         RefreshState();
     }
 
@@ -134,7 +134,7 @@ public partial class GeometryParameterTestHarness : ComponentBase, IDisposable
     {
         if (_testComponent == null) return;
         AddLog("GEOM", $"GeomType: {_geomTypeInput} → triggers RECREATE");
-        _testComponent.SetGeomType(_geomTypeInput);
+        ModelEditor!.SetParameter(_testComponent, "GeometryType", $"'{_geomTypeInput}'");
         RefreshState();
     }
 
@@ -144,7 +144,7 @@ public partial class GeometryParameterTestHarness : ComponentBase, IDisposable
     {
         if (_testComponent == null) return;
         AddLog("MOVE", $"X: → {_posXInput:F0}");
-        _testComponent.SetPositionX(_posXInput);
+        ModelEditor!.SetParameter(_testComponent, "PositionX", _posXInput, "m");
         _moveCount++;
     }
 
@@ -152,7 +152,7 @@ public partial class GeometryParameterTestHarness : ComponentBase, IDisposable
     {
         if (_testComponent == null) return;
         AddLog("MOVE", $"Y: → {_posYInput:F0}");
-        _testComponent.SetPositionY(_posYInput);
+        ModelEditor!.SetParameter(_testComponent, "PositionY", _posYInput, "m");
         _moveCount++;
     }
 
@@ -160,7 +160,7 @@ public partial class GeometryParameterTestHarness : ComponentBase, IDisposable
     {
         if (_testComponent == null) return;
         AddLog("MOVE", $"Z: → {_posZInput:F0}");
-        _testComponent.SetPositionZ(_posZInput);
+        ModelEditor!.SetParameter(_testComponent, "PositionZ", _posZInput, "m");
         _moveCount++;
     }
 
