@@ -38,7 +38,6 @@ public class AnimatedParameterTestComponent : PartComponent
     
     public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view)
     {
-        // $"🛠 EstablishGeometry3D called for view '{view}' on '{Name}'".WriteInfo();
         var result = Compute3DGeometry(view, geom =>
         {
             geom.ApplyMethod("ComputeTestGeometry", ComputeTestShape3D, null, null);
@@ -49,34 +48,59 @@ public class AnimatedParameterTestComponent : PartComponent
     
     private bool ComputeTestShape3D(KnInstance context, List<OPResult> args, OPResult result)
     {
-        var width = FindNumberValue("Width", 1.0);
-        var height = FindNumberValue("Height", 1.0);
-        var depth = FindNumberValue("Depth", 1.0);
-        var geomType = FindStringValue("GeometryType", "Box");
-
+        var geometry = context as KnGeometry;
+        var parameter = geometry?.GetParameter();
+        if (parameter == null) return false;
+        
+        FoShape3D shape;
+        
+        // ═══════════ PHASE 1: ENSURE GEOMETRY EXISTS ═══════════
+        if (parameter.IsCasheEmpty())
+        {
+            // Build new geometry - reads geometry parameters, establishes dependencies
+            $"🆕 CREATE: Building new shape geometry".WriteInfo();
+            
+            var width = FindNumberValue("Width", 1.0);
+            var height = FindNumberValue("Height", 1.0);
+            var depth = FindNumberValue("Depth", 1.0);
+            var geomType = FindStringValue("GeometryType", "Box");
+            
+            shape = new FoShape3D($"TestShape_{Name}")
+            {
+                GlyphId = GetKnowId(),
+                Width = width,
+                Height = height,
+                Depth = depth
+            };
+            
+            shape = geomType switch
+            {
+                "Box" => shape.CreateBox(shape.Name!, width, height, depth),
+                "Sphere" => shape.CreateSphere(shape.Name!, width, height, depth),
+                "Cylinder" => shape.CreateCylinder(shape.Name!, width, height, depth),
+                _ => shape.CreateBox(shape.Name!, width, height, depth)
+            };
+            
+            // Cache the newly created shape
+            parameter.SetCashe(shape);
+            
+            $"✅ Geometry created and cached (Type={geomType}, W={width}, H={height}, D={depth})".WriteSuccess();
+        }
+        else
+        {
+            // Reuse existing geometry from cache
+            shape = parameter.GetCashe<FoShape3D>()!;
+            $"🔄 Reusing cached geometry (GlyphId={shape.GlyphId})".WriteInfo();
+        }
+        
+        // ═══════════ PHASE 2: APPLY TRANSFORM (ALWAYS) ═══════════
+        // Something changed to trigger re-evaluation, so update transform
         var X = FindNumberValue("X", 0.0);
         var Y = FindNumberValue("Y", 0.0);
         var Z = FindNumberValue("Z", 0.0);
         
-        var shape = new FoShape3D($"TestShape_{Name}")
-        {
-            GlyphId = GetKnowId(), //Guid.NewGuid().ToString(), // 
-            
-            Width = width,
-            Height = height,
-            Depth = depth
-        };
-        
-        shape = geomType switch
-        {
-            "Box" => shape.CreateBox(shape.Name!, width, height, depth),
-            "Sphere" => shape.CreateSphere(shape.Name!, width, height, depth),
-            "Cylinder" => shape.CreateCylinder(shape.Name!, width, height, depth),
-            _ => shape.CreateBox(shape.Name!, width, height, depth)
-        };
-        
-        // Move box away from camera so it's visible
-        shape.Transform.Position = new Vector3(X, Y, Z);
+        shape.Transform.MoveTo(X, Y, Z);
+        $"📍 Transform applied: Position=({X}, {Y}, {Z})".WriteInfo();
         
         result.SetValue(ResultStatus.Shape3D, shape);
         return true;

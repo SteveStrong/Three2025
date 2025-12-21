@@ -36,6 +36,11 @@ public partial class ShapeLifecycleTest : ComponentBase
     private double _currentHeight = 2.0;
     private double _currentDepth = 3.0;
     private string _currentGeomType = "Box";
+    
+    // Track current position values for Transform-only updates
+    private double _currentX = 0.0;
+    private double _currentY = 0.0;
+    private double _currentZ = 0.0;
 
     protected override void OnInitialized()
     {
@@ -205,50 +210,73 @@ public partial class ShapeLifecycleTest : ComponentBase
     
     private int _globalTick = 0;
 
-    // Parameter change handlers
-    private async Task OnGeometryTypeChanged(ChangeEventArgs e)
+    // Parameter change handlers - geometry changes should trigger recreation
+    private void OnGeometryTypeChanged(ChangeEventArgs e)
     {
         if (_testComponent == null || e.Value == null) return;
         
         _currentGeomType = e.Value.ToString()!;
-        $"🔄 Changing GeometryType to '{_currentGeomType}'".WriteInfo();
+        $"🔄 Setting GeometryType to '{_currentGeomType}'".WriteInfo();
         
         ModelEditor!.SetParameter(_testComponent, "GeometryType", $"'{_currentGeomType}'");
-        await RefreshStage();
     }
 
-    private async Task OnWidthChanged(ChangeEventArgs e)
+    private void OnWidthChanged(ChangeEventArgs e)
     {
         if (_testComponent == null || e.Value == null) return;
         
         _currentWidth = double.Parse(e.Value.ToString()!);
-        $"🔄 Changing Width to {_currentWidth}".WriteInfo();
+        $"🔄 Setting Width to {_currentWidth}".WriteInfo();
         
         ModelEditor!.SetParameter(_testComponent, "Width", $"{_currentWidth}");
-
-        await RefreshStage();
     }
 
-    private async Task OnHeightChanged(ChangeEventArgs e)
+    private void OnHeightChanged(ChangeEventArgs e)
     {
         if (_testComponent == null || e.Value == null) return;
         
         _currentHeight = double.Parse(e.Value.ToString()!);
-        $"🔄 Changing Height to {_currentHeight}".WriteInfo();
+        $"🔄 Setting Height to {_currentHeight}".WriteInfo();
         
         ModelEditor!.SetParameter(_testComponent, "Height", $"{_currentHeight}");
-        await RefreshStage();
     }
 
-    private async Task OnDepthChanged(ChangeEventArgs e)
+    private void OnDepthChanged(ChangeEventArgs e)
     {
         if (_testComponent == null || e.Value == null) return;
         
         _currentDepth = double.Parse(e.Value.ToString()!);
-        $"🔄 Changing Depth to {_currentDepth}".WriteInfo();
+        $"🔄 Setting Depth to {_currentDepth}".WriteInfo();
         
         ModelEditor!.SetParameter(_testComponent, "Depth", $"{_currentDepth}");
-        await RefreshStage();
+    }
+
+    // Position change handlers - test transform-only updates via UPDATE mode
+    private void OnXPositionChanged(ChangeEventArgs e)
+    {
+        if (_testComponent == null || _stage == null || e.Value == null) return;
+        
+        _currentX = double.Parse(e.Value.ToString()!);
+        
+        ModelEditor!.SetParameter(_testComponent, "X", $"{_currentX}");
+    }
+
+    private void OnYPositionChanged(ChangeEventArgs e)
+    {
+        if (_testComponent == null || _stage == null || e.Value == null) return;
+        
+        _currentY = double.Parse(e.Value.ToString()!);
+        
+        ModelEditor!.SetParameter(_testComponent, "Y", $"{_currentY}");
+    }
+
+    private void OnZPositionChanged(ChangeEventArgs e)
+    {
+        if (_testComponent == null || _stage == null || e.Value == null) return;
+        
+        _currentZ = double.Parse(e.Value.ToString()!);
+        
+        ModelEditor!.SetParameter(_testComponent, "Z", $"{_currentZ}");
     }
 
     private async Task RefreshStage()
@@ -264,12 +292,13 @@ public partial class ShapeLifecycleTest : ComponentBase
     {
         if (_testComponent == null || _stage == null) return;
         
-        
-        // PHASE 2: Re-render geometry with new parameter values (creates NEW shape)
+        // Trigger re-evaluation of component's geometry
+        // If cache empty → CREATE mode (new shape)
+        // If cache has shape → UPDATE mode (modify existing)
         var ctx3D = RenderContext3D.Create(_stage, _stage.GetName(), deep: true);
         _testComponent.RenderGeometry3D(ctx3D);
         
-        // PHASE 3: Send the new shape to JavaScript
+        // Send updates to JavaScript (TransformUpdates or FullRefresh depending on what changed)
         await _stage.RenderStage(_globalTick++, 60.0);
         
         StateHasChanged();
