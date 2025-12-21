@@ -18,6 +18,15 @@ namespace Three2025.Components.Pages;
 /// </summary>
 public class AnimatedKnComponent : PartComponent
 {
+    // Clock animation state
+    private bool _clockAnimationEnabled = false;
+    private int _currentClockPosition = 0;  // 0-11 (0 = 12 o'clock, going clockwise)
+    private double _clockRadius = 3.0;      // Radius of circular path
+    private Vector3 _clockCenter = Vector3.Zero;  // Center of circle
+    private int _framesPerMove = 60;        // Move to next position every 60 frames (1 second at 60fps)
+    private int _frameCounter = 0;
+    private string[] _shapeTypes = new[] { "Box", "Sphere", "Cylinder" };
+    private int _currentShapeIndex = 0;
     
     public AnimatedKnComponent(string name, string color, Vector3 position, double amplitude = 0.5, double frequency = 0.05) : base(name)
     {
@@ -44,11 +53,54 @@ public class AnimatedKnComponent : PartComponent
             "RotationY: units(0.0, 'deg')"
         ]);
 
-        // KN layer animation callback - currently unused
-        // Could be used for parameter updates if needed
+        // KN layer animation callback - updates parameters for clock animation
         PreAnimationRefresh((comp, evt) =>
         {
-            // Reserved for future parameter animation
+            if (!_clockAnimationEnabled) return;
+            
+            _frameCounter++;
+            
+            // Move to next clock position every second (60 frames at 60fps)
+            if (_frameCounter >= _framesPerMove)
+            {
+                _frameCounter = 0;
+                _currentClockPosition = (_currentClockPosition + 1) % 12;
+                
+                // Calculate angle (0 = 12 o'clock = top, clockwise)
+                // 12 o'clock is at angle -90° (or -π/2), going clockwise
+                var angleRadians = (_currentClockPosition * Math.PI / 6.0) - (Math.PI / 2.0);
+                
+                // Calculate X and Z position on circle
+                var newX = _clockCenter.X + _clockRadius * Math.Cos(angleRadians);
+                var newZ = _clockCenter.Z + _clockRadius * Math.Sin(angleRadians);
+                
+                $"⏰ CLOCK: Moving to position {_currentClockPosition} (angle={angleRadians:F2} rad, X={newX:F2}, Z={newZ:F2})".WriteInfo();
+                
+                // Update position parameters - this will trigger Smash cascade
+                var xParam = FindParameter("PositionX");
+                var zParam = FindParameter("PositionZ");
+                
+                if (xParam != null && zParam != null)
+                {
+                    xParam.ApplyFormula($"units({newX}, 'm')", KnBase.UnitService);
+                    zParam.ApplyFormula($"units({newZ}, 'm')", KnBase.UnitService);
+                }
+                
+                // At 12 o'clock (position 0), change shape
+                if (_currentClockPosition == 0)
+                {
+                    _currentShapeIndex = (_currentShapeIndex + 1) % _shapeTypes.Length;
+                    var newShape = _shapeTypes[_currentShapeIndex];
+                    
+                    $"🔄 CLOCK: At 12 o'clock! Changing shape to {newShape}".WriteSuccess();
+                    
+                    var geomParam = FindParameter("GeometryType");
+                    if (geomParam != null)
+                    {
+                        geomParam.ApplyFormula($"'{newShape}'", KnBase.UnitService);
+                    }
+                }
+            }
         });
     }
 
@@ -277,6 +329,42 @@ public class AnimatedKnComponent : PartComponent
                 return typedValue;
         }
         return default;
+    }
+
+    // === Clock Animation Control Methods ===
+    
+    /// <summary>
+    /// Enable clock animation - component will move around a circle and change shape at 12 o'clock
+    /// </summary>
+    public void EnableClockAnimation()
+    {
+        _clockAnimationEnabled = true;
+        $"⏰ Clock animation ENABLED for {Name}".WriteSuccess();
+    }
+    
+    /// <summary>
+    /// Disable clock animation
+    /// </summary>
+    public void DisableClockAnimation()
+    {
+        _clockAnimationEnabled = false;
+        $"⏰ Clock animation DISABLED for {Name}".WriteInfo();
+    }
+    
+    /// <summary>
+    /// Get current clock animation state
+    /// </summary>
+    public bool IsClockAnimationEnabled() => _clockAnimationEnabled;
+    
+    /// <summary>
+    /// Configure clock animation parameters
+    /// </summary>
+    public void ConfigureClockAnimation(double radius, Vector3 center, int framesPerMove = 60)
+    {
+        _clockRadius = radius;
+        _clockCenter = center;
+        _framesPerMove = framesPerMove;
+        $"⏰ Clock configured: radius={radius}, center=({center.X},{center.Y},{center.Z}), frames/move={framesPerMove}".WriteInfo();
     }
 
 }

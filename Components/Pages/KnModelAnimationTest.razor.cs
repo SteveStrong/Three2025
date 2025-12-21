@@ -40,6 +40,9 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     protected List<EventLogEntry> _eventLogs = new();
     protected bool _logAllEvents = false;
     
+    // Clock animation control
+    protected bool _clockAnimationEnabled = false;
+    
     // Tree tab selection
     protected string _activeTreeTab = "model";
     
@@ -118,6 +121,33 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     {
         AnimationFrameBus.ResumeAllAnimations();
         AddLog("Control", "Animation resumed");
+        InvokeAsync(StateHasChanged);
+    }
+    
+    protected void ToggleClockAnimation()
+    {
+        _clockAnimationEnabled = !_clockAnimationEnabled;
+        
+        // Get first component to control
+        var firstComponent = _knModel.Members<AnimatedKnComponent>().FirstOrDefault();
+        if (firstComponent != null)
+        {
+            if (_clockAnimationEnabled)
+            {
+                firstComponent.EnableClockAnimation();
+                AddLog("Control", $"Clock animation ENABLED on {firstComponent.Name}");
+            }
+            else
+            {
+                firstComponent.DisableClockAnimation();
+                AddLog("Control", $"Clock animation DISABLED on {firstComponent.Name}");
+            }
+        }
+        else
+        {
+            AddLog("Control", "No components available for clock animation");
+        }
+        
         InvokeAsync(StateHasChanged);
     }
 
