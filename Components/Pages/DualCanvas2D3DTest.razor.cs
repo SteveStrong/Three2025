@@ -37,12 +37,12 @@ public partial class DualCanvas2D3DTest : ComponentBase, IDisposable
     
     // 2D geometry
     private KnGeometry? _geometry2D;
-    private KnGeometryParameter? _geomParam2D;
+    private KnParameter? _geomParam2D;
     private FoShape2D? _currentShape2D;
     
     // 3D geometry
     private KnGeometry? _geometry3D;
-    private KnGeometryParameter? _geomParam3D;
+    private KnParameter? _geomParam3D;
     private FoShape3D? _currentShape3D;
 
     // Shared inputs (sync between 2D and 3D)
@@ -312,14 +312,14 @@ public class DualViewComponent : KnComponent
 
     // ===== 2D GEOMETRY =====
     
-    public (KnGeometry, KnGeometryParameter) EstablishGeometry2D(string view, IArena? arena)
+    public (KnGeometry, KnParameter) EstablishGeometry2D(string view, IArena? arena)
     {
         var result = Compute2DGeometry(view, geom =>
         {
-            geom.ApplyMethod("ComputeDual2D", ComputeShape2D, null, null);
-            SetupDependencies(geom.GetParameter(), include3D: false);
+            geom.ApplyMeshMethod("ComputeDual2D", ComputeShape2D);
+            SetupDependencies(geom.GetMeshParameter(), include3D: false);
         });
-        return (result, result.GetParameter());
+        return (result, result.GetMeshParameter());
     }
 
     private bool ComputeShape2D(KnInstance context, List<OPResult> args, OPResult result)
@@ -340,14 +340,14 @@ public class DualViewComponent : KnComponent
 
     // ===== 3D GEOMETRY =====
     
-    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view)
+    public override (KnGeometry, KnParameter) EstablishGeometry3D(string view)
     {
         var result = Compute3DGeometry(view, geom =>
         {
-            geom.ApplyMethod("ComputeDual3D", ComputeShape3D, null, null);
-            SetupDependencies(geom.GetParameter(), include3D: true);
+            geom.ApplyMeshMethod("ComputeDual3D", ComputeShape3D);
+            SetupDependencies(geom.GetMeshParameter(), include3D: true);
         });
-        return (result, result.GetParameter());
+        return (result, result.GetMeshParameter());
     }
 
     private bool ComputeShape3D(KnInstance context, List<OPResult> args, OPResult result)
@@ -376,7 +376,7 @@ public class DualViewComponent : KnComponent
 
     // ===== SHARED DEPENDENCY SETUP =====
     
-    private void SetupDependencies(KnGeometryParameter geomParam, bool include3D)
+    private void SetupDependencies(KnParameter geomParam, bool include3D)
     {
         // Shared dependencies: Width, Height, PosX, PosY
         var widthParam = FindParameter("Width");
