@@ -158,7 +158,7 @@ public class CageTech : ICageTech
             };
             node.CreateBox(item.GetName(), .2, .2, .3);
             //arena.AddShapeToStage<Node3D>(cage);
-            equip.AddSubGlyph3D<Node3D>(node);
+            equip.AddShape<Node3D>(node);
             nodes.Add(node);
         }
 
@@ -189,7 +189,7 @@ public class CageTech : ICageTech
                 }
             };
             node.CreateSphere(item.GetName(), 0.3, 0.3, 0.3);
-            tray.AddSubGlyph3D<Node3D>(node);
+            tray.AddShape<Node3D>(node);
             //arena.AddShapeToStage<Node3D>(cage);
             nodes.Add(node);
         }
@@ -256,7 +256,7 @@ public class CageTech : ICageTech
     private static FoGlyph3D DrawFace(FoShape3D root, string name, Mesh3D face)
     {
         var shape = new FoGlyph3D(name, face);
-        root.AddSubGlyph3D(shape);
+        root.AddShape(shape);
         return shape;
     }
 
@@ -270,7 +270,7 @@ public class CageTech : ICageTech
         };
         pipe.CreateTube(name, 0.1, path);
 
-        root.AddSubGlyph3D(pipe);
+        root.AddShape(pipe);
         return pipe;
     }
 

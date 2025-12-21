@@ -274,7 +274,7 @@ public class LightingComponent : FoShape3D
          },
          Color = "black"
       };
-      AddSubGlyph3D(tag); 
+      AddShape(tag); 
       GetTreeNodeTitle().WriteSuccess();
    }
 

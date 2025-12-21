@@ -46,11 +46,12 @@ public class DebugGeometryComponent : PartComponent
 
     /// <summary>
     /// Helper to find a parameter value by name
+    /// Uses IsValid() to avoid aggressive evaluation
     /// </summary>
     private T? FindParameterValue<T>(string name)
     {
         var param = FindParameter(name);
-        if (param != null)
+        if (param != null && param.IsValid())
         {
             var value = param.GetValue().Value();
             if (value is T typedValue)
@@ -69,9 +70,9 @@ public class DebugGeometryComponent : PartComponent
     }
 
     /// <summary>
-    /// Required by base class - creates the actual shape geometry
+    /// Creates the actual shape geometry - called by ComputeShape3D when needed
     /// </summary>
-    protected override FoShape3D? CreateComponentGeometry(KnInstance context, string name, string title)
+    protected  FoShape3D? CreateComponentGeometry(KnInstance context, string name, string title)
     {
         Log("CREATE", $"CreateComponentGeometry called: name={name}, title={title}");
         
@@ -117,64 +118,27 @@ public class DebugGeometryComponent : PartComponent
     }
 
     /// <summary>
-    /// Override EstablishGeometry3D with extensive logging
+    /// Simple pattern - just apply the compute method
+    /// Dependencies tracked automatically, cleanup handled by Smash()
     /// </summary>
-    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view, IArena? arena)
+    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view)
     {
         Log("ESTAB", $"EstablishGeometry3D called for view '{view}'");
         
-        var result = Compute3DGeometry(view, geom => 
-        {
-            Log("ESTAB", $"Compute3DGeometry action - setting up ApplyMethod");
-            
-            // Set up compute method with BeforeSmash callback
-            geom.ApplyMethod("ComputeGeometry", ComputeShape3D, null, (param, opResult) => 
-            {
-                Log("SMASH", ">>> BeforeSmash callback fired! <<<");
-                
-                var oldShape = geom.GetCashe<FoShape3D>();
-                Log("SMASH", $"Old shape in cache: {(oldShape != null ? oldShape.Name : "NULL")}");
-                
-                // Delete old shape
-                if (oldShape != null)
-                {
-                    Log("SMASH", $"Deleting old shape '{oldShape.Name}'");
-                    oldShape.Delete();
-                }
-                
-                // Force clear cache
-                Log("SMASH", "Forcing cache clear with SetCashe(null!)");
-                geom.GetParameter().SetCashe(null!);
-                
-                Log("SMASH", $"After clear: IsCasheEmpty={geom.IsCasheEmpty()}");
-            });
-            
-            // Setup dependencies
-            SetupDependencies(geom.GetParameter());
-        });
-
-        Log("ESTAB", $"EstablishGeometry3D complete, IsCasheEmpty={result.IsCasheEmpty()}");
-        return (result, result.GetParameter());
+        var geometry = Compute3DGeometry(view, null);
+        geometry.ApplyMethod("ComputeGeometry", ComputeShape3D, null, null);
+        
+        var param = geometry.GetParameter();
+        var status = param.IsValid() ? "Valid" : param.IsUnknown() ? "Unknown" : "Invalid";
+        Log("ESTAB", $"EstablishGeometry3D complete, parameter status: {status}");
+        
+        return (geometry, param);
     }
 
-    private void SetupDependencies(KnGeometryParameter geomParam)
-    {
-        var geomTypeParam = FindParameter("GeometryType");
-        var colorParam = FindParameter("Color");
-        
-        if (geomTypeParam != null)
-        {
-            geomParam.IDependOn(geomTypeParam);
-            Log("DEP", $"Geometry depends on GeometryType (ContributesTo count: {geomTypeParam.ContributesTo.Count})");
-        }
-        
-        if (colorParam != null)
-        {
-            geomParam.IDependOn(colorParam);
-            Log("DEP", $"Geometry depends on Color (ContributesTo count: {colorParam.ContributesTo.Count})");
-        }
-    }
-
+    /// <summary>
+    /// Clean pattern: Check IsValid(), create if needed, store with SetValue()
+    /// No manual cache management, no manual dependency setup
+    /// </summary>
     private bool ComputeShape3D(KnInstance context, List<OPResult> args, OPResult result)
     {
         Log("COMPUTE", ">>> ComputeShape3D called <<<");
@@ -186,42 +150,43 @@ public class DebugGeometryComponent : PartComponent
             return false;
         }
 
-        var isCacheEmpty = geometry.IsCasheEmpty();
-        Log("COMPUTE", $"IsCasheEmpty = {isCacheEmpty}");
+        var parameter = geometry.GetParameter();
+        FoShape3D? shape = null;
 
-        if (isCacheEmpty)
+        // PEEK first - IsValid() checks without forcing evaluation
+        if (parameter.IsValid())
         {
-            Log("COMPUTE", "Cache is empty - calling CreateComponentGeometry");
+            Log("COMPUTE", "Parameter is Valid - retrieving existing shape");
+            var currentValue = parameter.GetValue();
+            if (currentValue.IsSuccess())
+            {
+                shape = currentValue.AsShape3D();
+                Log("COMPUTE", $"Retrieved existing shape: {shape?.Name ?? "NULL"}");
+            }
+        }
+        else
+        {
+            Log("COMPUTE", "Parameter is NOT Valid - creating new shape");
             
             var name = context.GetName();
             var title = context.Title ?? Name ?? "DebugShape";
             
-            var shape = CreateComponentGeometry(context, name, title);
+            shape = CreateComponentGeometry(context, name, title);
             
             if (shape != null)
             {
-                // Store in cache
-                geometry.SetCashe(shape);
-                Log("COMPUTE", $"Shape stored in cache: {shape.Name}");
-                
-                // Re-establish dependencies (they get cleared on Smash)
-                SetupDependencies(geometry.GetParameter());
-                Log("COMPUTE", "Dependencies re-established");
-                
-                result.SetValue(ResultStatus.Shape3D, shape);
+                Log("COMPUTE", $"Created new shape: {shape.Name}");
             }
             else
             {
                 Log("ERROR", "CreateComponentGeometry returned NULL!");
             }
         }
-        else
-        {
-            var existingShape = geometry.GetCashe<FoShape3D>();
-            Log("COMPUTE", $"Cache HIT - existing shape: {existingShape?.Name ?? "NULL"}");
-            result.SetValue(ResultStatus.Shape3D, existingShape);
-        }
 
+        // Store result - this becomes the cached value
+        result.SetValue(ResultStatus.Shape3D, shape);
+        Log("COMPUTE", $"Result set with shape: {shape?.Name ?? "NULL"}");
+        
         return true;
     }
 }

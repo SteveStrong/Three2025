@@ -49,7 +49,6 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     // Stage for 3D objects
     private FoStage3D? _testStage;
     private FoPage2D? _testPage;
-    private int _shapeCount = 0;
 
     protected override void OnInitialized()
     {
@@ -58,16 +57,19 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         // Subscribe to refresh messages from model parameter changes
         MentorServices?.PubSub?.SubscribeTo<RefreshRenderMessage>(OnRefreshRender);
         
-        _knModel = MentorServices.EstablishModel<AnimatedKnModel>("KnModelAnimationTestModel");
-        
-        // Ensure animation callback is set up (may not run if model already exists)
-        _knModel.EnsureAnimationSetup();
-        
-        // Create initial child components using bulk add
-        var initialComponents = CreateChildComponents(3);
-        foreach (var component in initialComponents)
+        if (MentorServices != null)
         {
-            ModelEditor.AddChild(_knModel, component);
+            _knModel = MentorServices.EstablishModel<AnimatedKnModel>("KnModelAnimationTestModel");
+            
+            // Ensure animation callback is set up (may not run if model already exists)
+            _knModel.EnsureAnimationSetup();
+            
+            // Create initial child components using bulk add
+            var initialComponents = CreateChildComponents(3);
+            foreach (var component in initialComponents)
+            {
+                ModelEditor.AddChild(_knModel, component);
+            }
         }
         
         _knModel.SetExpanded(true);
@@ -124,8 +126,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         // Clear components from model but keep the model
         _knModel.GetSlot<AnimatedKnComponent>()?.Clear();
         
-        _ = _testStage?.ClearAll();
-        _shapeCount = 0;
+        _testStage?.ClearAll();
         _eventLogs.Clear();
         
         AddLog("System", "Test reset");

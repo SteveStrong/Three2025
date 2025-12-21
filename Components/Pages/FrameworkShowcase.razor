@@ -1,0 +1,419 @@
+@page "/showcase"
+@namespace Three2025.Components.Pages
+@using Radzen
+@using Radzen.Blazor
+@rendermode InteractiveServer
+
+<div class="framework-showcase">
+    <div class="showcase-header">
+        <h1>��� Foundry Framework Showcase</h1>
+        <div class="version-badge">v4.0.0</div>
+        <p class="lead">Comprehensive test suite for 3D/2D rendering, animation, and model-driven architecture</p>        
+        <!-- Shape Lifecycle Test Alert -->
+        <div class="lifecycle-test-alert">
+            <div class="alert-content">
+                <div class="alert-icon">🧪</div>
+                <div class="alert-text">
+                    <strong>Shape Lifecycle Test Available</strong>
+                    <p>Manual testing for fundamental shape operations (create/remove/recreate)</p>
+                </div>
+                <button class="btn-lifecycle-test" @onclick="@(() => Nav("/shape-lifecycle-test"))">
+                    Go to Test Page
+                </button>
+            </div>
+        </div>    </div>
+
+    <RadzenTabs @bind-SelectedIndex="@selectedTabIndex" RenderMode="TabRenderMode.Client">
+        
+        <Tabs>
+            <!-- Tab 1: 3D Tests -->
+            <RadzenTabsItem Text="��� 3D Tests">
+                <div class="tab-content-wrapper">
+                    <div class="card-grid">
+                        <div class="demo-card" @onclick="@(() => Nav("/geometry-test-harness"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Geometry Parameter Test</div>
+                            <div class="card-description">Live parameter → geometry → shape pipeline</div>
+                            <div class="card-route">/geometry-test-harness</div>
+                            <div class="card-status badge-testing">��� Active Test</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/clock"))">
+                            <div class="card-icon">⏰</div>
+                            <div class="card-title">Clock</div>
+                            <div class="card-description">Animated clock with three-tier optimization</div>
+                            <div class="card-route">/clock</div>
+                            <div class="card-status badge-integration">��� Integration</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/geometry-debug"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Geometry Debug</div>
+                            <div class="card-description">Debug geometry evaluation and rendering</div>
+                            <div class="card-route">/geometry-debug</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/multi-canvas-3d-test"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Multi-Canvas 3D</div>
+                            <div class="card-description">Multiple 3D canvases with independent stages</div>
+                            <div class="card-route">/multi-canvas-3d-test</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/debugcanvas"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Debug Canvas</div>
+                            <div class="card-description">Canvas debugging and diagnostics</div>
+                            <div class="card-route">/debugcanvas</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/gluetest3d"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Glue Test 3D</div>
+                            <div class="card-description">Shape grouping and connections</div>
+                            <div class="card-route">/gluetest3d</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/spacialboxtest"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Spacial Box Test</div>
+                            <div class="card-description">3D spatial box component</div>
+                            <div class="card-route">/spacialboxtest</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/spacialframetest"))">
+                            <div class="card-icon">���️</div>
+                            <div class="card-title">Spacial Frame Test</div>
+                            <div class="card-description">3D frame structure component</div>
+                            <div class="card-route">/spacialframetest</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/trisoc"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Trisoc</div>
+                            <div class="card-description">Three-sided object construction</div>
+                            <div class="card-route">/trisoc</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/becanvas"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">BE Canvas</div>
+                            <div class="card-description">Backend-driven canvas rendering</div>
+                            <div class="card-route">/becanvas</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+                    </div>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- Tab 2: 2D & Mixed -->
+            <RadzenTabsItem Text="✏️ 2D & Mixed">
+                <div class="tab-content-wrapper">
+                    <div class="card-grid">
+                        <div class="demo-card" @onclick="@(() => Nav("/drawing"))">
+                            <div class="card-icon">✏️</div>
+                            <div class="card-title">Drawing</div>
+                            <div class="card-description">2D drawing canvas with shapes</div>
+                            <div class="card-route">/drawing</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/multi-canvas-2d-test"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Multi-Canvas 2D</div>
+                            <div class="card-description">Multiple 2D canvases with independent stages</div>
+                            <div class="card-route">/multi-canvas-2d-test</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/dual-canvas-test"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Dual Canvas Test</div>
+                            <div class="card-description">2D and 3D canvases side-by-side</div>
+                            <div class="card-route">/dual-canvas-test</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/tugofwar"))">
+                            <div class="card-icon">⚔️</div>
+                            <div class="card-title">Tug of War</div>
+                            <div class="card-description">Interactive tug-of-war game</div>
+                            <div class="card-route">/tugofwar</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/tugofwartest"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Tug of War Test</div>
+                            <div class="card-description">Test version of tug-of-war mechanics</div>
+                            <div class="card-route">/tugofwartest</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+                    </div>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- Tab 3: Model Driven -->
+            <RadzenTabsItem Text="��� Model Driven">
+                <div class="tab-content-wrapper">
+                    <div class="card-grid">
+                        <div class="demo-card" @onclick="@(() => Nav("/knmodel-animation"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">KnModel Animation</div>
+                            <div class="card-description">Model-driven animation system</div>
+                            <div class="card-route">/knmodel-animation</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/animation-control"))">
+                            <div class="card-icon">���️</div>
+                            <div class="card-title">Animation Control</div>
+                            <div class="card-description">Control panel for animation parameters</div>
+                            <div class="card-route">/animation-control</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/matrixtest"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Matrix Test</div>
+                            <div class="card-description">Transformation matrix testing</div>
+                            <div class="card-route">/matrixtest</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/legosnaptest"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Lego Snap Test</div>
+                            <div class="card-description">Component snapping mechanics</div>
+                            <div class="card-route">/legosnaptest</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+                    </div>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- Tab 4: AI & Utils -->
+            <RadzenTabsItem Text="��� AI & Utils">
+                <div class="tab-content-wrapper">
+                    <div class="card-grid">
+                        <div class="demo-card" @onclick="@(() => Nav("/aichat"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">AI Chat</div>
+                            <div class="card-description">AI assistant integration</div>
+                            <div class="card-route">/aichat</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/home"))">
+                            <div class="card-icon">���</div>
+                            <div class="card-title">Home</div>
+                            <div class="card-description">Framework home page</div>
+                            <div class="card-route">/home</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+                    </div>
+                </div>
+            </RadzenTabsItem>
+
+        </Tabs>
+    </RadzenTabs>
+</div>
+
+<style>
+    .framework-showcase {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .showcase-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+
+    .showcase-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .version-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .lead {
+        font-size: 1.125rem;
+        color: #666;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .tab-content-wrapper {
+        padding: 1.5rem;
+    }
+
+    .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .demo-card {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .demo-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+        transform: translateY(-4px);
+    }
+
+    .card-icon {
+        font-size: 2.5rem;
+        text-align: center;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1a202c;
+        text-align: center;
+    }
+
+    .card-description {
+        font-size: 0.875rem;
+        color: #2d3748;
+        text-align: center;
+        flex-grow: 1;
+    }
+
+    .card-route {
+        font-family: 'Courier New', monospace;
+        font-size: 0.75rem;
+        color: #a0aec0;
+        text-align: center;
+        padding: 0.25rem 0.5rem;
+        background: #f7fafc;
+        border-radius: 4px;
+    }
+
+    .card-status {
+        text-align: center;
+        padding: 0.5rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .badge-ready {
+        background: #c6f6d5;
+        color: #22543d;
+    }
+
+    .badge-testing {
+        background: #fef5e7;
+        color: #975a16;
+    }
+
+    .badge-integration {
+        background: #dbeafe;
+        color: #1e3a8a;
+    }
+
+    /* Radzen tab overrides */
+    .rz-tabview-panels {
+        padding: 0;
+    }
+
+    /* Lifecycle Test Alert */
+    .lifecycle-test-alert {
+        margin-top: 2rem;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border: 2px solid #f59e0b;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+    }
+
+    .alert-content {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .alert-icon {
+        font-size: 3rem;
+    }
+
+    .alert-text {
+        flex: 1;
+        min-width: 300px;
+        text-align: left;
+    }
+
+    .alert-text strong {
+        display: block;
+        font-size: 1.25rem;
+        color: #78350f;
+        margin-bottom: 0.25rem;
+    }
+
+    .alert-text p {
+        margin: 0;
+        color: #92400e;
+        font-size: 0.95rem;
+    }
+
+    .btn-lifecycle-test {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(217, 119, 6, 0.3);
+    }
+
+    .btn-lifecycle-test:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(217, 119, 6, 0.4);
+    }
+
+    .btn-lifecycle-test:active {
+        transform: translateY(0);
+    }
+</style>
+
+}

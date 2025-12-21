@@ -94,7 +94,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
         {
             Position = new Vector3(0, hh + markerSize, 0)
         };
-        box.AddSubGlyph3D(topMarker);
+        box.AddShape(topMarker);
         
         // Bottom face - Cyan  
         var bottomMarker = new FoShape3D($"{box.Name}_BottomMarker", "cyan");
@@ -103,7 +103,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
         {
             Position = new Vector3(0, -hh - markerSize, 0)
         };
-        box.AddSubGlyph3D(bottomMarker);
+        box.AddShape(bottomMarker);
         
         // Front face - Green (+Z)
         var frontMarker = new FoShape3D($"{box.Name}_FrontMarker", "lime");
@@ -112,7 +112,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
         {
             Position = new Vector3(0, 0, hd + markerSize)
         };
-        box.AddSubGlyph3D(frontMarker);
+        box.AddShape(frontMarker);
         
         // Back face - Magenta (-Z)
         var backMarker = new FoShape3D($"{box.Name}_BackMarker", "magenta");
@@ -121,7 +121,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
         {
             Position = new Vector3(0, 0, -hd - markerSize)
         };
-        box.AddSubGlyph3D(backMarker);
+        box.AddShape(backMarker);
         
         // Left face - Blue (-X)
         var leftMarker = new FoShape3D($"{box.Name}_LeftMarker", "blue");
@@ -130,7 +130,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
         {
             Position = new Vector3(-hw - markerSize, 0, 0)
         };
-        box.AddSubGlyph3D(leftMarker);
+        box.AddShape(leftMarker);
         
         // Right face - Orange (+X)
         var rightMarker = new FoShape3D($"{box.Name}_RightMarker", "orange");
@@ -139,7 +139,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
         {
             Position = new Vector3(hw + markerSize, 0, 0)
         };
-        box.AddSubGlyph3D(rightMarker);
+        box.AddShape(rightMarker);
     }
     
     public void CreateStackedTower()

@@ -187,9 +187,9 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
         
         if (geomParam != null)
         {
-            AddLog("SMASH", $"Before smash: IsCasheEmpty={geom?.IsCasheEmpty()}");
+            AddLog("SMASH", $"Before smash: IsUnknown={geomParam.IsUnknown()}");
             geomParam.Smash();
-            AddLog("SMASH", $"After smash: IsCasheEmpty={geom?.IsCasheEmpty()}");
+            AddLog("SMASH", $"After smash: IsUnknown={geomParam.IsUnknown()}");
         }
         else
         {
@@ -210,12 +210,12 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
             return;
         }
 
-        // This should call ComputeShape3D if cache is empty
-        var (geom, _) = _testComponent.EstablishGeometry3D("GeomDebug3D", Workspace?.GetArena());
+        // This should call ComputeShape3D if parameter is Unknown
+        var (geom, geomParam) = _testComponent.EstablishGeometry3D("GeomDebug3D");
         var result = geom.GetCurrentValue();
         
         AddLog("EVAL", $"Evaluation result: Status={result.GetStatus()}, HasShape={result.AsShape3D() != null}");
-        AddLog("EVAL", $"After eval: IsCasheEmpty={geom.IsCasheEmpty()}");
+        AddLog("EVAL", $"After eval: IsUnknown={geomParam.IsUnknown()}");
         
         UpdateDiagnostics();
         InvokeAsync(StateHasChanged);
@@ -244,10 +244,11 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
             return;
         }
 
-        // Create render context
-        var ctx = RenderContext3D.Create(arena, "GeomDebug3D", deep: false);
+        // Create render context - stage established explicitly
+        var stage = arena.EstablishStage<FoStage3D>("GeomDebug3D");
+        var ctx = RenderContext3D.Create(stage, "GeomDebug3D", deep: false);
         
-        AddLog("RENDER", $"Created context for view '{ctx.ViewName}', stage={ctx.Stage?.Name}");
+        AddLog("RENDER", $"Created context for view '{ctx.ViewName}', stage={(ctx.Target as FoStage3D)?.Name}");
         
         // Render the component
         _testComponent.RenderGeometry3D(ctx);
@@ -325,12 +326,13 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
         var arena = Workspace?.GetArena();
         _arenaStageCount = arena?.GetAllStages().Count ?? -1;
         
-        // Geometry cache state
+        // Geometry parameter state
         var (geom, geomParam) = _testComponent?.GetGeometry3D("GeomDebug3D") ?? (null, null);
-        if (geom != null)
+        if (geomParam != null)
         {
-            var cache = geom.GetCashe<FoShape3D>();
-            _geometryCacheState = cache != null ? $"Has shape: {cache.Name}" : "EMPTY";
+            var result = geomParam.PeekValue();
+            var shape = result?.AsShape3D();
+            _geometryCacheState = shape != null ? $"Has shape: {shape.Name}" : "EMPTY (Unknown={geomParam.IsUnknown()})";
         }
         else
         {

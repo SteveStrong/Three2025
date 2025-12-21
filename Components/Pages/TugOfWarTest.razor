@@ -1,0 +1,130 @@
+@page "/tugofwartest"
+@using FoundryWorldsAndDrawings.Shape
+@using FoundryWorldsAndDrawings.Shared
+@using FoundryMentorModeler.Model
+
+<PageTitle>Tug of War - KnModel 2D/3D Test</PageTitle>
+
+<div class="container-fluid">
+    <h3>🎯 Tug of War - KnModel Dual Rendering</h3>
+    <p class="text-muted">Same KnModel drives both 2D and 3D - drag sliders to see synchronized updates</p>
+    
+    <div class="row mb-3">
+        <!-- Left Team Controls -->
+        <div class="col-md-4">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <strong>🔴 Red Team</strong>
+                </div>
+                <div class="card-body">
+                    <label>Pull Force: @_leftForce.ToString("F0")</label>
+                    <input type="range" class="form-range" min="0" max="100" step="5" 
+                           @bind="_leftForce" @bind:event="oninput" @onchange="OnForceChanged" />
+                    <button class="btn btn-danger btn-sm mt-2" @onclick="LeftPull">PULL! 💪</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Center Status -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <strong>⚖️ Rope Position: @_ropePosition.ToString("F1")</strong>
+                </div>
+                <div class="card-body text-center">
+                    <div class="progress" style="height: 30px;">
+                        <div class="progress-bar bg-danger" style="width: @GetLeftPercent()%"></div>
+                        <div class="progress-bar bg-warning" style="width: 10%">🎯</div>
+                        <div class="progress-bar bg-primary" style="width: @GetRightPercent()%"></div>
+                    </div>
+                    <div class="mt-2">
+                        @if (_ropePosition < -20)
+                        {
+                            <span class="badge bg-danger">Red Team Winning!</span>
+                        }
+                        else if (_ropePosition > 20)
+                        {
+                            <span class="badge bg-primary">Blue Team Winning!</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Evenly Matched</span>
+                        }
+                    </div>
+                    <div class="mt-2">
+                        <button class="btn btn-outline-secondary btn-sm" @onclick="ResetGame">Reset</button>
+                        <button class="btn btn-outline-success btn-sm" @onclick="StartAutoPlay">Auto Play</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Team Controls -->
+        <div class="col-md-4">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <strong>🔵 Blue Team</strong>
+                </div>
+                <div class="card-body">
+                    <label>Pull Force: @_rightForce.ToString("F0")</label>
+                    <input type="range" class="form-range" min="0" max="100" step="5" 
+                           @bind="_rightForce" @bind:event="oninput" @onchange="OnForceChanged" />
+                    <button class="btn btn-primary btn-sm mt-2" @onclick="RightPull">PULL! 💪</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dual Canvas Display -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <strong>📐 2D View (Canvas)</strong>
+                    <span class="badge bg-info float-end">@_shape2DInfo</span>
+                </div>
+                <div class="card-body p-0" style="height: 300px; background: #f8f9fa;">
+                    <Canvas2DComponent @ref="_canvas2D" 
+                                        PageName="TugOfWar2D"
+                                       Height="300" 
+                                       Width="600"
+                                       OnPageReady="OnPage2DReady" />
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <strong>🎲 3D View (Stage)</strong>
+                    <span class="badge bg-info float-end">@_shape3DInfo</span>
+                </div>
+                <div class="card-body p-0" style="height: 300px;">
+                    <Canvas3DComponent @ref="_canvas3D"
+                                        SceneName="TugOfWar3D"
+                                       Height="300"
+                                       Width="600"
+                                       OnStageReady="OnStage3DReady" />
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Event Log -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <strong>📋 KnModel Events</strong>
+                    <button class="btn btn-outline-secondary btn-sm float-end" @onclick="ClearLog">Clear</button>
+                </div>
+                <div class="card-body" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.8em;">
+                    @foreach (var log in _logs.TakeLast(20).Reverse())
+                    {
+                        <div>@log</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
