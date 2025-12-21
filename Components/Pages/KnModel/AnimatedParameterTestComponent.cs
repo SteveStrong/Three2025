@@ -42,9 +42,10 @@ public class AnimatedParameterTestComponent : PartComponent
         {
             geom.ApplyMeshMethod("ComputeMesh3D", ComputeMesh3D, null);
             geom.ApplyTransformMethod("ComputeTransform3D", ComputeTransform3D, null);
+            geom.ApplyBodyMethod("ComputeBody3D", ComputeBody3D, null);
         });
         
-        return (result, result.GetMeshParameter());
+        return (result, result.GetBodyParameter());
     }
 
     private bool ComputeMesh3D(KnInstance context, List<OPResult> args, OPResult result)
@@ -115,6 +116,48 @@ public class AnimatedParameterTestComponent : PartComponent
         result.SetValue(ResultStatus.Transform3, transform);
         return true;
     }
-    
+
+    private bool ComputeBody3D(KnInstance context, List<OPResult> args, OPResult result)
+    {
+        var geometry = context as KnGeometry;
+        if (geometry == null) return false;
+        
+        var parameter = geometry.GetBodyParameter();
+        if (parameter == null) return false;
+        
+        $"🔷 BODY: Composing Mesh + Transform".WriteInfo();
+        
+        // Read Mesh parameter - establishes Mesh → Body dependency
+        // If Mesh is Unknown, this triggers Mesh computation and caching
+        var meshResult = geometry.GetMeshParameter().GetCurrentValue();
+        var shape = meshResult.ValueAs<FoShape3D>();
+        
+        if (shape == null)
+        {
+            $"❌ BODY: No shape from Mesh parameter".WriteError();
+            return false;
+        }
+        
+        // Read Transform parameter - establishes Transform → Body dependency
+        // If Transform is Unknown, this triggers Transform computation
+        var transformResult = geometry.GetTransformParameter().GetCurrentValue();
+        var transform = transformResult.ValueAs<Transform3>();
+        
+        if (transform == null)
+        {
+            $"❌ BODY: No transform from Transform parameter".WriteError();
+            return false;
+        }
+        
+        // Apply transform to shape IN-PLACE (no copy, mutates mesh's Transform)
+        shape.Transform.Position = transform.Position;
+        shape.Transform.Rotation = transform.Rotation;
+        shape.Transform.Scale = transform.Scale;
+        
+        $"✅ BODY: Composed shape with transform at {transform.Position}".WriteSuccess();
+        
+        result.SetValue(ResultStatus.Shape3D, shape);
+        return true;
+    }
 
 }
