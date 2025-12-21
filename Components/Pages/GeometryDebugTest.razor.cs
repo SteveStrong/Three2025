@@ -212,7 +212,7 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
 
         // This should call ComputeShape3D if parameter is Unknown
         var (geom, geomParam) = _testComponent.EstablishGeometry3D("GeomDebug3D");
-        var result = geom.GetCurrentValue();
+        var result = geom.GetMeshParameterValue();
         
         AddLog("EVAL", $"Evaluation result: Status={result.GetStatus()}, HasShape={result.AsShape3D() != null}");
         AddLog("EVAL", $"After eval: IsUnknown={geomParam.IsUnknown()}");

@@ -58,11 +58,11 @@ public class AnimatedKnComponent : PartComponent
     /// Uses base PartComponent pattern - just apply the compute method.
     /// Parameter system handles dependencies automatically.
     /// </summary>
-    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view)
+    public override (KnGeometry, KnParameter) EstablishGeometry3D(string view)
     {
         var geometry = Compute3DGeometry(view, null);
-        geometry.ApplyMethod("ComputeGeometry", ComputeShape3D, null, null);
-        return (geometry, geometry.GetParameter());
+        geometry.ApplyMeshMethod("ComputeGeometry", ComputeShape3D);
+        return (geometry, geometry.GetMeshParameter());
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ public class AnimatedKnComponent : PartComponent
         if (geometry == null)
             return false;
 
-        var parameter = geometry.GetParameter();
+        var parameter = geometry.GetMeshParameter();
         FoShape3D? shape = null;
 
         if (parameter.IsCasheEmpty())

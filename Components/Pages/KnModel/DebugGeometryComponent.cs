@@ -63,10 +63,10 @@ public class DebugGeometryComponent : PartComponent
     /// <summary>
     /// Get existing geometry without creating - for diagnostics
     /// </summary>
-    public (KnGeometry?, KnGeometryParameter?) GetGeometry3D(string view)
+    public (KnGeometry?, KnParameter?) GetGeometry3D(string view)
     {
         var geom = Members<KnGeometry>().FirstOrDefault(x => x.IsNamed(view));
-        return (geom, geom?.GetParameter());
+        return (geom, geom?.GetMeshParameter());
     }
 
     /// <summary>
@@ -121,14 +121,14 @@ public class DebugGeometryComponent : PartComponent
     /// Simple pattern - just apply the compute method
     /// Dependencies tracked automatically, cleanup handled by Smash()
     /// </summary>
-    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view)
+    public override (KnGeometry, KnParameter) EstablishGeometry3D(string view)
     {
         Log("ESTAB", $"EstablishGeometry3D called for view '{view}'");
         
         var geometry = Compute3DGeometry(view, null);
-        geometry.ApplyMethod("ComputeGeometry", ComputeShape3D, null, null);
+        geometry.ApplyMeshMethod("ComputeGeometry", ComputeShape3D);
         
-        var param = geometry.GetParameter();
+        var param = geometry.GetMeshParameter();
         var status = param.IsValid() ? "Valid" : param.IsUnknown() ? "Unknown" : "Invalid";
         Log("ESTAB", $"EstablishGeometry3D complete, parameter status: {status}");
         
@@ -150,7 +150,7 @@ public class DebugGeometryComponent : PartComponent
             return false;
         }
 
-        var parameter = geometry.GetParameter();
+        var parameter = geometry.GetMeshParameter();
         FoShape3D? shape = null;
 
         // PEEK first - IsValid() checks without forcing evaluation

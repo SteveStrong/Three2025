@@ -36,23 +36,24 @@ public class AnimatedParameterTestComponent : PartComponent
     
 
     
-    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view)
+    public override (KnGeometry, KnParameter) EstablishGeometry3D(string view)
     {
         var result = Compute3DGeometry(view, geom =>
         {
-            geom.ApplyMethod("ComputeTestGeometry", ComputeTestShape3D, null, null);
+            geom.ApplyMeshMethod("ComputeMesh3D", ComputeMesh3D, null);
+            geom.ApplyTransformMethod("ComputeTransform3D", ComputeTransform3D, null);
         });
         
-        return (result, result.GetParameter());
+        return (result, result.GetMeshParameter());
     }
-    
-    private bool ComputeTestShape3D(KnInstance context, List<OPResult> args, OPResult result)
+
+    private bool ComputeMesh3D(KnInstance context, List<OPResult> args, OPResult result)
     {
         var geometry = context as KnGeometry;
-        var parameter = geometry?.GetParameter();
+        var parameter = geometry?.GetMeshParameter();
         if (parameter == null) return false;
         
-        FoShape3D shape;
+        FoShape3D? shape = parameter.GetCashe<FoShape3D>();
         
         // ═══════════ PHASE 1: ENSURE GEOMETRY EXISTS ═══════════
         if (parameter.IsCasheEmpty())
@@ -86,23 +87,32 @@ public class AnimatedParameterTestComponent : PartComponent
             
             $"✅ Geometry created and cached (Type={geomType}, W={width}, H={height}, D={depth})".WriteSuccess();
         }
-        else
-        {
-            // Reuse existing geometry from cache
-            shape = parameter.GetCashe<FoShape3D>()!;
-            $"🔄 Reusing cached geometry (GlyphId={shape.GlyphId})".WriteInfo();
-        }
+
+        
+        result.SetValue(ResultStatus.Shape3D, shape);
+        return true;
+    }
+
+    private bool ComputeTransform3D(KnInstance context, List<OPResult> args, OPResult result)
+    {
+        var geometry = context as KnGeometry;
+        var parameter = geometry?.GetTransformParameter();
+        if (parameter == null) return false;
+        
+    
         
         // ═══════════ PHASE 2: APPLY TRANSFORM (ALWAYS) ═══════════
         // Something changed to trigger re-evaluation, so update transform
         var X = FindNumberValue("X", 0.0);
         var Y = FindNumberValue("Y", 0.0);
         var Z = FindNumberValue("Z", 0.0);
-        
-        shape.Transform.MoveTo(X, Y, Z);
+
+
+        Transform3 transform = new Transform3($"TestShape_{Name}");
+        transform.MoveTo(X, Y, Z);
         $"📍 Transform applied: Position=({X}, {Y}, {Z})".WriteInfo();
         
-        result.SetValue(ResultStatus.Shape3D, shape);
+        result.SetValue(ResultStatus.Transform3, transform);
         return true;
     }
     

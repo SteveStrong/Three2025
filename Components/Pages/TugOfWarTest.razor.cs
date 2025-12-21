@@ -93,7 +93,7 @@ public partial class TugOfWarTest : ComponentBase, IDisposable
         var (ropeGeom, ropeParam) = _ropeComponent.EstablishGeometry2D("TugOfWar2D", null);
         
         // Get the computed shape
-        var ropeValue = ropeGeom.GetCurrentValue();
+        var ropeValue = ropeGeom.GetMeshParameterValue();
         if (ropeValue.IsSuccess())
         {
             _ropeShape2D = ropeValue.AsShape2D();
@@ -129,7 +129,7 @@ public partial class TugOfWarTest : ComponentBase, IDisposable
         var (ropeGeom, ropeParam) = _ropeComponent.EstablishGeometry3D("TugOfWar3D");
         
         // Get the computed shape
-        var ropeValue = ropeGeom.GetCurrentValue();
+        var ropeValue = ropeGeom.GetMeshParameterValue();
         if (ropeValue.IsSuccess())
         {
             _ropeShape3D = ropeValue.AsShape3D();
@@ -202,8 +202,8 @@ public partial class TugOfWarTest : ComponentBase, IDisposable
         _ropeComponent?.FindParameter("Position")?.SetValue(_ropePosition);
         
         // Smash geometries to trigger re-evaluation
-        _ropeComponent?.FindGeometry(KnowledgeType.Geometry2D)?.GetParameter().Smash();
-        _ropeComponent?.FindGeometry(KnowledgeType.Geometry3D)?.GetParameter().Smash();
+        _ropeComponent?.FindGeometry(KnowledgeType.Geometry2D)?.GetMeshParameter().Smash();
+        _ropeComponent?.FindGeometry(KnowledgeType.Geometry3D)?.GetMeshParameter().Smash();
         
         // Apply natural friction/decay
         _leftForce = Math.Max(30, _leftForce - 2);
@@ -362,20 +362,20 @@ public class RopeComponent : KnComponent
         ]);
     }
     
-    public (KnGeometry, KnGeometryParameter) EstablishGeometry2D(string view, IPage2D? page)
+    public (KnGeometry, KnParameter) EstablishGeometry2D(string view, IPage2D? page)
     {
         var result = Compute2DGeometry(view, geom =>
         {
-            geom.ApplyMethod("ComputeRope2D", ComputeRope2D, null, null);
+            geom.ApplyMeshMethod("ComputeRope2D", ComputeRope2D);
             
             // Geometry depends on Position parameter
             var posParam = FindParameter("Position");
             if (posParam != null)
             {
-                geom.GetParameter().IDependOn(posParam);
+                geom.GetMeshParameter().IDependOn(posParam);
             }
         });
-        return (result, result.GetParameter());
+        return (result, result.GetMeshParameter());
     }
     
     private bool ComputeRope2D(KnInstance context, List<OPResult> args, OPResult result)
@@ -395,20 +395,20 @@ public class RopeComponent : KnComponent
         return true;
     }
     
-    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view)
+    public override (KnGeometry, KnParameter) EstablishGeometry3D(string view)
     {
         var result = Compute3DGeometry(view, geom =>
         {
-            geom.ApplyMethod("ComputeRope3D", ComputeRope3D, null, null);
+            geom.ApplyMeshMethod("ComputeRope3D", ComputeRope3D);
             
             // Geometry depends on Position parameter
             var posParam = FindParameter("Position");
             if (posParam != null)
             {
-                geom.GetParameter().IDependOn(posParam);
+                geom.GetMeshParameter().IDependOn(posParam);
             }
         });
-        return (result, result.GetParameter());
+        return (result, result.GetMeshParameter());
     }
     
     private bool ComputeRope3D(KnInstance context, List<OPResult> args, OPResult result)
