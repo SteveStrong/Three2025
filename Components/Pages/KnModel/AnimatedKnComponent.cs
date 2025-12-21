@@ -66,7 +66,7 @@ public class AnimatedKnComponent : PartComponent
     }
 
     /// <summary>
-    /// Create or return existing shape using parameter value check.
+    /// Create or return existing shape using cache-based CREATE/UPDATE pattern.
     /// </summary>
     private bool ComputeShape3D(KnInstance context, List<OPResult> args, OPResult result)
     {
@@ -77,21 +77,32 @@ public class AnimatedKnComponent : PartComponent
         var parameter = geometry.GetParameter();
         FoShape3D? shape = null;
 
-        if (parameter.IsValid())
+        if (parameter.IsCasheEmpty())
         {
-            // Shape already exists - just use it
-            var currentValue = parameter.GetValue();
-            if (currentValue.IsSuccess())
-            {
-                shape = currentValue.AsShape3D();
-            }
+            // ═══════════ CREATE MODE ═══════════
+            // Build new shape with all configuration
+            var name = context.GetName();
+            var title = context.Title ?? Name ?? "AnimatedShape";
+            
+            $"🆕 CREATE MODE: Building animated shape '{name}'".WriteInfo();
+            shape = CreateComponentGeometry(context, name, title);
+            
+            // Cache the newly created shape
+            parameter.SetCashe(shape);
+            
+            $"✅ CREATE: Animated shape created and cached (GlyphId={shape.GlyphId})".WriteSuccess();
         }
         else
         {
-            // Need to create new shape
-            var name = context.GetName();
-            var title = context.Title ?? Name ?? "AnimatedShape";
-            shape = CreateComponentGeometry(context, name, title);
+            // ═══════════ UPDATE MODE ═══════════
+            // Get existing shape - animations handle updates directly
+            shape = parameter.GetCashe<FoShape3D>();
+            
+            $"🔄 UPDATE MODE: Using cached animated shape (GlyphId={shape?.GlyphId})".WriteInfo();
+            
+            // For animated shapes, the BeforeAnimationRefresh callbacks
+            // handle all updates directly - no parameter re-reading needed here.
+            // This is the key: animations bypass the evaluation system entirely!
         }
 
         result.SetValue(ResultStatus.Shape3D, shape);
