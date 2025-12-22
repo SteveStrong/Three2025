@@ -33,6 +33,7 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
     private string _currentGeomType = "Box";
     private string _currentColor = "Blue";
     private string _activeTab = "model";
+    private bool _componentAnimationEnabled = false;
     
     // Dimension state (matches component defaults)
     private double _width = 1.5;
@@ -58,15 +59,20 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
         AnimationFrameBus.SubscribeToAnimation(OnAnimationEvent);
         
         // Create model that handles animation lifecycle automatically
-        _testModel = MentorServices.EstablishModel<AnimatedKnModel>("GeomDebugModel");
+        _testModel = MentorServices!.EstablishModel<AnimatedKnModel>("GeomDebugModel");
         _testModel.SetExpanded(true);
         
         // Create test component
         _testComponent = new DebugGeometryComponent("DebugShape", "Blue", new Vector3(0, 1, 0));
         _testComponent.SetLogCallback(AddLog);
         
-        // Add component to model
-        ModelEditor.AddChild(_testModel, _testComponent);
+        if (ModelEditor != null)
+        {
+            _testComponent.SetModelEditor(ModelEditor); // Provide ModelEditor for animation
+            
+            // Add component to model
+            ModelEditor.AddChild(_testModel, _testComponent);
+        }
         
         AddLog("INIT", "GeometryDebugTest initialized - AnimatedKnModel will auto-render on changes");
     }
@@ -231,6 +237,19 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
         _eventLogs.Clear();
         StateHasChanged();
     }
+    
+    private void ToggleComponentAnimation()
+    {
+        if (_testComponent == null) return;
+        
+        _componentAnimationEnabled = !_componentAnimationEnabled;
+        _testComponent.SetAnimationEnabled(_componentAnimationEnabled);
+        
+        var status = _componentAnimationEnabled ? "ENABLED" : "DISABLED";
+        AddLog("ANIM", $"Component animation {status}");
+        
+        StateHasChanged();
+    }
 
     private void AddLog(string type, string message)
     {
@@ -247,6 +266,7 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
         "RENDER" => "table-info",
         "PARAM" => "table-primary",
         "FRAME" => "table-warning",
+        "ANIM" => "table-success",
         _ => ""
     };
 
