@@ -103,8 +103,8 @@ public partial class DualCanvas2D3DTest : ComponentBase, IDisposable
     {
         if (_testComponent == null || _page == null || _stage == null) return;
 
-        // Render 2D geometry - page already available from Canvas2DReference
-        var ctx2D = RenderContext2D.Create(_page, "DualTest2D", deep: false);
+        // Render 2D geometry - cleaner API using page name directly
+        var ctx2D = RenderContext2D.CreateFromPage(_page);
         _testComponent.RenderGeometry2D(ctx2D);
         
         var result2D = _geomParam2D?.PeekValue();
@@ -115,8 +115,8 @@ public partial class DualCanvas2D3DTest : ComponentBase, IDisposable
             AddLog("2D", $"Initial 2D shape created: {shape2D.Name}");
         }
 
-        // Render 3D geometry - stage already available from Canvas3DReference
-        var ctx3D = RenderContext3D.Create(_stage, "DualTest3D", deep: false);
+        // Render 3D geometry - cleaner API using stage name directly
+        var ctx3D = RenderContext3D.CreateFromStage(_stage);
         _testComponent.RenderGeometry3D(ctx3D);
         
         var result3D = _geomParam3D?.PeekValue();

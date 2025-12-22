@@ -27,22 +27,6 @@
         <!-- Left: Controls -->
         <div class="col-md-4">
             <div class="card mb-3">
-                <div class="card-header">Animation Control</div>
-                <div class="card-body">
-                    <div class="btn-group mb-2">
-                        <button class="btn btn-success btn-sm" @onclick="StartAnimation">▶ Start</button>
-                        <button class="btn btn-warning btn-sm" @onclick="PauseAnimation">⏸ Pause</button>
-                        <button class="btn btn-info btn-sm" @onclick="StepOneFrame">⏭ Step 1 Frame</button>
-                    </div>
-                    <div class="small">
-                        <strong>State:</strong> @_animationState<br/>
-                        <strong>Tick:</strong> @_currentTick<br/>
-                        <strong>FPS:</strong> @_currentFps.ToString("F1")
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-3">
                 <div class="card-header">Parameter Controls</div>
                 <div class="card-body">
                     <div class="mb-3">
@@ -70,41 +54,59 @@
                         </div>
                         <div class="small text-muted mt-1">Current: @_currentColor</div>
                     </div>
+                    
+                    <hr />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Width: @_width</label>
+                        <input type="range" class="form-range" min="0.5" max="5" step="0.5" 
+                               value="@_width" @onchange="OnWidthChanged" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Height: @_height</label>
+                        <input type="range" class="form-range" min="0.5" max="5" step="0.5" 
+                               value="@_height" @onchange="OnHeightChanged" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Depth: @_depth</label>
+                        <input type="range" class="form-range" min="0.5" max="5" step="0.5" 
+                               value="@_depth" @onchange="OnDepthChanged" />
+                    </div>
+                    
+                    <hr />
+                    <h6>Transform Position</h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">X Position: @_positionX</label>
+                        <input type="range" class="form-range" min="-5" max="5" step="0.5" 
+                               value="@_positionX" @onchange="OnXPositionChanged" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Y Position: @_positionY</label>
+                        <input type="range" class="form-range" min="-5" max="5" step="0.5" 
+                               value="@_positionY" @onchange="OnYPositionChanged" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Z Position: @_positionZ</label>
+                        <input type="range" class="form-range" min="-5" max="5" step="0.5" 
+                               value="@_positionZ" @onchange="OnZPositionChanged" />
+                    </div>
                 </div>
             </div>
 
             <div class="card mb-3">
-                <div class="card-header">Manual Triggers</div>
+                <div class="card-header">Utilities</div>
                 <div class="card-body">
-                    <button class="btn btn-outline-secondary btn-sm mb-1 d-block w-100" @onclick="ManualSmashGeometry">
-                        1. Smash Geometry Cache
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm mb-1 d-block w-100" @onclick="ManualEvaluateGeometry">
-                        2. Evaluate Geometry (no render)
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm mb-1 d-block w-100" @onclick="ManualRenderToStage">
-                        3. Render to Stage
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm mb-1 d-block w-100" @onclick="ManualFullCycle">
-                        4. Full Cycle (Smash → Eval → Render)
-                    </button>
-                    <hr/>
                     <button class="btn btn-danger btn-sm d-block w-100" @onclick="ClearStage">
                         Clear Stage
                     </button>
                 </div>
             </div>
 
-            <div class="card mb-3">
-                <div class="card-header">Diagnostic Info</div>
-                <div class="card-body small">
-                    <div><strong>Stage:</strong> @(_testStage?.GetName() ?? "NULL")</div>
-                    <div><strong>Stage Shape Count:</strong> @_stageShapeCount</div>
-                    <div><strong>Geometry Cache:</strong> @_geometryCacheState</div>
-                    <div><strong>Dependencies:</strong> @_dependencyState</div>
-                    <div><strong>Arena Stages:</strong> @_arenaStageCount</div>
-                </div>
-            </div>
         </div>
         
         <!-- Middle: 3D Canvas -->
@@ -117,40 +119,65 @@
             </div>
         </div>
         
-        <!-- Right: Event Log -->
+        <!-- Right: Model Tree and Event Log -->
         <div class="col-md-3">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between">
-                    <span>Event Log</span>
-                    <button class="btn btn-outline-secondary btn-sm" @onclick="ClearLog">Clear</button>
-                </div>
-                <div class="card-body p-0" style="height: 500px; overflow-y: auto;">
-                    <table class="table table-sm table-striped mb-0" style="font-size: 0.75rem;">
-                        <tbody>
-                            @foreach (var log in _eventLogs.TakeLast(50).Reverse())
-                            {
-                                <tr class="@GetLogClass(log.Type)">
-                                    <td style="width: 60px;">@log.Timestamp.ToString("HH:mm:ss")</td>
-                                    <td style="width: 70px;"><strong>@log.Type</strong></td>
-                                    <td>@log.Message</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(_activeTab == "model" ? "active" : "")" 
+                                    @onclick="@(() => _activeTab = "model")" 
+                                    type="button" role="tab">
+                                📊 Model
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(_activeTab == "shape" ? "active" : "")" 
+                                    @onclick="@(() => _activeTab = "shape")" 
+                                    type="button" role="tab">
+                                🔷 Stage
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(_activeTab == "log" ? "active" : "")" 
+                                    @onclick="@(() => _activeTab = "log")" 
+                                    type="button" role="tab">
+                                📝 Log
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" style="max-height: 600px; overflow-y: auto; padding-top: 10px;">
+                        @if (_activeTab == "model")
+                        {
+                            <MentorTreeView/>
+                        }
+                        else if (_activeTab == "shape")
+                        {
+                            <ShapeTreeView/>
+                        }
+                        else
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><strong>Event Log</strong></span>
+                                <button class="btn btn-outline-secondary btn-sm" @onclick="ClearLog">Clear</button>
+                            </div>
+                            <table class="table table-sm table-striped mb-0" style="font-size: 0.75rem;">
+                                <tbody>
+                                    @foreach (var log in _eventLogs.TakeLast(50).Reverse())
+                                    {
+                                        <tr class="@GetLogClass(log.Type)">
+                                            <td style="width: 60px;">@log.Timestamp.ToString("HH:mm:ss")</td>
+                                            <td style="width: 70px;"><strong>@log.Type</strong></td>
+                                            <td>@log.Message</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-@code {
-    private string GetLogClass(string type) => type switch
-    {
-        "ERROR" => "table-danger",
-        "SMASH" => "table-warning",
-        "CREATE" => "table-success",
-        "RENDER" => "table-info",
-        "PARAM" => "table-primary",
-        _ => ""
-    };
-}

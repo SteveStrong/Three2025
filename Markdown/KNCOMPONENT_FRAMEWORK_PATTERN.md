@@ -155,41 +155,82 @@ private bool ComputeTestShape3D(KnInstance context, List<OPResult> args, OPResul
 - NO manual `RenderContext` calls
 - NO manual stage references
 
-### Step 4: Wire into UI/Test Harness
+### Step 4: Wire into UI/Test Harness (CRITICAL PATTERN)
 
 ```csharp
-public partial class GeometryParameterTestHarness : ComponentBase
+public partial class GeometryDebugTest : ComponentBase, IDisposable
 {
-    private AnimatedKnModel _testModel;
-    private AnimatedParameterTestComponent _testComponent;
+    [Inject] public IMentorServices MentorServices { get; init; } = null!;
+    [Inject] public IModelEditor ModelEditor { get; init; } = null!;
     
-    protected override async Task OnInitializedAsync()
+    public Canvas3DComponent? Canvas3DReference = null;
+    private AnimatedKnModel? _testModel;
+    private DebugGeometryComponent? _testComponent;
+    private FoStage3D? _testStage;
+    
+    protected override void OnInitialized()
     {
+        base.OnInitialized();
+        
+        // CRITICAL: Subscribe to animation events to render geometry each frame
+        AnimationFrameBus.SubscribeToAnimation(OnAnimationEvent);
+        
+        // Optional: Subscribe for tree refresh
+        MentorServices?.PubSub?.SubscribeTo<ModelEditChanged>(OnModelEditChanged);
+        
         // Create model - registers with MentorServices
-        _testModel = MentorServices.EstablishModel<AnimatedKnModel>("GeomTestHarnessModel");
+        _testModel = MentorServices.EstablishModel<AnimatedKnModel>("GeomDebugModel");
+        _testModel.SetExpanded(true);
         
         // Create component
-        _testComponent = new AnimatedParameterTestComponent("TestComponent");
+        _testComponent = new DebugGeometryComponent("DebugShape", "Blue", new Vector3(0, 1, 0));
         
-        // Add to model - framework handles rest
+        // Add to model
         ModelEditor.AddChild(_testModel, _testComponent);
-        
-        // That's it! Framework now:
-        // - Calls PreAnimationRefresh every frame
-        // - Evaluates parameters when Unknown
-        // - Walks model tree and calls EstablishGeometry3D
-        // - Renders returned geometry to appropriate stage/view
+    }
+    
+    // CRITICAL: This handler drives geometry rendering
+    private void OnAnimationEvent(AnimationEvent evt)
+    {
+        if (_testStage != null && _testModel != null && evt.IsWorld3D())
+        {
+            var ctx = RenderContext3D.CreateFromStage(_testStage, deep: true);
+            _testModel.RenderGeometry3D(ctx);  // Walks tree, evaluates geometry
+        }
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(200); // Wait for canvas init
+            
+            _testStage = Canvas3DReference?.Stage;
+            if (_testStage != null)
+            {
+                // Establish initial geometry
+                var view = _testStage.GetName();
+                var (geometry, parameter) = ModelEditor.EstablishGeometry3D(_testComponent, view);
+                
+                // Start animations
+                AnimationFrameBus.ResumeAllAnimations();
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
     }
     
     // UI can update parameters directly
-    private void UpdateXPosition(double newValue)
+    private void SetGeometryType(string geomType)
     {
-        var (found, param) = _testComponent.FindNumberValue("X_Position");
-        if (found)
-        {
-            param.Expression = newValue.ToString();
-            // Parameter marked Unknown → triggers re-evaluation → PostCreation called
-        }
+        // ModelEditor.SetParameter triggers Smash cascade
+        ModelEditor.SetParameter(_testComponent, "GeometryType", $"'{geomType}'");
+        // OnAnimationEvent will call RenderGeometry3D on next frame
+    }
+    
+    public void Dispose()
+    {
+        AnimationFrameBus.UnSubscribeFromAnimation(OnAnimationEvent);
+        MentorServices?.PubSub?.UnSubscribeFrom<ModelEditChanged>(OnModelEditChanged);
     }
 }
 ```
@@ -197,14 +238,45 @@ public partial class GeometryParameterTestHarness : ComponentBase
 **Key Points**:
 - `EstablishModel<AnimatedKnModel>` registers with MentorServices
 - `ModelEditor.AddChild` adds component to model
-- Framework automatically calls `PreAnimationRefresh` every animation frame
-- NO manual `RenderGeometry3D` calls
-- NO manual `OnAfterRenderAsync` stage retrieval
-- NO manual cache management (`ClearCashe()`/`GetCashe()`)
+- **CRITICAL**: `AnimationFrameBus.SubscribeToAnimation` - without this, geometry never renders!
+- `OnAnimationEvent` calls `model.RenderGeometry3D(ctx)` - walks tree and evaluates geometry
+- `ModelEditor.SetParameter` triggers Smash cascade
+- Framework evaluates parameters when Unknown
+- Canvas3DComponent automatically calls RenderStage to send to JavaScript
+- Always unsubscribe in Dispose
 
 ---
 
 ## Anti-Patterns: What NOT to Do
+
+### ❌ Missing AnimationEvent Subscription
+
+```csharp
+// WRONG - No AnimationEvent subscription
+protected override void OnInitialized()
+{
+    _testModel = MentorServices.EstablishModel<AnimatedKnModel>("Model");
+    ModelEditor.AddChild(_testModel, _testComponent);
+    // Parameter changes trigger Smash but geometry never re-evaluates!
+}
+
+// RIGHT - Subscribe to AnimationEvent
+protected override void OnInitialized()
+{
+    AnimationFrameBus.SubscribeToAnimation(OnAnimationEvent);  // ← CRITICAL
+    _testModel = MentorServices.EstablishModel<AnimatedKnModel>("Model");
+    ModelEditor.AddChild(_testModel, _testComponent);
+}
+
+private void OnAnimationEvent(AnimationEvent evt)
+{
+    if (_testStage != null && _testModel != null && evt.IsWorld3D())
+    {
+        var ctx = RenderContext3D.CreateFromStage(_testStage, deep: true);
+        _testModel.RenderGeometry3D(ctx);  // ← Walks tree and evaluates
+    }
+}
+```
 
 ### ❌ Manual Rendering
 
@@ -216,11 +288,11 @@ private async Task RenderInitialGeometry()
     await renderContext.RenderGeometry3D(_currentComponent);
 }
 
-// RIGHT - Framework walks model and calls EstablishGeometry3D
-public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view)
+// RIGHT - Framework walks model via OnAnimationEvent
+private void OnAnimationEvent(AnimationEvent evt)
 {
-    var result = Compute3DGeometry(view, geom => { /* ... */ });
-    return (result, result.GetParameter());
+    var ctx = RenderContext3D.CreateFromStage(_testStage, deep: true);
+    _testModel.RenderGeometry3D(ctx);  // Walks tree automatically
 }
 ```
 

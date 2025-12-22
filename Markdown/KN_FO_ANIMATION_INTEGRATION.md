@@ -14,30 +14,101 @@ This document captures the architectural refinements for integrating Knowledge o
   - Handles 3D rendering, transforms, and visual representation
   - Lives in `FoundryWorldsAndDrawings`
 
-## Animation Event Flow
+## Complete Animation Cycle (CRITICAL PATTERN)
 
-### Before (Overcomplicated)
-```
-PreAnimationEvent
-  → Model manually iterates Members<KnComponent>()
-  → Model calls component.UpdateFromAnimation(tick, fps)
-  → Redundant propagation
-```
+### The Three-Phase Cycle
 
-### After (Simplified)
 ```
-PreAnimationEvent
+PHASE 1: PreAnimationEvent
   → MentorServices.OnPreAnimationEvent()
-  → model.OnPreAnimationEvent(evt)
-    → PreContextLink?.Invoke() [model's callback]
-    → Automatic propagation to Subcomponents<KnComponent>()
-      → Each child's OnPreAnimationEvent()
-        → PreContextLink?.Invoke() [component's callback]
+    → model.OnPreAnimationEvent(evt)
+      → PreContextLink?.Invoke() [model's callback - parameter updates]
+      → Automatic propagation to Subcomponents<KnComponent>()
+        → Each child.OnPreAnimationEvent()
+          → PreContextLink?.Invoke() [component's callback]
+          → Parameter changes trigger Smash cascade
+
+PHASE 2: AnimationEvent (REQUIRED IN PAGE)
+  → Page.OnAnimationEvent(evt)
+    → model.RenderGeometry3D(ctx)
+      → Walks component tree recursively
+      → Calls EstablishGeometry3D on each component
+      → Evaluates geometry parameters (if Unknown)
+      → Adds shapes to stage via PostCreation
+
+PHASE 3: AnimationEvent (Canvas Rendering)
+  → Canvas3DComponent.OnAnimationEvent(evt)
+    → RenderFrame()
+      → stage.RenderStage(tick, fps)
+        → Sends shapes to JavaScript/Three.js
+```
+
+### ⚠️ CRITICAL: Page Must Subscribe to AnimationEvent
+
+**Without this subscription, parameter changes trigger Smash but geometry never re-evaluates!**
+
+```csharp
+public partial class MyPage : ComponentBase, IDisposable
+{
+    private AnimatedKnModel? _model;
+    private FoStage3D? _stage;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        
+        // REQUIRED: Subscribe to animation events
+        AnimationFrameBus.SubscribeToAnimation(OnAnimationEvent);
+        
+        // Optional: Subscribe for tree refresh
+        MentorServices?.PubSub?.SubscribeTo<ModelEditChanged>(OnModelEditChanged);
+        
+        // Create model
+        _model = MentorServices.EstablishModel<AnimatedKnModel>("MyModel");
+        _model.SetExpanded(true);
+    }
+
+    // CRITICAL: This method must call RenderGeometry3D
+    private void OnAnimationEvent(AnimationEvent evt)
+    {
+        if (_stage != null && _model != null && evt.IsWorld3D())
+        {
+            var ctx = RenderContext3D.CreateFromStage(_stage, deep: true);
+            _model.RenderGeometry3D(ctx);  // ← THIS IS REQUIRED
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(200); // Wait for canvas init
+            
+            _stage = Canvas3DReference?.Stage;
+            if (_stage != null)
+            {
+                // Establish initial geometry
+                var view = _stage.GetName();
+                var (geometry, parameter) = ModelEditor.EstablishGeometry3D(_component, view);
+                
+                // Start animations
+                AnimationFrameBus.ResumeAllAnimations();
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public void Dispose()
+    {
+        AnimationFrameBus.UnSubscribeFromAnimation(OnAnimationEvent);
+        MentorServices?.PubSub?.UnSubscribeFrom<ModelEditChanged>(OnModelEditChanged);
+    }
+}
 ```
 
 ## Key Principles Discovered
 
-### 1. Framework Handles Propagation
+### 1. Framework Handles PreAnimation Propagation
 The base `KnComponent.OnPreAnimationEvent()` automatically propagates to all children:
 ```csharp
 public virtual void OnPreAnimationEvent(PreAnimationEvent evt)
@@ -51,20 +122,24 @@ public virtual void OnPreAnimationEvent(PreAnimationEvent evt)
 ```
 **No manual iteration needed in model classes.**
 
-### 2. Use PreAnimationRefresh for Setup
+### 2. Page Must Drive Geometry Rendering
+`MentorServices.OnComputeGeometryEvent()` is now a NOOP - geometry evaluation is pull-based. **The page MUST subscribe to AnimationEvent and call `model.RenderGeometry3D(ctx)` each frame.**
+
+### 3. Use PreAnimationRefresh for Setup
 Both models and components set up their animation callbacks via `PreAnimationRefresh()`:
 ```csharp
 // In constructor
 PreAnimationRefresh((comp, evt) =>
 {
-    // Animation logic here
+    // Animation logic here - update parameters
+    ModelEditor.SetParameter(this, "Width", $"{newWidth}");
 });
 ```
 
-### 3. UI Refresh via PubSub
-`MentorTreeView` subscribes to `RefreshRenderMessage` and calls `StateHasChanged` automatically. No need for manual `_onRefresh` callbacks from models.
+### 4. UI Refresh via PubSub
+`MentorTreeView` subscribes to `RefreshRenderMessage` and calls `StateHasChanged` automatically. Subscribe to `ModelEditChanged` in your page for tree updates.
 
-### 4. Subshapes Use Local Names
+### 5. Subshapes Use Local Names
 When creating child shapes (like labels), use simple names - uniqueness comes from hierarchy:
 ```csharp
 var label3D = new FoText3D("Label", "white")  // Not "{name}_Label"
@@ -130,20 +205,21 @@ PreAnimationRefresh((comp, evt) =>
 
 ## Files Involved
 
+- `Three2025/Components/Pages/GeometryDebugTest.razor.cs` - **Reference implementation**
 - `Three2025/Components/Pages/KnModel/AnimatedKnModel.cs`
-- `Three2025/Components/Pages/KnModel/AnimatedKnComponent.cs`
-- `Three2025/Components/Pages/KnModelAnimationTest.razor.cs`
+- `Three2025/Components/Pages/KnModel/DebugGeometryComponent.cs`
 - `FoundryMentorModeler/Mentor/KnComponent.cs` (base OnPreAnimationEvent)
 - `FoundryMentorModeler/Mentor/MentorServices.cs` (PreAnimationEvent subscription)
 - `FoundryWorldsAndDrawings/Solutions/AnimationFrameBus.cs` (event publishing)
+- `FoundryWorldsAndDrawings/Shared/Canvas3DComponent.razor.cs` (automatic RenderStage)
 
-## Next Steps
+## Reference Implementation
 
-1. Verify animation events are reaching components (check logs)
-2. Implement parameter updates in component's PreAnimationRefresh
-3. Wire dependency system: parameter change → geometry invalidation
-4. Test geometry type cycling at wave trough
-5. Remove direct Transform animation, rely on parameter flow
+See `GeometryDebugTest.razor.cs` for the complete working pattern:
+- AnimationEvent subscription in OnInitialized
+- OnAnimationEvent calling RenderGeometry3D
+- ModelEditChanged subscription for tree updates
+- Proper Dispose cleanup
 
 ---
-*Last updated: December 6, 2025*
+*Last updated: December 21, 2025*

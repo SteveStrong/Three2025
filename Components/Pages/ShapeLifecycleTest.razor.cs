@@ -196,7 +196,7 @@ public partial class ShapeLifecycleTest : ComponentBase
         }
 
         // Render component's geometry to the stage
-        var ctx3D = RenderContext3D.Create(_stage, _stage.GetName(), deep: true);
+        var ctx3D = RenderContext3D.CreateFromStage(_stage, deep: true);
         _testModel.RenderGeometry3D(ctx3D);
         
         $"✅ Shape rendered - Stage now has {GetShapeCount()} shapes".WriteSuccess();
@@ -295,7 +295,7 @@ public partial class ShapeLifecycleTest : ComponentBase
         // Trigger re-evaluation of component's geometry
         // If cache empty → CREATE mode (new shape)
         // If cache has shape → UPDATE mode (modify existing)
-        var ctx3D = RenderContext3D.Create(_stage, _stage.GetName(), deep: true);
+        var ctx3D = RenderContext3D.CreateFromStage(_stage, deep: true);
         _testComponent.RenderGeometry3D(ctx3D);
         
         // Send updates to JavaScript (TransformUpdates or FullRefresh depending on what changed)
