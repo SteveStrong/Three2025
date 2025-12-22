@@ -17,28 +17,32 @@ public record DebugLogEntry(string Type, string Message, DateTime Timestamp);
 public partial class GeometryDebugTest : ComponentBase, IDisposable
 {
     [Inject] public IWorkspace Workspace { get; init; } = null!;
-    [Inject] public IFoundryService FoundryService { get; init; } = null!;
     [Inject] public IMentorServices MentorServices { get; init; } = null!;
-    [Inject] public ComponentBus PubSub { get; init; } = null!;
+    [Inject] public IModelEditor ModelEditor { get; init; } = null!;
 
     public Canvas3DComponent? Canvas3DReference = null;
     [Parameter] public int CanvasWidth { get; set; } = 500;
     [Parameter] public int CanvasHeight { get; set; } = 400;
 
-    // Test component with geometry
+    // Test model and component
+    private AnimatedKnModel? _testModel;
     private DebugGeometryComponent? _testComponent;
     private FoStage3D? _testStage;
     
     // UI State
     private string _currentGeomType = "Box";
     private string _currentColor = "Blue";
-    private string _animationState = "Unknown";
-    private int _currentTick = 0;
-    private double _currentFps = 0;
-    private int _stageShapeCount = 0;
-    private int _arenaStageCount = 0;
-    private string _geometryCacheState = "Unknown";
-    private string _dependencyState = "Unknown";
+    private string _activeTab = "model";
+    
+    // Dimension state (matches component defaults)
+    private double _width = 1.5;
+    private double _height = 1.5;
+    private double _depth = 1.5;
+    
+    // Position state (matches component defaults)
+    private double _positionX = 0.0;
+    private double _positionY = 1.0;
+    private double _positionZ = 0.0;
     
     // Event log
     private List<DebugLogEntry> _eventLogs = new();
@@ -47,316 +51,185 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
     {
         base.OnInitialized();
         
-        // Create a simple test component
+        // Subscribe to model edit changes to refresh tree
+        MentorServices?.PubSub?.SubscribeTo<ModelEditChanged>(OnModelEditChanged);
+        
+        // Subscribe to animation events to render geometry each frame
+        AnimationFrameBus.SubscribeToAnimation(OnAnimationEvent);
+        
+        // Create model that handles animation lifecycle automatically
+        _testModel = MentorServices.EstablishModel<AnimatedKnModel>("GeomDebugModel");
+        _testModel.SetExpanded(true);
+        
+        // Create test component
         _testComponent = new DebugGeometryComponent("DebugShape", "Blue", new Vector3(0, 1, 0));
         _testComponent.SetLogCallback(AddLog);
         
-        // Subscribe to animation events for UI updates
-        AnimationFrameBus.SubscribeToPreAnimation(OnPreAnimation);
-        AnimationFrameBus.SubscribeToAnimation(OnAnimation);
+        // Add component to model
+        ModelEditor.AddChild(_testModel, _testComponent);
         
-        AddLog("INIT", "GeometryDebugTest initialized");
+        AddLog("INIT", "GeometryDebugTest initialized - AnimatedKnModel will auto-render on changes");
+    }
+
+    private void OnModelEditChanged(ModelEditChanged message)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnAnimationEvent(AnimationEvent evt)
+    {
+        // Render geometry to stage on each animation frame
+        if (_testStage != null && _testModel != null && evt.IsWorld3D())
+        {
+            var ctx = RenderContext3D.CreateFromStage(_testStage, deep: true);
+            _testModel.RenderGeometry3D(ctx);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            // Wait for canvas to fully initialize with retries
-            for (int attempt = 0; attempt < 10; attempt++)
-            {
-                await Task.Delay(100);
-                _testStage = Canvas3DReference?.Stage;
-                
-                if (_testStage != null && !string.IsNullOrEmpty(_testStage.GetName()))
-                {
-                    AddLog("INIT", $"Stage '{_testStage.GetName()}' acquired from canvas (attempt {attempt + 1})");
-                    break;
-                }
-            }
+            AddLog("INIT", "Setting up canvas and stage");
             
-            if (_testStage == null || string.IsNullOrEmpty(_testStage.GetName()))
-            {
-                AddLog("ERROR", "Stage is NULL or has empty name after 10 attempts!");
-                
-                // Try getting stage directly from arena as fallback
-                var arena = Workspace?.GetArena();
-                if (arena != null)
-                {
-                    _testStage = arena.GetAllStages().FirstOrDefault(s => s.GetName() == "GeomDebug3D");
-                    if (_testStage != null)
-                    {
-                        AddLog("INIT", $"Stage '{_testStage.GetName()}' found via arena fallback");
-                    }
-                    else
-                    {
-                        AddLog("ERROR", $"Arena has {arena.GetAllStages().Count} stages, none named 'GeomDebug3D'");
-                        foreach (var s in arena.GetAllStages().Take(5))
-                        {
-                            AddLog("DEBUG", $"  - Stage: '{s.GetName()}' (Key: '{s.Key}')");
-                        }
-                    }
-                }
-            }
+            // Wait for canvas initialization
+            await Task.Delay(200);
             
-            UpdateDiagnostics();
-            await InvokeAsync(StateHasChanged);
+            _testStage = Canvas3DReference?.Stage;
+            if (_testStage != null && MentorServices != null)
+            {
+                AddLog("INIT", $"Stage acquired: {_testStage.Key}");
+                
+                // Establish initial geometry so we have something to render
+                if (_testComponent != null)
+                {
+                    var view = _testStage.GetName();
+                    var (geometry, parameter) = ModelEditor.EstablishGeometry3D(_testComponent, view);
+                    AddLog("INIT", $"Initial geometry parameter established: {parameter?.Name}");
+                }
+                
+                // Start animation - PreAnimationRefresh will automatically render each frame
+                AnimationFrameBus.ResumeAllAnimations();
+                AddLog("INIT", "Animation started - parameter changes will auto-render");
+                
+                await InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                AddLog("ERROR", "Stage or MentorServices is null after delay");
+            }
         }
         
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    // === Animation Control ===
-    
-    private void StartAnimation()
-    {
-        AnimationFrameBus.ResumeAllAnimations();
-        AddLog("CTRL", "Animation started");
-        UpdateDiagnostics();
-    }
-
-    private void PauseAnimation()
-    {
-        AnimationFrameBus.PauseAllAnimations();
-        AddLog("CTRL", "Animation paused");
-        UpdateDiagnostics();
-    }
-
-    private async Task StepOneFrame()
-    {
-        AddLog("CTRL", "Stepping single frame...");
-        await AnimationFrameBus.TriggerSingleFrame();
-        UpdateDiagnostics();
-        await InvokeAsync(StateHasChanged);
-    }
-
-    // === Parameter Changes ===
-    
     private void SetGeometryType(string geomType)
     {
-        var oldType = _currentGeomType;
+        if (_testComponent == null) return;
+        
         _currentGeomType = geomType;
+        AddLog("PARAM", $"Setting GeometryType to '{geomType}' - will trigger auto-render on next frame");
         
-        AddLog("PARAM", $"GeometryType: {oldType} → {geomType}");
-        
-        var param = _testComponent?.FindParameter("GeometryType");
-        if (param != null)
-        {
-            AddLog("PARAM", $"Found parameter, calling SetValue...");
-            param.SetValue(geomType);
-            AddLog("PARAM", $"SetValue complete - this should have triggered Smash cascade");
-        }
-        else
-        {
-            AddLog("ERROR", "GeometryType parameter not found!");
-        }
-        
-        UpdateDiagnostics();
-        InvokeAsync(StateHasChanged);
+        // ModelEditor.SetParameter triggers Smash cascade
+        // AnimatedKnModel.PreAnimationRefresh will automatically render on next animation frame
+        ModelEditor.SetParameter(_testComponent, "GeometryType", $"'{geomType}'");
     }
 
     private void SetColor(string color)
     {
-        var oldColor = _currentColor;
+        if (_testComponent == null) return;
+        
         _currentColor = color;
+        AddLog("PARAM", $"Setting Color to '{color}' - will trigger auto-render on next frame");
         
-        AddLog("PARAM", $"Color: {oldColor} → {color}");
-        
-        var param = _testComponent?.FindParameter("Color");
-        if (param != null)
-        {
-            param.SetValue(color);
-            AddLog("PARAM", "Color SetValue complete");
-        }
-        else
-        {
-            AddLog("ERROR", "Color parameter not found!");
-        }
-        
-        UpdateDiagnostics();
-        InvokeAsync(StateHasChanged);
+        // ModelEditor.SetParameter triggers Smash cascade
+        // AnimatedKnModel.PreAnimationRefresh will automatically render on next animation frame
+        ModelEditor.SetParameter(_testComponent, "Color", $"'{color}'");
     }
-
-    // === Manual Triggers ===
     
-    private void ManualSmashGeometry()
+    private void OnWidthChanged(ChangeEventArgs e)
     {
-        AddLog("MANUAL", "=== SMASH GEOMETRY ===");
-        
-        var (geom, geomParam) = _testComponent?.GetGeometry3D("GeomDebug3D") ?? (null, null);
-        
-        if (geomParam != null)
+        if (_testComponent == null || e.Value == null) return;
+        if (double.TryParse(e.Value.ToString(), out var width))
         {
-            AddLog("SMASH", $"Before smash: IsUnknown={geomParam.IsUnknown()}");
-            geomParam.Smash();
-            AddLog("SMASH", $"After smash: IsUnknown={geomParam.IsUnknown()}");
+            _width = width;
+            AddLog("PARAM", $"Setting Width to {width}m");
+            ModelEditor.SetParameter(_testComponent, "Width", $"units({width}, 'm')");
         }
-        else
-        {
-            AddLog("ERROR", "No geometry parameter found to smash");
-        }
-        
-        UpdateDiagnostics();
-        InvokeAsync(StateHasChanged);
     }
-
-    private void ManualEvaluateGeometry()
+    
+    private void OnHeightChanged(ChangeEventArgs e)
     {
-        AddLog("MANUAL", "=== EVALUATE GEOMETRY ===");
-        
-        if (_testComponent == null)
+        if (_testComponent == null || e.Value == null) return;
+        if (double.TryParse(e.Value.ToString(), out var height))
         {
-            AddLog("ERROR", "Test component is null");
-            return;
+            _height = height;
+            AddLog("PARAM", $"Setting Height to {height}m");
+            ModelEditor.SetParameter(_testComponent, "Height", $"units({height}, 'm')");
         }
-
-        // This should call ComputeShape3D if parameter is Unknown
-        var (geom, geomParam) = _testComponent.EstablishGeometry3D("GeomDebug3D");
-        var result = geom.GetMeshParameterValue();
-        
-        AddLog("EVAL", $"Evaluation result: Status={result.GetStatus()}, HasShape={result.AsShape3D() != null}");
-        AddLog("EVAL", $"After eval: IsUnknown={geomParam.IsUnknown()}");
-        
-        UpdateDiagnostics();
-        InvokeAsync(StateHasChanged);
     }
-
-    private void ManualRenderToStage()
+    
+    private void OnDepthChanged(ChangeEventArgs e)
     {
-        AddLog("MANUAL", "=== RENDER TO STAGE ===");
-        
-        if (_testStage == null)
+        if (_testComponent == null || e.Value == null) return;
+        if (double.TryParse(e.Value.ToString(), out var depth))
         {
-            AddLog("ERROR", "Stage is null - cannot render");
-            return;
+            _depth = depth;
+            AddLog("PARAM", $"Setting Depth to {depth}m");
+            ModelEditor.SetParameter(_testComponent, "Depth", $"units({depth}, 'm')");
         }
-        
-        if (_testComponent == null)
-        {
-            AddLog("ERROR", "Test component is null");
-            return;
-        }
-
-        var arena = Workspace?.GetArena();
-        if (arena == null)
-        {
-            AddLog("ERROR", "Arena is null");
-            return;
-        }
-
-        // Create render context - stage established explicitly
-        var stage = arena.EstablishStage<FoStage3D>("GeomDebug3D");
-        var ctx = RenderContext3D.Create(stage, "GeomDebug3D", deep: false);
-        
-        AddLog("RENDER", $"Created context for view '{ctx.ViewName}', stage={(ctx.Target as FoStage3D)?.Name}");
-        
-        // Render the component
-        _testComponent.RenderGeometry3D(ctx);
-        
-        AddLog("RENDER", $"RenderGeometry3D complete, stage shape count={_testStage.Members<FoShape3D>().Count}");
-        
-        UpdateDiagnostics();
-        InvokeAsync(StateHasChanged);
     }
-
-    private void ManualFullCycle()
+    
+    private void OnXPositionChanged(ChangeEventArgs e)
     {
-        AddLog("MANUAL", "========== FULL CYCLE ==========");
-        ManualSmashGeometry();
-        ManualEvaluateGeometry();
-        ManualRenderToStage();
-        AddLog("MANUAL", "========== CYCLE COMPLETE ==========");
+        if (_testComponent == null || e.Value == null) return;
+        if (double.TryParse(e.Value.ToString(), out var posX))
+        {
+            _positionX = posX;
+            AddLog("PARAM", $"Setting PositionX to {posX}m");
+            ModelEditor.SetParameter(_testComponent, "PositionX", $"units({posX}, 'm')");
+        }
+    }
+    
+    private void OnYPositionChanged(ChangeEventArgs e)
+    {
+        if (_testComponent == null || e.Value == null) return;
+        if (double.TryParse(e.Value.ToString(), out var posY))
+        {
+            _positionY = posY;
+            AddLog("PARAM", $"Setting PositionY to {posY}m");
+            ModelEditor.SetParameter(_testComponent, "PositionY", $"units({posY}, 'm')");
+        }
+    }
+    
+    private void OnZPositionChanged(ChangeEventArgs e)
+    {
+        if (_testComponent == null || e.Value == null) return;
+        if (double.TryParse(e.Value.ToString(), out var posZ))
+        {
+            _positionZ = posZ;
+            AddLog("PARAM", $"Setting PositionZ to {posZ}m");
+            ModelEditor.SetParameter(_testComponent, "PositionZ", $"units({posZ}, 'm')");
+        }
     }
 
     private async Task ClearStage()
     {
-        AddLog("MANUAL", "=== CLEAR STAGE ===");
+        AddLog("CLEAR", "Clearing stage");
         
         if (_testStage != null)
         {
             await _testStage.ClearAll();
-            AddLog("CLEAR", "Stage cleared");
+            AddLog("CLEAR", $"Stage cleared - now has {_testStage.Members<FoShape3D>().Count} shapes");
         }
         
-        UpdateDiagnostics();
         await InvokeAsync(StateHasChanged);
     }
 
     private void ClearLog()
     {
         _eventLogs.Clear();
-        InvokeAsync(StateHasChanged);
-    }
-
-    // === Event Handlers ===
-    
-    private void OnPreAnimation(PreAnimationEvent evt)
-    {
-        _currentTick = evt.tick;
-        _currentFps = evt.fps;
-        
-        // Call component's PreAnimation if it has one
-        _testComponent?.OnPreAnimationEvent(evt);
-        
-        if (evt.tick % 60 == 0)
-        {
-            UpdateDiagnostics();
-            InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private void OnAnimation(AnimationEvent evt)
-    {
-        // Update state display
-        _animationState = AnimationFrameBus.GetAnimationState();
-    }
-
-    // === Diagnostics ===
-    
-    private void UpdateDiagnostics()
-    {
-        _animationState = AnimationFrameBus.GetAnimationState();
-        _currentTick = AnimationFrameBus.GetCurrentTick();
-        _currentFps = AnimationFrameBus.GetCurrentFps();
-        
-        // Stage info
-        _stageShapeCount = _testStage?.Members<FoShape3D>().Count ?? -1;
-        
-        // Arena info
-        var arena = Workspace?.GetArena();
-        _arenaStageCount = arena?.GetAllStages().Count ?? -1;
-        
-        // Geometry parameter state
-        var (geom, geomParam) = _testComponent?.GetGeometry3D("GeomDebug3D") ?? (null, null);
-        if (geomParam != null)
-        {
-            var result = geomParam.PeekValue();
-            var shape = result?.AsShape3D();
-            _geometryCacheState = shape != null ? $"Has shape: {shape.Name}" : "EMPTY (Unknown={geomParam.IsUnknown()})";
-        }
-        else
-        {
-            _geometryCacheState = "No geometry established";
-        }
-        
-        // Dependency state
-        if (geomParam != null)
-        {
-            var depCount = geomParam.DependsOn.Count;
-            var contribCount = 0;
-            
-            var colorParam = _testComponent?.FindParameter("Color");
-            var geomTypeParam = _testComponent?.FindParameter("GeometryType");
-            
-            if (colorParam != null) contribCount += colorParam.ContributesTo.Count;
-            if (geomTypeParam != null) contribCount += geomTypeParam.ContributesTo.Count;
-            
-            _dependencyState = $"DependsOn={depCount}, ContributesTo={contribCount}";
-        }
-        else
-        {
-            _dependencyState = "No param";
-        }
+        StateHasChanged();
     }
 
     private void AddLog(string type, string message)
@@ -365,9 +238,21 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
         $"[GeomDebug] [{type}] {message}".WriteInfo();
     }
 
+    private string GetLogClass(string type) => type switch
+    {
+        "ERROR" => "table-danger",
+        "SMASH" => "table-warning",
+        "CREATE" => "table-success",
+        "COMPUTE" => "table-success",
+        "RENDER" => "table-info",
+        "PARAM" => "table-primary",
+        "FRAME" => "table-warning",
+        _ => ""
+    };
+
     public void Dispose()
     {
-        AnimationFrameBus.UnSubscribeFromPreAnimation(OnPreAnimation);
-        AnimationFrameBus.UnSubscribeFromAnimation(OnAnimation);
+        AnimationFrameBus.UnSubscribeFromAnimation(OnAnimationEvent);
+        MentorServices?.PubSub?.UnSubscribeFrom<ModelEditChanged>(OnModelEditChanged);
     }
 }
