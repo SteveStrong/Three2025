@@ -16,6 +16,20 @@ namespace Three2025.Components.Pages;
 public class DebugGeometryComponent : PartComponent
 {
     private Action<string, string>? _logCallback;
+    private IModelEditor? _modelEditor;
+    
+    // Animation state
+    private int _animationFrameCount = 0;
+    private bool _animationEnabled = false;
+    private List<Action<int>> _animationChain = new();
+    
+    // Animation constants
+    private const int POSITION_PERIOD = 120;  // Frames for full circle
+    private const int SIZE_PERIOD = 90;       // Frames for size pulse
+    private const int SHAPE_PERIOD = 180;     // Frames between shape changes
+    private const int COLOR_PERIOD = 240;     // Frames between color changes
+    private const int ROTATION_PERIOD = 200;  // Frames for full rotation
+    private const double CIRCLE_RADIUS = 3.0; // Radius of circular motion
     
     public DebugGeometryComponent(string name, string color, Vector3 position) : base(name)
     {
@@ -28,7 +42,17 @@ public class DebugGeometryComponent : PartComponent
             $"PositionX: units({position.X}, 'm')",
             $"PositionY: units({position.Y}, 'm')",
             $"PositionZ: units({position.Z}, 'm')",
+            "RotationX: 0.0",
+            "RotationY: 0.0",
+            "RotationZ: 0.0",
         ]);
+        
+        // Build animation chain
+        _animationChain.Add(AnimatePosition);
+        _animationChain.Add(AnimateSize);
+        _animationChain.Add(AnimateShape);
+        _animationChain.Add(AnimateColor);
+        _animationChain.Add(AnimateRotation);
         
         $"DebugGeometryComponent '{name}' created with parameters".WriteSuccess();
     }
@@ -36,6 +60,141 @@ public class DebugGeometryComponent : PartComponent
     public void SetLogCallback(Action<string, string> callback)
     {
         _logCallback = callback;
+    }
+    
+    /// <summary>
+    /// Set the ModelEditor reference needed for animation parameter updates
+    /// </summary>
+    public void SetModelEditor(IModelEditor editor)
+    {
+        _modelEditor = editor;
+    }
+    
+    /// <summary>
+    /// Enable or disable animation for this component (Option B: per-component control)
+    /// </summary>
+    public void SetAnimationEnabled(bool enabled)
+    {
+        _animationEnabled = enabled;
+        if (enabled)
+        {
+            // Set up PreAnimationRefresh callback when animation is enabled
+            PreAnimationRefresh((comp, evt) =>
+            {
+                if (!_animationEnabled) return; // No-op pattern
+                
+                _animationFrameCount++;
+                
+                // Execute all animation functions in the chain
+                foreach (var animationFunc in _animationChain)
+                {
+                    animationFunc(_animationFrameCount);
+                }
+            });
+            
+            Log("ANIM", "Animation ENABLED - PreAnimationRefresh callback registered");
+        }
+        else
+        {
+            // Disable by clearing the callback (no-op)
+            PreAnimationRefreshNOOP(null!);
+            Log("ANIM", "Animation DISABLED");
+        }
+    }
+    
+    /// <summary>
+    /// Animation Function 1: Circular motion in XZ plane
+    /// </summary>
+    private void AnimatePosition(int frameCount)
+    {
+        if (_modelEditor == null) return;
+        
+        var angle = (frameCount % POSITION_PERIOD) * (2.0 * Math.PI / POSITION_PERIOD);
+        var x = CIRCLE_RADIUS * Math.Cos(angle);
+        var z = CIRCLE_RADIUS * Math.Sin(angle);
+        var y = 1.0; // Keep at constant height
+        
+        _modelEditor.SetParameter(this, "PositionX", $"units({x:F3}, 'm')");
+        _modelEditor.SetParameter(this, "PositionY", $"units({y:F3}, 'm')");
+        _modelEditor.SetParameter(this, "PositionZ", $"units({z:F3}, 'm')");
+    }
+    
+    /// <summary>
+    /// Animation Function 2: Pulsing size using sine waves at different frequencies
+    /// </summary>
+    private void AnimateSize(int frameCount)
+    {
+        if (_modelEditor == null) return;
+        
+        var phase = (frameCount % SIZE_PERIOD) * (2.0 * Math.PI / SIZE_PERIOD);
+        
+        // Each dimension pulses at a slightly different phase for visual interest
+        var width = 1.5 + 0.5 * Math.Sin(phase);
+        var height = 1.5 + 0.5 * Math.Sin(phase + Math.PI / 3);
+        var depth = 1.5 + 0.5 * Math.Sin(phase + 2 * Math.PI / 3);
+        
+        _modelEditor.SetParameter(this, "Width", $"units({width:F3}, 'm')");
+        _modelEditor.SetParameter(this, "Height", $"units({height:F3}, 'm')");
+        _modelEditor.SetParameter(this, "Depth", $"units({depth:F3}, 'm')");
+    }
+    
+    /// <summary>
+    /// Animation Function 3: Cycle through geometry types
+    /// </summary>
+    private void AnimateShape(int frameCount)
+    {
+        if (_modelEditor == null) return;
+        
+        // Only change shape at specific intervals
+        if (frameCount % SHAPE_PERIOD != 0) return;
+        
+        var shapeIndex = (frameCount / SHAPE_PERIOD) % 3;
+        var shape = shapeIndex switch
+        {
+            0 => "Box",
+            1 => "Sphere",
+            2 => "Cylinder",
+            _ => "Box"
+        };
+        
+        _modelEditor.SetParameter(this, "GeometryType", $"'{shape}'");
+        Log("ANIM", $"Shape changed to {shape}");
+    }
+    
+    /// <summary>
+    /// Animation Function 4: Cycle through colors
+    /// </summary>
+    private void AnimateColor(int frameCount)
+    {
+        if (_modelEditor == null) return;
+        
+        // Only change color at specific intervals
+        if (frameCount % COLOR_PERIOD != 0) return;
+        
+        var colorIndex = (frameCount / COLOR_PERIOD) % 3;
+        var color = colorIndex switch
+        {
+            0 => "Blue",
+            1 => "Green",
+            2 => "Red",
+            _ => "Blue"
+        };
+        
+        _modelEditor.SetParameter(this, "Color", $"'{color}'");
+        Log("ANIM", $"Color changed to {color}");
+    }
+    
+    /// <summary>
+    /// Animation Function 5: Continuous rotation around X axis
+    /// </summary>
+    private void AnimateRotation(int frameCount)
+    {
+        if (_modelEditor == null) return;
+        
+        // Continuous rotation around X axis (360 degrees over ROTATION_PERIOD frames)
+        var angle = (frameCount % ROTATION_PERIOD) * (2.0 * Math.PI / ROTATION_PERIOD);
+        
+        _modelEditor.SetParameter(this, "RotationX", $"{angle:F3}");
     }
 
     private void Log(string type, string message)
@@ -154,10 +313,16 @@ public class DebugGeometryComponent : PartComponent
         var posY = FindLengthValue("PositionY", 0.0).Value();
         var posZ = FindLengthValue("PositionZ", 0.0).Value();
         
+        // Read rotation parameters (plain doubles, radians)
+        var rotX = FindNumberValue("RotationX", 0.0);
+        var rotY = FindNumberValue("RotationY", 0.0);
+        var rotZ = FindNumberValue("RotationZ", 0.0);
+        
         var transform = new Transform3($"{context.GetName()}Transform");
         transform.MoveTo(posX, posY, posZ);
+        transform.Rotation = new Euler(rotX, rotY, rotZ);
         
-        Log("TRANSFORM", $"Transform created: Position=({posX}, {posY}, {posZ})");
+        Log("TRANSFORM", $"Transform created: Position=({posX}, {posY}, {posZ}), Rotation=({rotX:F2}, {rotY:F2}, {rotZ:F2})");
         
         result.SetValue(ResultStatus.Transform3, transform);
         return true;

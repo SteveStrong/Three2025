@@ -99,6 +99,26 @@
             </div>
 
             <div class="card mb-3">
+                <div class="card-header">Animation Control</div>
+                <div class="card-body">
+                    <button class="btn @(_componentAnimationEnabled ? "btn-warning" : "btn-success") btn-sm d-block w-100 mb-2" 
+                            @onclick="ToggleComponentAnimation">
+                        @(_componentAnimationEnabled ? "⏸️ Disable Animation" : "▶️ Enable Animation")
+                    </button>
+                    <div class="small text-muted">
+                        @if (_componentAnimationEnabled)
+                        {
+                            <span class="text-success">✓ Animation running</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">⏸️ Animation paused</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
                 <div class="card-header">Utilities</div>
                 <div class="card-body">
                     <button class="btn btn-danger btn-sm d-block w-100" @onclick="ClearStage">

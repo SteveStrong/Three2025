@@ -196,80 +196,62 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         var componentCount = _knModel.Members<KnComponent>().Count() + 1;
         
         // Position components in a row
-        var xPosition = (componentCount - 1) * 2.5 - 2.5;
+        var xPosition = (componentCount - 1) * 3.0 - 6.0;
         var colors = new[] { "Blue", "Green", "Red", "Purple", "Orange", "Cyan" };
-        var amplitudes = new[] { 0.3, 0.5, 0.7, 0.4, 0.6, 0.8 };  // Different bounce heights
-        var frequencies = new[] { 0.04, 0.05, 0.06, 0.07, 0.03, 0.08 };  // Different speeds
         var color = colors[(componentCount - 1) % colors.Length];
-        var amplitude = amplitudes[(componentCount - 1) % amplitudes.Length];
-        var frequency = frequencies[(componentCount - 1) % frequencies.Length];
         
-        // Create component with position, color, amplitude, and frequency (constructor initializes KnParameters)
-        var component = new AnimatedKnComponent(
-            $"Component_{componentCount}", 
+        // Use DebugGeometryComponent instead - it's simpler and has working animation
+        var component = new DebugGeometryComponent(
+            $"Shape_{componentCount}", 
             color, 
-            new Vector3(xPosition, 1.0, 0),
-            amplitude,
-            frequency
+            new Vector3(xPosition, 1.0, 0)
         );
         
-        // Set geometry configuration via parameters (replaces object initializer)
-        // The constructor already sets these parameters, but we can override:
-        // - GeometryType: "Box" (default)
-        // - Width: 1.0m (default) 
-        // - Height: 1.0m (default)
-        // - Depth: 1.0m (default)
-        // Custom dimensions can be set via: component.FindParameter("Width")?.ApplyFormula("units(1.5, 'm')", KnBase.UnitService);
+        // Set up animation
+        component.SetModelEditor(ModelEditor!);
+        component.SetAnimationEnabled(true);
         
         // Add to model via ModelEditor (fires ModelEditChanged event, triggers tree refresh)
-        ModelEditor.AddChild(_knModel, component);
-        $"AddChildComponent: After ModelEditor.AddChild, AnimatedKnComponent count = {_knModel.Members<AnimatedKnComponent>().Count()}".WriteSuccess();
-        AddLog("Model", $"Added {component.Name} via ModelEditor - tree should auto-refresh");
-        
-        // Create and add geometry to stage
-        // var shape = component.CreateGeometry();
-        // _testStage.AddShape(shape);
+        ModelEditor!.AddChild(_knModel, component);
+        $"AddChildComponent: Added DebugGeometryComponent with animation enabled".WriteSuccess();
+        AddLog("Model", $"Added {component.Name} with animation enabled");
         
         // Ensure model is expanded so tree shows children
         _knModel.SetExpanded(true);
         
-        // Get geometry type from parameter for logging
-        var geomType = component.FindParameter("GeometryType")?.GetValue().Value()?.ToString() ?? "Box";
-        AddLog("Component", $"Added KnComponent '{component.Name}' with {color} {geomType} geometry");
+        AddLog("Component", $"Added animated component '{component.Name}' with {color} color");
         InvokeAsync(StateHasChanged);
     }
 
     /// <summary>
     /// Creates multiple child components in bulk for efficient initialization
     /// </summary>
-    protected List<AnimatedKnComponent> CreateChildComponents(int count)
+    protected List<DebugGeometryComponent> CreateChildComponents(int count)
     {
         var colors = new[] { "Blue", "Green", "Red", "Purple", "Orange", "Cyan" };
-        var amplitudes = new[] { 0.3, 0.5, 0.7, 0.4, 0.6, 0.8 };  // Different bounce heights
-        var frequencies = new[] { 0.04, 0.05, 0.06, 0.07, 0.03, 0.08 };  // Different speeds
-        var components = new List<AnimatedKnComponent>();
+        var components = new List<DebugGeometryComponent>();
         var existingCount = _knModel.Members<KnComponent>().Count();
         
         for (int i = 0; i < count; i++)
         {
             var componentIndex = existingCount + i + 1;
-            var xPosition = (componentIndex - 1) * 2.5 - 2.5;
+            var xPosition = (componentIndex - 1) * 3.0 - 3.0; // Spread out more
             var color = colors[(componentIndex - 1) % colors.Length];
-            var amplitude = amplitudes[(componentIndex - 1) % amplitudes.Length];
-            var frequency = frequencies[(componentIndex - 1) % frequencies.Length];
             
-            var component = new AnimatedKnComponent(
-                $"Component_{componentIndex}", 
+            var component = new DebugGeometryComponent(
+                $"Shape_{componentIndex}", 
                 color, 
-                new Vector3(xPosition, 1.0, 0),
-                amplitude,
-                frequency
+                new Vector3(xPosition, 1.0, 0)
             );
+            
+            // Set up animation
+            component.SetModelEditor(ModelEditor!);
+            component.SetAnimationEnabled(true);
             
             components.Add(component);
         }
         
-        $"CreateChildComponents: Created {count} components".WriteInfo();
+        $"CreateChildComponents: Created {count} animated components".WriteInfo();
         return components;
     }
 
@@ -321,8 +303,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     }
 
     public void Dispose()
-    {
-        MentorServices?.PubSub?.UnSubscribeFrom<RefreshRenderMessage>(OnRefreshRender);
+    {        AnimationFrameBus.UnSubscribeFromAnimation(OnAnimationEvent);        MentorServices?.PubSub?.UnSubscribeFrom<RefreshRenderMessage>(OnRefreshRender);
         _ = _testStage?.ClearAll();
         
         $"KnModelAnimationTest: Disposed".WriteInfo();
