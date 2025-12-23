@@ -192,7 +192,8 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public void DoRunClock()
     {
-        Tech.RunClock();
+        // Pass the canvas scene name so ClockTech uses the correct stage
+        Tech.RunClock(Canvas3DReference.SceneName);
     }
 
 
@@ -397,7 +398,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             Url = url,
             Transform = new Transform3("SubWalkTransform")
             {
-                Position = new Vector3(0, 5, 0), // Start at center, raised up
+                Position = new Vector3(0, 0, 0), // Start at center, on the floor
                 Scale = new Vector3(1, 1, 1), // Normal size for sub
             },
         };

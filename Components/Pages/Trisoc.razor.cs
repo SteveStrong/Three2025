@@ -32,7 +32,7 @@ public partial class TrisocBase : ComponentBase
 
 
     protected MockDataGenerator DataGenerator { get; set; } = new();
- 
+
 
 
 
@@ -46,7 +46,7 @@ public partial class TrisocBase : ComponentBase
     {
         if (firstRender)
         {
-            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false,null!);
+            var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
 
             var arena = Workspace.GetArena();
             if (found)
@@ -56,7 +56,7 @@ public partial class TrisocBase : ComponentBase
                 $"Trisoc: Retrieved stage '{_trisocStage?.Name}' from Canvas".WriteSuccess();
                 DoRequestAxisToScene(scene!);
             }
-                
+
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -66,7 +66,8 @@ public partial class TrisocBase : ComponentBase
     {
         var model = new Model3D()
         {
-            Name = "Axis",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Name = "Axis",
+            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
         };
 
@@ -80,9 +81,9 @@ public partial class TrisocBase : ComponentBase
         //path.WriteSuccess();
         return path;
     }
-    
 
-    
+
+
     public void DoAddTRISOCToArena()
     {
         var url = GetReferenceTo(@"storage/StaticFiles/TRISOC.glb");
@@ -99,21 +100,21 @@ public partial class TrisocBase : ComponentBase
     {
 
         var (c, center) = Tech.GetSpacialBox("Center", 0, "C");
+        center.Transform.MoveBy(0, 4.2, 0);
 
+        var (t, top) = Tech.GetSpacialBox("Top", c, "T");
+        top.Transform.Position = center.Transform.Position;
+        top.Transform.MoveBy(0, -10, 0);
 
-    var (t,top) = Tech.GetSpacialBox("Top",c, "T");
-    top.Transform.Position = center.Transform.Position;
-    top.Transform.MoveBy(0, -10, 0);
-
-    var (f,front) = Tech.GetSpacialBox("Front",t, "F");
-    front.Transform.Position = center.Transform.Position;
-    front.Transform.MoveBy(0, 0, 10);
+        var (f, front) = Tech.GetSpacialBox("Front", t, "F");
+        front.Transform.Position = center.Transform.Position;
+        front.Transform.MoveBy(0, 0, 10);
 
 
         // ✅ Phase 0.5: Add shapes to this page's stage
         _trisocStage?.AddShape(center);
-        _trisocStage?.AddShape(top);        
-        _trisocStage?.AddShape(front);       
+        _trisocStage?.AddShape(top);
+        _trisocStage?.AddShape(front);
 
 
     }
@@ -127,11 +128,11 @@ public partial class TrisocBase : ComponentBase
     public void DoReposition()
     {
         var list = LightTech.GetLights();
-        for(int i=0; i<list.Count-1; i++)
+        for (int i = 0; i < list.Count - 1; i++)
         {
             var pos1 = list[i].Transform.Position;
-            var light = list[i+1].GetName();
-            LightTech.RepositionLight(light, pos1.X +5, pos1.Y +5, 0);
+            var light = list[i + 1].GetName();
+            LightTech.RepositionLight(light, pos1.X + 5, pos1.Y + 5, 0);
         }
 
     }

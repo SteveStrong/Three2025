@@ -6,6 +6,7 @@ using FoundryRulesAndUnits.Extensions;
 using FoundryMentorModeler;
 
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 
 using Microsoft.Extensions.FileProviders;
 using Three2025.Apprentice;
@@ -19,8 +20,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Configure Blazor Server circuit options to prevent disconnections
-builder.Services.AddServerSideBlazor()
+// Configure Blazor Server circuit options to support multiple tabs
+builder.Services.AddServerSideBlazor(options =>
+    {
+        // CRITICAL: Prevent hub from timing out inactive tabs
+        options.DetailedErrors = true;
+        //options.MaximumReceiveMessageSize = 32 * 1024 * 1024; // 32MB for large geometry batches
+    })
     .AddCircuitOptions(options =>
     {
         options.DetailedErrors = true; // Enable detailed error messages
@@ -28,6 +34,16 @@ builder.Services.AddServerSideBlazor()
         options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
         options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(1);
         options.MaxBufferedUnacknowledgedRenderBatches = 20;
+        // Note: MaximumReceiveMessageSize moved to HubOptions below
+    })
+    .AddHubOptions(options =>
+    {
+        // CRITICAL: Keep both tabs alive with generous timeouts
+        options.ClientTimeoutInterval = TimeSpan.FromMinutes(5); // How long server waits for client pings
+        options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+        options.KeepAliveInterval = TimeSpan.FromSeconds(15); // Server pings client every 15s
+        options.MaximumReceiveMessageSize = 32 * 1024 * 1024; // 32MB
+        options.StreamBufferCapacity = 10;
     });
 
 builder.Services.AddRadzenComponents();
@@ -50,7 +66,8 @@ builder.Services.AddCors(options =>
 
 
 builder.Services.AddCascadingAuthenticationState();
-//builder.Services.AddSingleton<CircuitHandler, CustomCircuitHandler>();
+// Enable circuit monitoring (logs when tabs connect/disconnect)
+builder.Services.AddScoped<CircuitHandler, CustomCircuitHandler>();
 
 var provider = new FileExtensionContentTypeProvider();
 builder.Services.Configure<StaticFileOptions>(options =>
@@ -70,6 +87,7 @@ builder.Services.AddScoped<IApprenticeAI, ApprenticeAI>();
 builder.Services.AddScoped<IRackTech, RackTech>();
 builder.Services.AddScoped<ICageTech, CageTech>();
 builder.Services.AddScoped<IClockTech, ClockTech>();
+builder.Services.AddScoped<ICuckooClockTech, CuckooClockTech>();
 builder.Services.AddScoped<ITrisocTech, TrisocTech>();
 builder.Services.AddScoped<ILightingTech, LightingTech>();
 

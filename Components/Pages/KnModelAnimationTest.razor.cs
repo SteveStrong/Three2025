@@ -303,7 +303,8 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     }
 
     public void Dispose()
-    {        AnimationFrameBus.UnSubscribeFromAnimation(OnAnimationEvent);        MentorServices?.PubSub?.UnSubscribeFrom<RefreshRenderMessage>(OnRefreshRender);
+    {        
+         MentorServices?.PubSub?.UnSubscribeFrom<RefreshRenderMessage>(OnRefreshRender);
         _ = _testStage?.ClearAll();
         
         $"KnModelAnimationTest: Disposed".WriteInfo();
