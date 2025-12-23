@@ -20,7 +20,7 @@ namespace Three2025.Apprentice;
 public interface IClockTech : ITechnician
 {
     FoShape3D CreateClockOnArena();
-    void RunClock();
+    void RunClock(string stageName);
 }
 
 public class ClockTech : IClockTech
@@ -35,6 +35,8 @@ public class ClockTech : IClockTech
     private Mesh3D CenterPost = null!;
 
     private FoShape3D Clock = null!;
+    
+    private string _stageName = null!;
 
     public ClockTech(IFoundryService foundry)
     {
@@ -51,8 +53,10 @@ public class ClockTech : IClockTech
 
 
 
-    public void RunClock()
+    public void RunClock(string stageName)
     {
+        _stageName = stageName;
+        
         if (_timer == null)
         {
             _timer = new Timer(UpdateClock, null, 0, 1000);
@@ -199,7 +203,8 @@ public class ClockTech : IClockTech
         {
             Clock = CreateClockOnArena();
             var arena = FoundryService.Arena();
-            var stage = arena.EstablishStage<FoStage3D>("Clock");
+            // Use the stage name passed from the page to ensure the stage is linked to the scene
+            var stage = arena.EstablishStage<FoStage3D>(_stageName);
             stage.AddShape(Clock);
         }
 

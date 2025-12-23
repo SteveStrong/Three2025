@@ -87,8 +87,9 @@ public class FoClockFace3D : FoShape3D
     
     private void UpdateClockAnimation(FoGlyph3D self, int tick, double fps)
     {
-        // Update every 60 frames (approximately once per second at 60fps)
-        if (tick % 60 != 0) return;
+        // Update every second (fps frames = 1 second)
+        var framesPerSecond = (int)Math.Round(fps);
+        if (framesPerSecond == 0 || tick % framesPerSecond != 0) return;
 
         
         var time = DateTime.Now;
@@ -104,7 +105,9 @@ public class FoClockFace3D : FoShape3D
         if (_timeText != null)
         {
             var currentTime = time.ToString("HH:mm:ss");
+            $"🕐 Clock updating text from '{_timeText.Text}' to '{currentTime}'".WriteInfo();
             _timeText.Text = currentTime;                    // Text setter calls SetDataStale()
+            $"🕐 After Text set: IsDataStale={_timeText.IsDataStale()}, IsStale={_timeText.IsStale()}".WriteInfo();
             _timeText.Transform.Position = new Vector3(x, y, z);  // Position setter calls SetTransformStale()
         }
         

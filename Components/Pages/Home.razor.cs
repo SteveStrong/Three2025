@@ -408,7 +408,10 @@ public partial class HomeBase : ComponentBase, IDisposable
 
 
 
-
+    public void DoNavigateToCuckooClock()
+    {
+        Navigation.NavigateTo("/trex-cuckoo-clock");
+    }
     public void DoRequestAddTextToScene()
     {
         var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
