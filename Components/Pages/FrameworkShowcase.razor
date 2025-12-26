@@ -10,62 +10,48 @@
         <h1> Foundry Framework Showcase</h1>
         <div class="version-badge">v4.0.0</div>
         <p class="lead">Comprehensive test suite for 3D/2D rendering, animation, and model-driven architecture</p>
-        
-        <!-- Three-Parameter Architecture Tests -->
-        <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border-radius: 8px; border: 3px solid #2196F3;">
-            <h3 style="color: #1565C0; font-weight: bold; text-align: center; margin-bottom: 20px;">🧪 Three-Parameter Architecture Tests</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #FF9800; cursor: pointer; transition: transform 0.2s;" @onclick="@(() => Nav("/knmodel-animation"))">
-                    <div style="text-align: center;">
-                        <div style="font-size: 3rem; margin-bottom: 10px;">⏰</div>
-                        <h4 style="color: #E65100; margin-bottom: 10px;">KN Model Clock Animation Test</h4>
-                        <p style="color: #666; margin-bottom: 15px;">Continuous animation loop with parameter updates. Tests clock motion, periodic shape changes, and KN layer animation.</p>
-                        <div style="color: #FF9800; font-weight: bold;">Click to Launch →</div>
-                    </div>
-                </div>
-                <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #4CAF50; cursor: pointer; transition: transform 0.2s;" @onclick="@(() => Nav("/shape-lifecycle-test"))">
-                    <div style="text-align: center;">
-                        <div style="font-size: 3rem; margin-bottom: 10px;">🔬</div>
-                        <h4 style="color: #2E7D32; margin-bottom: 10px;">Shape Lifecycle Test</h4>
-                        <p style="color: #666; margin-bottom: 15px;">Manual control with single-frame rendering. Tests mesh cache survival, transform-only updates, and parameter propagation.</p>
-                        <div style="color: #4CAF50; font-weight: bold;">Click to Launch →</div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <RadzenTabs @bind-SelectedIndex="@selectedTabIndex" RenderMode="TabRenderMode.Client">
         
         <Tabs>
-            <!-- Tab 1: 3D Tests -->
-            <RadzenTabsItem Text=" 3D Tests">
+            <!-- Tab 1: Architecture Tests -->
+            <RadzenTabsItem Text="🧪 Architecture Tests">
                 <div class="tab-content-wrapper">
                     <div class="card-grid">
-                        <div class="demo-card" @onclick="@(() => Nav("/geometry-test-harness"))">
-                            <div class="card-icon"></div>
-                            <div class="card-title">Geometry Parameter Test</div>
-                            <div class="card-description">Live parameter → geometry → shape pipeline</div>
-                            <div class="card-route">/geometry-test-harness</div>
-                            <div class="card-status badge-testing"> Active Test</div>
+                        <div class="demo-card" @onclick="@(() => Nav("/knmodel-animation"))">
+                            <div class="card-icon">⏰</div>
+                            <div class="card-title">KN Model Clock Animation Test</div>
+                            <div class="card-description">Continuous animation loop with parameter updates. Tests clock motion, periodic shape changes, and KN layer animation.</div>
+                            <div class="card-route">/knmodel-animation</div>
+                            <div class="card-status badge-testing">🔬 Architecture Test</div>
                         </div>
 
-                        <div class="demo-card" @onclick="@(() => Nav("/clock"))">
-                            <div class="card-icon">⏰</div>
-                            <div class="card-title">Clock</div>
-                            <div class="card-description">Animated clock with three-tier optimization</div>
-                            <div class="card-route">/clock</div>
-                            <div class="card-status badge-integration"> Integration</div>
+                        <div class="demo-card" @onclick="@(() => Nav("/shape-lifecycle-test"))">
+                            <div class="card-icon">🔬</div>
+                            <div class="card-title">Shape Lifecycle Test</div>
+                            <div class="card-description">Manual control with single-frame rendering. Tests mesh cache survival, transform-only updates, and parameter propagation.</div>
+                            <div class="card-route">/shape-lifecycle-test</div>
+                            <div class="card-status badge-testing">🔬 Architecture Test</div>
                         </div>
-                        <div class="demo-card" @onclick="@(() => Nav("/trex-cuckoo-clock"))">
-                            <div class="card-icon">🦖</div>
-                            <div class="card-title">T-Rex Cuckoo Clock</div>
-                            <div class="card-description">Animated cuckoo clock with T-Rex emergence sequence</div>
-                            <div class="card-route">/trex-cuckoo-clock</div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/geometry-test-harness"))">
+                            <div class="card-icon">🔧</div>
+                            <div class="card-title">Geometry Parameter Test</div>
+                            <div class="card-description">Live parameter → geometry → shape pipeline validation</div>
+                            <div class="card-route">/geometry-test-harness</div>
                             <div class="card-status badge-testing">🟠 Active Test</div>
                         </div>
+                    </div>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- Tab 2: 3D Rendering -->
+            <RadzenTabsItem Text="🎨 3D Rendering">
+                <div class="tab-content-wrapper">
+                    <div class="card-grid">
                         <div class="demo-card" @onclick="@(() => Nav("/geometry-debug"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">🔍</div>
                             <div class="card-title">Geometry Debug</div>
                             <div class="card-description">Debug geometry evaluation and rendering</div>
                             <div class="card-route">/geometry-debug</div>
@@ -73,7 +59,7 @@
                         </div>
 
                         <div class="demo-card" @onclick="@(() => Nav("/multi-canvas-3d-test"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">🖼️</div>
                             <div class="card-title">Multi-Canvas 3D</div>
                             <div class="card-description">Multiple 3D canvases with independent stages</div>
                             <div class="card-route">/multi-canvas-3d-test</div>
@@ -81,7 +67,7 @@
                         </div>
 
                         <div class="demo-card" @onclick="@(() => Nav("/debugcanvas"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">🐛</div>
                             <div class="card-title">Debug Canvas</div>
                             <div class="card-description">Canvas debugging and diagnostics</div>
                             <div class="card-route">/debugcanvas</div>
@@ -89,7 +75,7 @@
                         </div>
 
                         <div class="demo-card" @onclick="@(() => Nav("/gluetest3d"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">🔗</div>
                             <div class="card-title">Glue Test 3D</div>
                             <div class="card-description">Shape grouping and connections</div>
                             <div class="card-route">/gluetest3d</div>
@@ -97,7 +83,7 @@
                         </div>
 
                         <div class="demo-card" @onclick="@(() => Nav("/spacialboxtest"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">📦</div>
                             <div class="card-title">Spacial Box Test</div>
                             <div class="card-description">3D spatial box component</div>
                             <div class="card-route">/spacialboxtest</div>
@@ -105,7 +91,7 @@
                         </div>
 
                         <div class="demo-card" @onclick="@(() => Nav("/spacialframetest"))">
-                            <div class="card-icon">️</div>
+                            <div class="card-icon">🏗️</div>
                             <div class="card-title">Spacial Frame Test</div>
                             <div class="card-description">3D frame structure component</div>
                             <div class="card-route">/spacialframetest</div>
@@ -113,7 +99,7 @@
                         </div>
 
                         <div class="demo-card" @onclick="@(() => Nav("/trisoc"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">🔺</div>
                             <div class="card-title">Trisoc</div>
                             <div class="card-description">Three-sided object construction</div>
                             <div class="card-route">/trisoc</div>
@@ -121,7 +107,7 @@
                         </div>
 
                         <div class="demo-card" @onclick="@(() => Nav("/becanvas"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">🖥️</div>
                             <div class="card-title">BE Canvas</div>
                             <div class="card-description">Backend-driven canvas rendering</div>
                             <div class="card-route">/becanvas</div>
@@ -131,7 +117,46 @@
                 </div>
             </RadzenTabsItem>
 
-            <!-- Tab 2: 2D & Mixed -->
+            <!-- Tab 3: Animation -->
+            <RadzenTabsItem Text="⏰ Animation">
+                <div class="tab-content-wrapper">
+                    <div class="card-grid">
+                        <div class="demo-card" @onclick="@(() => Nav("/clock"))">
+                            <div class="card-icon">⏰</div>
+                            <div class="card-title">Clock</div>
+                            <div class="card-description">Animated clock with three-tier optimization</div>
+                            <div class="card-route">/clock</div>
+                            <div class="card-status badge-integration">🔵 Integration</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/trex-cuckoo-clock"))">
+                            <div class="card-icon">🦖</div>
+                            <div class="card-title">T-Rex Cuckoo Clock</div>
+                            <div class="card-description">Animated cuckoo clock with T-Rex emergence sequence</div>
+                            <div class="card-route">/trex-cuckoo-clock</div>
+                            <div class="card-status badge-testing">🟠 Active Test</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/knmodel-animation"))">
+                            <div class="card-icon">🎬</div>
+                            <div class="card-title">KnModel Animation</div>
+                            <div class="card-description">Model-driven animation system with parameter control</div>
+                            <div class="card-route">/knmodel-animation</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/animation-control"))">
+                            <div class="card-icon">🎛️</div>
+                            <div class="card-title">Animation Control</div>
+                            <div class="card-description">Control panel for animation parameters</div>
+                            <div class="card-route">/animation-control</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+                    </div>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- Tab 4: 2D & Mixed -->
             <RadzenTabsItem Text="✏️ 2D & Mixed">
                 <div class="tab-content-wrapper">
                     <div class="card-grid">
@@ -144,7 +169,7 @@
                         </div>
 
                         <div class="demo-card" @onclick="@(() => Nav("/multi-canvas-2d-test"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">🖼️</div>
                             <div class="card-title">Multi-Canvas 2D</div>
                             <div class="card-description">Multiple 2D canvases with independent stages</div>
                             <div class="card-route">/multi-canvas-2d-test</div>
@@ -152,7 +177,7 @@
                         </div>
 
                         <div class="demo-card" @onclick="@(() => Nav("/dual-canvas-test"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">🎭</div>
                             <div class="card-title">Dual Canvas Test</div>
                             <div class="card-description">2D and 3D canvases side-by-side</div>
                             <div class="card-route">/dual-canvas-test</div>
@@ -168,7 +193,7 @@
                         </div>
 
                         <div class="demo-card" @onclick="@(() => Nav("/tugofwartest"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">🎮</div>
                             <div class="card-title">Tug of War Test</div>
                             <div class="card-description">Test version of tug-of-war mechanics</div>
                             <div class="card-route">/tugofwartest</div>
@@ -178,38 +203,22 @@
                 </div>
             </RadzenTabsItem>
 
-            <!-- Tab 3: Model Driven -->
-            <RadzenTabsItem Text=" Model Driven">
+            <!-- Tab 5: Model Driven -->
+            <RadzenTabsItem Text="🏗️ Model Driven">
                 <div class="tab-content-wrapper">
                     <div class="card-grid">
-                        <div class="demo-card" @onclick="@(() => Nav("/knmodel-animation"))">
-                            <div class="card-icon"></div>
-                            <div class="card-title">KnModel Animation</div>
-                            <div class="card-description">Model-driven animation system</div>
-                            <div class="card-route">/knmodel-animation</div>
-                            <div class="card-status badge-ready">✅ Ready</div>
-                        </div>
-
-                        <div class="demo-card" @onclick="@(() => Nav("/animation-control"))">
-                            <div class="card-icon">️</div>
-                            <div class="card-title">Animation Control</div>
-                            <div class="card-description">Control panel for animation parameters</div>
-                            <div class="card-route">/animation-control</div>
-                            <div class="card-status badge-ready">✅ Ready</div>
-                        </div>
-
                         <div class="demo-card" @onclick="@(() => Nav("/matrixtest"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">🔢</div>
                             <div class="card-title">Matrix Test</div>
-                            <div class="card-description">Transformation matrix testing</div>
+                            <div class="card-description">Transformation matrix testing and validation</div>
                             <div class="card-route">/matrixtest</div>
                             <div class="card-status badge-ready">✅ Ready</div>
                         </div>
 
                         <div class="demo-card" @onclick="@(() => Nav("/legosnaptest"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">🧱</div>
                             <div class="card-title">Lego Snap Test</div>
-                            <div class="card-description">Component snapping mechanics</div>
+                            <div class="card-description">Component snapping mechanics and constraints</div>
                             <div class="card-route">/legosnaptest</div>
                             <div class="card-status badge-ready">✅ Ready</div>
                         </div>
@@ -217,12 +226,28 @@
                 </div>
             </RadzenTabsItem>
 
-            <!-- Tab 4: AI & Utils -->
-            <RadzenTabsItem Text=" AI & Utils">
+            <!-- Tab 6: AI & Tools -->
+            <RadzenTabsItem Text="🤖 AI & Tools">
                 <div class="tab-content-wrapper">
                     <div class="card-grid">
+                        <div class="demo-card" @onclick="@(() => Nav("/agent-canvas"))">
+                            <div class="card-icon">🎨</div>
+                            <div class="card-title">Agent Canvas Integration</div>
+                            <div class="card-description">AI agents with 3D/2D canvas and tree view</div>
+                            <div class="card-route">/agent-canvas</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/chat-test"))">
+                            <div class="card-icon">🤖</div>
+                            <div class="card-title">Chat Orchestrator Test</div>
+                            <div class="card-description">Multi-agent chat with tool discovery</div>
+                            <div class="card-route">/chat-test</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
                         <div class="demo-card" @onclick="@(() => Nav("/home"))">
-                            <div class="card-icon"></div>
+                            <div class="card-icon">🏠</div>
                             <div class="card-title">Home</div>
                             <div class="card-description">Framework home page</div>
                             <div class="card-route">/home</div>

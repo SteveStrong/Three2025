@@ -3,6 +3,9 @@
 
 @namespace Three2025.Components.Pages
 @inherits TrisocBase
+@using Three2025.Services.Chat
+@using Microsoft.Extensions.AI
+@using AIChatMessage = Microsoft.Extensions.AI.ChatMessage
 @rendermode InteractiveServer
 
 <PageTitle>Trisoc</PageTitle>
@@ -14,10 +17,61 @@
     <Canvas3DComponent SceneName="Trisoc" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
         <RadzenTabs style="min-width: 600px;">
         <Tabs>
-            <RadzenTabsItem Text="Chat View">
-                <AIChat/>
+            <RadzenTabsItem Text="💬 Chat">
+                <div style="display: flex; flex-direction: column; height: calc(100vh - 100px);">
+                    <!-- Chat Messages -->
+                    <div @ref="chatContainer" style="flex: 1; overflow-y: auto; padding: 1rem; background: #f8f9fa;">
+                        @foreach (var msg in conversationHistory)
+                        {
+                            <div style="margin-bottom: 1rem; display: flex; justify-content: @(msg.Role == ChatRole.User ? "flex-end" : "flex-start");">
+                                <div style="max-width: 70%; padding: 0.75rem; border-radius: 8px; background: @(msg.Role == ChatRole.User ? "#667eea" : "#ffffff"); color: @(msg.Role == ChatRole.User ? "white" : "#333"); box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.85rem; opacity: 0.9;">
+                                        @(msg.Role == ChatRole.User ? "You" : currentAgent)
+                                    </div>
+                                    <div style="font-size: 0.9rem;">@((MarkupString)msg.Text)</div>
+                                </div>
+                            </div>
+                        }
+                        
+                        @if (isProcessing && !string.IsNullOrEmpty(streamingResponse))
+                        {
+                            <div style="margin-bottom: 1rem; display: flex; justify-content: flex-start;">
+                                <div style="max-width: 70%; padding: 0.75rem; border-radius: 8px; background: #ffffff; color: #333; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.85rem; opacity: 0.9;">
+                                        @currentAgent
+                                    </div>
+                                    <div style="font-size: 0.9rem;">@((MarkupString)streamingResponse)<span style="animation: blink 1s infinite;">▋</span></div>
+                                </div>
+                            </div>
+                        }
+                        else if (isProcessing)
+                        {
+                            <div style="padding: 1rem; text-align: center; color: #666;">
+                                <em>🤔 @currentAgent is thinking...</em>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Input Area -->
+                    <div style="padding: 0.75rem; background: white; border-top: 1px solid #ddd;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" 
+                                   @bind="userInput" 
+                                   @bind:event="oninput"
+                                   @onkeydown="HandleKeyPress"
+                                   placeholder="Ask about 3D shapes and animations..."
+                                   style="flex: 1; padding: 0.5rem; border: 2px solid #ddd; border-radius: 6px;"
+                                   disabled="@isProcessing" />
+                            <button @onclick="SendMessage" 
+                                    disabled="@(isProcessing || string.IsNullOrWhiteSpace(userInput))"
+                                    style="padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                @(isProcessing ? "..." : "Send")
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </RadzenTabsItem>
-            <RadzenTabsItem Text="Shape View">
+            <RadzenTabsItem Text="🔷 Shape View">
                 <ShapeTreeView/>
             </RadzenTabsItem>
             <RadzenTabsItem Text="Command View">
@@ -36,3 +90,10 @@
 
 
 </div>
+
+<style>
+    @@keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+    }
+</style>

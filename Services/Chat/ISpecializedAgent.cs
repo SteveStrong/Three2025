@@ -30,4 +30,13 @@ public interface ISpecializedAgent
         PageContext context,
         List<ChatMessage> conversationHistory,
         CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Process a user message with streaming, yielding response chunks as they arrive
+    /// </summary>
+    IAsyncEnumerable<string> ProcessStreamingAsync(
+        string userMessage,
+        PageContext context,
+        List<ChatMessage> conversationHistory,
+        CancellationToken cancellationToken = default);
 }

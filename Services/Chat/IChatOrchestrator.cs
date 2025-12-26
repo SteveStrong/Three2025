@@ -19,6 +19,16 @@ public interface IChatOrchestrator
         CancellationToken cancellationToken = default);
     
     /// <summary>
+    /// Process a user message with streaming, yielding response chunks as they arrive
+    /// </summary>
+    IAsyncEnumerable<StreamingChunk> ProcessMessageStreamingAsync(
+        string userMessage,
+        PageContext context,
+        List<ChatMessage> conversationHistory,
+        Action<string>? onAgentSwitch = null,
+        CancellationToken cancellationToken = default);
+    
+    /// <summary>
     /// Get list of agents available for a given page context
     /// </summary>
     List<string> GetAvailableAgents(PageContext context);
@@ -40,6 +50,14 @@ public class AgentResponse
     public string AgentName { get; set; } = "";
     public List<string> AgentsInvolved { get; set; } = new();
     public Dictionary<string, object>? ActionableData { get; set; }
+}
+
+public class StreamingChunk
+{
+    public string Content { get; set; } = "";
+    public string AgentName { get; set; } = "";
+    public bool IsComplete { get; set; } = false;
+    public List<string> AgentsInvolved { get; set; } = new();
 }
 
 public class PageContext

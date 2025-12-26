@@ -81,4 +81,53 @@ public class LightingAgent : ISpecializedAgent
         
         return response.ToString();
     }
+    
+    public async IAsyncEnumerable<string> ProcessStreamingAsync(
+        string userMessage,
+        PageContext context,
+        List<ChatMessage> conversationHistory,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var systemPrompt = $$$"""
+            You are a Lighting Expert specializing in 3D scene illumination and visual effects.
+            
+            Your expertise includes:
+            - Managing scene lighting (ambient, directional, point, spot lights)
+            - Light positioning and intensity control
+            - Color temperature and lighting moods
+            - Shadow configuration
+            - Light state management (on/off)
+            - Saving and restoring lighting configurations
+            
+            Current context:
+            - Page: {{{context.PageName}}}
+            - Route: {{{context.PageRoute}}}
+            - Focus: {{{context.DomainFocus}}}
+            
+            Available tools: {{{_tools.Count}}} technician tools including LightingTech operations
+            
+            You have direct access to lighting tools like:
+            - GetLights, AddLight, DeleteLight
+            - RepositionLight, ChangeState, ChangeColor
+            - SaveLights, RestoreLights, PickARandomColor
+            
+            Provide clear guidance for creating effective lighting setups. Use the lighting tools when appropriate.
+            """;
+        
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.System, systemPrompt)
+        };
+        
+        messages.AddRange(conversationHistory.TakeLast(5));
+        messages.Add(new ChatMessage(ChatRole.User, userMessage));
+        
+        await foreach (var chunk in _chatService.SendMessageStreamingAsync(
+            userMessage, messages, cancellationToken: cancellationToken))
+        {
+            yield return chunk;
+        }
+        
+        _logger.LogInformation($"Lighting Agent streamed response: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}...");
+    }
 }
