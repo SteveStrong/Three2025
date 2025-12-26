@@ -83,13 +83,22 @@ var envConfig = new EnvConfig("./.env");
 builder.Services.AddFoundryWorldsAndDrawingsServices(envConfig);
 builder.Services.AddFoundryMentorModelerServices();
 
-builder.Services.AddScoped<IApprenticeAI, ApprenticeAI>();
 builder.Services.AddScoped<IRackTech, RackTech>();
 builder.Services.AddScoped<ICageTech, CageTech>();
 builder.Services.AddScoped<IClockTech, ClockTech>();
 builder.Services.AddScoped<ICuckooClockTech, CuckooClockTech>();
 builder.Services.AddScoped<ITrisocTech, TrisocTech>();
 builder.Services.AddScoped<ILightingTech, LightingTech>();
+
+// Register tool provider for agent system (Phase 0)
+builder.Services.AddSingleton<Three2025.Services.Agents.ITechnicianToolProvider, Three2025.Services.Agents.TechnicianToolProvider>();
+
+// Register multi-provider chat service
+builder.Services.AddScoped<Three2025.Services.Chat.IMultiProviderChatService, Three2025.Services.Chat.MultiProviderChatService>();
+
+// Register multi-agent orchestration services (Phase 2)
+builder.Services.AddScoped<Three2025.Services.Chat.IChatOrchestrator, Three2025.Services.Chat.ChatOrchestrator>();
+builder.Services.AddScoped<Three2025.Services.Chat.IAgentFactory, Three2025.Services.Chat.AgentFactory>();
 
 // Register geometry visualization service
 builder.Services.AddScoped<IGeometryVisualizationService, GeometryVisualizationService>();

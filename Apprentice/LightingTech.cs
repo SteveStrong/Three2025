@@ -5,7 +5,6 @@ using FoundryWorldsAndDrawings.Solutions;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 
-using Microsoft.SemanticKernel;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 
@@ -65,16 +64,13 @@ public class LightingTech :ILightingTech
       Stage = stage;
    }
 
-   [KernelFunction("RefreshUI")]
    [Description("Send a message to refresh the TreeView")]
    public void RefreshUI()
    {
       //FoundryServices.PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.ClearAllSelected());
    }
    
-   [KernelFunction("EstablishLightingStage")]
-   [Description("Establish a Lighting Model for the lights")]
-   [return: Description("LightingModel  The container for all the lights")]
+   [Description("Establish a Lighting Model for the application")]
    public FoStage3D EstablishLightingStage()
    {
 
@@ -103,7 +99,6 @@ public class LightingTech :ILightingTech
       return Stage;
    }
 
-   [KernelFunction("clear_lights")]
    [Description("Clears the list of lights")]
    public void ClearLights()
    {
@@ -112,21 +107,18 @@ public class LightingTech :ILightingTech
       RefreshUI();
    }
 
-   [KernelFunction("Save_Lights")]
    [Description("saves a list of lights to a file")]
    public void SaveLights()
-   {
+   {  
       var stage = EstablishLightingStage();
       var lights = stage.Members<LightingComponent>();
       var data = CodingExtensions.DehydrateList<LightingComponent>(lights,false);
       FileHelpers.WriteData("Data", "lights.json", data);
    }
 
-   [KernelFunction("Restore_Lights")]
    [Description("restores a list of lights from a file")]
    public void RestoreLights()
    {
-      ClearLights();
       var data = FileHelpers.ReadData("Data", "lights.json");
       var list = CodingExtensions.HydrateList<LightingComponent>(data,false);
       
@@ -142,31 +134,27 @@ public class LightingTech :ILightingTech
 
    }
 
-   [KernelFunction("PickARandomColor")]
    [Description("Generate a Random Color")]
-   [return: Description("a Color as a string")]
    public string PickARandomColor()
    {
       var color = DataGenerator.GenerateColor();
       return color;
    }
 
-   [KernelFunction("get_lights")]
    [Description("Gets a list of lights and their current state")]
-   [return: Description("An array of lights")]
    public List<LightingComponent> GetLights()
    {
       var stage = EstablishLightingStage();
       return stage.Members<LightingComponent>();
    }
    
-   [KernelFunction("add_light")]
    [Description("Create and add a light")]
-   [return: Description("An array of lights")]
-   public List<LightingComponent> AddLight(string name, bool isOn, string color)
+   public List<LightingComponent> AddLight(
+      [Description("The name of the light to create")] string name, 
+      [Description("Whether the light should be on or off")] bool isOn, 
+      [Description("The color of the light")] string color)
    {
          var stage = EstablishLightingStage();
-         var list = stage.Members<LightingComponent>();
 
          var newLight = new LightingComponent(name)
          {
@@ -182,15 +170,12 @@ public class LightingTech :ILightingTech
    }
 
 
-   [KernelFunction("delete_light")]
    [Description("delete a light")]
-   [return: Description("return the deleted light")]
-   public LightingComponent? DeleteLight(string name)
+   public LightingComponent? DeleteLight(
+      [Description("The name of the light to delete")] string name)
    {
          var stage = EstablishLightingStage();
-         var list = stage.Members<LightingComponent>();
-
-         var light = list.FirstOrDefault(light => light.GetName().Matches(name));
+         var light = stage.Members<LightingComponent>().FirstOrDefault(light => light.GetName().Matches(name));
 
          if (light != null)
             light.DeleteFromStage(stage);
@@ -200,10 +185,12 @@ public class LightingTech :ILightingTech
          return light;
    }
 
-   [KernelFunction("Reposition_Light")]
    [Description("Changes the X, Y, Z position of the light")]
-   [return: Description("The updated position of the light; will return null if the light does not exist")]
-   public LightingComponent? RepositionLight(string name, double x, double y, double z)
+   public LightingComponent? RepositionLight(
+      [Description("The name of the light to reposition")] string name, 
+      [Description("The X coordinate")] double x, 
+      [Description("The Y coordinate")] double y, 
+      [Description("The Z coordinate")] double z)
    {
       var list = GetLights();
       var light = list.FirstOrDefault(light => light.GetName().Matches(name));
@@ -220,10 +207,10 @@ public class LightingTech :ILightingTech
       return light;
    }
 
-   [KernelFunction("change_state")]
    [Description("Changes the state of the light")]
-   [return: Description("The updated state of the light; will return null if the light does not exist")]
-   public LightingComponent? ChangeState(string name, bool isOn)
+   public LightingComponent? ChangeState(
+      [Description("The name of the light")] string name, 
+      [Description("Whether the light should be on or off")] bool isOn)
    {
       var list = GetLights();
       var light = list.FirstOrDefault(light => light.GetName().Matches(name));
@@ -235,10 +222,10 @@ public class LightingTech :ILightingTech
       return light;
    }
 
-   [KernelFunction("change_color")]
    [Description("Changes the color of the light")]
-   [return: Description("The updated color of the light; will return null if the light does not exist")]
-   public LightingComponent? ChangeColor(string name, string color)
+   public LightingComponent? ChangeColor(
+      [Description("The name of the light")] string name, 
+      [Description("The new color for the light")] string color)
    {
       var list = GetLights();
       var light = list.FirstOrDefault(light => light.GetName().Matches(name));
