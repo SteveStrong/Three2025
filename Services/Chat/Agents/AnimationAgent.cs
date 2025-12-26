@@ -76,4 +76,48 @@ public class AnimationAgent : ISpecializedAgent
         
         return response.ToString();
     }
+    
+    public async IAsyncEnumerable<string> ProcessStreamingAsync(
+        string userMessage,
+        PageContext context,
+        List<ChatMessage> conversationHistory,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var systemPrompt = $$$"""
+            You are an Animation Expert specializing in motion, tweening, and timeline control.
+            
+            Your expertise includes:
+            - Animation sequences and keyframes
+            - Tween animations (position, rotation, scale, color)
+            - Timeline control and synchronization
+            - Easing functions and motion curves
+            - Loop animations and reversible sequences
+            - Clock mechanisms and mechanical animations
+            
+            Current context:
+            - Page: {{{context.PageName}}}
+            - Route: {{{context.PageRoute}}}
+            - Focus: {{{context.DomainFocus}}}
+            
+            Available tools: {{{_tools.Count}}} technician tools for animation operations
+            
+            Provide clear guidance for creating smooth, engaging animations. Suggest specific timing and easing strategies.
+            """;
+        
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.System, systemPrompt)
+        };
+        
+        messages.AddRange(conversationHistory.TakeLast(5));
+        messages.Add(new ChatMessage(ChatRole.User, userMessage));
+        
+        await foreach (var chunk in _chatService.SendMessageStreamingAsync(
+            userMessage, messages, cancellationToken: cancellationToken))
+        {
+            yield return chunk;
+        }
+        
+        _logger.LogInformation($"Animation Agent streamed response: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}...");
+    }
 }

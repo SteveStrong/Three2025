@@ -82,6 +82,52 @@ public class ChatOrchestrator : IChatOrchestrator
             cancellationToken);
     }
     
+    public async IAsyncEnumerable<StreamingChunk> ProcessMessageStreamingAsync(
+        string userMessage,
+        PageContext context,
+        List<ChatMessage> conversationHistory,
+        Action<string>? onAgentSwitch = null,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // Step 1: Analyze user intent and determine which agent(s) to call
+        var intent = await AnalyzeIntentAsync(userMessage, context, conversationHistory);
+        
+        _logger.LogInformation($"Intent analysis: {intent.PrimaryAction}, Agent: {intent.PrimaryAgent}, Confidence: {intent.Confidence}");
+        
+        // Step 2: Route to appropriate agent and stream response
+        if (!_agents.TryGetValue(intent.PrimaryAgent, out var agent))
+        {
+            agent = _agents.Values.First(); // Fallback to first agent
+            _logger.LogWarning($"Agent '{intent.PrimaryAgent}' not found, using fallback: {agent.Name}");
+        }
+        
+        onAgentSwitch?.Invoke(intent.PrimaryAgent);
+        
+        await foreach (var chunk in agent.ProcessStreamingAsync(
+            userMessage, 
+            context, 
+            conversationHistory, 
+            cancellationToken))
+        {
+            yield return new StreamingChunk
+            {
+                Content = chunk,
+                AgentName = intent.PrimaryAgent,
+                IsComplete = false,
+                AgentsInvolved = new List<string> { intent.PrimaryAgent }
+            };
+        }
+        
+        // Final chunk to indicate completion
+        yield return new StreamingChunk
+        {
+            Content = "",
+            AgentName = intent.PrimaryAgent,
+            IsComplete = true,
+            AgentsInvolved = new List<string> { intent.PrimaryAgent }
+        };
+    }
+    
     private async Task<IntentAnalysis> AnalyzeIntentAsync(
         string userMessage,
         PageContext context,

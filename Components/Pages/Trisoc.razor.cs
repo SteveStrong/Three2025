@@ -1,6 +1,7 @@
 ﻿using FoundryWorldsAndDrawings.Shared;
 using FoundryWorldsAndDrawings.Solutions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using FoundryRulesAndUnits.Extensions; // ✅ Phase 0.5: For WriteSuccess extension
 
 
@@ -10,6 +11,9 @@ using Three2025.Apprentice;
 using FoundryWorldsAndDrawings.ThreeD.Viewers;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
 using FoundryWorldsAndDrawings.Shape; // ✅ Phase 0.5: For FoStage3D
+using Three2025.Services.Chat;
+using Microsoft.Extensions.AI;
+using AIChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 
 namespace Three2025.Components.Pages;
@@ -25,6 +29,8 @@ public partial class TrisocBase : ComponentBase
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public ITrisocTech Tech { get; init; }
     [Inject] public ILightingTech LightTech { get; init; }
+    [Inject] public IChatOrchestrator ChatOrchestrator { get; set; }
+    [Inject] public ILogger<TrisocBase> Logger { get; set; }
 
 
     [Parameter] public int CanvasWidth { get; set; } = 1200;
@@ -32,6 +38,21 @@ public partial class TrisocBase : ComponentBase
 
 
     protected MockDataGenerator DataGenerator { get; set; } = new();
+
+    // Chat fields
+    protected ElementReference chatContainer;
+    protected string userInput = "";
+    protected List<AIChatMessage> conversationHistory = new();
+    protected bool isProcessing = false;
+    protected string currentAgent = "Assistant";
+    protected string streamingResponse = "";
+    
+    private PageContext pageContext = new()
+    {
+        PageName = "Trisoc",
+        PageRoute = "/trisoc",
+        DomainFocus = "3D shapes and trisoc construction"
+    };
 
 
 
@@ -137,7 +158,72 @@ public partial class TrisocBase : ComponentBase
 
     }
 
+    // Chat methods
+    protected async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(userInput) || isProcessing)
+            return;
 
+        var message = userInput.Trim();
+        userInput = "";
+        isProcessing = true;
+        streamingResponse = "";
+        currentAgent = "Assistant";
+
+        try
+        {
+            conversationHistory.Add(new AIChatMessage(ChatRole.User, message));
+            await InvokeAsync(StateHasChanged);
+
+            var fullResponse = "";
+            
+            await foreach (var chunk in ChatOrchestrator.ProcessMessageStreamingAsync(
+                message,
+                pageContext,
+                conversationHistory,
+                onAgentSwitch: async (agentName) => 
+                {
+                    currentAgent = agentName;
+                    await InvokeAsync(StateHasChanged);
+                }))
+            {
+                if (!chunk.IsComplete)
+                {
+                    streamingResponse += chunk.Content;
+                    fullResponse += chunk.Content;
+                    currentAgent = chunk.AgentName;
+                    await InvokeAsync(StateHasChanged);
+                }
+                else
+                {
+                    currentAgent = chunk.AgentName;
+                }
+            }
+
+            conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, fullResponse));
+            streamingResponse = "";
+            
+            Logger.LogInformation($"Response from {currentAgent}: {fullResponse.Substring(0, Math.Min(100, fullResponse.Length))}...");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error processing message");
+            conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, $"❌ Error: {ex.Message}"));
+            streamingResponse = "";
+        }
+        finally
+        {
+            isProcessing = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    protected async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            await SendMessage();
+        }
+    }
 }
-
 

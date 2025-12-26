@@ -1,0 +1,381 @@
+@page "/chat-test"
+@namespace Three2025.Components.Pages
+@using Three2025.Services.Chat
+@using Microsoft.Extensions.AI
+@using AIChatMessage = Microsoft.Extensions.AI.ChatMessage
+@rendermode InteractiveServer
+@inject IChatOrchestrator ChatOrchestrator
+@inject ILogger<ChatOrchestratorTest> Logger
+
+<div style="display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
+    <!-- Header -->
+    <div style="padding: 1rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <h2 style="margin: 0 0 0.5rem 0; font-size: 1.5rem;">🤖 Chat Orchestrator Test</h2>
+        <div style="font-size: 0.9rem; opacity: 0.95;">
+            <strong>🔧 Tools:</strong> @toolCount &nbsp;&nbsp;
+            <strong>🤖 Agents:</strong> @string.Join(", ", availableAgents)
+        </div>
+    </div>
+
+    <!-- Main Content Area: Chat (2/3) + Logs (1/3) -->
+    <div style="flex: 1; display: flex; overflow: hidden;">
+        <!-- Chat Messages (2/3) -->
+        <div @ref="chatContainer" style="flex: 2; background: #f8f9fa; padding: 1rem 2rem; overflow-y: auto; border-right: 2px solid #ddd;">
+            @foreach (var msg in conversationHistory)
+            {
+                <div style="margin-bottom: 1.5rem; display: flex; justify-content: @(msg.Role == ChatRole.User ? "flex-end" : "flex-start");">
+                    <div style="max-width: 70%; padding: 1rem; border-radius: 12px; background: @(msg.Role == ChatRole.User ? "#667eea" : "#ffffff"); color: @(msg.Role == ChatRole.User ? "white" : "#333"); box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; opacity: 0.9;">
+                            @(msg.Role == ChatRole.User ? "You" : currentAgent)
+                        </div>
+                        <div>@((MarkupString)msg.Text)</div>
+                    </div>
+                </div>
+            }
+            
+            @if (isProcessing && !string.IsNullOrEmpty(streamingResponse))
+            {
+                <div style="margin-bottom: 1.5rem; display: flex; justify-content: flex-start;">
+                    <div style="max-width: 70%; padding: 1rem; border-radius: 12px; background: #ffffff; color: #333; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; opacity: 0.9;">
+                            @currentAgent
+                        </div>
+                        <div>@((MarkupString)streamingResponse)<span style="animation: blink 1s infinite;">▋</span></div>
+                    </div>
+                </div>
+            }
+            else if (isProcessing)
+            {
+                <div style="padding: 1rem; text-align: center; color: #666;">
+                    <em>🤔 @currentAgent is thinking...</em>
+                </div>
+            }
+        </div>
+
+        <!-- Activity Log Panel (1/3) -->
+        <div @ref="logContainer" style="flex: 1; background: #1e1e1e; color: #d4d4d4; padding: 1rem; overflow-y: auto; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.85rem; scroll-behavior: smooth;">
+            <div style="position: sticky; top: 0; background: #1e1e1e; padding-bottom: 0.5rem; border-bottom: 1px solid #3e3e3e; margin-bottom: 0.5rem; z-index: 10;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong style="color: #4ec9b0;">📊 Activity Log</strong>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button @onclick="ToggleAutoScroll" style="background: @(autoScrollLogs ? "#264f78" : "#3e3e3e"); color: #d4d4d4; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                            @(autoScrollLogs ? "🔄 Auto" : "⏸️ Manual")
+                        </button>
+                        <button @onclick="ClearLogs" style="background: #3e3e3e; color: #d4d4d4; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            @foreach (var log in activityLogs)
+            {
+                <div style="margin-bottom: 0.75rem; padding: 0.5rem; background: @GetLogBackgroundColor(log.Type); border-left: 3px solid @GetLogBorderColor(log.Type); border-radius: 4px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                        <span style="color: @GetLogColor(log.Type); font-weight: 600;">@GetLogIcon(log.Type) @log.Type</span>
+                        <span style="color: #808080; font-size: 0.75rem;">@log.Timestamp.ToString("HH:mm:ss.fff")</span>
+                    </div>
+                    <div style="color: #d4d4d4; word-wrap: break-word;">@log.Message</div>
+                    @if (!string.IsNullOrEmpty(log.Details))
+                    {
+                        <div style="color: #808080; font-size: 0.8rem; margin-top: 0.25rem; font-style: italic;">@log.Details</div>
+                    }
+                </div>
+            }
+            
+            @if (!activityLogs.Any())
+            {
+                <div style="color: #808080; text-align: center; margin-top: 2rem; font-style: italic;">
+                    No activity yet. Start a conversation to see logs.
+                </div>
+            }
+            
+            <div @ref="logScrollAnchor"></div>
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div style="padding: 1rem 2rem; background: white; border-top: 1px solid #ddd; box-shadow: 0 -2px 8px rgba(0,0,0,0.05);">
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <input type="text" 
+                   @bind="userInput" 
+                   @bind:event="oninput"
+                   @onkeydown="HandleKeyPress"
+                   placeholder="Ask about lighting, clocks, 3D shapes, or animations..."
+                   style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;"
+                   disabled="@isProcessing" />
+            <button @onclick="SendMessage" 
+                    disabled="@(isProcessing || string.IsNullOrWhiteSpace(userInput))"
+                    style="padding: 0.75rem 2rem; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">
+                @(isProcessing ? "Sending..." : "Send")
+            </button>
+        </div>
+
+        <!-- Quick Test Buttons -->
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button @onclick='() => QuickTest("What lights do I have?")' style="padding: 0.5rem 1rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                💡 Test Lighting Tools
+            </button>
+            <button @onclick='() => QuickTest("Add a red light at position 0,5,0")' style="padding: 0.5rem 1rem; background: #d4edda; border: 1px solid #28a745; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                🔧 Test Tool Execution
+            </button>
+            <button @onclick='() => QuickTest("How do I create a clock animation?")' style="padding: 0.5rem 1rem; background: #d1ecf1; border: 1px solid #17a2b8; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                ⏰ Test Clock Agent
+            </button>
+            <button @onclick="ClearChat" style="padding: 0.5rem 1rem; background: #f8d7da; border: 1px solid #dc3545; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                🗑️ Clear Chat
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+    }
+</style>
+
+@code {
+    private ElementReference chatContainer;
+    private ElementReference logContainer;
+    private ElementReference logScrollAnchor;
+    private string userInput = "";
+    private List<AIChatMessage> conversationHistory = new();
+    private List<ActivityLog> activityLogs = new();
+    private string streamingResponse = "";
+    private bool isProcessing = false;
+    private bool autoScrollLogs = true;
+    private int toolCount = 0;
+    private List<string> availableAgents = new();
+    private string currentAgent = "Assistant";
+    
+    private PageContext pageContext = new()
+    {
+        PageName = "ChatOrchestratorTest",
+        PageRoute = "/chat-test",
+        DomainFocus = "General testing with lighting tools",
+        AvailableAgents = new List<string>()
+    };
+
+    protected override void OnInitialized()
+    {
+        toolCount = ChatOrchestrator.GetToolCount();
+        availableAgents = ChatOrchestrator.GetAvailableAgents(pageContext);
+        
+        AddLog("System", $"Initialized with {toolCount} tools and {availableAgents.Count} agents", string.Join(", ", availableAgents));
+        Logger.LogInformation($"ChatOrchestrator Test initialized: {toolCount} tools, {availableAgents.Count} agents");
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(userInput) || isProcessing)
+            return;
+
+        var message = userInput.Trim();
+        userInput = "";
+        isProcessing = true;
+        streamingResponse = "";
+        currentAgent = "Assistant";
+
+        AddLog("User Input", message);
+
+        try
+        {
+            // Add user message
+            conversationHistory.Add(new AIChatMessage(ChatRole.User, message));
+            await ScrollToBottom();
+
+            AddLog("Routing", "Analyzing intent and selecting agent...");
+
+            var fullResponse = "";
+            
+            // Stream response from orchestrator
+            await foreach (var chunk in ChatOrchestrator.ProcessMessageStreamingAsync(
+                message,
+                pageContext,
+                conversationHistory,
+                onAgentSwitch: async (agentName) => 
+                {
+                    currentAgent = agentName;
+                    AddLog("Agent Switch", $"Routing to {agentName}", $"Specialized agent selected based on intent analysis");
+                    await InvokeAsync(StateHasChanged);
+                }))
+            {
+                if (!chunk.IsComplete)
+                {
+                    streamingResponse += chunk.Content;
+                    fullResponse += chunk.Content;
+                    currentAgent = chunk.AgentName;
+                    await InvokeAsync(StateHasChanged);
+                }
+                else
+                {
+                    // Final chunk - complete the response
+                    currentAgent = chunk.AgentName;
+                    AddLog("Response", $"Received from {chunk.AgentName}", $"Length: {fullResponse.Length} characters");
+                    
+                    // Check if tools were likely used (simplified heuristic)
+                    if (fullResponse.Contains("light") || fullResponse.Contains("position") || fullResponse.Contains("color"))
+                    {
+                        AddLog("Tool Execution", "LLM may have used lighting tools", "Tool usage detected in response context");
+                    }
+                }
+            }
+
+            // Add assistant response to conversation history
+            conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, fullResponse));
+            streamingResponse = "";
+            
+            await ScrollToBottom();
+            
+            Logger.LogInformation($"Response from {currentAgent}: {fullResponse.Substring(0, Math.Min(100, fullResponse.Length))}...");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error processing message");
+            AddLog("Error", $"Failed to process message: {ex.Message}");
+            conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, $"❌ Error: {ex.Message}"));
+            streamingResponse = "";
+        }
+        finally
+        {
+            isProcessing = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task ScrollToBottom()
+    {
+        try
+        {
+            await InvokeAsync(StateHasChanged);
+            // Small delay to allow DOM to update
+            await Task.Delay(50);
+        }
+        catch { /* Ignore scroll errors */ }
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            await SendMessage();
+        }
+    }
+
+    private async Task QuickTest(string message)
+    {
+        userInput = message;
+        await SendMessage();
+    }
+
+    private void ClearChat()
+    {
+        conversationHistory.Clear();
+        currentAgent = "Assistant";
+        AddLog("System", "Chat cleared");
+        StateHasChanged();
+    }
+
+    private void ClearLogs()
+    {
+        activityLogs.Clear();
+        AddLog("System", "Logs cleared");
+    }
+
+    private void AddLog(string type, string message, string? details = null)
+    {
+        activityLogs.Add(new ActivityLog
+        {
+            Type = type,
+            Message = message,
+            Details = details ?? "",
+            Timestamp = DateTime.Now
+        });
+        
+        // Keep only last 100 logs to avoid memory issues
+        if (activityLogs.Count > 100)
+        {
+            activityLogs.RemoveAt(0);
+        }
+        
+        InvokeAsync(async () => 
+        {
+            StateHasChanged();
+            if (autoScrollLogs)
+            {
+                await Task.Delay(50); // Allow DOM to update
+                await ScrollLogsToBottom();
+            }
+        });
+    }
+
+    private async Task ScrollLogsToBottom()
+    {
+        try
+        {
+            // Scroll the log container to bottom using the anchor element
+            await Task.CompletedTask; // Placeholder for JS interop if needed
+        }
+        catch { /* Ignore scroll errors */ }
+    }
+
+    private void ToggleAutoScroll()
+    {
+        autoScrollLogs = !autoScrollLogs;
+        StateHasChanged();
+    }
+
+    private string GetLogColor(string type) => type switch
+    {
+        "User Input" => "#4ec9b0",
+        "Agent Switch" => "#dcdcaa",
+        "Tool Execution" => "#ce9178",
+        "Response" => "#9cdcfe",
+        "Routing" => "#c586c0",
+        "Error" => "#f48771",
+        "System" => "#608b4e",
+        _ => "#d4d4d4"
+    };
+
+    private string GetLogBorderColor(string type) => type switch
+    {
+        "User Input" => "#4ec9b0",
+        "Agent Switch" => "#dcdcaa",
+        "Tool Execution" => "#ce9178",
+        "Response" => "#9cdcfe",
+        "Routing" => "#c586c0",
+        "Error" => "#f48771",
+        "System" => "#608b4e",
+        _ => "#3e3e3e"
+    };
+
+    private string GetLogBackgroundColor(string type) => type switch
+    {
+        "Error" => "#3d2422",
+        "Tool Execution" => "#2d2a26",
+        "Agent Switch" => "#2d2d2a",
+        _ => "#262626"
+    };
+
+    private string GetLogIcon(string type) => type switch
+    {
+        "User Input" => "💬",
+        "Agent Switch" => "🔀",
+        "Tool Execution" => "🔧",
+        "Response" => "💡",
+        "Routing" => "🧭",
+        "Error" => "❌",
+        "System" => "⚙️",
+        _ => "📋"
+    };
+
+    private class ActivityLog
+    {
+        public string Type { get; set; } = "";
+        public string Message { get; set; } = "";
+        public string Details { get; set; } = "";
+        public DateTime Timestamp { get; set; }
+    }
+}
