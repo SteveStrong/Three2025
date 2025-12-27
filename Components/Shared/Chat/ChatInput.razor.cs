@@ -58,4 +58,9 @@ public partial class ChatInput
             await OnSend.InvokeAsync();
         }
     }
+
+    private async Task OnValueChanged()
+    {
+        await ValueChanged.InvokeAsync(Value);
+    }
 }

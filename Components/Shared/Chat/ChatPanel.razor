@@ -30,6 +30,7 @@
     
     <div class="chat-panel-footer">
         <ChatInput @bind-Value="InputValue"
+                  @bind-Value:after="OnInputValueChanged"
                   OnSend="OnSendMessage"
                   IsProcessing="IsProcessing"
                   Placeholder="@InputPlaceholder"

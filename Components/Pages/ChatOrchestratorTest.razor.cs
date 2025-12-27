@@ -18,10 +18,12 @@ public partial class ChatOrchestratorTest
 
     private string userInput = "";
     private List<AIChatMessage> conversationHistory = new();
-    private List<Models.Chat.ChatDisplayMessage> displayMessages = new();
+    private List<Models.Chat.ChatDisplayMessage> displayMessages => ConvertToDisplayMessages();
     private List<Models.Chat.ActivityLogEntry> activityLogs = new();
     private string streamingResponse = "";
     private bool isProcessing = false;
+    private Queue<string> messageQueue = new();
+    private bool isProcessingQueue = false;
     private bool autoScrollLogs = true;
     private int toolCount = 0;
     private List<string> availableAgents = new();
@@ -64,11 +66,51 @@ public partial class ChatOrchestratorTest
 
     private async Task SendMessage()
     {
-        if (string.IsNullOrWhiteSpace(userInput) || isProcessing)
+        if (string.IsNullOrWhiteSpace(userInput))
             return;
 
         var message = userInput.Trim();
         userInput = "";
+        
+        // Enqueue the message
+        messageQueue.Enqueue(message);
+        
+        // Start processing if not already running
+        if (!isProcessingQueue)
+        {
+            await ProcessMessageQueue();
+        }
+    }
+
+    private async Task ProcessMessageQueue()
+    {
+        if (isProcessingQueue || messageQueue.Count == 0)
+            return;
+
+        isProcessingQueue = true;
+        StateHasChanged();
+
+        while (messageQueue.Count > 0)
+        {
+            var message = messageQueue.Dequeue();
+            await ProcessSingleMessage(message);
+            
+            // Delay between messages for visual feedback
+            if (messageQueue.Count > 0)
+            {
+                await Task.Delay(500);
+            }
+        }
+
+        isProcessingQueue = false;
+        StateHasChanged();
+    }
+
+    private async Task ProcessSingleMessage(string message)
+    {
+        // Note: Don't check isProcessing here - it will be set below
+        // The queue ensures sequential processing
+        
         isProcessing = true;
         streamingResponse = "";
         currentAgent = "Assistant";
@@ -79,11 +121,7 @@ public partial class ChatOrchestratorTest
         {
             // Add user message
             conversationHistory.Add(new AIChatMessage(ChatRole.User, message));
-            displayMessages.Add(new Models.Chat.ChatDisplayMessage 
-            { 
-                IsUser = true, 
-                Text = message 
-            });
+            await InvokeAsync(StateHasChanged); // Force UI update to show user message
             await ScrollToBottom();
 
             AddLog(ActivityLogType.Routing, "Analyzing intent and selecting agent...");
@@ -125,12 +163,6 @@ public partial class ChatOrchestratorTest
 
             // Add assistant response to conversation history
             conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, fullResponse));
-            displayMessages.Add(new Models.Chat.ChatDisplayMessage 
-            { 
-                IsUser = false, 
-                Text = fullResponse,
-                AgentName = currentAgent
-            });
             streamingResponse = "";
 
             await ScrollToBottom();
@@ -142,11 +174,6 @@ public partial class ChatOrchestratorTest
             Logger.LogError(ex, "Error processing message");
             AddLog(ActivityLogType.Error, $"Failed to process message: {ex.Message}");
             conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, $"❌ Error: {ex.Message}"));
-            displayMessages.Add(new Models.Chat.ChatDisplayMessage 
-            { 
-                IsUser = false, 
-                Text = $"❌ Error: {ex.Message}"
-            });
             streamingResponse = "";
         }
         finally
@@ -196,6 +223,17 @@ public partial class ChatOrchestratorTest
         AddLog(ActivityLogType.System, "Logs cleared");
     }
 
+    private List<ChatDisplayMessage> ConvertToDisplayMessages()
+    {
+        return conversationHistory.Select(msg => new ChatDisplayMessage
+        {
+            IsUser = msg.Role == ChatRole.User,
+            Text = msg.Text ?? "",
+            AgentName = msg.Role == ChatRole.Assistant ? currentAgent : null,
+            Timestamp = DateTime.Now
+        }).ToList();
+    }
+
     private void ShowToolList()
     {
         AddLog(ActivityLogType.System, $"Discovering all available tools...");
@@ -228,6 +266,24 @@ public partial class ChatOrchestratorTest
             AddLog(ActivityLogType.System, $"✓ Switched provider to: {CurrentProvider}", "");
             StateHasChanged();
         }
+    }
+
+    private async Task HandleTestSequenceSelected(TestSequenceMetadata sequence)
+    {
+        Logger.LogInformation($"🧪 Starting test sequence: {sequence.Name}");
+        AddLog(ActivityLogType.System, $"🧪 Test Sequence: {sequence.DisplayName}", $"Running {sequence.PromptCount} prompts");
+        
+        // Load all prompts into queue
+        foreach (var prompt in sequence.Prompts)
+        {
+            messageQueue.Enqueue(prompt);
+        }
+        
+        // Process the queue
+        await ProcessMessageQueue();
+        
+        Logger.LogInformation($"✅ Test sequence completed: {sequence.Name}");
+        AddLog(ActivityLogType.System, $"✅ Test sequence completed", $"{sequence.DisplayName}");
     }
 
     private void AddLog(string type, string message, string? details = null)
