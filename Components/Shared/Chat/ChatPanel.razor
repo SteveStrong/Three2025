@@ -1,0 +1,38 @@
+@namespace Three2025.Components.Shared.Chat
+@using Three2025.Models.Chat
+
+<div class="chat-panel">
+    @if (HeaderContent != null)
+    {
+        <div class="chat-panel-header">
+            @HeaderContent
+        </div>
+    }
+    
+    <div class="chat-panel-body">
+        <div class="chat-panel-messages" style="flex: @ChatFlexRatio;">
+            <ChatMessageList Messages="Messages"
+                           StreamingText="StreamingText"
+                           IsProcessing="IsProcessing"
+                           CurrentAgent="CurrentAgent" />
+        </div>
+        
+        @if (ShowActivityLog)
+        {
+            <div class="chat-panel-log" style="flex: @LogFlexRatio;">
+                <ActivityLog Logs="ActivityLogs"
+                           AutoScroll="AutoScrollLogs"
+                           OnToggleAutoScroll="OnToggleAutoScroll"
+                           OnClear="OnClearLogs" />
+            </div>
+        }
+    </div>
+    
+    <div class="chat-panel-footer">
+        <ChatInput @bind-Value="InputValue"
+                  OnSend="OnSendMessage"
+                  IsProcessing="IsProcessing"
+                  Placeholder="@InputPlaceholder"
+                  QuickActions="FooterActions" />
+    </div>
+</div>

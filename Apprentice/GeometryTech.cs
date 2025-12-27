@@ -33,9 +33,9 @@ public interface IGeometryTech : ITechnician
 
    ShapeInfo? GetShapeByName(string name);
 
-   List<ShapeInfo> AddShape(string name, bool isOn, string color, string shapeType);
+   List<ShapeInfo> AddShape(string name, bool isOn, string color, string shapeType = "box", double x = 0.0, double y = 0.0, double z = 0.0);
 
-   List<ShapeInfo> AddShapeWithDimensions(string name, bool isOn, string color, string shapeType, double width, double height, double depth);
+   List<ShapeInfo> AddShapeWithDimensions(string name, bool isOn, string color, string shapeType, double width, double height, double depth, double x = 0.0, double y = 0.0, double z = 0.0);
 
    List<ShapeInfo> DeleteShape(string name);
 
@@ -558,7 +558,10 @@ public class GeometryTech : IGeometryTech
       [Description("The name of the shape to create")] string name, 
       [Description("Whether the shape should be visible/active")] bool isOn, 
       [Description("The color of the shape")] string color,
-      [Description("The type of shape: box, sphere, cylinder, cone, torus, tetrahedron, octahedron, dodecahedron, icosahedron, torusknot, capsule, plane, circle, ring")] string shapeType = "box")
+      [Description("The type of shape: box, sphere, cylinder, cone, torus, tetrahedron, octahedron, dodecahedron, icosahedron, torusknot, capsule, plane, circle, ring")] string shapeType = "box",
+      [Description("X coordinate position (optional, defaults to 0)")] double x = 0.0,
+      [Description("Y coordinate position (optional, defaults to 0)")] double y = 0.0,
+      [Description("Z coordinate position (optional, defaults to 0)")] double z = 0.0)
    {
       var stage = EstablishGeometryStage();
 
@@ -568,9 +571,26 @@ public class GeometryTech : IGeometryTech
          Color = color
       };
 
+      // Set position if not at origin
+      if (x != 0.0 || y != 0.0 || z != 0.0)
+      {
+         if (newShape.Transform == null)
+         {
+            newShape.Transform = new Transform3($"{name}_Transform");
+         }
+         newShape.Transform.Position = new Vector3(x, y, z);
+      }
+
       stage.AddShape(newShape);
 
-      $"✅ Created {shapeType} '{name}' with color '{color}', visible={isOn}".WriteSuccess();
+      if (x != 0.0 || y != 0.0 || z != 0.0)
+      {
+         $"✅ Created {shapeType} '{name}' with color '{color}' at ({x:F1}, {y:F1}, {z:F1}), visible={isOn}".WriteSuccess();
+      }
+      else
+      {
+         $"✅ Created {shapeType} '{name}' with color '{color}', visible={isOn}".WriteSuccess();
+      }
 
       RefreshUI();
 
@@ -585,7 +605,10 @@ public class GeometryTech : IGeometryTech
       [Description("The type of shape")] string shapeType,
       [Description("Width (X dimension)")] double width,
       [Description("Height (Y dimension)")] double height,
-      [Description("Depth (Z dimension)")] double depth)
+      [Description("Depth (Z dimension)")] double depth,
+      [Description("X coordinate position (optional, defaults to 0)")] double x = 0.0,
+      [Description("Y coordinate position (optional, defaults to 0)")] double y = 0.0,
+      [Description("Z coordinate position (optional, defaults to 0)")] double z = 0.0)
    {
       var stage = EstablishGeometryStage();
 
@@ -595,9 +618,26 @@ public class GeometryTech : IGeometryTech
          Color = color
       };
 
+      // Set position if not at origin
+      if (x != 0.0 || y != 0.0 || z != 0.0)
+      {
+         if (newShape.Transform == null)
+         {
+            newShape.Transform = new Transform3($"{name}_Transform");
+         }
+         newShape.Transform.Position = new Vector3(x, y, z);
+      }
+
       stage.AddShape(newShape);
 
-      $"✅ Created {shapeType} '{name}' ({width}x{height}x{depth}) with color '{color}'".WriteSuccess();
+      if (x != 0.0 || y != 0.0 || z != 0.0)
+      {
+         $"✅ Created {shapeType} '{name}' ({width}x{height}x{depth}) with color '{color}' at ({x:F1}, {y:F1}, {z:F1})".WriteSuccess();
+      }
+      else
+      {
+         $"✅ Created {shapeType} '{name}' ({width}x{height}x{depth}) with color '{color}'".WriteSuccess();
+      }
 
       RefreshUI();
 
@@ -663,7 +703,14 @@ public class GeometryTech : IGeometryTech
 
       if (shape != null)
       {
-         shape.Transform!.Position = new Vector3(x, y, z);
+         // Ensure Transform exists
+         if (shape.Transform == null)
+         {
+            shape.Transform = new Transform3($"{name}_Transform");
+            $"⚠️  Transform was null, created new one for '{name}'".WriteWarning();
+         }
+         
+         shape.Transform.Position = new Vector3(x, y, z);
          $"📍 Shape '{name}' repositioned to ({x:F1}, {y:F1}, {z:F1})".WriteSuccess();
       }
       else
@@ -687,12 +734,19 @@ public class GeometryTech : IGeometryTech
 
       if (shape != null)
       {
+         // Ensure Transform exists
+         if (shape.Transform == null)
+         {
+            shape.Transform = new Transform3($"{name}_Transform");
+            $"⚠️  Transform was null, created new one for '{name}'".WriteWarning();
+         }
+         
          // Convert degrees to radians
          var xRad = xDegrees * Math.PI / 180.0;
          var yRad = yDegrees * Math.PI / 180.0;
          var zRad = zDegrees * Math.PI / 180.0;
          
-         shape.Transform!.Rotation = new Euler(xRad, yRad, zRad);
+         shape.Transform.Rotation = new Euler(xRad, yRad, zRad);
          $"🔄 Shape '{name}' rotated to ({xDegrees:F1}°, {yDegrees:F1}°, {zDegrees:F1}°)".WriteSuccess();
       }
       else
@@ -716,7 +770,14 @@ public class GeometryTech : IGeometryTech
 
       if (shape != null)
       {
-         shape.Transform!.Scale = new Vector3(scaleX, scaleY, scaleZ);
+         // Ensure Transform exists
+         if (shape.Transform == null)
+         {
+            shape.Transform = new Transform3($"{name}_Transform");
+            $"⚠️  Transform was null, created new one for '{name}'".WriteWarning();
+         }
+         
+         shape.Transform.Scale = new Vector3(scaleX, scaleY, scaleZ);
          $"📏 Shape '{name}' scaled to ({scaleX:F2}x, {scaleY:F2}x, {scaleZ:F2}x)".WriteSuccess();
       }
       else

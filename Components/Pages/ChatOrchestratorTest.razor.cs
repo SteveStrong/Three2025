@@ -1,7 +1,10 @@
+#nullable enable
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.AI;
 using Three2025.Services.Chat;
+using Three2025.Models.Chat;
 using AIChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 namespace Three2025.Components.Pages;
@@ -9,20 +12,23 @@ namespace Three2025.Components.Pages;
 public partial class ChatOrchestratorTest
 {
     [Inject] private IChatOrchestrator ChatOrchestrator { get; set; } = default!;
+    [Inject] private IMultiProviderChatService ChatService { get; set; } = default!;
     [Inject] private ILogger<ChatOrchestratorTest> Logger { get; set; } = default!;
 
-    private ElementReference chatContainer;
-    private ElementReference logContainer;
-    private ElementReference logScrollAnchor;
+
     private string userInput = "";
     private List<AIChatMessage> conversationHistory = new();
-    private List<ActivityLog> activityLogs = new();
+    private List<Models.Chat.ChatDisplayMessage> displayMessages = new();
+    private List<Models.Chat.ActivityLogEntry> activityLogs = new();
     private string streamingResponse = "";
     private bool isProcessing = false;
     private bool autoScrollLogs = true;
     private int toolCount = 0;
     private List<string> availableAgents = new();
     private string currentAgent = "Assistant";
+    private string selectedProvider = string.Empty;
+    private List<string> AvailableProviders = new();
+    private string CurrentProvider = "None";
 
     private PageContext pageContext = new()
     {
@@ -37,8 +43,23 @@ public partial class ChatOrchestratorTest
         toolCount = ChatOrchestrator.GetToolCount();
         availableAgents = ChatOrchestrator.GetAvailableAgents(pageContext);
 
-        AddLog("System", $"Initialized with {toolCount} tools and {availableAgents.Count} agents", string.Join(", ", availableAgents));
-        Logger.LogInformation($"ChatOrchestrator Test initialized: {toolCount} tools, {availableAgents.Count} agents");
+        // Initialize providers with GitHub as default
+        AvailableProviders = ChatService.AvailableProviders.ToList();
+        if (AvailableProviders.Contains("GitHub"))
+        {
+            selectedProvider = "GitHub";
+            ChatService.SetProvider("GitHub");
+        }
+        else if (AvailableProviders.Any())
+        {
+            selectedProvider = AvailableProviders.First();
+            ChatService.SetProvider(selectedProvider);
+        }
+        CurrentProvider = ChatService.CurrentProvider;
+
+        AddLog(ActivityLogType.System, $"Initialized with {toolCount} tools and {availableAgents.Count} agents", string.Join(", ", availableAgents));
+        AddLog(ActivityLogType.System, $"Active provider: {CurrentProvider}", "");
+        Logger.LogInformation($"ChatOrchestrator Test initialized: {toolCount} tools, {availableAgents.Count} agents, Provider: {CurrentProvider}");
     }
 
     private async Task SendMessage()
@@ -52,15 +73,20 @@ public partial class ChatOrchestratorTest
         streamingResponse = "";
         currentAgent = "Assistant";
 
-        AddLog("User Input", message);
+        AddLog(ActivityLogType.UserInput, message);
 
         try
         {
             // Add user message
             conversationHistory.Add(new AIChatMessage(ChatRole.User, message));
+            displayMessages.Add(new Models.Chat.ChatDisplayMessage 
+            { 
+                IsUser = true, 
+                Text = message 
+            });
             await ScrollToBottom();
 
-            AddLog("Routing", "Analyzing intent and selecting agent...");
+            AddLog(ActivityLogType.Routing, "Analyzing intent and selecting agent...");
 
             var fullResponse = "";
 
@@ -72,7 +98,7 @@ public partial class ChatOrchestratorTest
                 onAgentSwitch: async (agentName) =>
                 {
                     currentAgent = agentName;
-                    AddLog("Agent Switch", $"Routing to {agentName}", $"Specialized agent selected based on intent analysis");
+                    AddLog(ActivityLogType.AgentSwitch, $"Routing to {agentName}", $"Specialized agent selected based on intent analysis");
                     await InvokeAsync(StateHasChanged);
                 }))
             {
@@ -87,18 +113,24 @@ public partial class ChatOrchestratorTest
                 {
                     // Final chunk - complete the response
                     currentAgent = chunk.AgentName;
-                    AddLog("Response", $"Received from {chunk.AgentName}", $"Length: {fullResponse.Length} characters");
+                    AddLog(ActivityLogType.Response, $"Received from {chunk.AgentName}", $"Length: {fullResponse.Length} characters");
 
                     // Check if tools were likely used (simplified heuristic)
                     if (fullResponse.Contains("light") || fullResponse.Contains("position") || fullResponse.Contains("color"))
                     {
-                        AddLog("Tool Execution", "LLM may have used lighting tools", "Tool usage detected in response context");
+                        AddLog(ActivityLogType.ToolExecution, "LLM may have used lighting tools", "Tool usage detected in response context");
                     }
                 }
             }
 
             // Add assistant response to conversation history
             conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, fullResponse));
+            displayMessages.Add(new Models.Chat.ChatDisplayMessage 
+            { 
+                IsUser = false, 
+                Text = fullResponse,
+                AgentName = currentAgent
+            });
             streamingResponse = "";
 
             await ScrollToBottom();
@@ -108,8 +140,13 @@ public partial class ChatOrchestratorTest
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error processing message");
-            AddLog("Error", $"Failed to process message: {ex.Message}");
+            AddLog(ActivityLogType.Error, $"Failed to process message: {ex.Message}");
             conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, $"❌ Error: {ex.Message}"));
+            displayMessages.Add(new Models.Chat.ChatDisplayMessage 
+            { 
+                IsUser = false, 
+                Text = $"❌ Error: {ex.Message}"
+            });
             streamingResponse = "";
         }
         finally
@@ -147,25 +184,26 @@ public partial class ChatOrchestratorTest
     private void ClearChat()
     {
         conversationHistory.Clear();
+        displayMessages.Clear();
         currentAgent = "Assistant";
-        AddLog("System", "Chat cleared");
+        AddLog(ActivityLogType.System, "Chat cleared");
         StateHasChanged();
     }
 
     private void ClearLogs()
     {
         activityLogs.Clear();
-        AddLog("System", "Logs cleared");
+        AddLog(ActivityLogType.System, "Logs cleared");
     }
 
     private void ShowToolList()
     {
-        AddLog("System", $"Discovering all available tools...");
+        AddLog(ActivityLogType.System, $"Discovering all available tools...");
 
         var tools = ChatOrchestrator.GetAllTools();
         var toolNames = tools.Select(t => t.Name).ToList();
 
-        AddLog("Tool Discovery", $"Found {toolNames.Count} tools", string.Join(", ", toolNames));
+        AddLog(ActivityLogType.ToolDiscovery, $"Found {toolNames.Count} tools", string.Join(", ", toolNames));
 
         // Show by category
         var geometryTools = toolNames.Where(t => t.Contains("Shape") || t.Contains("Geometry")).ToList();
@@ -173,18 +211,28 @@ public partial class ChatOrchestratorTest
         var otherTools = toolNames.Except(geometryTools).Except(clockTools).ToList();
 
         if (geometryTools.Any())
-            AddLog("Geometry Tools", $"{geometryTools.Count} tools", string.Join(", ", geometryTools));
+            AddLog(ActivityLogType.GeometryTools, $"{geometryTools.Count} tools", string.Join(", ", geometryTools));
 
         if (clockTools.Any())
-            AddLog("Clock Tools", $"{clockTools.Count} tools", string.Join(", ", clockTools));
+            AddLog(ActivityLogType.ClockTools, $"{clockTools.Count} tools", string.Join(", ", clockTools));
 
         if (otherTools.Any())
-            AddLog("Other Tools", $"{otherTools.Count} tools", string.Join(", ", otherTools));
+            AddLog(ActivityLogType.OtherTools, $"{otherTools.Count} tools", string.Join(", ", otherTools));
+    }
+
+    private void OnProviderChanged()
+    {
+        if (ChatService.SetProvider(selectedProvider))
+        {
+            CurrentProvider = ChatService.CurrentProvider;
+            AddLog(ActivityLogType.System, $"✓ Switched provider to: {CurrentProvider}", "");
+            StateHasChanged();
+        }
     }
 
     private void AddLog(string type, string message, string? details = null)
     {
-        activityLogs.Add(new ActivityLog
+        activityLogs.Add(new Models.Chat.ActivityLogEntry
         {
             Type = type,
             Message = message,
@@ -223,57 +271,5 @@ public partial class ChatOrchestratorTest
     {
         autoScrollLogs = !autoScrollLogs;
         StateHasChanged();
-    }
-
-    private string GetLogColor(string type) => type switch
-    {
-        "User Input" => "#4ec9b0",
-        "Agent Switch" => "#dcdcaa",
-        "Tool Execution" => "#ce9178",
-        "Response" => "#9cdcfe",
-        "Routing" => "#c586c0",
-        "Error" => "#f48771",
-        "System" => "#608b4e",
-        _ => "#d4d4d4"
-    };
-
-    private string GetLogBorderColor(string type) => type switch
-    {
-        "User Input" => "#4ec9b0",
-        "Agent Switch" => "#dcdcaa",
-        "Tool Execution" => "#ce9178",
-        "Response" => "#9cdcfe",
-        "Routing" => "#c586c0",
-        "Error" => "#f48771",
-        "System" => "#608b4e",
-        _ => "#3e3e3e"
-    };
-
-    private string GetLogBackgroundColor(string type) => type switch
-    {
-        "Error" => "#3d2422",
-        "Tool Execution" => "#2d2a26",
-        "Agent Switch" => "#2d2d2a",
-        _ => "#262626"
-    };
-
-    private string GetLogIcon(string type) => type switch
-    {
-        "User Input" => "💬",
-        "Agent Switch" => "🔀",
-        "Tool Execution" => "🔧",
-        "Response" => "💡",
-        "Routing" => "🧭",
-        "Error" => "❌",
-        "System" => "⚙️",
-        _ => "📋"
-    };
-
-    private class ActivityLog
-    {
-        public string Type { get; set; } = "";
-        public string Message { get; set; } = "";
-        public string Details { get; set; } = "";
-        public DateTime Timestamp { get; set; }
     }
 }
