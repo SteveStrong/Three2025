@@ -2,6 +2,8 @@ using Microsoft.Extensions.AI;
 
 namespace Three2025.Services.Chat;
 
+#nullable enable
+
 /// <summary>
 /// Provider implementation for GitHub Models
 /// </summary>

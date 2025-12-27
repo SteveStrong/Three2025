@@ -4,6 +4,8 @@ using System.ComponentModel;
 
 namespace Three2025.Services.Chat;
 
+#nullable enable
+
 /// <summary>
 /// Service for managing multi-provider AI chat in Blazor
 /// </summary>
@@ -30,6 +32,7 @@ public interface IMultiProviderChatService
     IAsyncEnumerable<string> SendMessageStreamingAsync(
         string userMessage, 
         List<ChatMessage> conversationHistory,
+        IEnumerable<AIFunction>? tools = null,
         CancellationToken cancellationToken = default);
     
     /// <summary>
@@ -43,6 +46,7 @@ public class MultiProviderChatService : IMultiProviderChatService
     private readonly Dictionary<string, IChatProvider> _providers = new();
     private IChatProvider? _currentProvider;
     private ChatClientAgent? _currentAgent;
+    private List<AIFunction> _currentTools = new();
     
     public event Action<string>? OnLog;
 
@@ -99,7 +103,7 @@ public class MultiProviderChatService : IMultiProviderChatService
         }
     }
 
-    private void InitializeAgent()
+    private void InitializeAgent(IEnumerable<AIFunction>? tools = null)
     {
         if (_currentProvider == null) return;
 
@@ -111,14 +115,23 @@ public class MultiProviderChatService : IMultiProviderChatService
             githubClient.OnLog += LogMessage;
         }
 
-        // Create tools for the agent
+        // Combine built-in tools with provided tools
+        var allTools = new List<AIFunction>();
         var dateTimeTool = AIFunctionFactory.Create(GetCurrentDateTime);
+        allTools.Add(dateTimeTool);
         
-        // Create the agent
+        if (tools != null)
+        {
+            allTools.AddRange(tools);
+            _currentTools = tools.ToList();
+            LogMessage($"Agent initialized with {allTools.Count} tools ({_currentTools.Count} from technicians)");
+        }
+        
+        // Create the agent with all tools
         _currentAgent = chatClient.CreateAIAgent(
-            instructions: "You are a helpful 3D modeling and visualization assistant working with Three.js and Blazor.",
+            instructions: "You are a helpful 3D modeling and visualization assistant working with Three.js and Blazor. Use the available tools to help users create and manipulate 3D geometry.",
             name: "3D Assistant",
-            tools: [dateTimeTool]);
+            tools: allTools.ToArray());
     }
 
     public IReadOnlyList<string> AvailableProviders => _providers.Keys.ToList();
@@ -140,8 +153,15 @@ public class MultiProviderChatService : IMultiProviderChatService
     public async IAsyncEnumerable<string> SendMessageStreamingAsync(
         string userMessage, 
         List<ChatMessage> conversationHistory,
+        IEnumerable<AIFunction>? tools = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // Recreate agent if tools are provided and different from current
+        if (tools != null && !tools.SequenceEqual(_currentTools))
+        {
+            InitializeAgent(tools);
+        }
+        
         if (_currentAgent == null)
         {
             yield return "Error: No AI provider configured. Please set up GitHub PAT token or AWS credentials.";
@@ -153,6 +173,8 @@ public class MultiProviderChatService : IMultiProviderChatService
 
         // Stream the response without try-catch to avoid yield restrictions
         var updateEnumerator = _currentAgent.RunStreamingAsync(conversationHistory).GetAsyncEnumerator(cancellationToken);
+        
+        LogMessage($"🔧 Starting streaming with {_currentTools.Count} tools available");
         
         while (true)
         {
@@ -168,7 +190,7 @@ public class MultiProviderChatService : IMultiProviderChatService
             catch (Exception ex)
             {
                 error = ex;
-                LogMessage($"Error: {ex.Message}");
+                LogMessage($"❌ Error: {ex.Message}");
             }
             
             if (error != null)
@@ -179,6 +201,9 @@ public class MultiProviderChatService : IMultiProviderChatService
             
             if (update != null)
             {
+                // Log the raw update type for debugging
+                LogMessage($"📦 Update type: {update.GetType().Name}");
+                
                 var text = update.ToString();
                 if (!string.IsNullOrEmpty(text))
                 {

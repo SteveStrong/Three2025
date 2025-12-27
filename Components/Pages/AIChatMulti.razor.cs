@@ -91,7 +91,8 @@ public partial class AIChatMultiBase : ComponentBase, IDisposable
             
             await foreach (var chunk in ChatService.SendMessageStreamingAsync(
                 userMessage, 
-                conversationHistory, 
+                conversationHistory,
+                tools: null,
                 CancellationToken.None))
             {
                 fullResponse.Append(chunk);

@@ -4,6 +4,8 @@ using Three2025.Services.Agents;
 
 namespace Three2025.Services.Chat;
 
+#nullable enable
+
 public class ChatOrchestrator : IChatOrchestrator
 {
     private readonly IMultiProviderChatService _chatService;
@@ -37,7 +39,7 @@ public class ChatOrchestrator : IChatOrchestrator
         // Create specialized agents WITH technician tools
         RegisterAgent(_agentFactory.Create3DModelingAgent(_technicianTools));
         RegisterAgent(_agentFactory.CreateAnimationAgent(_technicianTools));
-        RegisterAgent(_agentFactory.CreateLightingAgent(_technicianTools));
+        RegisterAgent(_agentFactory.CreateGeometryAgent(_technicianTools));
         RegisterAgent(_agentFactory.CreateClockAgent(_technicianTools));
         RegisterAgent(_agentFactory.CreateGeneralAgent(_technicianTools));
         
@@ -59,6 +61,8 @@ public class ChatOrchestrator : IChatOrchestrator
     }
     
     public int GetToolCount() => _technicianTools.Count;
+    
+    public IEnumerable<AIFunction> GetAllTools() => _technicianTools;
     
     public async Task<AgentResponse> ProcessMessageAsync(
         string userMessage,

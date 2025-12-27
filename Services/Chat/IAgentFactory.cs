@@ -9,7 +9,7 @@ public interface IAgentFactory
 {
     ISpecializedAgent Create3DModelingAgent(IEnumerable<AIFunction> tools);
     ISpecializedAgent CreateAnimationAgent(IEnumerable<AIFunction> tools);
-    ISpecializedAgent CreateLightingAgent(IEnumerable<AIFunction> tools);
+    ISpecializedAgent CreateGeometryAgent(IEnumerable<AIFunction> tools);
     ISpecializedAgent CreateClockAgent(IEnumerable<AIFunction> tools);
     ISpecializedAgent CreateGeneralAgent(IEnumerable<AIFunction> tools);
 }

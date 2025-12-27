@@ -64,7 +64,7 @@ public class GeneralAgent : ISpecializedAgent
         
         var response = new StringBuilder();
         await foreach (var chunk in _chatService.SendMessageStreamingAsync(
-            userMessage, messages, cancellationToken: cancellationToken))
+            userMessage, messages, _tools, cancellationToken: cancellationToken))
         {
             response.Append(chunk);
         }
@@ -109,7 +109,7 @@ public class GeneralAgent : ISpecializedAgent
         messages.Add(new ChatMessage(ChatRole.User, userMessage));
         
         await foreach (var chunk in _chatService.SendMessageStreamingAsync(
-            userMessage, messages, cancellationToken: cancellationToken))
+            userMessage, messages, _tools, cancellationToken: cancellationToken))
         {
             yield return chunk;
         }

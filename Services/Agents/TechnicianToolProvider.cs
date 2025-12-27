@@ -31,7 +31,7 @@ public class TechnicianToolProvider : ITechnicianToolProvider
                        t != typeof(ITechnician))
             .ToList();
         
-        _logger.LogInformation($"📋 Found {technicianTypes.Count} ITechnician interfaces");
+        _logger.LogInformation($"📋 Found {technicianTypes.Count} ITechnician interfaces: {string.Join(", ", technicianTypes.Select(t => t.Name))}");
         
         var allTools = new List<AIFunction>();
         
@@ -100,10 +100,11 @@ public class TechnicianToolProvider : ITechnicianToolProvider
         var implementation = _serviceProvider.GetService(interfaceType);
         if (implementation == null)
         {
-            _logger.LogWarning($"⚠️  No implementation registered for {interfaceType.Name}");
+            _logger.LogWarning($"⚠️  No implementation registered for {interfaceType.Name} - Check DI registration!");
             return tools;
         }
         
+        _logger.LogInformation($"  ✓ Resolved {interfaceType.Name} -> {implementation.GetType().Name}");
         var implementationType = implementation.GetType();
         
         // Find methods with [AgentTool] or [Description]
@@ -132,7 +133,7 @@ public class TechnicianToolProvider : ITechnicianToolProvider
                 }
                 
                 // Get description
-                string? description = agentAttr?.Description 
+                string description = agentAttr?.Description 
                     ?? descAttr?.Description 
                     ?? $"Invokes {method.Name}";
                 

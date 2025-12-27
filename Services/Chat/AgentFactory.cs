@@ -22,8 +22,8 @@ public class AgentFactory : IAgentFactory
     public ISpecializedAgent CreateAnimationAgent(IEnumerable<AIFunction> tools)
         => new AnimationAgent(_chatService, tools, _loggerFactory.CreateLogger<AnimationAgent>());
     
-    public ISpecializedAgent CreateLightingAgent(IEnumerable<AIFunction> tools)
-        => new LightingAgent(_chatService, tools, _loggerFactory.CreateLogger<LightingAgent>());
+    public ISpecializedAgent CreateGeometryAgent(IEnumerable<AIFunction> tools)
+        => new GeometryAgent(_chatService, tools, _loggerFactory.CreateLogger<GeometryAgent>());
     
     public ISpecializedAgent CreateClockAgent(IEnumerable<AIFunction> tools)
         => new ClockAgent(_chatService, tools, _loggerFactory.CreateLogger<ClockAgent>());

@@ -1,19 +1,25 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using FoundryWorldsAndDrawings.Shared;
+using FoundryWorldsAndDrawings.Solutions;
 using Three2025.Services.Chat;
+using Three2025.Apprentice;
 using Microsoft.Extensions.AI;
 using AIChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 namespace Three2025.Components.Pages;
 
+#nullable enable
+
 public partial class AgentCanvasIntegration : ComponentBase
 {
     [Inject] protected IChatOrchestrator ChatOrchestrator { get; set; } = default!;
     [Inject] protected ILogger<AgentCanvasIntegration> Logger { get; set; } = default!;
+    [Inject] protected IGeometryTech GeometryTech { get; set; } = default!;
+    [Inject] protected IFoundryService FoundryService { get; set; } = default!;
     
-    protected Canvas3DComponent? Canvas3DReference;
-    protected Canvas2DComponent? Canvas2DReference;
+    protected Canvas3DComponent Canvas3DReference = default!;
+    protected Canvas2DComponent Canvas2DReference = default!;
     
     protected ElementReference chatContainer;
     protected ElementReference logContainer;
@@ -61,6 +67,20 @@ public partial class AgentCanvasIntegration : ComponentBase
             CanvasHeight3D = 350;
             CanvasWidth2D = 800;
             CanvasHeight2D = 350;
+            
+            // CRITICAL: Connect GeometryTech to the canvas stage
+            await Task.Delay(100); // Let canvas initialize
+            
+            if (Canvas3DReference?.Stage != null)
+            {
+                GeometryTech.SetStage(Canvas3DReference.Stage);
+                AddLog("System", $"✅ Connected GeometryTech to stage '{Canvas3DReference.Stage.Name}'");
+            }
+            else
+            {
+                AddLog("Error", "❌ Canvas3DReference.Stage is null - shapes won't render!");
+            }
+            
             StateHasChanged();
         }
     }
@@ -168,7 +188,42 @@ public partial class AgentCanvasIntegration : ComponentBase
         activityLogs.Clear();
         AddLog("System", "Logs cleared");
     }
-
+    protected void ShowToolDiagnostics()
+    {
+        AddLog("System", "🔍 Running tool diagnostics...");
+        
+        var tools = ChatOrchestrator.GetAllTools().ToList();
+        var toolNames = tools.Select(t => t.Name).ToList();
+        
+        AddLog("Tool Discovery", $"Found {toolNames.Count} tools", string.Join(", ", toolNames));
+        
+        if (toolNames.Count == 0)
+        {
+            AddLog("Error", "⚠️ NO TOOLS FOUND! Check server logs for TechnicianToolProvider messages");
+            AddLog("System", "Expected: GeometryTech methods like AddShape, GetShapes, etc.");
+            AddLog("System", "Check: 1) DI registration, 2) [Description] attributes on methods");
+        }
+        else
+        {
+            // Categorize tools
+            var geometryTools = toolNames.Where(t => t.Contains("Shape") || t.Contains("Geometry")).ToList();
+            var clockTools = toolNames.Where(t => t.Contains("Clock") || t.Contains("Time")).ToList();
+            var otherTools = toolNames.Except(geometryTools).Except(clockTools).ToList();
+            
+            if (geometryTools.Any())
+                AddLog("Geometry Tools", $"{geometryTools.Count} tools", string.Join(", ", geometryTools));
+            
+            if (clockTools.Any())
+                AddLog("Clock Tools", $"{clockTools.Count} tools", string.Join(", ", clockTools));
+                
+            if (otherTools.Any())
+                AddLog("Other Tools", $"{otherTools.Count} tools", string.Join(", ", otherTools));
+        }
+        
+        // Update the tool count display
+        toolCount = toolNames.Count;
+        StateHasChanged();
+    }
     protected void ToggleAutoScroll()
     {
         autoScrollLogs = !autoScrollLogs;
@@ -205,6 +260,19 @@ public partial class AgentCanvasIntegration : ComponentBase
     {
         AddLog("Manual Action", "Add Test Box clicked", "3D Canvas");
         // Canvas will be populated by agents via tools
+    }
+
+    protected void ClearScene()
+    {
+        try
+        {
+            GeometryTech.ClearShapes();
+            AddLog("Manual Action", "🗑️ Cleared all shapes from scene");
+        }
+        catch (Exception ex)
+        {
+            AddLog("Error", $"Failed to clear scene: {ex.Message}");
+        }
     }
 
     protected void AddTestCircle()
