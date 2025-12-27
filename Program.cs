@@ -88,10 +88,10 @@ builder.Services.AddScoped<ICageTech, CageTech>();
 builder.Services.AddScoped<IClockTech, ClockTech>();
 builder.Services.AddScoped<ICuckooClockTech, CuckooClockTech>();
 builder.Services.AddScoped<ITrisocTech, TrisocTech>();
-builder.Services.AddScoped<ILightingTech, LightingTech>();
+builder.Services.AddScoped<IGeometryTech, GeometryTech>();
 
-// Register tool provider for agent system (Phase 0)
-builder.Services.AddSingleton<Three2025.Services.Agents.ITechnicianToolProvider, Three2025.Services.Agents.TechnicianToolProvider>();
+// Register tool provider for agent system (Phase 0) - MUST BE SCOPED to access scoped technicians
+builder.Services.AddScoped<Three2025.Services.Agents.ITechnicianToolProvider, Three2025.Services.Agents.TechnicianToolProvider>();
 
 // Register multi-provider chat service
 builder.Services.AddScoped<Three2025.Services.Chat.IMultiProviderChatService, Three2025.Services.Chat.MultiProviderChatService>();

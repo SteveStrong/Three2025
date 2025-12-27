@@ -6,6 +6,8 @@ using System.Text.Json;
 
 namespace Three2025.Services.Chat;
 
+#nullable enable
+
 /// <summary>
 /// Custom IChatClient implementation for GitHub Models that provides logging and event tracking
 /// </summary>

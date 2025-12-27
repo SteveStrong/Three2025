@@ -72,7 +72,7 @@ public class ThreeDModelingAgent : ISpecializedAgent
         // Get streaming response
         var response = new StringBuilder();
         await foreach (var chunk in _chatService.SendMessageStreamingAsync(
-            userMessage, messages, cancellationToken: cancellationToken))
+            userMessage, messages, _tools, cancellationToken: cancellationToken))
         {
             response.Append(chunk);
         }
@@ -89,7 +89,7 @@ public class ThreeDModelingAgent : ISpecializedAgent
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var systemPrompt = $$$"""
-            You are a 3D Modeling Expert specializing in Three.js and 3D geometry.
+            You are a 3D Modeling Expert specializing in the FoundryWorldsAndDrawings Library with 2D/3D geometry.
             
             Your expertise includes:
             - Creating and manipulating 3D shapes (boxes, spheres, cylinders, custom geometries)
@@ -118,7 +118,7 @@ public class ThreeDModelingAgent : ISpecializedAgent
         messages.Add(new ChatMessage(ChatRole.User, userMessage));
         
         await foreach (var chunk in _chatService.SendMessageStreamingAsync(
-            userMessage, messages, cancellationToken: cancellationToken))
+            userMessage, messages, _tools, cancellationToken: cancellationToken))
         {
             yield return chunk;
         }

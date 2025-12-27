@@ -165,7 +165,7 @@ public class ClockTech : IClockTech
         var angle = time.Second * (2 * Math.PI / 60) - Math.PI / 2; // Convert seconds to radians
         var radius = 10.0;
         var x = radius * Math.Cos(angle);
-        var y = 2;
+        // var y = 2; // Unused
         var z = radius * Math.Sin(angle);
 
   

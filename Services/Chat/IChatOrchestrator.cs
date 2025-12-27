@@ -2,6 +2,8 @@ using Microsoft.Extensions.AI;
 
 namespace Three2025.Services.Chat;
 
+#nullable enable
+
 /// <summary>
 /// Orchestrates chat interactions across multiple specialized agents.
 /// Acts as the "router" that determines which agent(s) to call based on user intent.
@@ -42,6 +44,11 @@ public interface IChatOrchestrator
     /// Get count of available tools
     /// </summary>
     int GetToolCount();
+    
+    /// <summary>
+    /// Get all available tools for inspection
+    /// </summary>
+    IEnumerable<AIFunction> GetAllTools();
 }
 
 public class AgentResponse

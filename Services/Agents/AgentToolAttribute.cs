@@ -2,6 +2,8 @@ using System.ComponentModel;
 
 namespace Three2025.Services.Agents;
 
+#nullable enable
+
 /// <summary>
 /// Marks a method as available to AI agents as a tool.
 /// Replaces legacy [KernelFunction] from Semantic Kernel.

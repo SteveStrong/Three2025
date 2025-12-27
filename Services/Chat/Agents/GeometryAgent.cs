@@ -3,19 +3,19 @@ using Microsoft.Extensions.AI;
 
 namespace Three2025.Services.Chat.Agents;
 
-public class LightingAgent : ISpecializedAgent
+public class GeometryAgent : ISpecializedAgent
 {
     private readonly IMultiProviderChatService _chatService;
     private readonly List<AIFunction> _tools;
-    private readonly ILogger<LightingAgent> _logger;
+    private readonly ILogger<GeometryAgent> _logger;
     
-    public string Name => "Lighting Agent";
-    public string Description => "Expert in 3D lighting, illumination, shadows, and visual effects";
+    public string Name => "Geometry Agent";
+    public string Description => "Expert in 3D geometry, shapes, spatial positioning, and geometric transformations";
     
-    public LightingAgent(
+    public GeometryAgent(
         IMultiProviderChatService chatService,
         IEnumerable<AIFunction> technicianTools,
-        ILogger<LightingAgent> logger)
+        ILogger<GeometryAgent> logger)
     {
         _chatService = chatService;
         _tools = technicianTools.ToList();
@@ -24,7 +24,7 @@ public class LightingAgent : ISpecializedAgent
     
     public bool IsRelevantForContext(PageContext context)
     {
-        var relevantKeywords = new[] { "light", "lighting", "shadow", "illumination", "lamp", "ambient", "directional" };
+        var relevantKeywords = new[] { "geometry", "shape", "box", "sphere", "cylinder", "mesh", "position", "transform", "3d", "spatial" };
         return relevantKeywords.Any(k => 
             context.PageName.Contains(k, StringComparison.OrdinalIgnoreCase) ||
             context.DomainFocus.Contains(k, StringComparison.OrdinalIgnoreCase));
@@ -37,29 +37,29 @@ public class LightingAgent : ISpecializedAgent
         CancellationToken cancellationToken = default)
     {
         var systemPrompt = $$$"""
-            You are a Lighting Expert specializing in 3D scene illumination and visual effects.
+            You are a Geometry Expert specializing in 3D scene illumination and visual effects.
             
             Your expertise includes:
-            - Managing scene lighting (ambient, directional, point, spot lights)
+            - Managing scene Geometry (ambient, directional, point, spot lights)
             - Light positioning and intensity control
-            - Color temperature and lighting moods
+            - Color temperature and Geometry moods
             - Shadow configuration
             - Light state management (on/off)
-            - Saving and restoring lighting configurations
+            - Saving and restoring Geometry configurations
             
             Current context:
             - Page: {{{context.PageName}}}
             - Route: {{{context.PageRoute}}}
             - Focus: {{{context.DomainFocus}}}
             
-            Available tools: {{{_tools.Count}}} technician tools including LightingTech operations
+            Available tools: {{{_tools.Count}}} technician tools including GeometryTech operations
             
-            You have direct access to lighting tools like:
+            You have direct access to Geometry tools like:
             - GetLights, AddLight, DeleteLight
             - RepositionLight, ChangeState, ChangeColor
             - SaveLights, RestoreLights, PickARandomColor
             
-            Provide clear guidance for creating effective lighting setups. Use the lighting tools when appropriate.
+            Provide clear guidance for creating effective Geometry setups. Use the Geometry tools when appropriate.
             """;
         
         var messages = new List<ChatMessage>
@@ -72,12 +72,12 @@ public class LightingAgent : ISpecializedAgent
         
         var response = new StringBuilder();
         await foreach (var chunk in _chatService.SendMessageStreamingAsync(
-            userMessage, messages, cancellationToken: cancellationToken))
+            userMessage, messages, _tools, cancellationToken: cancellationToken))
         {
             response.Append(chunk);
         }
         
-        _logger.LogInformation($"Lighting Agent processed request: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}...");
+        _logger.LogInformation($"Geometry Agent processed request: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}...");
         
         return response.ToString();
     }
@@ -89,29 +89,29 @@ public class LightingAgent : ISpecializedAgent
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var systemPrompt = $$$"""
-            You are a Lighting Expert specializing in 3D scene illumination and visual effects.
+            You are a Geometry Expert specializing in 3D scene illumination and visual effects.
             
             Your expertise includes:
-            - Managing scene lighting (ambient, directional, point, spot lights)
+            - Managing scene Geometry (ambient, directional, point, spot lights)
             - Light positioning and intensity control
-            - Color temperature and lighting moods
+            - Color temperature and Geometry moods
             - Shadow configuration
             - Light state management (on/off)
-            - Saving and restoring lighting configurations
+            - Saving and restoring Geometry configurations
             
             Current context:
             - Page: {{{context.PageName}}}
             - Route: {{{context.PageRoute}}}
             - Focus: {{{context.DomainFocus}}}
             
-            Available tools: {{{_tools.Count}}} technician tools including LightingTech operations
+            Available tools: {{{_tools.Count}}} technician tools including GeometryTech operations
             
-            You have direct access to lighting tools like:
+            You have direct access to Geometry tools like:
             - GetLights, AddLight, DeleteLight
             - RepositionLight, ChangeState, ChangeColor
             - SaveLights, RestoreLights, PickARandomColor
             
-            Provide clear guidance for creating effective lighting setups. Use the lighting tools when appropriate.
+            Provide clear guidance for creating effective Geometry setups. Use the Geometry tools when appropriate.
             """;
         
         var messages = new List<ChatMessage>
@@ -123,11 +123,11 @@ public class LightingAgent : ISpecializedAgent
         messages.Add(new ChatMessage(ChatRole.User, userMessage));
         
         await foreach (var chunk in _chatService.SendMessageStreamingAsync(
-            userMessage, messages, cancellationToken: cancellationToken))
+            userMessage, messages, _tools, cancellationToken: cancellationToken))
         {
             yield return chunk;
         }
         
-        _logger.LogInformation($"Lighting Agent streamed response: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}...");
+        _logger.LogInformation($"Geometry Agent streamed response: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}...");
     }
 }
