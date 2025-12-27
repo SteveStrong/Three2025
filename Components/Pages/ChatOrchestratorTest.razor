@@ -3,6 +3,7 @@
 @using Microsoft.Extensions.AI
 @using Three2025.Components.Shared.Chat
 @using Three2025.Models.Chat
+@using Three2025.Services.Chat
 
 @rendermode InteractiveServer
 
@@ -22,12 +23,6 @@
     <HeaderContent>
         <h2 style="margin: 0 0 0.5rem 0; font-size: 1.5rem;">🤖 Chat Orchestrator Test</h2>
         <div style="font-size: 0.9rem; opacity: 0.95; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;">
-            <div>
-                <strong>🔧 Tools:</strong> @toolCount
-            </div>
-            <div>
-                <strong>🤖 Agents:</strong> @string.Join(", ", availableAgents)
-            </div>
             <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <strong>Provider:</strong>
                 <select @bind="selectedProvider" 
@@ -43,6 +38,11 @@
                 </span>
             </div>
         </div>
+        
+        <!-- Test Sequence Selector -->
+        <TestSequenceSelector OnSequenceSelected="HandleTestSequenceSelected"
+                             IsDisabled="false"
+                             ShowDescription="true" />
     </HeaderContent>
     
     <FooterActions>

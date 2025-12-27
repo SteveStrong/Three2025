@@ -44,6 +44,10 @@ public partial class AgentCanvasIntegration : ComponentBase
     protected string currentAgent = "Assistant";
     protected string streamingResponse = "";
     
+    // Queue management for test sequences
+    private Queue<string> messageQueue = new();
+    private bool isProcessingQueue = false;
+    
     protected int CanvasWidth3D = 800;
     protected int CanvasHeight3D = 400;
     protected int CanvasWidth2D = 800;
@@ -153,11 +157,49 @@ public partial class AgentCanvasIntegration : ComponentBase
 
     protected async Task SendMessage()
     {
-        if (string.IsNullOrWhiteSpace(userInput) || isProcessing)
+        if (string.IsNullOrWhiteSpace(userInput))
             return;
 
         var message = userInput.Trim();
         userInput = "";
+        
+        // Enqueue the message
+        messageQueue.Enqueue(message);
+        
+        // Start processing if not already running
+        if (!isProcessingQueue)
+        {
+            await ProcessMessageQueue();
+        }
+    }
+
+    private async Task ProcessMessageQueue()
+    {
+        if (isProcessingQueue || messageQueue.Count == 0)
+            return;
+
+        isProcessingQueue = true;
+
+        while (messageQueue.Count > 0)
+        {
+            var message = messageQueue.Dequeue();
+            await ProcessSingleMessage(message);
+            
+            // Brief pause between queued messages for visual feedback
+            if (messageQueue.Count > 0)
+            {
+                await Task.Delay(500);
+            }
+        }
+
+        isProcessingQueue = false;
+    }
+
+    private async Task ProcessSingleMessage(string message)
+    {
+        // Note: Don't check isProcessing here - it will be set below
+        // The queue ensures sequential processing
+        
         isProcessing = true;
         streamingResponse = "";
         currentAgent = "Assistant";
@@ -286,6 +328,32 @@ public partial class AgentCanvasIntegration : ComponentBase
         activityLogs.Clear();
         AddLog("System", "Logs cleared");
     }
+    
+    protected async Task HandleTestSequenceSelected(TestSequenceMetadata sequence)
+    {
+        if (isProcessingQueue)
+        {
+            AddLog("System", "Cannot start test - already processing", 
+                "Another test sequence is currently running");
+            return;
+        }
+
+        AddLog("System", $"🧪 Starting test: {sequence.DisplayName}", 
+            $"Loading {sequence.PromptCount} prompts into queue");
+
+        // Load all prompts into the queue
+        foreach (var prompt in sequence.Prompts)
+        {
+            messageQueue.Enqueue(prompt);
+        }
+
+        // Start processing
+        await ProcessMessageQueue();
+
+        AddLog("System", $"✅ Test sequence completed: {sequence.DisplayName}", 
+            $"Executed all {sequence.PromptCount} prompts");
+    }
+    
     protected void ShowToolDiagnostics()
     {
         AddLog("System", "🔍 Running tool diagnostics...");

@@ -127,4 +127,9 @@ public partial class ChatPanel
     public RenderFragment? FooterActions { get; set; }
 
     #endregion
+
+    private async Task OnInputValueChanged()
+    {
+        await InputValueChanged.InvokeAsync(InputValue);
+    }
 }

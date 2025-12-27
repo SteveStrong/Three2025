@@ -56,7 +56,7 @@ public class AnimatedKnModel : PartModel
                 var services = GetMentorServices();
                 // Targeted refresh - only update this specific parameter's tree node
                 services?.PubSub?.Publish<RefreshRenderMessage>(RefreshRenderMessage.RefreshValueChanged(param));
-                $"AnimatedKnModel '{Name}': PreAnimationRefresh tick={evt.tick}".WriteInfo();
+               // $"AnimatedKnModel '{Name}': PreAnimationRefresh tick={evt.tick}".WriteInfo();
             }
         });
     }

@@ -6,6 +6,7 @@
                class="chat-input-field"
                @bind="Value" 
                @bind:event="oninput"
+               @bind:after="OnValueChanged"
                @onkeydown="HandleKeyPress"
                placeholder="@Placeholder"
                disabled="@IsProcessing" />
