@@ -36,20 +36,43 @@ public class ChatOrchestrator : IChatOrchestrator
     
     private void InitializeAgents()
     {
-        // Create specialized agents WITH technician tools
-        RegisterAgent(_agentFactory.Create3DModelingAgent(_technicianTools));
-        RegisterAgent(_agentFactory.CreateAnimationAgent(_technicianTools));
-        RegisterAgent(_agentFactory.CreateGeometryAgent(_technicianTools));
-        RegisterAgent(_agentFactory.CreateClockAgent(_technicianTools));
-        RegisterAgent(_agentFactory.CreateGeneralAgent(_technicianTools));
+        _logger.LogInformation("🔧 Starting agent initialization...");
         
-        _logger.LogInformation($"Initialized {_agents.Count} specialized agents");
+        // Create specialized agents WITH technician tools
+        var agent1 = _agentFactory.Create3DModelingAgent(_technicianTools);
+        RegisterAgent(agent1);
+        
+        var agent2 = _agentFactory.CreateAnimationAgent(_technicianTools);
+        RegisterAgent(agent2);
+        
+        var agent3 = _agentFactory.CreateGeometryAgent(_technicianTools);
+        RegisterAgent(agent3);
+        
+        var agent4 = _agentFactory.CreateClockAgent(_technicianTools);
+        RegisterAgent(agent4);
+        
+        var agent5 = _agentFactory.CreateGeneralAgent(_technicianTools);
+        RegisterAgent(agent5);
+        
+        _logger.LogInformation($"✅ Initialized {_agents.Count} specialized agents: {string.Join(", ", _agents.Keys)}");
     }
     
     public void RegisterAgent(ISpecializedAgent agent)
     {
+        if (agent == null)
+        {
+            _logger.LogError("❌ Attempted to register null agent!");
+            return;
+        }
+        
+        if (string.IsNullOrEmpty(agent.Name))
+        {
+            _logger.LogError("❌ Attempted to register agent with null/empty name!");
+            return;
+        }
+        
         _agents[agent.Name] = agent;
-        _logger.LogInformation($"Registered agent: {agent.Name}");
+        _logger.LogInformation($"✅ Registered agent: {agent.Name} (Total: {_agents.Count})");
     }
     
     public List<string> GetAvailableAgents(PageContext context)

@@ -101,6 +101,11 @@ public partial class AgentCanvasIntegration : ComponentBase
     {
         if (firstRender)
         {
+            // Check if there's a test query parameter
+            var uri = new Uri(Navigation.Uri);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            var testName = query["test"];
+            
             // Calculate canvas sizes based on viewport
             CanvasWidth3D = 800;
             CanvasHeight3D = 350;
@@ -130,7 +135,27 @@ public partial class AgentCanvasIntegration : ComponentBase
             }
             
             StateHasChanged();
+            
+            // Auto-execute test if specified in query parameter
+            if (!string.IsNullOrEmpty(testName))
+            {
+                Logger.LogInformation("🧪 Auto-executing test sequence: {TestName}", testName);
+                var test = ChatTestScenarios.GetSequence(testName);
+                if (test != null)
+                {
+                    // Small delay to ensure UI is ready
+                    await Task.Delay(500);
+                    await HandleTestSequenceSelected(test);
+                }
+                else
+                {
+                    Logger.LogWarning("⚠️ Test sequence not found: {TestName}", testName);
+                    AddLog("Warning", $"Test sequence '{testName}' not found");
+                }
+            }
         }
+        
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private List<ChatDisplayMessage> ConvertToDisplayMessages()
@@ -200,6 +225,9 @@ public partial class AgentCanvasIntegration : ComponentBase
         // Note: Don't check isProcessing here - it will be set below
         // The queue ensures sequential processing
         
+        Console.WriteLine($"🔵 ProcessSingleMessage START: '{message}'");
+        Logger.LogInformation($"🔵 ProcessSingleMessage START: '{message}'");
+        
         isProcessing = true;
         streamingResponse = "";
         currentAgent = "Assistant";
@@ -212,6 +240,9 @@ public partial class AgentCanvasIntegration : ComponentBase
             await InvokeAsync(StateHasChanged);
 
             AddLog("Routing", "Analyzing intent and selecting agent...");
+            
+            Console.WriteLine($"🟡 Calling ChatOrchestrator.ProcessMessageStreamingAsync");
+            Logger.LogInformation($"🟡 Calling ChatOrchestrator.ProcessMessageStreamingAsync");
 
             var fullResponse = "";
             
@@ -224,9 +255,12 @@ public partial class AgentCanvasIntegration : ComponentBase
                 {
                     currentAgent = agentName;
                     AddLog("Agent Switch", $"Routing to {agentName}", $"Specialized agent selected");
+                    Console.WriteLine($"🔀 Agent Switch: {agentName}");
                     await InvokeAsync(StateHasChanged);
                 }))
             {
+                Console.WriteLine($"📝 Chunk received: IsComplete={chunk.IsComplete}, Length={chunk.Content?.Length ?? 0}");
+                
                 if (!chunk.IsComplete)
                 {
                     // Update streaming response
@@ -241,6 +275,7 @@ public partial class AgentCanvasIntegration : ComponentBase
                     currentAgent = chunk.AgentName;
                     streamingResponse = "";
                     AddLog("Response", $"Received from {chunk.AgentName}", $"Length: {fullResponse.Length} chars");
+                    Console.WriteLine($"✅ Response complete: Length={fullResponse.Length}");
                     
                     // Check if response indicates shape/tool operations
                     if (fullResponse.Contains("box", StringComparison.OrdinalIgnoreCase) || 
@@ -349,9 +384,14 @@ public partial class AgentCanvasIntegration : ComponentBase
 
         // Start processing
         await ProcessMessageQueue();
-
+        
         AddLog("System", $"✅ Test sequence completed: {sequence.DisplayName}", 
             $"Executed all {sequence.PromptCount} prompts");
+    }
+
+    private void NavigateToTestSuites()
+    {
+        Navigation.NavigateTo("/test-suites");
     }
     
     protected void ShowToolDiagnostics()

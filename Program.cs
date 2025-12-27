@@ -159,6 +159,33 @@ var serviceScope = ((IApplicationBuilder)app).ApplicationServices
 var unitsystem = serviceScope.ServiceProvider.GetService<IUnitSystem>();
 unitsystem?.Apply(UnitSystemType.MKS);
 
+// ═══════════════════════════════════════════════════════════════
+// GITHUB MODELS HEALTH CHECK
+// ═══════════════════════════════════════════════════════════════
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+var config = app.Services.GetRequiredService<IConfiguration>();
+
+logger.LogInformation("═══════════════════════════════════════════════════════════════");
+logger.LogInformation("🏥 Running GitHub Models Health Check...");
+
+var (isHealthy, healthMessage) = await Three2025.Services.Chat.GitHubModelsHealthCheck.CheckHealthAsync(config, logger);
+
+if (isHealthy)
+{
+    logger.LogInformation($"{healthMessage}");
+}
+else
+{
+    logger.LogWarning("═══════════════════════════════════════════════════════════════");
+    logger.LogWarning($"⚠️  WARNING: {healthMessage}");
+    logger.LogWarning("⚠️  AI chat features may not work properly.");
+    logger.LogWarning("⚠️  Consider switching to a different provider or waiting.");
+    logger.LogWarning("═══════════════════════════════════════════════════════════════");
+}
+
+logger.LogInformation("═══════════════════════════════════════════════════════════════");
+// ═══════════════════════════════════════════════════════════════
+
 var storagePath = Path.Combine(Directory.GetCurrentDirectory(), "storage");
 
 // Enable directory browsing for the storage folder
