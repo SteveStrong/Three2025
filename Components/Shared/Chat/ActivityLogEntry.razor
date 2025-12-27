@@ -1,0 +1,23 @@
+@namespace Three2025.Components.Shared.Chat
+@using Three2025.Models.Chat
+
+<div class="activity-log-entry activity-log-entry-@GetTypeCssClass()" 
+     style="background: @GetBackgroundColor(); border-left-color: @GetBorderColor();">
+    <div class="activity-log-entry-header">
+        <span class="activity-log-entry-type" style="color: @GetTextColor();">
+            @GetIcon() @Entry.Type
+        </span>
+        <span class="activity-log-entry-timestamp">
+            @Entry.Timestamp.ToString("HH:mm:ss.fff")
+        </span>
+    </div>
+    <div class="activity-log-entry-message">
+        @Entry.Message
+    </div>
+    @if (!string.IsNullOrEmpty(Entry.Details))
+    {
+        <div class="activity-log-entry-details">
+            @Entry.Details
+        </div>
+    }
+</div>

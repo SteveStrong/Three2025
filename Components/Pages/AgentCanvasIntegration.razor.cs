@@ -4,8 +4,10 @@ using FoundryWorldsAndDrawings.Shared;
 using FoundryWorldsAndDrawings.Solutions;
 using Three2025.Services.Chat;
 using Three2025.Apprentice;
+using Three2025.Models.Chat;
 using Microsoft.Extensions.AI;
 using AIChatMessage = Microsoft.Extensions.AI.ChatMessage;
+using FoundryMentorModeler.Model;
 
 namespace Three2025.Components.Pages;
 
@@ -17,6 +19,9 @@ public partial class AgentCanvasIntegration : ComponentBase
     [Inject] protected ILogger<AgentCanvasIntegration> Logger { get; set; } = default!;
     [Inject] protected IGeometryTech GeometryTech { get; set; } = default!;
     [Inject] protected IFoundryService FoundryService { get; set; } = default!;
+    [Inject] protected IMentorServices MentorServices { get; set; } = default!;
+    [Inject] public NavigationManager Navigation { get; set; } = default!;
+    [Inject] public IModelEditor ModelEditor { get; init; } = null!;
     
     protected Canvas3DComponent Canvas3DReference = default!;
     protected Canvas2DComponent Canvas2DReference = default!;
@@ -27,7 +32,9 @@ public partial class AgentCanvasIntegration : ComponentBase
     
     protected string userInput = "";
     protected List<AIChatMessage> conversationHistory = new();
+    protected List<ChatDisplayMessage> displayMessages => ConvertToDisplayMessages();
     protected List<ActivityLog> activityLogs = new();
+    protected List<ActivityLogEntry> activityLogEntries => ConvertToActivityLogEntries();
     protected bool isProcessing = false;
     protected bool autoScrollLogs = true;
     protected int selectedTabIndex = 0;
@@ -41,6 +48,8 @@ public partial class AgentCanvasIntegration : ComponentBase
     protected int CanvasHeight3D = 400;
     protected int CanvasWidth2D = 800;
     protected int CanvasHeight2D = 400;
+    
+    protected AnimatedKnModel? animatedModel;
     
     private PageContext pageContext = new()
     {
@@ -56,6 +65,32 @@ public partial class AgentCanvasIntegration : ComponentBase
         availableAgents = ChatOrchestrator.GetAvailableAgents(pageContext);
         
         AddLog("System", $"Initialized with {toolCount} tools and {availableAgents.Count} agents", string.Join(", ", availableAgents));
+        AddLog("System", "💡 Tool execution logs appear in server console", "Use browser dev tools or server logs to see tool calls");
+    }
+
+    public string GetReferenceTo(string filename)
+    {
+        return Path.Combine(Navigation.BaseUri, filename);
+    }
+
+    public void DoRequestAxisToScene()
+    {
+        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
+        if (!found || scene == null)
+        {
+            AddLog("Warning", "⚠️ Scene not ready for axis");
+            return;
+        }
+
+        var model = new FoundryWorldsAndDrawings.ThreeD.Objects.Model3D()
+        {
+            Name = "Axis",
+            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Format = FoundryWorldsAndDrawings.ThreeD.Objects.Model3DFormats.Gltf,
+        };
+
+        scene.AddChild(model);
+        AddLog("System", "✅ Added coordinate axis to scene");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -75,6 +110,15 @@ public partial class AgentCanvasIntegration : ComponentBase
             {
                 GeometryTech.SetStage(Canvas3DReference.Stage);
                 AddLog("System", $"✅ Connected GeometryTech to stage '{Canvas3DReference.Stage.Name}'");
+                
+                // Add coordinate axis
+                DoRequestAxisToScene();
+                
+                // Create AnimatedKnModel through MentorServices so model tree view is aware
+                animatedModel = MentorServices.EstablishModel<AnimatedKnModel>("AgentCanvasModel");
+                animatedModel.SetExpanded(true);
+                animatedModel.EnsureAnimationSetup();
+                AddLog("System", $"✅ Created AnimatedKnModel with animation callbacks");
             }
             else
             {
@@ -83,6 +127,28 @@ public partial class AgentCanvasIntegration : ComponentBase
             
             StateHasChanged();
         }
+    }
+
+    private List<ChatDisplayMessage> ConvertToDisplayMessages()
+    {
+        return conversationHistory.Select(msg => new ChatDisplayMessage
+        {
+            IsUser = msg.Role == ChatRole.User,
+            Text = msg.Text ?? "",
+            AgentName = msg.Role == ChatRole.Assistant ? currentAgent : null,
+            Timestamp = DateTime.Now
+        }).ToList();
+    }
+
+    private List<ActivityLogEntry> ConvertToActivityLogEntries()
+    {
+        return activityLogs.Select(log => new ActivityLogEntry
+        {
+            Type = log.Type,
+            Message = log.Message,
+            Details = log.Details,
+            Timestamp = log.Timestamp
+        }).ToList();
     }
 
     protected async Task SendMessage()
@@ -145,6 +211,38 @@ public partial class AgentCanvasIntegration : ComponentBase
             }
 
             conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, fullResponse));
+            
+            // Log tool calls from conversation history
+            var toolCallMessages = conversationHistory
+                .Where(m => m.Role == ChatRole.Tool || 
+                           (m.Contents != null && m.Contents.Any(c => c is FunctionCallContent || c is FunctionResultContent)))
+                .ToList();
+            
+            if (toolCallMessages.Any())
+            {
+                AddLog("Tool Execution", $"🔧 Detected {toolCallMessages.Count} tool-related messages in history", "Check server console for details");
+                
+                // Log each tool call
+                foreach (var toolMsg in toolCallMessages.TakeLast(10))
+                {
+                    if (toolMsg.Contents != null)
+                    {
+                        foreach (var content in toolMsg.Contents)
+                        {
+                            if (content is FunctionCallContent funcCall)
+                            {
+                                AddLog("Tool Call", $"📞 {funcCall.Name}", $"Calling function with args");
+                            }
+                            else if (content is FunctionResultContent funcResult)
+                            {
+                                var resultPreview = funcResult.Result?.ToString() ?? "null";
+                                if (resultPreview.Length > 100) resultPreview = resultPreview.Substring(0, 100) + "...";
+                                AddLog("Tool Result", $"✅ {funcResult.CallId}", resultPreview);
+                            }
+                        }
+                    }
+                }
+            }
             
             Logger.LogInformation($"Response from {currentAgent}: {fullResponse.Substring(0, Math.Min(100, fullResponse.Length))}...");
         }

@@ -204,6 +204,15 @@ public class MultiProviderChatService : IMultiProviderChatService
                 // Log the raw update type for debugging
                 LogMessage($"📦 Update type: {update.GetType().Name}");
                 
+                // Check if this is a tool call update
+                var updateTypeName = update.GetType().Name;
+                if (updateTypeName.Contains("Tool", StringComparison.OrdinalIgnoreCase) || 
+                    updateTypeName.Contains("Function", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Yield a visual indicator that a tool is being called
+                    yield return "⚙️";
+                }
+                
                 var text = update.ToString();
                 if (!string.IsNullOrEmpty(text))
                 {

@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.Extensions.AI;
+using Three2025.Services.Agents;
 
 namespace Three2025.Services.Chat.Agents;
 
@@ -18,7 +19,8 @@ public class GeometryAgent : ISpecializedAgent
         ILogger<GeometryAgent> logger)
     {
         _chatService = chatService;
-        _tools = technicianTools.ToList();
+        // Wrap tools with logging
+        _tools = LoggingToolWrapper.WrapAllWithLogging(technicianTools, logger);
         _logger = logger;
     }
     

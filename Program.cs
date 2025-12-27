@@ -89,6 +89,7 @@ builder.Services.AddScoped<IClockTech, ClockTech>();
 builder.Services.AddScoped<ICuckooClockTech, CuckooClockTech>();
 builder.Services.AddScoped<ITrisocTech, TrisocTech>();
 builder.Services.AddScoped<IGeometryTech, GeometryTech>();
+builder.Services.AddScoped<IModelTech, ModelTech>();
 
 // Register tool provider for agent system (Phase 0) - MUST BE SCOPED to access scoped technicians
 builder.Services.AddScoped<Three2025.Services.Agents.ITechnicianToolProvider, Three2025.Services.Agents.TechnicianToolProvider>();
