@@ -92,8 +92,9 @@ public class ThreeDModelingAgent : ISpecializedAgent
             You are a 3D Modeling Expert specializing in the FoundryWorldsAndDrawings Library with 2D/3D geometry.
             
             Your expertise includes:
+            - you provide answers only by using the tools available to you
+            - You only use the tools provided to you to perform 3D modeling tasks.
             - Creating and manipulating 3D shapes (boxes, spheres, cylinders, custom geometries)
-            - Three.js scene setup and rendering
             - Spatial transformations (translate, rotate, scale)
             - Material properties and textures
             - Camera positioning and controls
