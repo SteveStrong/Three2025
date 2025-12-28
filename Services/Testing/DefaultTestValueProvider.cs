@@ -59,27 +59,70 @@ public class DefaultTestValueProvider : ITestValueProvider
         // Position/coordinate parameters
         if (paramName is "x")
         {
-            var value = _random.Next(-5, 6);
-            return paramType == typeof(int) ? value : value * 1.0;
+            // Check if this is a 2D or 3D method
+            var declaringType = method.DeclaringType?.Name ?? "";
+            bool is3D = declaringType.Contains("3D") || declaringType.Contains("Model") || declaringType.Contains("Geometry");
+            
+            if (is3D)
+            {
+                // 3D: meters, can be negative
+                var value = _random.Next(-5, 6);
+                return paramType == typeof(int) ? value : value * 1.0;
+            }
+            else
+            {
+                // 2D: pixels, positive for visibility
+                var value = _random.Next(100, 700);
+                return paramType == typeof(int) ? value : value * 1.0;
+            }
         }
         
         if (paramName is "y")
         {
-            var value = _random.Next(0, 6);
-            return paramType == typeof(int) ? value : value * 1.0;
+            // Check if this is a 2D or 3D method
+            var declaringType = method.DeclaringType?.Name ?? "";
+            bool is3D = declaringType.Contains("3D") || declaringType.Contains("Model") || declaringType.Contains("Geometry");
+            
+            if (is3D)
+            {
+                // 3D: meters, can be negative
+                var value = _random.Next(-5, 6);
+                return paramType == typeof(int) ? value : value * 1.0;
+            }
+            else
+            {
+                // 2D: pixels, positive for visibility
+                var value = _random.Next(100, 500);
+                return paramType == typeof(int) ? value : value * 1.0;
+            }
         }
         
         if (paramName is "z")
         {
-            var value = _random.Next(-5, 6);
+            var value = _random.Next(-5, 6);  // 3D depth in meters
             return paramType == typeof(int) ? value : value * 1.0;
         }
         
         // Dimension parameters
         if (paramName is "width" or "height" or "depth" or "size" or "radius")
         {
-            var value = 1.0 + _random.NextDouble() * 2.0; // 1.0 to 3.0
-            return paramType == typeof(int) ? (int)Math.Round(value) : value;
+            // Check if this is a 2D or 3D method based on declaring type
+            var declaringType = method.DeclaringType?.Name ?? "";
+            bool is3D = declaringType.Contains("3D") || declaringType.Contains("Shape3D") || 
+                        declaringType.Contains("Model") || declaringType.Contains("Geometry");
+            
+            if (is3D)
+            {
+                // 3D world uses meters: 0.5 to 3.0 meters
+                var value = 0.5 + _random.NextDouble() * 2.5;
+                return paramType == typeof(int) ? (int)Math.Round(value) : value;
+            }
+            else
+            {
+                // 2D world uses pixels: 50 to 150 pixels
+                var value = 50.0 + _random.NextDouble() * 100.0;
+                return paramType == typeof(int) ? (int)Math.Round(value) : value;
+            }
         }
         
         // Thickness parameter (for connectors)
