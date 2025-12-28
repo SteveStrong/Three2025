@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using FoundryWorldsAndDrawings.Shared;
 using FoundryWorldsAndDrawings.Solutions;
+using FoundryWorldsAndDrawings.Shape;
+using FoundryWorldsAndDrawings.PubSub;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 using Three2025.Services.Chat;
 using Three2025.Apprentice;
 using Three2025.Models.Chat;
@@ -17,7 +20,8 @@ public partial class AgentCanvasIntegration : ComponentBase
 {
     [Inject] protected IChatOrchestrator ChatOrchestrator { get; set; } = default!;
     [Inject] protected ILogger<AgentCanvasIntegration> Logger { get; set; } = default!;
-    [Inject] protected IGeometryTech GeometryTech { get; set; } = default!;
+    [Inject] protected IShape3DTech Shape3DTech { get; set; } = default!;
+    [Inject] protected IShape2DTech Shape2DTech { get; set; } = default!;
     [Inject] protected IFoundryService FoundryService { get; set; } = default!;
     [Inject] protected IMentorServices MentorServices { get; set; } = default!;
     [Inject] public NavigationManager Navigation { get; set; } = default!;
@@ -39,6 +43,7 @@ public partial class AgentCanvasIntegration : ComponentBase
     protected bool autoScrollLogs = true;
     protected int selectedTabIndex = 0;
     protected string activeTreeTab = "shape";
+    protected string activeChatTab = "chat"; // For Chat vs Manual Test tab
     protected int toolCount = 0;
     protected List<string> availableAgents = new();
     protected string currentAgent = "Assistant";
@@ -112,13 +117,13 @@ public partial class AgentCanvasIntegration : ComponentBase
             CanvasWidth2D = 800;
             CanvasHeight2D = 350;
             
-            // CRITICAL: Connect GeometryTech to the canvas stage
+            // CRITICAL: Connect Shape3DTech to the canvas stage
             await Task.Delay(100); // Let canvas initialize
             
             if (Canvas3DReference?.Stage != null)
             {
-                GeometryTech.SetStage(Canvas3DReference.Stage);
-                AddLog("System", $"✅ Connected GeometryTech to stage '{Canvas3DReference.Stage.Name}'");
+                Shape3DTech.SetStage(Canvas3DReference.Stage);
+                AddLog("System", $"✅ Connected Shape3DTech to stage '{Canvas3DReference.Stage.Name}'");
                 
                 // Add coordinate axis
                 DoRequestAxisToScene();
@@ -132,6 +137,17 @@ public partial class AgentCanvasIntegration : ComponentBase
             else
             {
                 AddLog("Error", "❌ Canvas3DReference.Stage is null - shapes won't render!");
+            }
+            
+            // CRITICAL: Connect Shape2DTech to the 2D canvas page
+            if (Canvas2DReference?.Page != null)
+            {
+                Shape2DTech.SetPage(Canvas2DReference.Page);
+                AddLog("System", $"✅ Connected Shape2DTech to page '{Canvas2DReference.Page.Name}'");
+            }
+            else
+            {
+                AddLog("Error", "❌ Canvas2DReference.Page is null - 2D shapes won't render!");
             }
             
             StateHasChanged();
@@ -424,7 +440,7 @@ public partial class AgentCanvasIntegration : ComponentBase
         if (toolNames.Count == 0)
         {
             AddLog("Error", "⚠️ NO TOOLS FOUND! Check server logs for TechnicianToolProvider messages");
-            AddLog("System", "Expected: GeometryTech methods like AddShape, GetShapes, etc.");
+            AddLog("System", "Expected: Shape3DTech methods like AddShape, GetShapes, etc.");
             AddLog("System", "Check: 1) DI registration, 2) [Description] attributes on methods");
         }
         else
@@ -482,15 +498,37 @@ public partial class AgentCanvasIntegration : ComponentBase
     // Test methods for manual shape addition
     protected void AddTestBox()
     {
-        AddLog("Manual Action", "Add Test Box clicked", "3D Canvas");
-        // Canvas will be populated by agents via tools
+        try
+        {
+            var stage = Canvas3DReference?.Stage;
+            if (stage == null)
+            {
+                AddLog("Error", "Canvas3D stage not available");
+                return;
+            }
+
+            var testName = $"TestBox_{DateTime.Now:HHmmss}";
+            var shape = new GeometryShape(testName, "box", 1.0, 1.0, 1.0)
+            {
+                IsOn = true,
+                Color = "blue"
+            };
+            shape.Transform.Position = new Vector3(0, 1, 0);
+            
+            stage.AddShape(shape);
+            AddLog("Manual Action", $"✅ Added test box '{testName}' directly to stage at (0,1,0)", "3D Canvas API");
+        }
+        catch (Exception ex)
+        {
+            AddLog("Error", $"Failed to add test box: {ex.Message}");
+        }
     }
 
     protected void ClearScene()
     {
         try
         {
-            GeometryTech.ClearShapes();
+            Shape3DTech.ClearShapes();
             AddLog("Manual Action", "🗑️ Cleared all shapes from scene");
         }
         catch (Exception ex)
@@ -501,20 +539,93 @@ public partial class AgentCanvasIntegration : ComponentBase
 
     protected void AddTestCircle()
     {
-        AddLog("Manual Action", "Add Test Circle clicked", "2D Canvas");
-        // Canvas will be populated by agents via tools
+        try
+        {
+            var page = Canvas2DReference?.Page;
+            if (page == null)
+            {
+                AddLog("Error", "Canvas2D page not available");
+                return;
+            }
+
+            var testName = $"TestCircle_{DateTime.Now:HHmmss}";
+            var diameter = 100;
+            var shape = new FoShape2D(diameter, diameter, "green")
+            {
+                Name = testName
+            };
+            shape.ShapeDraw = shape.DrawCircle;
+            shape.MoveTo(100, 100);
+            page.AddShape(shape);
+            AddLog("Manual Action", $"✅ Added test circle '{testName}' directly to page radius=50 at (100,100)", "2D Canvas API");
+        }
+        catch (Exception ex)
+        {
+            AddLog("Error", $"Failed to add test circle: {ex.Message}");
+        }
     }
 
-    protected void Reset3D()
+    protected async Task Reset3D()
     {
-        AddLog("Manual Action", "Reset 3D Canvas", "Clearing 3D scene");
-        // Implementation would clear 3D scene
+        try
+        {
+            var stage = Canvas3DReference?.Stage;
+            if (stage != null)
+            {
+                await stage.ClearAll();
+                AddLog("Manual Action", "🗑️ Reset 3D Canvas - cleared stage via canvas API");
+            }
+        }
+        catch (Exception ex)
+        {
+            AddLog("Error", $"Failed to reset 3D: {ex.Message}");
+        }
+    }
+
+    protected void ForceRefresh3D()
+    {
+        try
+        {
+            FoundryService.PubSub().Publish<RefreshRenderMessage>(RefreshRenderMessage.ClearAllSelected());
+            AddLog("Manual Action", "🔄 Forced 3D canvas refresh");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            AddLog("Error", $"Failed to refresh 3D: {ex.Message}");
+        }
     }
 
     protected void Reset2D()
     {
-        AddLog("Manual Action", "Reset 2D Canvas", "Clearing 2D drawing");
-        // Implementation would clear 2D drawing
+        try
+        {
+            var page = Canvas2DReference?.Page;
+            if (page != null)
+            {
+                var drawing = FoundryService.Drawing();
+                drawing?.ClearAll();
+                AddLog("Manual Action", "🗑️ Reset 2D Canvas - cleared drawing via canvas API");
+            }
+        }
+        catch (Exception ex)
+        {
+            AddLog("Error", $"Failed to reset 2D: {ex.Message}");
+        }
+    }
+
+    protected void ForceRefresh2D()
+    {
+        try
+        {
+            FoundryService.PubSub().Publish<RefreshUIEvent>(RefreshUIEvent.External("AgentCanvas2D"));
+            AddLog("Manual Action", "🔄 Forced 2D canvas refresh");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            AddLog("Error", $"Failed to refresh 2D: {ex.Message}");
+        }
     }
 
     protected string GetLogColor(string type) => type switch
