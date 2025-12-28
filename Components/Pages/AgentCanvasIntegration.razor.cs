@@ -22,6 +22,7 @@ public partial class AgentCanvasIntegration : ComponentBase
     [Inject] protected ILogger<AgentCanvasIntegration> Logger { get; set; } = default!;
     [Inject] protected IShape3DTech Shape3DTech { get; set; } = default!;
     [Inject] protected IShape2DTech Shape2DTech { get; set; } = default!;
+    [Inject] protected IMentor2DTech Mentor2DTech { get; set; } = default!;
     [Inject] protected IFoundryService FoundryService { get; set; } = default!;
     [Inject] protected IMentorServices MentorServices { get; set; } = default!;
     [Inject] public NavigationManager Navigation { get; set; } = default!;
