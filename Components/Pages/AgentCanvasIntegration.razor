@@ -54,6 +54,14 @@
                             🎨 Shape2DTech
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "mentor2dtech" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "mentor2dtech")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            📊 Mentor2DTech
+                        </button>
+                    </li>
                 </ul>
                 
                 <div style="flex: 1; overflow: hidden;">
@@ -122,6 +130,12 @@
                     {
                         <TechnicianTestPanel TechnicianType="typeof(IShape2DTech)" 
                                              Title="Shape2DTech Test Panel"
+                                             GroupByCategory="true" />
+                    }
+                    else if (activeChatTab == "mentor2dtech")
+                    {
+                        <TechnicianTestPanel TechnicianType="typeof(IMentor2DTech)" 
+                                             Title="Mentor2DTech Test Panel - Diagrams"
                                              GroupByCategory="true" />
                     }
                 </div>
