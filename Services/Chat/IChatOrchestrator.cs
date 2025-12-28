@@ -49,6 +49,11 @@ public interface IChatOrchestrator
     /// Get all available tools for inspection
     /// </summary>
     IEnumerable<AIFunction> GetAllTools();
+    
+    /// <summary>
+    /// Get a human-readable description of all available tools
+    /// </summary>
+    string GetToolsDescription();
 }
 
 public class AgentResponse

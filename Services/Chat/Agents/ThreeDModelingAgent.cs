@@ -69,17 +69,13 @@ public class ThreeDModelingAgent : ISpecializedAgent
         // Add current user message
         messages.Add(new ChatMessage(ChatRole.User, userMessage));
         
-        // Get streaming response
-        var response = new StringBuilder();
-        await foreach (var chunk in _chatService.SendMessageStreamingAsync(
-            userMessage, messages, _tools, cancellationToken: cancellationToken))
-        {
-            response.Append(chunk);
-        }
+        _logger.LogInformation($"🏛️ 3D Modeling Agent calling LLM with {_tools.Count} tools");
+        var response = await _chatService.SendMessageAsync(
+            userMessage, messages, _tools, cancellationToken: cancellationToken);
         
-        _logger.LogInformation($"3D Modeling Agent processed request: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}...");
+        _logger.LogInformation($"✅ 3D Modeling Agent response: {response.Substring(0, Math.Min(100, response.Length))}...");
         
-        return response.ToString();
+        return response;
     }
     
     public async IAsyncEnumerable<string> ProcessStreamingAsync(

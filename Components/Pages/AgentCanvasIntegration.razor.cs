@@ -48,7 +48,6 @@ public partial class AgentCanvasIntegration : ComponentBase
     protected int toolCount = 0;
     protected List<string> availableAgents = new();
     protected string currentAgent = "Assistant";
-    protected string streamingResponse = "";
     
     // Queue management for test sequences
     private Queue<string> messageQueue = new();
@@ -239,31 +238,37 @@ public partial class AgentCanvasIntegration : ComponentBase
 
     private async Task ProcessSingleMessage(string message)
     {
-        // Note: Don't check isProcessing here - it will be set below
-        // The queue ensures sequential processing
-        
         Console.WriteLine($"🔵 ProcessSingleMessage START: '{message}'");
         Logger.LogInformation($"🔵 ProcessSingleMessage START: '{message}'");
         
         isProcessing = true;
-        streamingResponse = "";
         currentAgent = "Assistant";
 
         AddLog("User Input", message);
 
         try
         {
+            // Handle special introspection commands
+            if (message.Contains("list tools", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("what tools", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("available tools", StringComparison.OrdinalIgnoreCase))
+            {
+                var toolsDescription = ChatOrchestrator.GetToolsDescription();
+                conversationHistory.Add(new AIChatMessage(ChatRole.User, message));
+                conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, toolsDescription));
+                AddLog("Tool Introspection", $"Listed {ChatOrchestrator.GetToolCount()} available tools");
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            
             conversationHistory.Add(new AIChatMessage(ChatRole.User, message));
             await InvokeAsync(StateHasChanged);
 
             AddLog("Routing", "Analyzing intent and selecting agent...");
-
-            var fullResponse = "";
-            var chunkBuffer = "";
-            var lastUpdateTime = DateTime.UtcNow;
+            Logger.LogInformation("🔍 Calling ProcessMessageAsync (NON-STREAMING mode)");
             
-            // Stream response from orchestrator
-            await foreach (var chunk in ChatOrchestrator.ProcessMessageStreamingAsync(
+            // Use NON-STREAMING mode for reliable tool execution
+            var response = await ChatOrchestrator.ProcessMessageAsync(
                 message,
                 pageContext,
                 conversationHistory,
@@ -272,54 +277,25 @@ public partial class AgentCanvasIntegration : ComponentBase
                     currentAgent = agentName;
                     AddLog("Agent Switch", $"Routing to {agentName}", $"Specialized agent selected");
                     Console.WriteLine($"🔀 Agent Switch: {agentName}");
+                    Logger.LogInformation($"🔀 Agent Switch: {agentName}");
                     await InvokeAsync(StateHasChanged);
-                }))
+                });
+            
+            var fullResponse = response.Content;
+            currentAgent = response.AgentName;
+            
+            AddLog("Response", $"Received from {response.AgentName}", $"Length: {fullResponse.Length} chars");
+            Console.WriteLine($"✅ Response complete: Length={fullResponse.Length}");
+            Logger.LogInformation($"✅ Response complete from {response.AgentName}: {fullResponse.Substring(0, Math.Min(100, fullResponse.Length))}...");
+            
+            // Check if response indicates shape/tool operations
+            if (fullResponse.Contains("box", StringComparison.OrdinalIgnoreCase) || 
+                fullResponse.Contains("shape", StringComparison.OrdinalIgnoreCase) ||
+                fullResponse.Contains("sphere", StringComparison.OrdinalIgnoreCase) ||
+                fullResponse.Contains("circle", StringComparison.OrdinalIgnoreCase) ||
+                fullResponse.Contains("light", StringComparison.OrdinalIgnoreCase))
             {
-                if (!chunk.IsComplete)
-                {
-                    // Show chunk content for debugging
-                    var preview = chunk.Content?.Length > 50 ? chunk.Content.Substring(0, 50) + "..." : chunk.Content;
-                    Console.WriteLine($"📝 Chunk: \"{preview}\" | StreamingResponse length: {streamingResponse?.Length ?? 0}");
-                    
-                    // Accumulate chunks
-                    chunkBuffer += chunk.Content;
-                    fullResponse += chunk.Content;
-                    
-                    // Only update UI every 100ms or when buffer reaches ~10 chars
-                    var timeSinceLastUpdate = (DateTime.UtcNow - lastUpdateTime).TotalMilliseconds;
-                    if (timeSinceLastUpdate >= 100 || chunkBuffer.Length >= 10)
-                    {
-                        streamingResponse += chunkBuffer;
-                        chunkBuffer = "";
-                        currentAgent = chunk.AgentName;
-                        lastUpdateTime = DateTime.UtcNow;
-                        
-                        await InvokeAsync(StateHasChanged);
-                        await Task.Delay(50); // Give SignalR time to flush
-                    }
-                }
-                else
-                {
-                    // Final chunk - flush any remaining buffer
-                    if (!string.IsNullOrEmpty(chunkBuffer))
-                    {
-                        streamingResponse += chunkBuffer;
-                        await InvokeAsync(StateHasChanged);
-                    }
-                    
-                    currentAgent = chunk.AgentName;
-                    streamingResponse = "";
-                    AddLog("Response", $"Received from {chunk.AgentName}", $"Length: {fullResponse.Length} chars");
-                    Console.WriteLine($"✅ Response complete: Length={fullResponse.Length}");
-                    
-                    // Check if response indicates shape/tool operations
-                    if (fullResponse.Contains("box", StringComparison.OrdinalIgnoreCase) || 
-                        fullResponse.Contains("shape", StringComparison.OrdinalIgnoreCase) ||
-                        fullResponse.Contains("light", StringComparison.OrdinalIgnoreCase))
-                    {
-                        AddLog("Canvas Update", "Agent may have modified canvas", "Check 3D/2D views for changes");
-                    }
-                }
+                AddLog("Canvas Update", "Agent may have modified canvas", "Check 3D/2D views for changes");
             }
 
             conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, fullResponse));

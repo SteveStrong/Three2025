@@ -29,7 +29,15 @@ public class ChatOrchestrator : IChatOrchestrator
         
         // Discover all technician tools
         _technicianTools.AddRange(_toolProvider.DiscoverAllTools());
-        _logger.LogInformation($"Loaded {_technicianTools.Count} technician tools");
+        _logger.LogInformation($"✅ Loaded {_technicianTools.Count} technician tools");
+        
+        // Log first few tools for visibility
+        foreach (var tool in _technicianTools.Take(10))
+        {
+            _logger.LogInformation($"  📦 {tool.Name}");
+        }
+        if (_technicianTools.Count > 10)
+            _logger.LogInformation($"  ... and {_technicianTools.Count - 10} more tools");
         
         InitializeAgents();
     }
@@ -86,6 +94,25 @@ public class ChatOrchestrator : IChatOrchestrator
     public int GetToolCount() => _technicianTools.Count;
     
     public IEnumerable<AIFunction> GetAllTools() => _technicianTools;
+    
+    public string GetToolsDescription()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"✅ I have access to {_technicianTools.Count} tools:");
+        sb.AppendLine();
+        
+        foreach (var tool in _technicianTools.OrderBy(t => t.Name).Take(50))
+        {
+            sb.AppendLine($"  • {tool.Name}");
+            if (!string.IsNullOrEmpty(tool.Description))
+                sb.AppendLine($"    {tool.Description}");
+        }
+        
+        if (_technicianTools.Count > 50)
+            sb.AppendLine($"\n  ... and {_technicianTools.Count - 50} more tools");
+        
+        return sb.ToString();
+    }
     
     public async Task<AgentResponse> ProcessMessageAsync(
         string userMessage,
@@ -191,17 +218,14 @@ public class ChatOrchestrator : IChatOrchestrator
             new(ChatRole.User, userMessage)
         };
         
-        _logger.LogInformation("💬 Calling _chatService.SendMessageStreamingAsync for intent analysis");
+        _logger.LogInformation("💬 Calling _chatService.SendMessageAsync for intent analysis (NON-STREAMING)");
         
         var response = "";
         try
         {
-            await foreach (var chunk in _chatService.SendMessageStreamingAsync(
-                userMessage, messages, cancellationToken: default))
-            {
-                response += chunk;
-                _logger.LogDebug($"Intent analysis chunk: {chunk.Substring(0, Math.Min(50, chunk.Length))}...");
-            }
+            response = await _chatService.SendMessageAsync(
+                userMessage, messages, tools: null, cancellationToken: default);
+            _logger.LogDebug($"Intent analysis response: {response.Substring(0, Math.Min(100, response.Length))}...");
         }
         catch (Exception ex)
         {
