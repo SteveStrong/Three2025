@@ -1,0 +1,114 @@
+@using Three2025.Models.Testing
+@using Three2025.Services.Testing
+@inject TestResultsService ResultsService
+@implements IDisposable
+
+<div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #3e3e3e;">
+    <div style="color: #d4d4d4; font-weight: 600;">Test Results Log</div>
+    <button @onclick="ClearResults" 
+            style="background: #3e3e3e; color: #d4d4d4; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">
+        🗑️ Clear
+    </button>
+</div>
+
+@if (!_results.Any())
+{
+    <div style="color: #808080; font-style: italic; text-align: center; padding: 2rem;">
+        No tests executed yet. Click a button to test a method.
+    </div>
+}
+else
+{
+    @foreach (var result in _results.AsEnumerable().Reverse())
+    {
+        <div style="margin-bottom: 0.75rem; padding: 0.5rem; background: @(result.Success ? "#1e3a1e" : "#3a1e1e"); border-left: 3px solid @(result.Success ? "#28a745" : "#dc3545"); border-radius: 3px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span style="color: @(result.Success ? "#4ade80" : "#f87171"); font-weight: 600;">
+                    @(result.Success ? "✓" : "✗") @result.MethodName
+                </span>
+                <span style="color: #808080; font-size: 0.75rem;">
+                    @result.ExecutionTime.TotalMilliseconds.ToString("F0")ms
+                </span>
+            </div>
+            
+            @if (result.ParametersUsed.Any())
+            {
+                <div style="color: #a0a0a0; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                    Parameters: @string.Join(", ", result.ParametersUsed.Select(p => $"{p.Key}={FormatValue(p.Value)}"))
+                </div>
+            }
+            
+            @if (result.Success && result.ReturnValue != null)
+            {
+                <div style="color: #60a5fa; font-size: 0.75rem;">
+                    → @FormatReturnValue(result.ReturnValue)
+                </div>
+            }
+            
+            @if (!result.Success && !string.IsNullOrEmpty(result.ErrorMessage))
+            {
+                <div style="color: #fca5a5; font-size: 0.75rem;">
+                    Error: @result.ErrorMessage
+                </div>
+            }
+        </div>
+    }
+}
+
+@code {
+    #nullable enable
+    
+    private List<TestResult> _results = new();
+
+    protected override void OnInitialized()
+    {
+        ResultsService.OnResultsChanged += HandleResultsChanged;
+        _results = ResultsService.GetAllResults();
+    }
+
+    private void HandleResultsChanged()
+    {
+        _results = ResultsService.GetAllResults();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ClearResults()
+    {
+        ResultsService.ClearResults();
+    }
+
+    private string FormatValue(object? value)
+    {
+        if (value == null) return "null";
+        if (value is string s) return $"\"{s}\"";
+        if (value is bool b) return b.ToString().ToLower();
+        return value.ToString() ?? "null";
+    }
+
+    private string FormatReturnValue(object returnValue)
+    {
+        if (returnValue == null) return "null";
+        
+        var type = returnValue.GetType();
+        var valueStr = returnValue.ToString() ?? "null";
+        
+        // Show count for collections
+        if (returnValue is System.Collections.ICollection collection)
+        {
+            return $"Returned {collection.Count} item(s)";
+        }
+        
+        // Truncate long strings
+        if (valueStr.Length > 100)
+        {
+            return valueStr.Substring(0, 97) + "...";
+        }
+        
+        return valueStr;
+    }
+
+    public void Dispose()
+    {
+        ResultsService.OnResultsChanged -= HandleResultsChanged;
+    }
+}

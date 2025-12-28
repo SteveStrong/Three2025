@@ -10,107 +10,8 @@ using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 
 namespace Three2025.Apprentice;
-#nullable enable
 
-
-public interface IGeometryTech : ITechnician
-{
-   void SetStage(FoStage3D stage);
-
-   FoStage3D EstablishGeometryStage();
-
-   ToolCapabilities GetToolCapabilities();
-
-   void ClearShapes();
-
-   void SaveShapes();
-
-   void RestoreShapes();
-
-   string PickARandomColor();
-
-   List<ShapeInfo> GetShapes();
-
-   ShapeInfo? GetShapeByName(string name);
-
-   List<ShapeInfo> AddShape(string name, bool isOn, string color, string shapeType = "box", double x = 0.0, double y = 0.0, double z = 0.0);
-
-   List<ShapeInfo> AddShapeWithDimensions(string name, bool isOn, string color, string shapeType, double width, double height, double depth, double x = 0.0, double y = 0.0, double z = 0.0);
-
-   List<ShapeInfo> DeleteShape(string name);
-
-   List<ShapeInfo> DeleteMultipleShapes(List<string> names);
-
-   List<ShapeInfo> RepositionShape(string name, double x, double y, double z);
-
-   List<ShapeInfo> RotateShape(string name, double xDegrees, double yDegrees, double zDegrees);
-
-   List<ShapeInfo> ScaleShape(string name, double scaleX, double scaleY, double scaleZ);
-
-   List<ShapeInfo> ChangeShapeDimensions(string name, double width, double height, double depth);
-
-   List<ShapeInfo> ChangeState(string name, bool isOn);
-
-   List<ShapeInfo> ChangeColor(string name, string color);
-
-   List<ShapeInfo> DuplicateShape(string sourceName, string newName, double offsetX, double offsetY, double offsetZ);
-}
-
-public class ToolCapabilities
-{
-   public string ToolName { get; set; } = "GeometryTech";
-   public string Version { get; set; } = "1.0";
-   public string Description { get; set; } = "";
-   public List<CapabilityCategory> Categories { get; set; } = new();
-   public List<string> SupportedShapeTypes { get; set; } = new();
-   public string CoordinateSystem { get; set; } = "";
-}
-
-public class CapabilityCategory
-{
-   public string CategoryName { get; set; } = "";
-   public string Description { get; set; } = "";
-   public List<ToolOperation> Operations { get; set; } = new();
-}
-
-public class ToolOperation
-{
-   public string MethodName { get; set; } = "";
-   public string Description { get; set; } = "";
-   public List<OperationParameter> Parameters { get; set; } = new();
-   public string ReturnType { get; set; } = "";
-   public string Example { get; set; } = "";
-}
-
-public class OperationParameter
-{
-   public string Name { get; set; } = "";
-   public string Type { get; set; } = "";
-   public string Description { get; set; } = "";
-   public string? DefaultValue { get; set; }
-}
-
-public class ShapeInfo
-{
-   public string Name { get; set; } = "";
-   public string GeomType { get; set; } = "";
-   public string Color { get; set; } = "";
-   public bool IsVisible { get; set; }
-   public double X { get; set; }
-   public double Y { get; set; }
-   public double Z { get; set; }
-   public double Width { get; set; }
-   public double Height { get; set; }
-   public double Depth { get; set; }
-   public double RotationX { get; set; }
-   public double RotationY { get; set; }
-   public double RotationZ { get; set; }
-   public double ScaleX { get; set; }
-   public double ScaleY { get; set; }
-   public double ScaleZ { get; set; }
-}
-
-public class GeometryTech : IGeometryTech
+public class Shape3DTech : IShape3DTech
 {
 
    private IWorkspace Workspace;
@@ -123,7 +24,7 @@ public class GeometryTech : IGeometryTech
 
 
 
-   public GeometryTech(IWorkspace workspace, IFoundryService foundryService)
+   public Shape3DTech(IWorkspace workspace, IFoundryService foundryService)
    {
       Workspace = workspace;
       FoundryService = foundryService;
@@ -152,16 +53,19 @@ public class GeometryTech : IGeometryTech
    }
    
    [Description("Establish a Geometry Stage for managing 3D shapes in the application")]
-   public FoStage3D EstablishGeometryStage()
+   public FoStage3D EstablishGeometryStage(string? stageName = null)
    {
 
       if ( Stage != null)
          return Stage;
 
       var arena = Workspace.GetArena();
-      Stage = arena.EstablishStage<FoStage3D>("Geometry");
+      
+      // If stage name is specified, use it; otherwise use "AgentCanvas3D" as default
+      var stageToUse = stageName ?? "AgentCanvas3D";
+      Stage = arena.EstablishStage<FoStage3D>(stageToUse);
 
-
+      $"Shape3DTech: Connected to stage '{stageToUse}'".WriteInfo();
 
       // var shapes = new List<GeometryShape>()
       // {
@@ -227,7 +131,7 @@ public class GeometryTech : IGeometryTech
    {
       return new ToolCapabilities
       {
-         ToolName = "GeometryTech",
+         ToolName = "Shape3DTech",
          Version = "1.0",
          Description = "Comprehensive 3D shape manipulation tool for creating, transforming, querying, and managing geometric objects in a 3D scene.",
          CoordinateSystem = "Right-handed: X (left-/right+), Y (down-/up+), Z (back-/forward+). Origin at (0,0,0).",
@@ -499,7 +403,7 @@ public class GeometryTech : IGeometryTech
    }
 
    [Description("Gets a list of all shapes and their current state")]
-   public List<ShapeInfo> GetShapes()
+   public List<Shape3DInfo> GetShapes()
    {
       var stage = EstablishGeometryStage();
       var shapes = stage.Members<GeometryShape>();
@@ -508,7 +412,7 @@ public class GeometryTech : IGeometryTech
    }
 
    [Description("Gets information about a specific shape by name")]
-   public ShapeInfo? GetShapeByName(
+   public Shape3DInfo? GetShapeByName(
       [Description("The name of the shape to query")] string name)
    {
       var list = GetShapes();
@@ -526,13 +430,13 @@ public class GeometryTech : IGeometryTech
       return shape;
    }
 
-   private ShapeInfo ConvertToShapeInfo(GeometryShape shape)
+   private Shape3DInfo ConvertToShapeInfo(GeometryShape shape)
    {
       var pos = shape.Transform?.Position ?? Vector3.Zero;
       var rot = shape.Transform?.Rotation ?? new Euler(0, 0, 0);
       var scale = shape.Transform?.Scale ?? new Vector3(1, 1, 1);
       
-      return new ShapeInfo
+      return new Shape3DInfo
       {
          Name = shape.GetName(),
          GeomType = shape.GeomType,
@@ -554,7 +458,7 @@ public class GeometryTech : IGeometryTech
    }
    
    [Description("Create and add a 3D shape to the geometry stage")]
-   public List<ShapeInfo> AddShape(
+   public List<Shape3DInfo> AddShape(
       [Description("The name of the shape to create")] string name, 
       [Description("Whether the shape should be visible/active")] bool isOn, 
       [Description("The color of the shape")] string color,
@@ -598,7 +502,7 @@ public class GeometryTech : IGeometryTech
    }
 
    [Description("Create and add a 3D shape with specific dimensions")]
-   public List<ShapeInfo> AddShapeWithDimensions(
+   public List<Shape3DInfo> AddShapeWithDimensions(
       [Description("The name of the shape to create")] string name,
       [Description("Whether the shape should be visible/active")] bool isOn,
       [Description("The color of the shape")] string color,
@@ -646,7 +550,7 @@ public class GeometryTech : IGeometryTech
 
 
    [Description("Delete a shape from the geometry stage")]
-   public List<ShapeInfo> DeleteShape(
+   public List<Shape3DInfo> DeleteShape(
       [Description("The name of the shape to delete")] string name)
    {
       var stage = EstablishGeometryStage();
@@ -668,7 +572,7 @@ public class GeometryTech : IGeometryTech
    }
 
    [Description("Delete multiple shapes from the geometry stage")]
-   public List<ShapeInfo> DeleteMultipleShapes(
+   public List<Shape3DInfo> DeleteMultipleShapes(
       [Description("List of shape names to delete")] List<string> names)
    {
       var stage = EstablishGeometryStage();
@@ -692,7 +596,7 @@ public class GeometryTech : IGeometryTech
    }
 
    [Description("Changes the X, Y, Z position of a shape in 3D space")]
-   public List<ShapeInfo> RepositionShape(
+   public List<Shape3DInfo> RepositionShape(
       [Description("The name of the shape to reposition")] string name, 
       [Description("The X coordinate")] double x, 
       [Description("The Y coordinate")] double y, 
@@ -723,7 +627,7 @@ public class GeometryTech : IGeometryTech
    }
 
    [Description("Rotates a shape around X, Y, Z axes in degrees")]
-   public List<ShapeInfo> RotateShape(
+   public List<Shape3DInfo> RotateShape(
       [Description("The name of the shape to rotate")] string name,
       [Description("Rotation around X axis in degrees")] double xDegrees,
       [Description("Rotation around Y axis in degrees")] double yDegrees,
@@ -759,7 +663,7 @@ public class GeometryTech : IGeometryTech
    }
 
    [Description("Scales a shape by multiplying its size on X, Y, Z axes")]
-   public List<ShapeInfo> ScaleShape(
+   public List<Shape3DInfo> ScaleShape(
       [Description("The name of the shape to scale")] string name,
       [Description("Scale factor for X axis (1.0 = original size)")] double scaleX,
       [Description("Scale factor for Y axis (1.0 = original size)")] double scaleY,
@@ -790,7 +694,7 @@ public class GeometryTech : IGeometryTech
    }
 
    [Description("Changes the dimensions (width, height, depth) of an existing shape")]
-   public List<ShapeInfo> ChangeShapeDimensions(
+   public List<Shape3DInfo> ChangeShapeDimensions(
       [Description("The name of the shape")] string name,
       [Description("New width (X dimension)")] double width,
       [Description("New height (Y dimension)")] double height,
@@ -816,7 +720,7 @@ public class GeometryTech : IGeometryTech
    }
 
    [Description("Changes the visibility/active state of a shape")]
-   public List<ShapeInfo> ChangeState(
+   public List<Shape3DInfo> ChangeState(
       [Description("The name of the shape")] string name, 
       [Description("Whether the shape should be visible/active")] bool isOn)
    {
@@ -838,7 +742,7 @@ public class GeometryTech : IGeometryTech
    }
 
    [Description("Changes the color of a shape")]
-   public List<ShapeInfo> ChangeColor(
+   public List<Shape3DInfo> ChangeColor(
       [Description("The name of the shape")] string name, 
       [Description("The new color for the shape")] string color)
    {
@@ -860,7 +764,7 @@ public class GeometryTech : IGeometryTech
    }
 
    [Description("Duplicates an existing shape with a new name and optional position offset")]
-   public List<ShapeInfo> DuplicateShape(
+   public List<Shape3DInfo> DuplicateShape(
       [Description("The name of the shape to duplicate")] string sourceName,
       [Description("Name for the new duplicated shape")] string newName,
       [Description("X offset from original position")] double offsetX,

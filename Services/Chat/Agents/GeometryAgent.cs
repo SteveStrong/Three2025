@@ -54,7 +54,7 @@ public class GeometryAgent : ISpecializedAgent
             - Route: {{{context.PageRoute}}}
             - Focus: {{{context.DomainFocus}}}
             
-            Available tools: {{{_tools.Count}}} technician tools including GeometryTech operations
+            Available tools: {{{_tools.Count}}} technician tools including Shape3DTech operations
             
             You have direct access to Geometry tools like:
             - GetLights, AddLight, DeleteLight
@@ -106,7 +106,7 @@ public class GeometryAgent : ISpecializedAgent
             - Route: {{{context.PageRoute}}}
             - Focus: {{{context.DomainFocus}}}
             
-            Available tools: {{{_tools.Count}}} technician tools including GeometryTech operations
+            Available tools: {{{_tools.Count}}} technician tools including Shape3DTech operations
             
             You have direct access to Geometry tools like:
             - GetLights, AddLight, DeleteLight

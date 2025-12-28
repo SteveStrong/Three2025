@@ -88,11 +88,18 @@ builder.Services.AddScoped<ICageTech, CageTech>();
 builder.Services.AddScoped<IClockTech, ClockTech>();
 builder.Services.AddScoped<ICuckooClockTech, CuckooClockTech>();
 builder.Services.AddScoped<ITrisocTech, TrisocTech>();
-builder.Services.AddScoped<IGeometryTech, GeometryTech>();
+builder.Services.AddScoped<IShape3DTech, Shape3DTech>();
+builder.Services.AddScoped<IShape2DTech, Shape2DTech>();
 builder.Services.AddScoped<IModelTech, ModelTech>();
 
 // Register tool provider for agent system (Phase 0) - MUST BE SCOPED to access scoped technicians
 builder.Services.AddScoped<Three2025.Services.Agents.ITechnicianToolProvider, Three2025.Services.Agents.TechnicianToolProvider>();
+
+// Register testing services for manual tool verification
+builder.Services.AddScoped<Three2025.Services.Testing.ToolMetadataExtractor>();
+builder.Services.AddScoped<Three2025.Services.Testing.TechnicianTestExecutor>();
+builder.Services.AddScoped<Three2025.Services.Testing.ITestValueProvider, Three2025.Services.Testing.DefaultTestValueProvider>();
+builder.Services.AddSingleton<Three2025.Services.Testing.TestResultsService>();
 
 // Register multi-provider chat service
 builder.Services.AddScoped<Three2025.Services.Chat.IMultiProviderChatService, Three2025.Services.Chat.MultiProviderChatService>();
