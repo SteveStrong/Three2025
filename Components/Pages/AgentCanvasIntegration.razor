@@ -68,11 +68,10 @@
                     @if (activeChatTab == "chat")
                     {
                         <ChatPanel Messages="@displayMessages"
-                                  StreamingText="@streamingResponse"
                       ActivityLogs="@activityLogEntries"
                       IsProcessing="@isProcessing"
                       CurrentAgent="@currentAgent"
-                      InputPlaceholder="Ask me to add shapes, lights, or animations..."
+                      InputPlaceholder="Ask me to add shapes, lights, or animations... Try: 'list tools' or 'create a box at 400,300 size 100,80'"
                       ShowActivityLog="false"
                       @bind-InputValue="@userInput"
                       OnSendMessage="@SendMessage">
