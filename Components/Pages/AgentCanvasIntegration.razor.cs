@@ -507,16 +507,26 @@ public partial class AgentCanvasIntegration : ComponentBase
                 return;
             }
 
-            var testName = $"TestBox_{DateTime.Now:HHmmss}";
-            var shape = new GeometryShape(testName, "box", 1.0, 1.0, 1.0)
+            var random = new Random();
+            var testName = $"TestBox_{Guid.NewGuid().ToString().Substring(0, 8)}";
+            var size = random.NextDouble() * 1.5 + 0.5; // 0.5 to 2.0
+            var colors = new[] { "red", "blue", "green", "yellow", "purple", "orange", "cyan", "magenta" };
+            var color = colors[random.Next(colors.Length)];
+            
+            var shape = new GeometryShape(testName, "box", size, size, size)
             {
                 IsOn = true,
-                Color = "blue"
+                Color = color
             };
-            shape.Transform.Position = new Vector3(0, 1, 0);
+            
+            // Random position: X: -5 to 5, Y: 0 to 5, Z: -5 to 5
+            var x = (float)(random.NextDouble() * 10 - 5);
+            var y = (float)(random.NextDouble() * 5);
+            var z = (float)(random.NextDouble() * 10 - 5);
+            shape.Transform.Position = new Vector3(x, y, z);
             
             stage.AddShape(shape);
-            AddLog("Manual Action", $"✅ Added test box '{testName}' directly to stage at (0,1,0)", "3D Canvas API");
+            AddLog("Manual Action", $"✅ Added {color} box '{testName}' size={size:F2} at ({x:F1},{y:F1},{z:F1})", "3D Canvas API");
         }
         catch (Exception ex)
         {
@@ -548,16 +558,26 @@ public partial class AgentCanvasIntegration : ComponentBase
                 return;
             }
 
-            var testName = $"TestCircle_{DateTime.Now:HHmmss}";
-            var diameter = 100;
-            var shape = new FoShape2D(diameter, diameter, "green")
+            var random = new Random();
+            var testName = $"TestCircle_{Guid.NewGuid().ToString().Substring(0, 8)}";
+            var radius = random.Next(20, 80); // radius 20-80
+            var diameter = radius * 2;
+            var colors = new[] { "red", "blue", "green", "yellow", "purple", "orange", "cyan", "magenta" };
+            var color = colors[random.Next(colors.Length)];
+            
+            var shape = new FoShape2D(diameter, diameter, color)
             {
                 Name = testName
             };
             shape.ShapeDraw = shape.DrawCircle;
-            shape.MoveTo(100, 100);
+            
+            // Random position within canvas bounds (assuming 1800x1200 canvas)
+            var x = random.Next(radius + 50, 1800 - radius - 50);
+            var y = random.Next(radius + 50, 1200 - radius - 50);
+            shape.MoveTo(x, y);
+            
             page.AddShape(shape);
-            AddLog("Manual Action", $"✅ Added test circle '{testName}' directly to page radius=50 at (100,100)", "2D Canvas API");
+            AddLog("Manual Action", $"✅ Added {color} circle '{testName}' radius={radius} at ({x},{y})", "2D Canvas API");
         }
         catch (Exception ex)
         {
