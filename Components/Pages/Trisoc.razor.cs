@@ -28,7 +28,7 @@ public partial class TrisocBase : ComponentBase
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
     [Inject] public ITrisocTech Tech { get; init; }
-    [Inject] public IGeometryTech GeometryTech { get; init; }
+    [Inject] public IShape3DTech Shape3DTech { get; init; }
     [Inject] public IChatOrchestrator ChatOrchestrator { get; set; }
     [Inject] public ILogger<TrisocBase> Logger { get; set; }
 
@@ -148,13 +148,13 @@ public partial class TrisocBase : ComponentBase
 
     public void DoReposition()
     {
-        var list = GeometryTech.GetShapes();
+        var list = Shape3DTech.GetShapes();
         for (int i = 0; i < list.Count - 1; i++)
         {
             var x = list[i].X;
             var y = list[i].Y;
             var shapeName = list[i + 1].Name;
-            GeometryTech.RepositionShape(shapeName, x + 5, y + 5, 0);
+            Shape3DTech.RepositionShape(shapeName, x + 5, y + 5, 0);
         }
 
     }

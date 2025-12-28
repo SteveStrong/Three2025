@@ -6,7 +6,7 @@ namespace Three2025.Services.Agents;
 
 /// <summary>
 /// Tool wrapper utilities for logging and monitoring
-/// Note: Individual tool methods (GeometryTech, etc.) already include logging via WriteSuccess/WriteWarning
+/// Note: Individual tool methods (Shape3DTech, etc.) already include logging via WriteSuccess/WriteWarning
 /// Those logs appear in console/server logs
 /// </summary>
 public static class LoggingToolWrapper

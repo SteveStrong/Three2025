@@ -4,7 +4,9 @@
 @using FoundryWorldsAndDrawings.Shape
 @using Three2025.Services.Chat
 @using Three2025.Components.Shared.Chat
+@using Three2025.Components.Shared.Testing
 @using Three2025.Models.Chat
+@using Three2025.Apprentice
 @using Microsoft.Extensions.AI
 @using AIChatMessage = Microsoft.Extensions.AI.ChatMessage
 
@@ -14,10 +16,51 @@
 
 <div style="height: calc(100vh - 2rem); overflow: hidden;">
     <RadzenSplitter Orientation="Orientation.Horizontal" style="height: 100%;">
-        <!-- Left Panel: AI Chat (resizable) -->
+        <!-- Left Panel: AI Chat & Manual Test (resizable) -->
         <RadzenSplitterPane Size="25%" Min="20%" Max="40%">
-            <ChatPanel Messages="@displayMessages"
-                      StreamingText="@streamingResponse"
+            
+            <!-- Tabs for Chat and Manual Test -->
+            <div style="display: flex; flex-direction: column; height: 100%; background: white;">
+                <ul class="nav nav-tabs" role="tablist" style="flex-shrink: 0; margin: 0; border-bottom: 2px solid #dee2e6;">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "chat" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "chat")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            💬 AI Chat
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "shape3dtech" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "shape3dtech")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            🧪 Shape3DTech
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "modeltech" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "modeltech")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            🏗️ ModelTech
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "shape2dtech" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "shape2dtech")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            🎨 Shape2DTech
+                        </button>
+                    </li>
+                </ul>
+                
+                <div style="flex: 1; overflow: hidden;">
+                    @if (activeChatTab == "chat")
+                    {
+                        <ChatPanel Messages="@displayMessages"
+                                  StreamingText="@streamingResponse"
                       ActivityLogs="@activityLogEntries"
                       IsProcessing="@isProcessing"
                       CurrentAgent="@currentAgent"
@@ -62,6 +105,27 @@
                     </button>
                 </FooterActions>
             </ChatPanel>
+                    }
+                    else if (activeChatTab == "shape3dtech")
+                    {
+                        <TechnicianTestPanel TechnicianType="typeof(IShape3DTech)" 
+                                             Title="Shape3DTech Test Panel"
+                                             GroupByCategory="true" />
+                    }
+                    else if (activeChatTab == "modeltech")
+                    {
+                        <TechnicianTestPanel TechnicianType="typeof(IModelTech)" 
+                                             Title="ModelTech Test Panel"
+                                             GroupByCategory="true" />
+                    }
+                    else if (activeChatTab == "shape2dtech")
+                    {
+                        <TechnicianTestPanel TechnicianType="typeof(IShape2DTech)" 
+                                             Title="Shape2DTech Test Panel"
+                                             GroupByCategory="true" />
+                    }
+                </div>
+            </div>
         </RadzenSplitterPane>
 
         <!-- Center Panel: 3D (top) and 2D (bottom) - resizable -->
@@ -75,6 +139,9 @@
                             <div style="display: flex; gap: 0.5rem;">
                                 <button @onclick="AddTestBox" style="padding: 0.25rem 0.75rem; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
                                     Add Box
+                                </button>
+                                <button @onclick="ForceRefresh3D" style="padding: 0.25rem 0.75rem; background: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                    🔄 Refresh
                                 </button>
                                 <button @onclick="ClearScene" style="padding: 0.25rem 0.75rem; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
                                     Clear Scene
@@ -100,6 +167,9 @@
                             <div style="display: flex; gap: 0.5rem;">
                     <button @onclick="AddTestCircle" style="padding: 0.25rem 0.75rem; background: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
                         Add Circle
+                    </button>
+                    <button @onclick="ForceRefresh2D" style="padding: 0.25rem 0.75rem; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                        🔄 Refresh
                     </button>
                     <button @onclick="Reset2D" style="padding: 0.25rem 0.75rem; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
                         Reset
@@ -155,6 +225,14 @@
                             type="button" role="tab"
                             style="font-size: 0.85rem;">
                         📊 Activity
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(activeTreeTab == "testlog" ? "active" : "")" 
+                            @onclick="@(() => activeTreeTab = "testlog")" 
+                            type="button" role="tab"
+                            style="font-size: 0.85rem;">
+                        🧪 Test Log
                     </button>
                 </li>
             </ul>
@@ -244,6 +322,12 @@
                         }
                         
                         <div @ref="logScrollAnchor"></div>
+                    </div>
+                }
+                else if (activeTreeTab == "testlog")
+                {
+                    <div style="background: #1e1e1e; color: #d4d4d4; padding: 0.75rem; height: 100%; overflow-y: auto; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.8rem;">
+                        <TestResultsLog />
                     </div>
                 }
             </div>
