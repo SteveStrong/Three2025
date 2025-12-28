@@ -160,24 +160,53 @@ var unitsystem = serviceScope.ServiceProvider.GetService<IUnitSystem>();
 unitsystem?.Apply(UnitSystemType.MKS);
 
 // ═══════════════════════════════════════════════════════════════
-// GITHUB MODELS HEALTH CHECK
+// AI PROVIDER HEALTH CHECK
 // ═══════════════════════════════════════════════════════════════
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 var config = app.Services.GetRequiredService<IConfiguration>();
 
 logger.LogInformation("═══════════════════════════════════════════════════════════════");
-logger.LogInformation("🏥 Running GitHub Models Health Check...");
+logger.LogInformation("🏥 Running AI Provider Health Check...");
 
-var (isHealthy, healthMessage) = await Three2025.Services.Chat.GitHubModelsHealthCheck.CheckHealthAsync(config, logger);
+// Check GitHub rate limits first
+var githubToken = config["GitHubPatToken"] ?? 
+                 Environment.GetEnvironmentVariable("GitHubPatToken", EnvironmentVariableTarget.User);
+
+if (!string.IsNullOrEmpty(githubToken))
+{
+    try
+    {
+        logger.LogInformation("🔍 Checking GitHub Models rate limits...");
+        var rateLimitChecker = new Three2025.Services.Agents.RateLimitChecker(githubToken);
+        await rateLimitChecker.TestSimpleCallAsync();
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning($"⚠️ GitHub rate limit check failed: {ex.Message}");
+    }
+}
+
+var (isHealthy, healthMessage, providerName) = await Three2025.Services.Chat.AIProviderHealthCheck.CheckHealthAsync(config, logger);
 
 if (isHealthy)
 {
-    logger.LogInformation($"{healthMessage}");
+    logger.LogInformation($"{healthMessage} (Provider: {providerName})");
 }
 else
 {
     logger.LogWarning("═══════════════════════════════════════════════════════════════");
-    logger.LogWarning($"⚠️  WARNING: {healthMessage}");
+    
+    // Split multi-line messages for better formatting
+    var lines = healthMessage.Split('\n');
+    foreach (var line in lines)
+    {
+        if (!string.IsNullOrWhiteSpace(line))
+        {
+            logger.LogWarning($"⚠️  {line.TrimStart()}");
+        }
+    }
+    
+    logger.LogWarning($"⚠️  Provider: {providerName}");
     logger.LogWarning("⚠️  AI chat features may not work properly.");
     logger.LogWarning("⚠️  Consider switching to a different provider or waiting.");
     logger.LogWarning("═══════════════════════════════════════════════════════════════");

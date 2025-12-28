@@ -29,7 +29,7 @@ public class ChatTestScenarios3D : ChatTestScenariosBase
         Category = "3D Geometry")]
     public string[] BasicGeometryTest => new[]
     {
-        "Create a red box",
+        "Create a red box named box1",
         "Change it to yellow",
         "Move the X location to 4",
         "Convert it to a cylinder"
@@ -41,7 +41,7 @@ public class ChatTestScenarios3D : ChatTestScenariosBase
         Category = "3D Geometry")]
     public string[] ColorCycleTest => new[]
     {
-        "Create a blue sphere",
+        "Create a blue sphere named sphere1",
         "Change it to green",
         "Change it to red",
         "Make it yellow"
@@ -53,7 +53,7 @@ public class ChatTestScenarios3D : ChatTestScenariosBase
         Category = "3D Geometry")]
     public string[] TransformSequence => new[]
     {
-        "Create a box at position 0,0,0",
+        "Create a box named box1 at position 0,0,0",
         "Move it to X:5",
         "Move it to Y:3",
         "Make it twice as big",
@@ -66,7 +66,7 @@ public class ChatTestScenarios3D : ChatTestScenariosBase
         Category = "3D Geometry")]
     public string[] ShapeConversionTest => new[]
     {
-        "Create a box",
+        "Create a box named box1",
         "Convert it to a sphere",
         "Convert it to a cylinder",
         "Convert it to a cone"
@@ -78,13 +78,13 @@ public class ChatTestScenarios3D : ChatTestScenariosBase
         Category = "3D Geometry")]
     public string[] FullColorSpectrumTest => new[]
     {
-        "Create a white cube",
-        "Make it red",
-        "Make it orange",
-        "Make it yellow",
-        "Make it green",
-        "Make it blue",
-        "Make it purple"
+        "Create a white cube named cube1 with sides of length 3",
+        "Make cube1 red",
+        "Make cube1 orange",
+        "Make cube1 yellow",
+        "Make cube1 green",
+        "Make cube1 blue",
+        "Make cube1 purple"
     };
 
     [TestSequence(
