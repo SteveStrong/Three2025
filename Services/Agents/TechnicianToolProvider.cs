@@ -104,7 +104,6 @@ public class TechnicianToolProvider : ITechnicianToolProvider
             return tools;
         }
         
-        _logger.LogInformation($"  ✓ Resolved {interfaceType.Name} -> {implementation.GetType().Name}");
         var implementationType = implementation.GetType();
         
         // Find methods with [AgentTool] or [Description]
@@ -115,7 +114,11 @@ public class TechnicianToolProvider : ITechnicianToolProvider
                  m.DeclaringType == implementationType))
             .ToList();
         
-        _logger.LogInformation($"  📦 {interfaceType.Name}: Found {methods.Count} tool methods");
+        // Only log if tools were found
+        if (methods.Count > 0)
+        {
+            _logger.LogInformation($"  ✓ {interfaceType.Name} -> {implementation.GetType().Name}: {methods.Count} tools");
+        }
         
         foreach (var method in methods)
         {

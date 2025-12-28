@@ -240,11 +240,10 @@ public partial class AgentCanvasIntegration : ComponentBase
             await InvokeAsync(StateHasChanged);
 
             AddLog("Routing", "Analyzing intent and selecting agent...");
-            
-            Console.WriteLine($"🟡 Calling ChatOrchestrator.ProcessMessageStreamingAsync");
-            Logger.LogInformation($"🟡 Calling ChatOrchestrator.ProcessMessageStreamingAsync");
 
             var fullResponse = "";
+            var chunkBuffer = "";
+            var lastUpdateTime = DateTime.UtcNow;
             
             // Stream response from orchestrator
             await foreach (var chunk in ChatOrchestrator.ProcessMessageStreamingAsync(
@@ -259,19 +258,38 @@ public partial class AgentCanvasIntegration : ComponentBase
                     await InvokeAsync(StateHasChanged);
                 }))
             {
-                Console.WriteLine($"📝 Chunk received: IsComplete={chunk.IsComplete}, Length={chunk.Content?.Length ?? 0}");
-                
                 if (!chunk.IsComplete)
                 {
-                    // Update streaming response
-                    streamingResponse += chunk.Content;
+                    // Show chunk content for debugging
+                    var preview = chunk.Content?.Length > 50 ? chunk.Content.Substring(0, 50) + "..." : chunk.Content;
+                    Console.WriteLine($"📝 Chunk: \"{preview}\" | StreamingResponse length: {streamingResponse?.Length ?? 0}");
+                    
+                    // Accumulate chunks
+                    chunkBuffer += chunk.Content;
                     fullResponse += chunk.Content;
-                    currentAgent = chunk.AgentName;
-                    await InvokeAsync(StateHasChanged);
+                    
+                    // Only update UI every 100ms or when buffer reaches ~10 chars
+                    var timeSinceLastUpdate = (DateTime.UtcNow - lastUpdateTime).TotalMilliseconds;
+                    if (timeSinceLastUpdate >= 100 || chunkBuffer.Length >= 10)
+                    {
+                        streamingResponse += chunkBuffer;
+                        chunkBuffer = "";
+                        currentAgent = chunk.AgentName;
+                        lastUpdateTime = DateTime.UtcNow;
+                        
+                        await InvokeAsync(StateHasChanged);
+                        await Task.Delay(50); // Give SignalR time to flush
+                    }
                 }
                 else
                 {
-                    // Final chunk
+                    // Final chunk - flush any remaining buffer
+                    if (!string.IsNullOrEmpty(chunkBuffer))
+                    {
+                        streamingResponse += chunkBuffer;
+                        await InvokeAsync(StateHasChanged);
+                    }
+                    
                     currentAgent = chunk.AgentName;
                     streamingResponse = "";
                     AddLog("Response", $"Received from {chunk.AgentName}", $"Length: {fullResponse.Length} chars");

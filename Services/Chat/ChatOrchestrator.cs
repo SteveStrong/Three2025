@@ -136,6 +136,7 @@ public class ChatOrchestrator : IChatOrchestrator
             conversationHistory, 
             cancellationToken))
         {
+            _logger.LogDebug($"📦 Chunk received: {chunk.Length} chars");
             yield return new StreamingChunk
             {
                 Content = chunk,
@@ -162,6 +163,7 @@ public class ChatOrchestrator : IChatOrchestrator
     {
         // Use the coordinator to analyze intent
         var availableAgents = GetAvailableAgents(context);
+        
         var agentDescriptions = string.Join("\n", 
             availableAgents.Select(a => $"- {a}: {_agents[a].Description}"));
         
@@ -189,11 +191,22 @@ public class ChatOrchestrator : IChatOrchestrator
             new(ChatRole.User, userMessage)
         };
         
+        _logger.LogInformation("💬 Calling _chatService.SendMessageStreamingAsync for intent analysis");
+        
         var response = "";
-        await foreach (var chunk in _chatService.SendMessageStreamingAsync(
-            userMessage, messages, cancellationToken: default))
+        try
         {
-            response += chunk;
+            await foreach (var chunk in _chatService.SendMessageStreamingAsync(
+                userMessage, messages, cancellationToken: default))
+            {
+                response += chunk;
+                _logger.LogDebug($"Intent analysis chunk: {chunk.Substring(0, Math.Min(50, chunk.Length))}...");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "❌ Error during intent analysis");
+            throw;
         }
         
         // Parse JSON response

@@ -68,10 +68,18 @@ public class GitHubChatClient : IChatClient
         LogConversation("=== GetStreamingResponseAsync Called ===", messageList);
         
         // Stream the response
+        OnLog?.Invoke("📡 Calling GitHub API...");
+        int chunkCount = 0;
         await foreach (var update in _innerClient.GetStreamingResponseAsync(messageList, options, cancellationToken))
         {
+            chunkCount++;
+            if (chunkCount == 1)
+            {
+                OnLog?.Invoke($"✅ Received first chunk from GitHub API");
+            }
             yield return update;
         }
+        OnLog?.Invoke($"✅ GitHub API streaming complete. Total chunks: {chunkCount}");
     }
 
     private void LogConversation(string header, IList<ChatMessage> messages)
