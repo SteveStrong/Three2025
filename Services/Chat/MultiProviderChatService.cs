@@ -37,6 +37,15 @@ public interface IMultiProviderChatService
         CancellationToken cancellationToken = default);
     
     /// <summary>
+    /// Send a message and get complete response with automatic tool execution
+    /// </summary>
+    Task<string> SendMessageAsync(
+        string userMessage, 
+        List<ChatMessage> conversationHistory,
+        IEnumerable<AIFunction>? tools = null,
+        CancellationToken cancellationToken = default);
+    
+    /// <summary>
     /// Event for logging/debugging information
     /// </summary>
     event Action<string>? OnLog;
@@ -329,6 +338,93 @@ public class MultiProviderChatService : IMultiProviderChatService
         }
     }
 
+    public async Task<string> SendMessageAsync(
+        string userMessage,
+        List<ChatMessage> conversationHistory,
+        IEnumerable<AIFunction>? tools = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (_currentProvider == null)
+        {
+            LogMessage("❌ No provider available");
+            return "Error: No AI provider configured";
+        }
+
+        var chatClient = _currentProvider.GetChatClient();
+        LogMessage($"💬 SendMessageAsync: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}... with {tools?.Count() ?? 0} tools");
+
+        ChatOptions? chatOptions = null;
+        if (tools != null && tools.Any())
+        {
+            chatOptions = new ChatOptions
+            {
+                Tools = tools.Select(t => (AITool)t).ToList()
+            };
+        }
+
+        var response = new System.Text.StringBuilder();
+        
+        try
+        {
+            // Get streaming response and collect chunks
+            await foreach (var update in chatClient.GetStreamingResponseAsync(conversationHistory, options: chatOptions, cancellationToken))
+            {
+                // Collect text response
+                if (!string.IsNullOrEmpty(update.Text))
+                {
+                    response.Append(update.Text);
+                }
+                
+                // Handle tool calls - EXECUTE THEM!
+                if (update.Contents != null)
+                {
+                    foreach (var content in update.Contents)
+                    {
+                        if (content is FunctionCallContent toolCall)
+                        {
+                            LogMessage($"🔧 Executing tool: {toolCall.Name}");
+                            
+                            // Find and execute the tool
+                            var tool = tools?.FirstOrDefault(t => t.Name == toolCall.Name);
+                            if (tool != null)
+                            {
+                                try
+                                {
+                                    // Execute the tool - convert dictionary to AIFunctionArguments
+                                    var args = toolCall.Arguments != null 
+                                        ? new AIFunctionArguments(toolCall.Arguments) 
+                                        : new AIFunctionArguments();
+                                    
+                                    var result = await tool.InvokeAsync(args, cancellationToken);
+                                    var resultStr = result?.ToString() ?? "null";
+                                    LogMessage($"✅ Tool '{toolCall.Name}' result: {resultStr.Substring(0, Math.Min(100, resultStr.Length))}");
+                                    
+                                    // Add tool result back to conversation for LLM (pass as content list)
+                                    var resultContent = new FunctionResultContent(toolCall.CallId, result);
+                                    conversationHistory.Add(new ChatMessage(ChatRole.Tool, [resultContent]));
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogMessage($"❌ Tool '{toolCall.Name}' failed: {ex.Message}");
+                                    var errorContent = new FunctionResultContent(toolCall.CallId, $"Error: {ex.Message}");
+                                    conversationHistory.Add(new ChatMessage(ChatRole.Tool, [errorContent]));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            LogMessage($"✅ Response complete: {response.Length} chars");
+            return response.ToString();
+        }
+        catch (Exception ex)
+        {
+            LogMessage($"❌ Error: {ex.Message}");
+            return $"Error: {ex.Message}";
+        }
+    }
+    
     private void LogMessage(string message)
     {
         _logger.LogInformation(message);

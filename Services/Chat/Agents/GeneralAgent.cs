@@ -62,16 +62,13 @@ public class GeneralAgent : ISpecializedAgent
         messages.AddRange(conversationHistory.TakeLast(5));
         messages.Add(new ChatMessage(ChatRole.User, userMessage));
         
-        var response = new StringBuilder();
-        await foreach (var chunk in _chatService.SendMessageStreamingAsync(
-            userMessage, messages, _tools, cancellationToken: cancellationToken))
-        {
-            response.Append(chunk);
-        }
+        _logger.LogInformation($"🤖 General Agent calling LLM with {_tools.Count} tools");
+        var response = await _chatService.SendMessageAsync(
+            userMessage, messages, _tools, cancellationToken: cancellationToken);
         
-        _logger.LogInformation($"General Agent processed request: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}...");
+        _logger.LogInformation($"✅ General Agent response: {response.Substring(0, Math.Min(100, response.Length))}...");
         
-        return response.ToString();
+        return response;
     }
     
     public async IAsyncEnumerable<string> ProcessStreamingAsync(
