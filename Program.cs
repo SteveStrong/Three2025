@@ -88,6 +88,7 @@ builder.Services.AddScoped<ICageTech, CageTech>();
 builder.Services.AddScoped<IClockTech, ClockTech>();
 builder.Services.AddScoped<ICuckooClockTech, CuckooClockTech>();
 builder.Services.AddScoped<ITrisocTech, TrisocTech>();
+builder.Services.AddScoped<IShape3DEditor, Shape3DEditor>();
 builder.Services.AddScoped<IShape3DTech, Shape3DTech>();
 builder.Services.AddScoped<IShape2DTech, Shape2DTech>();
 builder.Services.AddScoped<IMentor2DTech, Mentor2DTech>();

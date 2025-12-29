@@ -16,6 +16,7 @@ public class Shape3DTech : IShape3DTech
 
    private IWorkspace Workspace;
    private IFoundryService FoundryService;
+   private IShape3DEditor ShapeEditor;
 
    private FoStage3D? Stage { get; set; }
 
@@ -24,10 +25,11 @@ public class Shape3DTech : IShape3DTech
 
 
 
-   public Shape3DTech(IWorkspace workspace, IFoundryService foundryService)
+   public Shape3DTech(IWorkspace workspace, IFoundryService foundryService, IShape3DEditor shapeEditor)
    {
       Workspace = workspace;
       FoundryService = foundryService;
+      ShapeEditor = shapeEditor;
    }
 
    /// <summary>
@@ -43,12 +45,14 @@ public class Shape3DTech : IShape3DTech
    {
       try
       {
+         $"📢 Publishing RefreshRenderMessage to trigger re-render...".WriteInfo();
          FoundryService.PubSub().Publish<RefreshRenderMessage>(RefreshRenderMessage.ClearAllSelected());
-         "🔄 UI Refresh triggered".WriteInfo();
+         $"✅ UI Refresh message published successfully".WriteSuccess();
       }
       catch (Exception ex)
       {
-         $"⚠️ RefreshUI failed: {ex.Message}".WriteWarning();
+         $"❌ RefreshUI FAILED: {ex.Message}".WriteError();
+         $"🔍 Stack trace: {ex.StackTrace}".WriteWarning();
       }
    }
    
@@ -57,13 +61,20 @@ public class Shape3DTech : IShape3DTech
    {
 
       if ( Stage != null)
+      {
+         // Ensure ShapeEditor always has the stage, even on repeated calls
+         ShapeEditor.SetStage(Stage);
          return Stage;
+      }
 
       var arena = Workspace.GetArena();
       
       // If stage name is specified, use it; otherwise use "AgentCanvas3D" as default
       var stageToUse = stageName ?? "AgentCanvas3D";
       Stage = arena.EstablishStage<FoStage3D>(stageToUse);
+
+      // Connect ShapeEditor to this stage
+      ShapeEditor.SetStage(Stage);
 
       $"Shape3DTech: Connected to stage '{stageToUse}'".WriteInfo();
 
@@ -441,7 +452,6 @@ public class Shape3DTech : IShape3DTech
          Name = shape.GetName(),
          GeomType = shape.GeomType,
          Color = shape.Color,
-         IsVisible = shape.IsOn ?? false,
          X = pos.X,
          Y = pos.Y,
          Z = pos.Z,
@@ -471,7 +481,6 @@ public class Shape3DTech : IShape3DTech
 
       var newShape = new GeometryShape(name, shapeType)
       {
-         IsOn = isOn,
          Color = color
       };
 
@@ -518,7 +527,6 @@ public class Shape3DTech : IShape3DTech
 
       var newShape = new GeometryShape(name, shapeType, width, height, depth)
       {
-         IsOn = isOn,
          Color = color
       };
 
@@ -603,26 +611,15 @@ public class Shape3DTech : IShape3DTech
       [Description("The Z coordinate")] double z)
    {
       var stage = EstablishGeometryStage();
-      var shape = stage.Members<GeometryShape>().FirstOrDefault(s => s.GetName().Matches(name));
-
-      if (shape != null)
+      
+      // Use ShapeEditor for event-driven update
+      var success = ShapeEditor.SetPosition(name, new Vector3(x, y, z));
+      
+      if (!success)
       {
-         // Ensure Transform exists
-         if (shape.Transform == null)
-         {
-            shape.Transform = new Transform3($"{name}_Transform");
-            $"⚠️  Transform was null, created new one for '{name}'".WriteWarning();
-         }
-         
-         shape.Transform.Position = new Vector3(x, y, z);
-         $"📍 Shape '{name}' repositioned to ({x:F1}, {y:F1}, {z:F1})".WriteSuccess();
-      }
-      else
-      {
-         $"⚠️  Shape '{name}' not found".WriteWarning();
+         $"⚠️  Failed to reposition shape '{name}'".WriteWarning();
       }
 
-      RefreshUI();
       return GetShapes();
    }
 
@@ -634,31 +631,20 @@ public class Shape3DTech : IShape3DTech
       [Description("Rotation around Z axis in degrees")] double zDegrees)
    {
       var stage = EstablishGeometryStage();
-      var shape = stage.Members<GeometryShape>().FirstOrDefault(s => s.GetName().Matches(name));
-
-      if (shape != null)
+      
+      // Convert degrees to radians
+      var xRad = xDegrees * Math.PI / 180.0;
+      var yRad = yDegrees * Math.PI / 180.0;
+      var zRad = zDegrees * Math.PI / 180.0;
+      
+      // Use ShapeEditor for event-driven update
+      var success = ShapeEditor.SetRotation(name, new Euler(xRad, yRad, zRad));
+      
+      if (!success)
       {
-         // Ensure Transform exists
-         if (shape.Transform == null)
-         {
-            shape.Transform = new Transform3($"{name}_Transform");
-            $"⚠️  Transform was null, created new one for '{name}'".WriteWarning();
-         }
-         
-         // Convert degrees to radians
-         var xRad = xDegrees * Math.PI / 180.0;
-         var yRad = yDegrees * Math.PI / 180.0;
-         var zRad = zDegrees * Math.PI / 180.0;
-         
-         shape.Transform.Rotation = new Euler(xRad, yRad, zRad);
-         $"🔄 Shape '{name}' rotated to ({xDegrees:F1}°, {yDegrees:F1}°, {zDegrees:F1}°)".WriteSuccess();
-      }
-      else
-      {
-         $"⚠️  Shape '{name}' not found".WriteWarning();
+         $"⚠️  Failed to rotate shape '{name}'".WriteWarning();
       }
 
-      RefreshUI();
       return GetShapes();
    }
 
@@ -670,26 +656,15 @@ public class Shape3DTech : IShape3DTech
       [Description("Scale factor for Z axis (1.0 = original size)")] double scaleZ)
    {
       var stage = EstablishGeometryStage();
-      var shape = stage.Members<GeometryShape>().FirstOrDefault(s => s.GetName().Matches(name));
-
-      if (shape != null)
+      
+      // Use ShapeEditor for event-driven update
+      var success = ShapeEditor.SetScale(name, new Vector3(scaleX, scaleY, scaleZ));
+      
+      if (!success)
       {
-         // Ensure Transform exists
-         if (shape.Transform == null)
-         {
-            shape.Transform = new Transform3($"{name}_Transform");
-            $"⚠️  Transform was null, created new one for '{name}'".WriteWarning();
-         }
-         
-         shape.Transform.Scale = new Vector3(scaleX, scaleY, scaleZ);
-         $"📏 Shape '{name}' scaled to ({scaleX:F2}x, {scaleY:F2}x, {scaleZ:F2}x)".WriteSuccess();
-      }
-      else
-      {
-         $"⚠️  Shape '{name}' not found".WriteWarning();
+         $"⚠️  Failed to scale shape '{name}'".WriteWarning();
       }
 
-      RefreshUI();
       return GetShapes();
    }
 
@@ -701,21 +676,15 @@ public class Shape3DTech : IShape3DTech
       [Description("New depth (Z dimension)")] double depth)
    {
       var stage = EstablishGeometryStage();
-      var shape = stage.Members<GeometryShape>().FirstOrDefault(s => s.GetName().Matches(name));
-
-      if (shape != null)
+      
+      // Use ShapeEditor for event-driven update
+      var success = ShapeEditor.SetDimensions(name, width, height, depth);
+      
+      if (!success)
       {
-         shape.Width = width;
-         shape.Height = height;
-         shape.Depth = depth;
-         $"📐 Shape '{name}' resized to {width:F1} x {height:F1} x {depth:F1}".WriteSuccess();
-      }
-      else
-      {
-         $"⚠️  Shape '{name}' not found".WriteWarning();
+         $"⚠️  Failed to resize shape '{name}'".WriteWarning();
       }
 
-      RefreshUI();
       return GetShapes();
    }
 
@@ -725,19 +694,15 @@ public class Shape3DTech : IShape3DTech
       [Description("Whether the shape should be visible/active")] bool isOn)
    {
       var stage = EstablishGeometryStage();
-      var shape = stage.Members<GeometryShape>().FirstOrDefault(s => s.GetName().Matches(name));
-
-      if (shape != null)
+      
+      // Use ShapeEditor for event-driven update
+      var success = ShapeEditor.SetVisibility(name, isOn);
+      
+      if (!success)
       {
-         shape.IsOn = isOn;
-         $"👁️ Shape '{name}' is now {(isOn ? "visible" : "hidden")}".WriteSuccess();
-      }
-      else
-      {
-         $"⚠️  Shape '{name}' not found".WriteWarning();
+         $"⚠️  Failed to change visibility of shape '{name}'".WriteWarning();
       }
 
-      RefreshUI();
       return GetShapes();
    }
 
@@ -746,21 +711,25 @@ public class Shape3DTech : IShape3DTech
       [Description("The name of the shape")] string name, 
       [Description("The new color for the shape")] string color)
    {
+      $"🔧 ChangeColor CALLED: name='{name}', color='{color}'".WriteInfo();
+      
       var stage = EstablishGeometryStage();
-      var shape = stage.Members<GeometryShape>().FirstOrDefault(s => s.GetName().Matches(name));
-
-      if (shape != null)
+      $"📦 Stage retrieved: {stage?.GetName() ?? "null"}".WriteInfo();
+      
+      // Use ShapeEditor for event-driven update
+      var success = ShapeEditor.SetColor(name, color);
+      
+      if (!success)
       {
-         shape.Color = color;
-         $"🎨 Changed '{name}' color to '{color}'".WriteSuccess();
+         var allShapes = stage.Members<GeometryShape>();
+         $"❌ Failed to change color of shape '{name}'".WriteError();
+         $"📋 Available shapes: {string.Join(", ", allShapes.Select(s => s.GetName()))}".WriteWarning();
       }
-      else
-      {
-         $"⚠️  Shape '{name}' not found".WriteWarning();
-      }
-
-      RefreshUI();
-      return GetShapes();
+      
+      var result = GetShapes();
+      $"📤 Returning {result.Count} shapes".WriteInfo();
+      
+      return result;
    }
 
    [Description("Duplicates an existing shape with a new name and optional position offset")]
@@ -780,7 +749,6 @@ public class Shape3DTech : IShape3DTech
          
          var newShape = new GeometryShape(newName, sourceShape.GeomType, sourceShape.Width, sourceShape.Height, sourceShape.Depth)
          {
-            IsOn = sourceShape.IsOn,
             Color = sourceShape.Color
          };
          
@@ -813,13 +781,10 @@ public class Shape3DTech : IShape3DTech
 public class GeometryShape : FoShape3D
 {
 
-   public bool? IsOn { get; set; }  = false;
-
-   public string Status() => $"{(IsOn == true ? "visible" : "hidden")}";
 
    public GeometryShape(string name, string shapeType = "box", double? width = null, double? height = null, double? depth = null) : base(name)
    {
-      var gen = new MockDataGenerator();
+
 
       // Use provided dimensions or defaults
       var w = width ?? 2.0;
@@ -891,6 +856,6 @@ public class GeometryShape : FoShape3D
    public override string GetTreeNodeTitle()
    {
       var pos = Transform!.Position;
-      return $"{GetName()} {Color} is {Status()} @ {pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0}";
+      return $"{GetName()} {Color}  @ {pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0}";
    }
 }
