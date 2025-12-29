@@ -252,13 +252,14 @@ public class MultiProviderChatService : IMultiProviderChatService
         
         // Create chat options with tools if provided
         ChatOptions? chatOptions = null;
-        if (tools != null && tools.Any())
+        var toolsList = tools?.ToList() ?? new List<AIFunction>();
+        if (toolsList.Any())
         {
             chatOptions = new ChatOptions
             {
-                Tools = tools.Select(t => (AITool)t).ToList()
+                Tools = toolsList.Select(t => (AITool)t).ToList()
             };
-            LogMessage($"🔧 Passing {tools.Count()} tools to LLM");
+            LogMessage($"🔧 Passing {toolsList.Count} tools to LLM");
         }
         
         // Create timeout cancellation token (30 seconds)
@@ -271,31 +272,130 @@ public class MultiProviderChatService : IMultiProviderChatService
         // Collect chunks (can't yield inside try-catch)
         var chunks = new List<string>();
         
+        // Track max turns to prevent infinite loops
+        int maxTurns = 5; // Prevent infinite loops
+        int currentTurn = 0;
+        
         try
         {
-            await foreach (var update in chatClient.GetStreamingResponseAsync(conversationHistory, options: chatOptions, linkedCts.Token))
+            // Multi-turn loop to handle tool execution
+            while (currentTurn < maxTurns)
             {
-                chunkCount++;
+                currentTurn++;
+                var toolCallsInThisTurn = new List<FunctionCallContent>();
+                var textInThisTurn = new System.Text.StringBuilder();
                 
-                // Handle tool calls
-                if (update.Contents != null)
+                LogMessage($"🔄 Turn {currentTurn}: Calling LLM...");
+                
+                await foreach (var update in chatClient.GetStreamingResponseAsync(conversationHistory, options: chatOptions, linkedCts.Token))
                 {
-                    foreach (var content in update.Contents)
+                    chunkCount++;
+                    
+                    // Collect tool calls
+                    if (update.Contents != null)
                     {
-                        if (content is FunctionCallContent toolCall)
+                        foreach (var content in update.Contents)
                         {
-                            LogMessage($"🔧 Tool call: {toolCall.Name}");
-                            // Tool calls don't produce text chunks - they'll be handled by the agent
-                            // For now, just log them
+                            if (content is FunctionCallContent toolCall)
+                            {
+                                toolCallsInThisTurn.Add(toolCall);
+                                LogMessage($"🔧 Tool call detected: {toolCall.Name}");
+                            }
                         }
+                    }
+                    
+                    // Collect text
+                    if (!string.IsNullOrEmpty(update.Text))
+                    {
+                        textInThisTurn.Append(update.Text);
+                        chunks.Add(update.Text);
                     }
                 }
                 
-                if (!string.IsNullOrEmpty(update.Text))
+                // Add assistant's response to conversation (includes tool calls)
+                var assistantMessage = textInThisTurn.ToString();
+                if (!string.IsNullOrEmpty(assistantMessage) || toolCallsInThisTurn.Any())
                 {
-                    chunks.Add(update.Text);
+                    // Build the assistant message with both text and tool calls
+                    var assistantContents = new List<AIContent>();
+                    if (!string.IsNullOrEmpty(assistantMessage))
+                    {
+                        assistantContents.Add(new TextContent(assistantMessage));
+                    }
+                    assistantContents.AddRange(toolCallsInThisTurn);
+                    
+                    conversationHistory.Add(new ChatMessage(ChatRole.Assistant, assistantContents));
+                    LogMessage($"📝 Assistant response: {assistantMessage.Length} chars, {toolCallsInThisTurn.Count} tool calls");
+                }
+                
+                // Execute tools if any were called
+                if (toolCallsInThisTurn.Any())
+                {
+                    LogMessage($"⚙️ Executing {toolCallsInThisTurn.Count} tool calls...");
+                    
+                    foreach (var toolCall in toolCallsInThisTurn)
+                    {
+                        var tool = toolsList.FirstOrDefault(t => t.Name == toolCall.Name);
+                        if (tool != null)
+                        {
+                            try
+                            {
+                                LogMessage($"▶️ Executing tool: {toolCall.Name}");
+                                
+                                // Execute the tool
+                                var args = toolCall.Arguments != null 
+                                    ? new AIFunctionArguments(toolCall.Arguments) 
+                                    : new AIFunctionArguments();
+                                
+                                // Special logging for ChangeColor
+                                if (toolCall.Name == "ChangeColor")
+                                {
+                                    var argDict = toolCall.Arguments as IDictionary<string, object?>;
+                                    var shapeName = argDict?.ContainsKey("name") == true ? argDict["name"]?.ToString() : "unknown";
+                                    var color = argDict?.ContainsKey("color") == true ? argDict["color"]?.ToString() : "unknown";
+                                    LogMessage($"🎨 ChangeColor called with: name='{shapeName}', color='{color}'");
+                                }
+                                
+                                var result = await tool.InvokeAsync(args, cancellationToken);
+                                var resultStr = result?.ToString() ?? "null";
+                                
+                                LogMessage($"✅ Tool '{toolCall.Name}' executed successfully: {resultStr.Substring(0, Math.Min(100, resultStr.Length))}");
+                                
+                                // Add tool result to conversation
+                                var resultContent = new FunctionResultContent(toolCall.CallId, result);
+                                conversationHistory.Add(new ChatMessage(ChatRole.Tool, [resultContent]));
+                            }
+                            catch (Exception ex)
+                            {
+                                LogMessage($"❌ Tool '{toolCall.Name}' execution failed: {ex.Message}");
+                                var errorContent = new FunctionResultContent(toolCall.CallId, $"Error: {ex.Message}");
+                                conversationHistory.Add(new ChatMessage(ChatRole.Tool, [errorContent]));
+                            }
+                        }
+                        else
+                        {
+                            LogMessage($"⚠️ Tool '{toolCall.Name}' not found in available tools");
+                            var errorContent = new FunctionResultContent(toolCall.CallId, $"Error: Tool '{toolCall.Name}' not found");
+                            conversationHistory.Add(new ChatMessage(ChatRole.Tool, [errorContent]));
+                        }
+                    }
+                    
+                    // Continue conversation to let LLM process tool results
+                    LogMessage($"🔄 Continuing conversation with tool results...");
+                }
+                else
+                {
+                    // No tool calls - conversation is complete
+                    break;
                 }
             }
+            
+            if (currentTurn >= maxTurns)
+            {
+                LogMessage($"⚠️ Reached maximum turns ({maxTurns}), stopping conversation loop");
+            }
+            
+            LogMessage($"✅ Streaming complete: {chunks.Count} text chunks, {chunkCount} total updates");
         }
         catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
         {

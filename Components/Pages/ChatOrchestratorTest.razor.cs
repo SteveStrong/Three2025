@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.AI;
 using Three2025.Services.Chat;
 using Three2025.Models.Chat;
+using Three2025.Services.Agents;
 using AIChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 namespace Three2025.Components.Pages;
@@ -13,7 +14,10 @@ public partial class ChatOrchestratorTest
 {
     [Inject] private IChatOrchestrator ChatOrchestrator { get; set; } = default!;
     [Inject] private IMultiProviderChatService ChatService { get; set; } = default!;
+    [Inject] private ITechnicianToolProvider ToolProvider { get; set; } = default!;
     [Inject] private ILogger<ChatOrchestratorTest> Logger { get; set; } = default!;
+
+    private List<AIFunction> allTools = new();
 
 
     private string userInput = "";
@@ -31,6 +35,7 @@ public partial class ChatOrchestratorTest
     private string selectedProvider = string.Empty;
     private List<string> AvailableProviders = new();
     private string CurrentProvider = "None";
+    private List<string> toolsExecutedInCurrentTurn = new();
 
     private PageContext pageContext = new()
     {
@@ -42,8 +47,39 @@ public partial class ChatOrchestratorTest
 
     protected override void OnInitialized()
     {
-        toolCount = ChatOrchestrator.GetToolCount();
-        availableAgents = ChatOrchestrator.GetAvailableAgents(pageContext);
+        // Get all tools directly
+        allTools = ToolProvider.DiscoverAllTools().ToList();
+        toolCount = allTools.Count;
+        availableAgents = new List<string> { "3D Modeling Assistant" };
+
+        // Wire up chat service logging to activity log
+        ChatService.OnLog += (message) =>
+        {
+            // Track tool executions
+            if (message.Contains("▶️ Executing tool:"))
+            {
+                var toolName = message.Replace("▶️ Executing tool:", "").Trim();
+                toolsExecutedInCurrentTurn.Add(toolName);
+            }
+            
+            // Parse log messages and add them to activity log
+            if (message.Contains("Tool call detected:") || message.Contains("Executing tool:"))
+            {
+                AddLog(ActivityLogType.ToolExecution, message);
+            }
+            else if (message.Contains("executed successfully"))
+            {
+                AddLog(ActivityLogType.Response, message);
+            }
+            else if (message.Contains("ERROR") || message.Contains("failed"))
+            {
+                AddLog(ActivityLogType.Error, message);
+            }
+            else
+            {
+                AddLog(ActivityLogType.System, message);
+            }
+        };
 
         // Initialize providers with GitHub as default
         AvailableProviders = ChatService.AvailableProviders.ToList();
@@ -113,57 +149,92 @@ public partial class ChatOrchestratorTest
         
         isProcessing = true;
         streamingResponse = "";
-        currentAgent = "Assistant";
+        currentAgent = "3D Modeling Assistant";
 
         AddLog(ActivityLogType.UserInput, message);
 
         try
         {
+            // Add system prompt for 3D modeling
+            if (conversationHistory.Count == 0 || conversationHistory.First().Role != ChatRole.System)
+            {
+                var systemPrompt = $$$"""
+                    You are a 3D Modeling Expert Assistant specializing in creating and manipulating 3D geometry.
+                    
+                    Your expertise includes:
+                    - Creating 3D shapes (boxes, spheres, cylinders, cones, etc.)
+                    - Positioning and transforming objects
+                    - Managing materials and colors
+                    - Scene composition and lighting
+                    
+                    You have access to {{{allTools.Count}}} tools for direct 3D manipulation.
+                    
+                    When the user asks you to create or modify 3D objects, USE THE TOOLS to perform the actions.
+                    After using tools, explain what you did in a friendly, conversational way.
+                    """;
+                conversationHistory.Insert(0, new AIChatMessage(ChatRole.System, systemPrompt));
+            }
+
             // Add user message
             conversationHistory.Add(new AIChatMessage(ChatRole.User, message));
             await InvokeAsync(StateHasChanged); // Force UI update to show user message
             await ScrollToBottom();
 
-            AddLog(ActivityLogType.Routing, "Analyzing intent and selecting agent...");
+            AddLog(ActivityLogType.Routing, $"Processing with {allTools.Count} tools available...");
 
             var fullResponse = "";
+            toolsExecutedInCurrentTurn.Clear(); // Reset tool tracking
 
-            // Stream response from orchestrator
-            await foreach (var chunk in ChatOrchestrator.ProcessMessageStreamingAsync(
+            // Collect ALL streaming chunks before displaying
+            // (Don't show the streaming cursor flickering)
+            await foreach (var chunk in ChatService.SendMessageStreamingAsync(
                 message,
-                pageContext,
                 conversationHistory,
-                onAgentSwitch: async (agentName) =>
-                {
-                    currentAgent = agentName;
-                    AddLog(ActivityLogType.AgentSwitch, $"Routing to {agentName}", $"Specialized agent selected based on intent analysis");
-                    await InvokeAsync(StateHasChanged);
-                }))
+                allTools))
             {
-                if (!chunk.IsComplete)
-                {
-                    streamingResponse += chunk.Content;
-                    fullResponse += chunk.Content;
-                    currentAgent = chunk.AgentName;
-                    await InvokeAsync(StateHasChanged);
-                }
-                else
-                {
-                    // Final chunk - complete the response
-                    currentAgent = chunk.AgentName;
-                    AddLog(ActivityLogType.Response, $"Received from {chunk.AgentName}", $"Length: {fullResponse.Length} characters");
-
-                    // Check if tools were likely used (simplified heuristic)
-                    if (fullResponse.Contains("light") || fullResponse.Contains("position") || fullResponse.Contains("color"))
-                    {
-                        AddLog(ActivityLogType.ToolExecution, "LLM may have used lighting tools", "Tool usage detected in response context");
-                    }
-                }
+                fullResponse += chunk;
+                // DON'T update streamingResponse - collect everything first
             }
 
-            // Add assistant response to conversation history
-            conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, fullResponse));
-            streamingResponse = "";
+            // NOW display the complete response (or handle empty response from tool-only execution)
+            if (!string.IsNullOrEmpty(fullResponse))
+            {
+                streamingResponse = fullResponse;
+                await InvokeAsync(StateHasChanged);
+                
+                // Brief delay to show complete message
+                await Task.Delay(300);
+                
+                // Add to conversation history and clear streaming display
+                conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, fullResponse));
+                streamingResponse = "";
+                await InvokeAsync(StateHasChanged);
+            }
+            else if (toolsExecutedInCurrentTurn.Any())
+            {
+                // Tool-only execution - generate summary message
+                var toolSummary = $"✅ Executed {toolsExecutedInCurrentTurn.Count} tool(s): {string.Join(", ", toolsExecutedInCurrentTurn)}";
+                
+                // Show the summary briefly
+                streamingResponse = toolSummary;
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(500);
+                
+                // Add to conversation history
+                conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, toolSummary));
+                streamingResponse = "";
+                await InvokeAsync(StateHasChanged);
+                
+                AddLog(ActivityLogType.Response, $"Tool execution complete: {string.Join(", ", toolsExecutedInCurrentTurn)}");
+            }
+            else
+            {
+                // No tools, no text - just add empty message
+                conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, ""));
+                AddLog(ActivityLogType.Response, "Response complete (no content)");
+            }
+
+            AddLog(ActivityLogType.Response, $"Response complete", $"Length: {fullResponse.Length} characters");
 
             await ScrollToBottom();
 
@@ -238,8 +309,7 @@ public partial class ChatOrchestratorTest
     {
         AddLog(ActivityLogType.System, $"Discovering all available tools...");
 
-        var tools = ChatOrchestrator.GetAllTools();
-        var toolNames = tools.Select(t => t.Name).ToList();
+        var toolNames = allTools.Select(t => t.Name).ToList();
 
         AddLog(ActivityLogType.ToolDiscovery, $"Found {toolNames.Count} tools", string.Join(", ", toolNames));
 

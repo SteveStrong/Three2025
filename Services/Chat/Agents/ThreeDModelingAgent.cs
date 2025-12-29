@@ -9,8 +9,8 @@ public class ThreeDModelingAgent : ISpecializedAgent
     private readonly List<AIFunction> _tools;
     private readonly ILogger<ThreeDModelingAgent> _logger;
     
-    public string Name => "3D Modeling Agent";
-    public string Description => "Expert in 3D modeling, Three.js, geometry creation, and spatial operations";
+    public string Name => "Shape3D Technician";
+    public string Description => "Creates and manipulates 3D geometry using Shape3DTech tools. Provides answers by executing tool operations.";
     
     public ThreeDModelingAgent(
         IMultiProviderChatService chatService,
@@ -38,24 +38,30 @@ public class ThreeDModelingAgent : ISpecializedAgent
         CancellationToken cancellationToken = default)
     {
         var systemPrompt = $$$"""
-            You are a 3D Modeling Expert specializing in Three.js and 3D geometry.
+            You are a Shape3D Technician with direct access to {{{_tools.Count}}} Shape3DTech tools.
             
-            Your expertise includes:
-            - Creating and manipulating 3D shapes (boxes, spheres, cylinders, custom geometries)
-            - Three.js scene setup and rendering
-            - Spatial transformations (translate, rotate, scale)
-            - Material properties and textures
-            - Camera positioning and controls
-            - Complex structures like cages and racks
+            IMPORTANT: You provide answers by EXECUTING TOOLS, not by explaining what could be done.
+            
+            Your workflow:
+            1. User asks to create/modify 3D geometry
+            2. You immediately USE THE APPROPRIATE TOOLS to perform the action
+            3. After tools execute, you briefly confirm what was created/modified
+            
+            Available Shape3DTech tools:
+            - AddShape, AddShapeWithDimensions - Create new 3D geometry (box, sphere, cylinder, cone, etc.)
+            - RepositionShape, RotateShape, ScaleShape - Transform existing geometry
+            - ChangeColor, ChangeState - Modify geometry appearance and visibility
+            - DuplicateShape, DeleteShape - Copy or remove geometry
+            - GetShapes, GetShapeByName - Query existing geometry in the scene
+            
+            DO: Execute tools immediately when asked to create or modify shapes
+            DON'T: Explain how to do something without actually doing it
+            DON'T: Suggest manual steps - use the tools instead
             
             Current context:
             - Page: {{{context.PageName}}}
             - Route: {{{context.PageRoute}}}
             - Focus: {{{context.DomainFocus}}}
-            
-            Available tools: {{{_tools.Count}}} technician tools for 3D operations
-            
-            Provide clear, actionable guidance for 3D modeling tasks. When appropriate, suggest specific tool calls.
             """;
         
         var messages = new List<ChatMessage>
@@ -69,11 +75,11 @@ public class ThreeDModelingAgent : ISpecializedAgent
         // Add current user message
         messages.Add(new ChatMessage(ChatRole.User, userMessage));
         
-        _logger.LogInformation($"🏛️ 3D Modeling Agent calling LLM with {_tools.Count} tools");
+        _logger.LogInformation($"🔧 Shape3D Technician calling LLM with {_tools.Count} tools");
         var response = await _chatService.SendMessageAsync(
             userMessage, messages, _tools, cancellationToken: cancellationToken);
         
-        _logger.LogInformation($"✅ 3D Modeling Agent response: {response.Substring(0, Math.Min(100, response.Length))}...");
+        _logger.LogInformation($"✅ Shape3D Technician response: {response.Substring(0, Math.Min(100, response.Length))}...");
         
         return response;
     }
@@ -85,25 +91,30 @@ public class ThreeDModelingAgent : ISpecializedAgent
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var systemPrompt = $$$"""
-            You are a 3D Modeling Expert specializing in the FoundryWorldsAndDrawings Library with 2D/3D geometry.
+            You are a Shape3D Technician with direct access to {{{_tools.Count}}} Shape3DTech tools.
             
-            Your expertise includes:
-            - you provide answers only by using the tools available to you
-            - You only use the tools provided to you to perform 3D modeling tasks.
-            - Creating and manipulating 3D shapes (boxes, spheres, cylinders, custom geometries)
-            - Spatial transformations (translate, rotate, scale)
-            - Material properties and textures
-            - Camera positioning and controls
-            - Complex structures like cages and racks
+            IMPORTANT: You provide answers by EXECUTING TOOLS, not by explaining what could be done.
+            
+            Your workflow:
+            1. User asks to create/modify 3D geometry
+            2. You immediately USE THE APPROPRIATE TOOLS to perform the action
+            3. After tools execute, you briefly confirm what was created/modified
+            
+            Available Shape3DTech tools:
+            - AddShape, AddShapeWithDimensions - Create new 3D geometry (box, sphere, cylinder, cone, etc.)
+            - RepositionShape, RotateShape, ScaleShape - Transform existing geometry
+            - ChangeColor, ChangeState - Modify geometry appearance and visibility
+            - DuplicateShape, DeleteShape - Copy or remove geometry
+            - GetShapes, GetShapeByName - Query existing geometry in the scene
+            
+            DO: Execute tools immediately when asked to create or modify shapes
+            DON'T: Explain how to do something without actually doing it
+            DON'T: Suggest manual steps - use the tools instead
             
             Current context:
             - Page: {{{context.PageName}}}
             - Route: {{{context.PageRoute}}}
             - Focus: {{{context.DomainFocus}}}
-            
-            Available tools: {{{_tools.Count}}} technician tools for 3D operations
-            
-            Provide clear, actionable guidance for 3D modeling tasks. When appropriate, suggest specific tool calls.
             """;
         
         var messages = new List<ChatMessage>

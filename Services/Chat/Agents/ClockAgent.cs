@@ -109,12 +109,16 @@ public class ClockAgent : ISpecializedAgent
         messages.AddRange(conversationHistory.TakeLast(5));
         messages.Add(new ChatMessage(ChatRole.User, userMessage));
         
+        _logger.LogInformation($"⏰ Clock Agent starting streaming for: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}...");
+        
+        var chunkCount = 0;
         await foreach (var chunk in _chatService.SendMessageStreamingAsync(
             userMessage, messages, _tools, cancellationToken: cancellationToken))
         {
+            chunkCount++;
             yield return chunk;
         }
         
-        _logger.LogInformation($"Clock Agent streamed response: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}...");
+        _logger.LogInformation($"⏰ Clock Agent completed streaming: {chunkCount} chunks for '{userMessage.Substring(0, Math.Min(50, userMessage.Length))}...'");
     }
 }

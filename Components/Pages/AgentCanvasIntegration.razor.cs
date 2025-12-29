@@ -492,7 +492,6 @@ public partial class AgentCanvasIntegration : ComponentBase
             
             var shape = new GeometryShape(testName, "box", size, size, size)
             {
-                IsOn = true,
                 Color = color
             };
             
