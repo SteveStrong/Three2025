@@ -78,17 +78,7 @@ public class Shape3DTech : IShape3DTech
 
       $"Shape3DTech: Connected to stage '{stageToUse}'".WriteInfo();
 
-      // var shapes = new List<GeometryShape>()
-      // {
-      //    new GeometryShape("Red Box") { IsOn = false, Color = DataGenerator.GenerateColor() },
-      //    new GeometryShape("Blue Sphere") { IsOn = false, Color = DataGenerator.GenerateColor() },
-      //    new GeometryShape("Green Cylinder") { IsOn = true, Color = DataGenerator.GenerateColor() }
-      // };
 
-      // foreach (var shape in shapes)
-      // {
-      //    arena.AddShapeToStage<GeometryShape>(shape);
-      // }
 
 
       RefreshUI();
@@ -107,7 +97,7 @@ public class Shape3DTech : IShape3DTech
    public void SaveShapes()
    {  
       var stage = EstablishGeometryStage();
-      var shapes = stage.Members<GeometryShape>();
+      var shapes = stage.Members<FoGlyph3D>().OfType<GeometryShape>().ToList();
       var data = CodingExtensions.DehydrateList<GeometryShape>(shapes,false);
       FileHelpers.WriteData("Data", "shapes.json", data);
    }
@@ -167,8 +157,7 @@ public class Shape3DTech : IShape3DTech
                      Parameters = new List<OperationParameter>
                      {
                         new() { Name = "name", Type = "string", Description = "Unique name for the shape" },
-                        new() { Name = "isOn", Type = "bool", Description = "Visibility (true=visible, false=hidden)" },
-                        new() { Name = "color", Type = "string", Description = "Color name or hex code (#RRGGBB)" },
+                         new() { Name = "color", Type = "string", Description = "Color name or hex code (#RRGGBB)" },
                         new() { Name = "shapeType", Type = "string", Description = "Type of shape to create", DefaultValue = "box" }
                      },
                      ReturnType = "List<ShapeInfo>",
@@ -181,8 +170,7 @@ public class Shape3DTech : IShape3DTech
                      Parameters = new List<OperationParameter>
                      {
                         new() { Name = "name", Type = "string", Description = "Unique name" },
-                        new() { Name = "isOn", Type = "bool", Description = "Visibility" },
-                        new() { Name = "color", Type = "string", Description = "Color" },
+                         new() { Name = "color", Type = "string", Description = "Color" },
                         new() { Name = "shapeType", Type = "string", Description = "Shape type" },
                         new() { Name = "width", Type = "double", Description = "Width (X dimension)" },
                         new() { Name = "height", Type = "double", Description = "Height (Y dimension)" },
@@ -297,8 +285,7 @@ public class Shape3DTech : IShape3DTech
                      Parameters = new List<OperationParameter>
                      {
                         new() { Name = "name", Type = "string", Description = "Shape name" },
-                        new() { Name = "isOn", Type = "bool", Description = "true=show, false=hide" }
-                     },
+                      },
                      ReturnType = "List<ShapeInfo>",
                      Example = "ChangeState('Box1', false)"
                   },
@@ -417,7 +404,8 @@ public class Shape3DTech : IShape3DTech
    public List<Shape3DInfo> GetShapes()
    {
       var stage = EstablishGeometryStage();
-      var shapes = stage.Members<GeometryShape>();
+      // Use Stage API to get all shapes
+      var shapes = stage.Members<FoGlyph3D>().OfType<GeometryShape>().ToList();
       $"📋 Retrieved {shapes.Count} shapes from stage".WriteInfo();
       return shapes.Select(s => ConvertToShapeInfo(s)).ToList();
    }
@@ -470,8 +458,7 @@ public class Shape3DTech : IShape3DTech
    [Description("Create and add a 3D shape to the geometry stage")]
    public List<Shape3DInfo> AddShape(
       [Description("The name of the shape to create")] string name, 
-      [Description("Whether the shape should be visible/active")] bool isOn, 
-      [Description("The color of the shape")] string color,
+       [Description("The color of the shape")] string color,
       [Description("The type of shape: box, sphere, cylinder, cone, torus, tetrahedron, octahedron, dodecahedron, icosahedron, torusknot, capsule, plane, circle, ring")] string shapeType = "box",
       [Description("X coordinate position (optional, defaults to 0)")] double x = 0.0,
       [Description("Y coordinate position (optional, defaults to 0)")] double y = 0.0,
@@ -498,11 +485,11 @@ public class Shape3DTech : IShape3DTech
 
       if (x != 0.0 || y != 0.0 || z != 0.0)
       {
-         $"✅ Created {shapeType} '{name}' with color '{color}' at ({x:F1}, {y:F1}, {z:F1}), visible={isOn}".WriteSuccess();
+         $"✅ Created {shapeType} '{name}' with color '{color}' at ({x:F1}, {y:F1}, {z:F1})".WriteSuccess();
       }
       else
       {
-         $"✅ Created {shapeType} '{name}' with color '{color}', visible={isOn}".WriteSuccess();
+         $"✅ Created {shapeType} '{name}' with color '{color}'".WriteSuccess();
       }
 
       RefreshUI();
@@ -513,7 +500,6 @@ public class Shape3DTech : IShape3DTech
    [Description("Create and add a 3D shape with specific dimensions")]
    public List<Shape3DInfo> AddShapeWithDimensions(
       [Description("The name of the shape to create")] string name,
-      [Description("Whether the shape should be visible/active")] bool isOn,
       [Description("The color of the shape")] string color,
       [Description("The type of shape")] string shapeType,
       [Description("Width (X dimension)")] double width,
@@ -562,11 +548,12 @@ public class Shape3DTech : IShape3DTech
       [Description("The name of the shape to delete")] string name)
    {
       var stage = EstablishGeometryStage();
-      var shape = stage.Members<GeometryShape>().FirstOrDefault(shape => shape.GetName().Matches(name));
+      var (success, shape) = stage.FindMember<FoGlyph3D>(name);
+      var geometryShape = shape as GeometryShape;
 
-      if (shape != null)
+      if (geometryShape != null)
       {
-         shape.DeleteFromStage(stage);
+         geometryShape.DeleteFromStage(stage);
          $"❌ Deleted shape '{name}'".WriteSuccess();
       }
       else
@@ -588,7 +575,8 @@ public class Shape3DTech : IShape3DTech
 
       foreach (var name in names)
       {
-         var shape = stage.Members<GeometryShape>().FirstOrDefault(s => s.GetName().Matches(name));
+         var (success, found) = stage.FindMember<FoGlyph3D>(name);
+         var shape = found as GeometryShape;
          if (shape != null)
          {
             shape.DeleteFromStage(stage);
@@ -688,23 +676,7 @@ public class Shape3DTech : IShape3DTech
       return GetShapes();
    }
 
-   [Description("Changes the visibility/active state of a shape")]
-   public List<Shape3DInfo> ChangeState(
-      [Description("The name of the shape")] string name, 
-      [Description("Whether the shape should be visible/active")] bool isOn)
-   {
-      var stage = EstablishGeometryStage();
-      
-      // Use ShapeEditor for event-driven update
-      var success = ShapeEditor.SetVisibility(name, isOn);
-      
-      if (!success)
-      {
-         $"⚠️  Failed to change visibility of shape '{name}'".WriteWarning();
-      }
 
-      return GetShapes();
-   }
 
    [Description("Changes the color of a shape")]
    public List<Shape3DInfo> ChangeColor(
@@ -721,7 +693,7 @@ public class Shape3DTech : IShape3DTech
       
       if (!success)
       {
-         var allShapes = stage.Members<GeometryShape>();
+         var allShapes = stage.Members<FoGlyph3D>().OfType<GeometryShape>().ToList();
          $"❌ Failed to change color of shape '{name}'".WriteError();
          $"📋 Available shapes: {string.Join(", ", allShapes.Select(s => s.GetName()))}".WriteWarning();
       }
@@ -741,7 +713,8 @@ public class Shape3DTech : IShape3DTech
       [Description("Z offset from original position")] double offsetZ)
    {
       var stage = EstablishGeometryStage();
-      var sourceShape = stage.Members<GeometryShape>().FirstOrDefault(s => s.GetName().Matches(sourceName));
+      var (success, found) = stage.FindMember<FoGlyph3D>(sourceName);
+      var sourceShape = found as GeometryShape;
 
       if (sourceShape != null)
       {

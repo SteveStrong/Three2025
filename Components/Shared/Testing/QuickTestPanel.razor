@@ -1,0 +1,189 @@
+@using Three2025.Apprentice
+
+<div style="display: flex; flex-direction: column; height: 100%; padding: 1rem; overflow-y: auto; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+    
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700;">🎯 TestBox Workflow</h3>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; opacity: 0.9;">
+            Create, modify, and manipulate a single TestBox to verify tool integration
+        </p>
+    </div>
+    
+    <!-- Test Result Display -->
+    @if (!string.IsNullOrEmpty(lastTestResult))
+    {
+        <div style="padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem; 
+                    background: @GetResultBackground(); 
+                    border: 2px solid @GetResultBorder(); 
+                    color: @GetResultColor();
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    animation: slideIn 0.3s ease-out;">
+            <strong style="font-size: 0.9rem;">Last Test:</strong><br/>
+            <span style="font-size: 0.85rem;">@lastTestResult</span>
+        </div>
+    }
+    
+    <!-- Step 1: Create TestBox -->
+    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0 0 0.75rem 0; color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 0.5rem; font-size: 1rem;">
+            📦 Step 1: Create TestBox
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <button @onclick="Test_CreateTestBox" style="@GetButtonStyle("#dc3545")">
+                Create Red TestBox
+            </button>
+        </div>
+    </div>
+    
+    <!-- Step 2: Color Changes -->
+    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0 0 0.75rem 0; color: #fd7e14; border-bottom: 2px solid #fd7e14; padding-bottom: 0.5rem; font-size: 1rem;">
+            🎨 Step 2: Change Colors
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <button @onclick="Test_ChangeToOrange" style="@GetButtonStyle("#fd7e14")">
+                Change to Orange
+            </button>
+            <button @onclick="Test_ChangeToYellow" style="@GetButtonStyle("#ffc107")">
+                Change to Yellow
+            </button>
+            <button @onclick="Test_ChangeToGreen" style="@GetButtonStyle("#28a745")">
+                Change to Green
+            </button>
+        </div>
+    </div>
+    
+    <!-- Step 3: Resize Operations -->
+    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0 0 0.75rem 0; color: #17a2b8; border-bottom: 2px solid #17a2b8; padding-bottom: 0.5rem; font-size: 1rem;">
+            📏 Step 3: Resize TestBox
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <button @onclick="Test_MakeTaller" style="@GetButtonStyle("#17a2b8")">
+                Make Taller (2x height)
+            </button>
+            <button @onclick="Test_MakeWider" style="@GetButtonStyle("#17a2b8")">
+                Make Wider (2x width)
+            </button>
+            <button @onclick="Test_MakeDeeper" style="@GetButtonStyle("#17a2b8")">
+                Make Deeper (2x depth)
+            </button>
+            <button @onclick="Test_MakeLarger" style="@GetButtonStyle("#20c997")">
+                Make Larger (1.5x all)
+            </button>
+            <button @onclick="Test_MakeSmaller" style="@GetButtonStyle("#6c757d")">
+                Make Smaller (0.5x all)
+            </button>
+        </div>
+    </div>
+    
+    <!-- Step 4: Position Operations -->
+    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0 0 0.75rem 0; color: #0d6efd; border-bottom: 2px solid #0d6efd; padding-bottom: 0.5rem; font-size: 1rem;">
+            🎯 Step 4: Move TestBox
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <button @onclick="Test_MoveToOrigin" style="@GetButtonStyle("#6c757d")">
+                Move to Origin (0, 0, 0)
+            </button>
+            <button @onclick="Test_MoveRight" style="@GetButtonStyle("#0d6efd")">
+                Move Right (+5 X)
+            </button>
+            <button @onclick="Test_MoveUp" style="@GetButtonStyle("#0d6efd")">
+                Move Up (+5 Y)
+            </button>
+            <button @onclick="Test_MoveForward" style="@GetButtonStyle("#0d6efd")">
+                Move Forward (+5 Z)
+            </button>
+            <button @onclick="Test_MoveToPosition" style="@GetButtonStyle("#6610f2")">
+                Move to (3, 2, -4)
+            </button>
+        </div>
+    </div>
+    
+    <!-- Step 5: Rotation Operations -->
+    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0 0 0.75rem 0; color: #9b59b6; border-bottom: 2px solid #9b59b6; padding-bottom: 0.5rem; font-size: 1rem;">
+            🔄 Step 5: Rotate TestBox
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <button @onclick="Test_RotateX45" style="@GetButtonStyle("#9b59b6")">
+                Rotate 45° around X-axis
+            </button>
+            <button @onclick="Test_RotateY45" style="@GetButtonStyle("#9b59b6")">
+                Rotate 45° around Y-axis
+            </button>
+            <button @onclick="Test_RotateZ45" style="@GetButtonStyle("#9b59b6")">
+                Rotate 45° around Z-axis
+            </button>
+            <button @onclick="Test_RotateX90" style="@GetButtonStyle("#8b45b5")">
+                Rotate 90° around X-axis
+            </button>
+            <button @onclick="Test_RotateY90" style="@GetButtonStyle("#8b45b5")">
+                Rotate 90° around Y-axis
+            </button>
+            <button @onclick="Test_RotateZ90" style="@GetButtonStyle("#8b45b5")">
+                Rotate 90° around Z-axis
+            </button>
+            <button @onclick="Test_RotateMultiAxis" style="@GetButtonStyle("#d63384")">
+                Rotate Multi-Axis (30°, 45°, 60°)
+            </button>
+        </div>
+    </div>
+    
+    <!-- Query & Info -->
+    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0 0 0.75rem 0; color: #198754; border-bottom: 2px solid #198754; padding-bottom: 0.5rem; font-size: 1rem;">
+            🔍 Query & Info
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <button @onclick="Test_GetTestBoxDetails" style="@GetButtonStyle("#198754")">
+                Get TestBox Details
+            </button>
+            <button @onclick="Test_ListAllShapes" style="@GetButtonStyle("#20c997")">
+                List All Shapes
+            </button>
+        </div>
+    </div>
+    
+    <!-- Cleanup -->
+    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0 0 0.75rem 0; color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 0.5rem; font-size: 1rem;">
+            🧹 Cleanup
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <button @onclick="Test_DeleteTestBox" style="@GetButtonStyle("#dc3545")">
+                Delete TestBox
+            </button>
+            <button @onclick="Test_ClearAll" style="@GetButtonStyle("#6c757d")">
+                Clear All Shapes
+            </button>
+        </div>
+    </div>
+    
+</div>
+
+<style>
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    button:hover {
+        opacity: 0.85;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+    }
+    
+    button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    }
+</style>
