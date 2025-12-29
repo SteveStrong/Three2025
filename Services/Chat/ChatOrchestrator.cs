@@ -46,23 +46,31 @@ public class ChatOrchestrator : IChatOrchestrator
     {
         _logger.LogInformation("🔧 Starting agent initialization...");
         
-        // Create specialized agents WITH technician tools
-        var agent1 = _agentFactory.Create3DModelingAgent(_technicianTools);
-        RegisterAgent(agent1);
+        // SIMPLIFIED: Only create the 3D Modeling Agent with Shape3DTech tools
+        // This agent handles all geometry creation, manipulation, and scene operations
+        var modelingAgent = _agentFactory.Create3DModelingAgent(_technicianTools);
+        RegisterAgent(modelingAgent);
         
-        var agent2 = _agentFactory.CreateAnimationAgent(_technicianTools);
-        RegisterAgent(agent2);
+        // FUTURE AGENTS - Commented out until we establish the right pattern
+        // Once 3D modeling works well, we can add specialized agents for:
+        // - Animation (keyframes, tweens, motion paths)
+        // - Lighting (if we add light-specific tools)
+        // - Physics (if we add physics simulation)
+        // - etc.
         
-        var agent3 = _agentFactory.CreateGeometryAgent(_technicianTools);
-        RegisterAgent(agent3);
+        // var animationAgent = _agentFactory.CreateAnimationAgent(_technicianTools);
+        // RegisterAgent(animationAgent);
         
-        var agent4 = _agentFactory.CreateClockAgent(_technicianTools);
-        RegisterAgent(agent4);
+        // var geometryAgent = _agentFactory.CreateGeometryAgent(_technicianTools);
+        // RegisterAgent(geometryAgent);
         
-        var agent5 = _agentFactory.CreateGeneralAgent(_technicianTools);
-        RegisterAgent(agent5);
+        // var clockAgent = _agentFactory.CreateClockAgent(_technicianTools);
+        // RegisterAgent(clockAgent);
         
-        _logger.LogInformation($"✅ Initialized {_agents.Count} specialized agents: {string.Join(", ", _agents.Keys)}");
+        // var generalAgent = _agentFactory.CreateGeneralAgent(_technicianTools);
+        // RegisterAgent(generalAgent);
+        
+        _logger.LogInformation($"✅ Initialized {_agents.Count} agent(s): {string.Join(", ", _agents.Keys)}");
     }
     
     public void RegisterAgent(ISpecializedAgent agent)
