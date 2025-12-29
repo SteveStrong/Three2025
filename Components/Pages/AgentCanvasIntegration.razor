@@ -31,6 +31,14 @@
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "quicktest" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "quicktest")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            🎯 Quick Tests
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link @(activeChatTab == "shape3dtech" ? "active" : "")" 
                                 @onclick="@(() => activeChatTab = "shape3dtech")" 
                                 type="button" role="tab"
@@ -136,6 +144,10 @@
                         <TechnicianTestPanel TechnicianType="typeof(IMentor2DTech)" 
                                              Title="Mentor2DTech Test Panel - Diagrams"
                                              GroupByCategory="true" />
+                    }
+                    else if (activeChatTab == "quicktest")
+                    {
+                        <QuickTestPanel />
                     }
                 </div>
             </div>

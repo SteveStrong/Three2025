@@ -29,9 +29,9 @@ public interface IShape3DTech : ITechnician
 
    Shape3DInfo? GetShapeByName(string name);
 
-   List<Shape3DInfo> AddShape(string name, bool isOn, string color, string shapeType = "box", double x = 0.0, double y = 0.0, double z = 0.0);
+   List<Shape3DInfo> AddShape(string name, string color, string shapeType = "box", double x = 0.0, double y = 0.0, double z = 0.0);
 
-   List<Shape3DInfo> AddShapeWithDimensions(string name, bool isOn, string color, string shapeType, double width, double height, double depth, double x = 0.0, double y = 0.0, double z = 0.0);
+   List<Shape3DInfo> AddShapeWithDimensions(string name, string color, string shapeType, double width, double height, double depth, double x = 0.0, double y = 0.0, double z = 0.0);
 
    List<Shape3DInfo> DeleteShape(string name);
 
@@ -45,7 +45,6 @@ public interface IShape3DTech : ITechnician
 
    List<Shape3DInfo> ChangeShapeDimensions(string name, double width, double height, double depth);
 
-   List<Shape3DInfo> ChangeState(string name, bool isOn);
 
    List<Shape3DInfo> ChangeColor(string name, string color);
 
