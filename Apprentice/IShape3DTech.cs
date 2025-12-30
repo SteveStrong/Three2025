@@ -25,28 +25,28 @@ public interface IShape3DTech : ITechnician
 
    string PickARandomColor();
 
-   List<Shape3DInfo> GetShapes();
+   List<FoShape3D> GetShapes();
 
-   Shape3DInfo? GetShapeByName(string name);
+   FoShape3D? GetShapeByName(string name);
 
-   List<Shape3DInfo> AddShape(string name, string color, string shapeType = "box", double x = 0.0, double y = 0.0, double z = 0.0);
+   List<FoShape3D> AddShape(string name, string color, string shapeType = "box", double x = 0.0, double y = 0.0, double z = 0.0);
 
-   List<Shape3DInfo> AddShapeWithDimensions(string name, string color, string shapeType, double width, double height, double depth, double x = 0.0, double y = 0.0, double z = 0.0);
+   List<FoShape3D> AddShapeWithDimensions(string name, string color, string shapeType, double width, double height, double depth, double x = 0.0, double y = 0.0, double z = 0.0);
 
-   List<Shape3DInfo> DeleteShape(string name);
+   List<FoShape3D> DeleteShape(string name);
 
-   List<Shape3DInfo> DeleteMultipleShapes(List<string> names);
+   List<FoShape3D> DeleteMultipleShapes(List<string> names);
 
-   List<Shape3DInfo> RepositionShape(string name, double x, double y, double z);
+   List<FoShape3D> RepositionShape(string name, double x, double y, double z);
 
-   List<Shape3DInfo> RotateShape(string name, double xDegrees, double yDegrees, double zDegrees);
+   List<FoShape3D> RotateShape(string name, double xDegrees, double yDegrees, double zDegrees);
 
-   List<Shape3DInfo> ScaleShape(string name, double scaleX, double scaleY, double scaleZ);
+   List<FoShape3D> ScaleShape(string name, double scaleX, double scaleY, double scaleZ);
 
-   List<Shape3DInfo> ChangeShapeDimensions(string name, double width, double height, double depth);
+   List<FoShape3D> ChangeShapeDimensions(string name, double width, double height, double depth);
 
 
-   List<Shape3DInfo> ChangeColor(string name, string color);
+   List<FoShape3D> ChangeColor(string name, string color);
 
-   List<Shape3DInfo> DuplicateShape(string sourceName, string newName, double offsetX, double offsetY, double offsetZ);
+   List<FoShape3D> DuplicateShape(string sourceName, string newName, double offsetX, double offsetY, double offsetZ);
 }
