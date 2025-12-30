@@ -3,6 +3,7 @@ using Three2025.Apprentice;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 
 namespace Three2025.Components.Shared.Testing;
 
@@ -13,6 +14,10 @@ public partial class QuickTestPanel : ComponentBase
     // Test result display properties
     private string lastTestResult = "";
     private string lastTestStatus = "info"; // "success", "error", "info", "warning"
+    
+    // Geometry type tracking
+    private string currentGeometryType = "box";
+    private readonly string[] availableGeometryTypes = { "box", "sphere", "cylinder", "cone", "torus" };
     
     // ================================================================
     // UTILITY: ERROR HANDLING WRAPPER
@@ -58,8 +63,19 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_CreateTestBox() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.AddShape("TestBox", "red", "box");
-        return $"Created TestBox (red). Total shapes: {result.Count}";
+        // Check if TestBox1 already exists
+        var existing = Shape3DTech.GetShapeByName("TestBox1");
+        if (existing != null)
+        {            // Reset to red color and origin position
+            Shape3DTech.ChangeColor("TestBox1", "red");
+            existing.Transform.Position = new Vector3(0, 0, 0);
+            existing.Transform.Rotation = new Euler(0, 0, 0);
+            return $"Reset TestBox1 to red at origin (geometry: {currentGeometryType})";
+        }
+        
+        // Create new box with current geometry type
+        var result = Shape3DTech.AddShape("TestBox1", "red", currentGeometryType);
+        return $"Created TestBox1 (red {currentGeometryType}). Total shapes: {result.Count}";
     }, "Create TestBox failed");
     
     // ================================================================
@@ -68,21 +84,55 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_ChangeToOrange() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.ChangeColor("TestBox", "orange");
+        var result = Shape3DTech.ChangeColor("TestBox1", "orange");
         return $"Changed TestBox to orange";
     }, "Change color failed");
     
     private async Task Test_ChangeToYellow() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.ChangeColor("TestBox", "yellow");
+        var result = Shape3DTech.ChangeColor("TestBox1", "yellow");
         return $"Changed TestBox to yellow";
     }, "Change color failed");
     
     private async Task Test_ChangeToGreen() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.ChangeColor("TestBox", "green");
+        var result = Shape3DTech.ChangeColor("TestBox1", "green");
         return $"Changed TestBox to green";
     }, "Change color failed");
+    
+    // ================================================================
+    // GEOMETRY TYPE SELECTION
+    // ================================================================
+    
+    private async Task Test_ChangeGeometryType(string newType) => await ExecuteTest(() =>
+    {
+        currentGeometryType = newType;
+        
+        // Check if TestBox1 exists
+        var existing = Shape3DTech.GetShapeByName("TestBox1");
+        if (existing != null)
+        {
+            // Delete old shape and create new one with same color and position
+            var currentColor = existing.Color;
+            var currentPosition = existing.Transform.Position;
+            var currentRotation = existing.Transform.Rotation;
+            
+            Shape3DTech.DeleteShape("TestBox1");
+            var result = Shape3DTech.AddShape("TestBox1", currentColor, newType);
+            
+            // Restore position and rotation
+            var newShape = Shape3DTech.GetShapeByName("TestBox1");
+            if (newShape != null)
+            {
+                newShape.Transform.Position = currentPosition;
+                newShape.Transform.Rotation = currentRotation;
+            }
+            
+            return $"Changed geometry to {newType} (preserved color and position)";
+        }
+        
+        return $"Geometry type set to {newType} (will be used for next create)";
+    }, "Change geometry type failed");
     
     // ================================================================
     // STEP 3: RESIZE OPERATIONS
@@ -90,32 +140,56 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_MakeTaller() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.ScaleShape("TestBox", scaleX: 1.0, scaleY: 2.0, scaleZ: 1.0);
-        return $"Made TestBox taller (2x height)";
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) return "TestBox1 not found";
+        
+        var newHeight = box.Height * 2.0;
+        var result = Shape3DTech.ChangeShapeDimensions("TestBox1", box.Width, newHeight, box.Depth);
+        return $"Made TestBox1 taller ({box.Height:F1} → {newHeight:F1})";
     }, "Resize failed");
     
     private async Task Test_MakeWider() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.ScaleShape("TestBox", scaleX: 2.0, scaleY: 1.0, scaleZ: 1.0);
-        return $"Made TestBox wider (2x width)";
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) return "TestBox1 not found";
+        
+        var newWidth = box.Width * 2.0;
+        var result = Shape3DTech.ChangeShapeDimensions("TestBox1", newWidth, box.Height, box.Depth);
+        return $"Made TestBox1 wider ({box.Width:F1} → {newWidth:F1})";
     }, "Resize failed");
     
     private async Task Test_MakeDeeper() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.ScaleShape("TestBox", scaleX: 1.0, scaleY: 1.0, scaleZ: 2.0);
-        return $"Made TestBox deeper (2x depth)";
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) return "TestBox1 not found";
+        
+        var newDepth = box.Depth * 2.0;
+        var result = Shape3DTech.ChangeShapeDimensions("TestBox1", box.Width, box.Height, newDepth);
+        return $"Made TestBox1 deeper ({box.Depth:F1} → {newDepth:F1})";
     }, "Resize failed");
     
     private async Task Test_MakeLarger() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.ScaleShape("TestBox", scaleX: 1.5, scaleY: 1.5, scaleZ: 1.5);
-        return $"Made TestBox larger (1.5x all dimensions)";
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) return "TestBox1 not found";
+        
+        var newWidth = box.Width * 1.5;
+        var newHeight = box.Height * 1.5;
+        var newDepth = box.Depth * 1.5;
+        var result = Shape3DTech.ChangeShapeDimensions("TestBox1", newWidth, newHeight, newDepth);
+        return $"Made TestBox1 larger (all dimensions × 1.5)";
     }, "Resize failed");
     
     private async Task Test_MakeSmaller() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.ScaleShape("TestBox", scaleX: 0.5, scaleY: 0.5, scaleZ: 0.5);
-        return $"Made TestBox smaller (0.5x all dimensions)";
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) return "TestBox1 not found";
+        
+        var newWidth = box.Width * 0.5;
+        var newHeight = box.Height * 0.5;
+        var newDepth = box.Depth * 0.5;
+        var result = Shape3DTech.ChangeShapeDimensions("TestBox1", newWidth, newHeight, newDepth);
+        return $"Made TestBox1 smaller (all dimensions × 0.5)";
     }, "Resize failed");
     
     // ================================================================
@@ -124,32 +198,38 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_MoveToOrigin() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.RepositionShape("TestBox", x: 0, y: 0, z: 0);
-        return $"Moved TestBox to origin (0, 0, 0)";
+        var result = Shape3DTech.RepositionShape("TestBox1", x: 0, y: 0, z: 0);
+        return $"Moved TestBox1 to origin (0, 0, 0)";
     }, "Move failed");
     
     private async Task Test_MoveRight() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.RepositionShape("TestBox", x: 5.0, y: 0, z: 0);
-        return $"Moved TestBox right (+5 on X-axis)";
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) throw new Exception("TestBox1 not found");
+        box.Transform.MoveBy(1.0, 0, 0);
+        return $"Moved TestBox1 right (+1.0 on X-axis)";
     }, "Move failed");
     
     private async Task Test_MoveUp() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.RepositionShape("TestBox", x: 0, y: 5.0, z: 0);
-        return $"Moved TestBox up (+5 on Y-axis)";
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) throw new Exception("TestBox1 not found");
+        box.Transform.MoveBy(0, 1.0, 0);
+        return $"Moved TestBox1 up (+1.0 on Y-axis)";
     }, "Move failed");
     
     private async Task Test_MoveForward() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.RepositionShape("TestBox", x: 0, y: 0, z: 5.0);
-        return $"Moved TestBox forward (+5 on Z-axis)";
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) throw new Exception("TestBox1 not found");
+        box.Transform.MoveBy(0, 0, 1.0);
+        return $"Moved TestBox1 forward (+1.0 on Z-axis)";
     }, "Move failed");
     
     private async Task Test_MoveToPosition() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.RepositionShape("TestBox", x: 3.0, y: 2.0, z: -4.0);
-        return $"Moved TestBox to (3, 2, -4)";
+        var result = Shape3DTech.RepositionShape("TestBox1", x: 3.0, y: 2.0, z: -4.0);
+        return $"Moved TestBox1 to (3, 2, -4)";
     }, "Move failed");
     
     // ================================================================
@@ -158,44 +238,50 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_RotateX45() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.RotateShape("TestBox", xDegrees: 45, yDegrees: 0, zDegrees: 0);
-        return $"Rotated TestBox 45° around X-axis";
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) throw new Exception("TestBox1 not found");
+        box.Transform.RotateBy(45, 0, 0, AngleUnit.Degrees);
+        return $"Rotated TestBox1 +45° around X-axis (cumulative)";
     }, "Rotate failed");
     
     private async Task Test_RotateY45() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.RotateShape("TestBox", xDegrees: 0, yDegrees: 45, zDegrees: 0);
-        return $"Rotated TestBox 45° around Y-axis";
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) throw new Exception("TestBox1 not found");
+        box.Transform.RotateBy(0, 45, 0, AngleUnit.Degrees);
+        return $"Rotated TestBox1 +45° around Y-axis (cumulative)";
     }, "Rotate failed");
     
     private async Task Test_RotateZ45() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.RotateShape("TestBox", xDegrees: 0, yDegrees: 0, zDegrees: 45);
-        return $"Rotated TestBox 45° around Z-axis";
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) throw new Exception("TestBox1 not found");
+        box.Transform.RotateBy(0, 0, 45, AngleUnit.Degrees);
+        return $"Rotated TestBox1 +45° around Z-axis (cumulative)";
     }, "Rotate failed");
     
     private async Task Test_RotateX90() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.RotateShape("TestBox", xDegrees: 90, yDegrees: 0, zDegrees: 0);
-        return $"Rotated TestBox 90° around X-axis";
+        var result = Shape3DTech.RotateShape("TestBox1", xDegrees: 90, yDegrees: 0, zDegrees: 0);
+        return $"Rotated TestBox1 90° around X-axis";
     }, "Rotate failed");
     
     private async Task Test_RotateY90() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.RotateShape("TestBox", xDegrees: 0, yDegrees: 90, zDegrees: 0);
-        return $"Rotated TestBox 90° around Y-axis";
+        var result = Shape3DTech.RotateShape("TestBox1", xDegrees: 0, yDegrees: 90, zDegrees: 0);
+        return $"Rotated TestBox1 90° around Y-axis";
     }, "Rotate failed");
     
     private async Task Test_RotateZ90() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.RotateShape("TestBox", xDegrees: 0, yDegrees: 0, zDegrees: 90);
-        return $"Rotated TestBox 90° around Z-axis";
+        var result = Shape3DTech.RotateShape("TestBox1", xDegrees: 0, yDegrees: 0, zDegrees: 90);
+        return $"Rotated TestBox1 90° around Z-axis";
     }, "Rotate failed");
     
     private async Task Test_RotateMultiAxis() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.RotateShape("TestBox", xDegrees: 30, yDegrees: 45, zDegrees: 60);
-        return $"Rotated TestBox (30° X, 45° Y, 60° Z)";
+        var result = Shape3DTech.RotateShape("TestBox1", xDegrees: 30, yDegrees: 45, zDegrees: 60);
+        return $"Rotated TestBox1 (30° X, 45° Y, 60° Z)";
     }, "Rotate failed");
     
     // ================================================================
@@ -204,8 +290,8 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_DeleteTestBox() => await ExecuteTest(() =>
     {
-        var result = Shape3DTech.DeleteShape("TestBox");
-        return $"Deleted TestBox. Remaining shapes: {result.Count}";
+        var result = Shape3DTech.DeleteShape("TestBox1");
+        return $"Deleted TestBox1. Remaining shapes: {result.Count}";
     }, "Delete failed");
     
     private async Task Test_ClearAll() => await ExecuteTest(() =>
@@ -214,34 +300,9 @@ public partial class QuickTestPanel : ComponentBase
         return $"Cleared all shapes from scene";
     }, "Clear failed");
     
-    // ================================================================
-    // CATEGORY: QUERY
-    // ================================================================
+
     
-    private async Task Test_ListAllShapes() => await ExecuteTest(() =>
-    {
-        var shapes = Shape3DTech.GetShapes();
-        if (shapes.Count == 0)
-        {
-            return "No shapes in scene";
-        }
-        
-        var shapeList = string.Join(", ", shapes.Select(s => $"{s.Name}({s.Color})"));
-        return $"Found {shapes.Count} shapes: {shapeList}";
-    }, "List shapes failed");
-    
-    private async Task Test_GetTestBoxDetails() => await ExecuteTest(() =>
-    {
-        var shapes = Shape3DTech.GetShapes();
-        var testBox = shapes.FirstOrDefault(s => s.Name == "TestBox");
-        
-        if (testBox == null)
-        {
-            return "TestBox not found in scene";
-        }
-        
-        return $"TestBox: Color={testBox.Color}, Pos=({testBox.X:F1},{testBox.Y:F1},{testBox.Z:F1}), Size=({testBox.Width:F1}×{testBox.Height:F1}×{testBox.Depth:F1})";
-    }, "Get details failed");
+
     
     // ================================================================
     // UTILITY: UI STYLING METHODS
@@ -262,6 +323,26 @@ public partial class QuickTestPanel : ComponentBase
             text-align: left;
             transition: all 0.2s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        ";
+    }
+    
+    private string GetGeometryTypeButtonStyle(string type)
+    {
+        var isActive = type == currentGeometryType;
+        var bgColor = isActive ? "#0d6efd" : "#6c757d";
+        var fontWeight = isActive ? "700" : "500";
+        return $@"
+            padding: 0.4rem 0.8rem;
+            background: {bgColor};
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: {fontWeight};
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            text-transform: capitalize;
         ";
     }
     

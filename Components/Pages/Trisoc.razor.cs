@@ -146,18 +146,7 @@ public partial class TrisocBase : ComponentBase
     }
 
 
-    public void DoReposition()
-    {
-        var list = Shape3DTech.GetShapes();
-        for (int i = 0; i < list.Count - 1; i++)
-        {
-            var x = list[i].X;
-            var y = list[i].Y;
-            var shapeName = list[i + 1].Name;
-            Shape3DTech.RepositionShape(shapeName, x + 5, y + 5, 0);
-        }
 
-    }
 
     // Chat methods
     protected async Task SendMessage()

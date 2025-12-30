@@ -55,12 +55,12 @@ public class Shape3DTech : IShape3DTech
          $"🔍 Stack trace: {ex.StackTrace}".WriteWarning();
       }
    }
-   
+
    [Description("Establish a Geometry Stage for managing 3D shapes in the application")]
    public FoStage3D EstablishGeometryStage(string? stageName = null)
    {
 
-      if ( Stage != null)
+      if (Stage != null)
       {
          // Ensure ShapeEditor always has the stage, even on repeated calls
          ShapeEditor.SetStage(Stage);
@@ -68,7 +68,7 @@ public class Shape3DTech : IShape3DTech
       }
 
       var arena = Workspace.GetArena();
-      
+
       // If stage name is specified, use it; otherwise use "AgentCanvas3D" as default
       var stageToUse = stageName ?? "AgentCanvas3D";
       Stage = arena.EstablishStage<FoStage3D>(stageToUse);
@@ -95,10 +95,10 @@ public class Shape3DTech : IShape3DTech
 
    [Description("Saves all shapes to a file for persistence")]
    public void SaveShapes()
-   {  
+   {
       var stage = EstablishGeometryStage();
       var shapes = stage.Members<FoGlyph3D>().OfType<GeometryShape>().ToList();
-      var data = CodingExtensions.DehydrateList<GeometryShape>(shapes,false);
+      var data = CodingExtensions.DehydrateList<GeometryShape>(shapes, false);
       FileHelpers.WriteData("Data", "shapes.json", data);
    }
 
@@ -106,9 +106,9 @@ public class Shape3DTech : IShape3DTech
    public void RestoreShapes()
    {
       var data = FileHelpers.ReadData("Data", "shapes.json");
-      var list = CodingExtensions.HydrateList<GeometryShape>(data,false);
-      
-   
+      var list = CodingExtensions.HydrateList<GeometryShape>(data, false);
+
+
       var stage = EstablishGeometryStage();
       _ = stage.ClearAll();
 
@@ -401,22 +401,22 @@ public class Shape3DTech : IShape3DTech
    }
 
    [Description("Gets a list of all shapes and their current state")]
-   public List<Shape3DInfo> GetShapes()
+   public List<FoShape3D> GetShapes()
    {
       var stage = EstablishGeometryStage();
       // Use Stage API to get all shapes
       var shapes = stage.Members<FoGlyph3D>().OfType<GeometryShape>().ToList();
       $"📋 Retrieved {shapes.Count} shapes from stage".WriteInfo();
-      return shapes.Select(s => ConvertToShapeInfo(s)).ToList();
+      return shapes.Cast<FoShape3D>().ToList();
    }
 
    [Description("Gets information about a specific shape by name")]
-   public Shape3DInfo? GetShapeByName(
+   public FoShape3D? GetShapeByName(
       [Description("The name of the shape to query")] string name)
    {
-      var list = GetShapes();
-      var shape = list.FirstOrDefault(s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-      
+      var stage = EstablishGeometryStage();
+      var (success, found) = stage.FindMember<FoGlyph3D>(name);
+      var shape = found as GeometryShape;
       if (shape != null)
       {
          $"🔍 Found shape '{name}'".WriteInfo();
@@ -425,40 +425,14 @@ public class Shape3DTech : IShape3DTech
       {
          $"⚠️  Shape '{name}' not found".WriteWarning();
       }
-      
+
       return shape;
    }
 
-   private Shape3DInfo ConvertToShapeInfo(GeometryShape shape)
-   {
-      var pos = shape.Transform?.Position ?? Vector3.Zero;
-      var rot = shape.Transform?.Rotation ?? new Euler(0, 0, 0);
-      var scale = shape.Transform?.Scale ?? new Vector3(1, 1, 1);
-      
-      return new Shape3DInfo
-      {
-         Name = shape.GetName(),
-         GeomType = shape.GeomType,
-         Color = shape.Color,
-         X = pos.X,
-         Y = pos.Y,
-         Z = pos.Z,
-         Width = shape.Width,
-         Height = shape.Height,
-         Depth = shape.Depth,
-         RotationX = rot.X,
-         RotationY = rot.Y,
-         RotationZ = rot.Z,
-         ScaleX = scale.X,
-         ScaleY = scale.Y,
-         ScaleZ = scale.Z
-      };
-   }
-   
    [Description("Create and add a 3D shape to the geometry stage")]
-   public List<Shape3DInfo> AddShape(
-      [Description("The name of the shape to create")] string name, 
-       [Description("The color of the shape")] string color,
+   public List<FoShape3D> AddShape(
+      [Description("The name of the shape to create")] string name,
+      [Description("The color of the shape")] string color,
       [Description("The type of shape: box, sphere, cylinder, cone, torus, tetrahedron, octahedron, dodecahedron, icosahedron, torusknot, capsule, plane, circle, ring")] string shapeType = "box",
       [Description("X coordinate position (optional, defaults to 0)")] double x = 0.0,
       [Description("Y coordinate position (optional, defaults to 0)")] double y = 0.0,
@@ -498,7 +472,7 @@ public class Shape3DTech : IShape3DTech
    }
 
    [Description("Create and add a 3D shape with specific dimensions")]
-   public List<Shape3DInfo> AddShapeWithDimensions(
+   public List<FoShape3D> AddShapeWithDimensions(
       [Description("The name of the shape to create")] string name,
       [Description("The color of the shape")] string color,
       [Description("The type of shape")] string shapeType,
@@ -513,29 +487,18 @@ public class Shape3DTech : IShape3DTech
 
       var newShape = new GeometryShape(name, shapeType, width, height, depth)
       {
-         Color = color
+         Color = color,
+         Transform = new Transform3($"{name}_Transform")
+         { 
+            Position = new Vector3(x, y, z)
+         }
       };
 
-      // Set position if not at origin
-      if (x != 0.0 || y != 0.0 || z != 0.0)
-      {
-         if (newShape.Transform == null)
-         {
-            newShape.Transform = new Transform3($"{name}_Transform");
-         }
-         newShape.Transform.Position = new Vector3(x, y, z);
-      }
+
 
       stage.AddShape(newShape);
 
-      if (x != 0.0 || y != 0.0 || z != 0.0)
-      {
-         $"✅ Created {shapeType} '{name}' ({width}x{height}x{depth}) with color '{color}' at ({x:F1}, {y:F1}, {z:F1})".WriteSuccess();
-      }
-      else
-      {
-         $"✅ Created {shapeType} '{name}' ({width}x{height}x{depth}) with color '{color}'".WriteSuccess();
-      }
+      $"✅ Created {shapeType} '{name}' ({width}x{height}x{depth}) with color '{color}' at ({x:F1}, {y:F1}, {z:F1})".WriteSuccess();
 
       RefreshUI();
 
@@ -544,7 +507,7 @@ public class Shape3DTech : IShape3DTech
 
 
    [Description("Delete a shape from the geometry stage")]
-   public List<Shape3DInfo> DeleteShape(
+   public List<FoShape3D> DeleteShape(
       [Description("The name of the shape to delete")] string name)
    {
       var stage = EstablishGeometryStage();
@@ -567,7 +530,7 @@ public class Shape3DTech : IShape3DTech
    }
 
    [Description("Delete multiple shapes from the geometry stage")]
-   public List<Shape3DInfo> DeleteMultipleShapes(
+   public List<FoShape3D> DeleteMultipleShapes(
       [Description("List of shape names to delete")] List<string> names)
    {
       var stage = EstablishGeometryStage();
@@ -592,17 +555,17 @@ public class Shape3DTech : IShape3DTech
    }
 
    [Description("Changes the X, Y, Z position of a shape in 3D space")]
-   public List<Shape3DInfo> RepositionShape(
-      [Description("The name of the shape to reposition")] string name, 
-      [Description("The X coordinate")] double x, 
-      [Description("The Y coordinate")] double y, 
+   public List<FoShape3D> RepositionShape(
+      [Description("The name of the shape to reposition")] string name,
+      [Description("The X coordinate")] double x,
+      [Description("The Y coordinate")] double y,
       [Description("The Z coordinate")] double z)
    {
       var stage = EstablishGeometryStage();
-      
+
       // Use ShapeEditor for event-driven update
       var success = ShapeEditor.SetPosition(name, new Vector3(x, y, z));
-      
+
       if (!success)
       {
          $"⚠️  Failed to reposition shape '{name}'".WriteWarning();
@@ -612,22 +575,22 @@ public class Shape3DTech : IShape3DTech
    }
 
    [Description("Rotates a shape around X, Y, Z axes in degrees")]
-   public List<Shape3DInfo> RotateShape(
+   public List<FoShape3D> RotateShape(
       [Description("The name of the shape to rotate")] string name,
       [Description("Rotation around X axis in degrees")] double xDegrees,
       [Description("Rotation around Y axis in degrees")] double yDegrees,
       [Description("Rotation around Z axis in degrees")] double zDegrees)
    {
       var stage = EstablishGeometryStage();
-      
+
       // Convert degrees to radians
       var xRad = xDegrees * Math.PI / 180.0;
       var yRad = yDegrees * Math.PI / 180.0;
       var zRad = zDegrees * Math.PI / 180.0;
-      
+
       // Use ShapeEditor for event-driven update
       var success = ShapeEditor.SetRotation(name, new Euler(xRad, yRad, zRad));
-      
+
       if (!success)
       {
          $"⚠️  Failed to rotate shape '{name}'".WriteWarning();
@@ -637,17 +600,17 @@ public class Shape3DTech : IShape3DTech
    }
 
    [Description("Scales a shape by multiplying its size on X, Y, Z axes")]
-   public List<Shape3DInfo> ScaleShape(
+   public List<FoShape3D> ScaleShape(
       [Description("The name of the shape to scale")] string name,
       [Description("Scale factor for X axis (1.0 = original size)")] double scaleX,
       [Description("Scale factor for Y axis (1.0 = original size)")] double scaleY,
       [Description("Scale factor for Z axis (1.0 = original size)")] double scaleZ)
    {
       var stage = EstablishGeometryStage();
-      
+
       // Use ShapeEditor for event-driven update
       var success = ShapeEditor.SetScale(name, new Vector3(scaleX, scaleY, scaleZ));
-      
+
       if (!success)
       {
          $"⚠️  Failed to scale shape '{name}'".WriteWarning();
@@ -657,17 +620,17 @@ public class Shape3DTech : IShape3DTech
    }
 
    [Description("Changes the dimensions (width, height, depth) of an existing shape")]
-   public List<Shape3DInfo> ChangeShapeDimensions(
+   public List<FoShape3D> ChangeShapeDimensions(
       [Description("The name of the shape")] string name,
       [Description("New width (X dimension)")] double width,
       [Description("New height (Y dimension)")] double height,
       [Description("New depth (Z dimension)")] double depth)
    {
       var stage = EstablishGeometryStage();
-      
+
       // Use ShapeEditor for event-driven update
       var success = ShapeEditor.SetDimensions(name, width, height, depth);
-      
+
       if (!success)
       {
          $"⚠️  Failed to resize shape '{name}'".WriteWarning();
@@ -679,33 +642,33 @@ public class Shape3DTech : IShape3DTech
 
 
    [Description("Changes the color of a shape")]
-   public List<Shape3DInfo> ChangeColor(
-      [Description("The name of the shape")] string name, 
+   public List<FoShape3D> ChangeColor(
+      [Description("The name of the shape")] string name,
       [Description("The new color for the shape")] string color)
    {
       $"🔧 ChangeColor CALLED: name='{name}', color='{color}'".WriteInfo();
-      
+
       var stage = EstablishGeometryStage();
       $"📦 Stage retrieved: {stage?.GetName() ?? "null"}".WriteInfo();
-      
+
       // Use ShapeEditor for event-driven update
       var success = ShapeEditor.SetColor(name, color);
-      
+
       if (!success)
       {
          var allShapes = stage.Members<FoGlyph3D>().OfType<GeometryShape>().ToList();
          $"❌ Failed to change color of shape '{name}'".WriteError();
          $"📋 Available shapes: {string.Join(", ", allShapes.Select(s => s.GetName()))}".WriteWarning();
       }
-      
+
       var result = GetShapes();
       $"📤 Returning {result.Count} shapes".WriteInfo();
-      
+
       return result;
    }
 
    [Description("Duplicates an existing shape with a new name and optional position offset")]
-   public List<Shape3DInfo> DuplicateShape(
+   public List<FoShape3D> DuplicateShape(
       [Description("The name of the shape to duplicate")] string sourceName,
       [Description("Name for the new duplicated shape")] string newName,
       [Description("X offset from original position")] double offsetX,
@@ -719,26 +682,26 @@ public class Shape3DTech : IShape3DTech
       if (sourceShape != null)
       {
          var pos = sourceShape.Transform?.Position ?? Vector3.Zero;
-         
+
          var newShape = new GeometryShape(newName, sourceShape.GeomType, sourceShape.Width, sourceShape.Height, sourceShape.Depth)
          {
             Color = sourceShape.Color
          };
-         
+
          newShape.Transform!.Position = new Vector3(pos.X + offsetX, pos.Y + offsetY, pos.Z + offsetZ);
-         
+
          if (sourceShape.Transform?.Rotation != null)
          {
             newShape.Transform.Rotation = sourceShape.Transform.Rotation;
          }
-         
+
          if (sourceShape.Transform?.Scale != null)
          {
             newShape.Transform.Scale = sourceShape.Transform.Scale;
          }
-         
+
          stage.AddShape(newShape);
-         
+
          $"📋 Duplicated '{sourceName}' as '{newName}' with offset ({offsetX:F1}, {offsetY:F1}, {offsetZ:F1})".WriteSuccess();
       }
       else
@@ -822,7 +785,7 @@ public class GeometryShape : FoShape3D
          },
          Color = "black"
       };
-      AddShape(tag); 
+      AddShape(tag);
       GetTreeNodeTitle().WriteSuccess();
    }
 

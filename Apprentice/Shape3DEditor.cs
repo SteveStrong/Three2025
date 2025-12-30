@@ -44,7 +44,6 @@ public class Shape3DEditor : IShape3DEditor
       }
 
       shape.Color = color;
-      shape.SetMaterialStale();  // Mark material for recompute
       ShapeChanged();
       return true;
    }

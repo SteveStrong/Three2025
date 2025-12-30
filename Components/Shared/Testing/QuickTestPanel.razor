@@ -31,8 +31,20 @@
         </h4>
         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
             <button @onclick="Test_CreateTestBox" style="@GetButtonStyle("#dc3545")">
-                Create Red TestBox
+                Create Red TestBox (@currentGeometryType)
             </button>
+            <div style="margin-top: 0.5rem; padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
+                <div style="font-size: 0.75rem; color: #6c757d; margin-bottom: 0.25rem; font-weight: 600;">Geometry Type:</div>
+                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                    @foreach (var type in availableGeometryTypes)
+                    {
+                        <button @onclick="() => Test_ChangeGeometryType(type)" 
+                                style="@GetGeometryTypeButtonStyle(type)">
+                            @type
+                        </button>
+                    }
+                </div>
+            </div>
         </div>
     </div>
     
@@ -132,20 +144,7 @@
         </div>
     </div>
     
-    <!-- Query & Info -->
-    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h4 style="margin: 0 0 0.75rem 0; color: #198754; border-bottom: 2px solid #198754; padding-bottom: 0.5rem; font-size: 1rem;">
-            🔍 Query & Info
-        </h4>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-            <button @onclick="Test_GetTestBoxDetails" style="@GetButtonStyle("#198754")">
-                Get TestBox Details
-            </button>
-            <button @onclick="Test_ListAllShapes" style="@GetButtonStyle("#20c997")">
-                List All Shapes
-            </button>
-        </div>
-    </div>
+
     
     <!-- Cleanup -->
     <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
