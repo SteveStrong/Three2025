@@ -48,5 +48,5 @@ public interface IShape3DTech : ITechnician
 
    List<FoShape3D> ChangeColor(string name, string color);
 
-   List<FoShape3D> DuplicateShape(string sourceName, string newName, double offsetX, double offsetY, double offsetZ);
+   
 }

@@ -109,30 +109,86 @@ public class Shape3DEditor : IShape3DEditor
       return true;
    }
 
-   public bool SetVisibility(string shapeName, bool isVisible)
+   public bool DeleteShape(string name)
    {
-      var shape = FindShape(shapeName);
-      if (shape == null)
+      if (_stage == null)
       {
-         $"❌ Shape '{shapeName}' not found".WriteError();
+         $"❌ No stage connected".WriteError();
          return false;
       }
 
+      var (success, shape) = _stage.FindMember<FoGlyph3D>(name);
+      var foShape = shape as FoShape3D;
+
+      if (foShape != null)
+      {
+         foShape.DeleteFromStage(_stage);
+         $"❌ Deleted shape '{name}'".WriteSuccess();
+         ShapeChanged();
+         return true;
+      }
+      else
+      {
+         $"⚠️  Shape '{name}' not found".WriteWarning();
+         return false;
+      }
+   }
+
+   public int DeleteMultipleShapes(List<string> names)
+   {
+      if (_stage == null)
+      {
+         $"❌ No stage connected".WriteError();
+         return 0;
+      }
+
+      int deletedCount = 0;
+
+      foreach (var name in names)
+      {
+         var (success, found) = _stage.FindMember<FoGlyph3D>(name);
+         var shape = found as FoShape3D;
+         if (shape != null)
+         {
+            shape.DeleteFromStage(_stage);
+            deletedCount++;
+         }
+      }
+
+      $"❌ Deleted {deletedCount} of {names.Count} shapes".WriteSuccess();
+      
+      if (deletedCount > 0)
+      {
+         ShapeChanged();
+      }
+      
+      return deletedCount;
+   }
+
+   public bool ClearShapes()
+   {
+      if (_stage == null)
+      {
+         $"❌ No stage connected".WriteError();
+         return false;
+      }
+
+      _ = _stage.ClearAll();
       ShapeChanged();
       return true;
    }
 
-   private GeometryShape? FindShape(string shapeName)
+   private FoShape3D? FindShape(string shapeName)
    {
       if (_stage == null)
          return null;
       
       // Use Stage API - searches in FoGlyph3D slot where shapes are stored
       var (success, found) = _stage.FindMember<FoGlyph3D>(shapeName);
-      return found as GeometryShape;
+      return found as FoShape3D;
    }
 
-   private void EnsureTransform(GeometryShape shape, string shapeName)
+   private void EnsureTransform(FoShape3D shape, string shapeName)
    {
       if (shape.Transform == null)
       {
