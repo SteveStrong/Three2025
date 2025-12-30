@@ -19,6 +19,10 @@ public partial class QuickTestPanel : ComponentBase
     private string currentGeometryType = "box";
     private readonly string[] availableGeometryTypes = { "box", "sphere", "cylinder", "cone", "torus" };
     
+    // Link geometry type tracking
+    private string currentLinkGeometryType = "Pipe";
+    private readonly string[] availableLinkGeometryTypes = { "Pipe", "Tube", "Line" };
+    
     // ================================================================
     // UTILITY: ERROR HANDLING WRAPPER
     // ================================================================
@@ -193,6 +197,82 @@ public partial class QuickTestPanel : ComponentBase
     }, "Resize failed");
     
     // ================================================================
+    // STEP 5: CREATE LINK SHAPES (IBodyLink3D)
+    // ================================================================
+    
+    private async Task Test_CreateLinkShape() => await ExecuteTest(() =>
+    {
+        // Create two body shapes if they don't exist
+        var body1 = Shape3DTech.GetShapeByName("Body1");
+        if (body1 == null)
+        {
+            Shape3DTech.AddShape("Body1", "cyan", "sphere", -3, 0, 0);
+            body1 = Shape3DTech.GetShapeByName("Body1");
+        }
+        
+        var body2 = Shape3DTech.GetShapeByName("Body2");
+        if (body2 == null)
+        {
+            Shape3DTech.AddShape("Body2", "magenta", "sphere", 3, 0, 0);
+            body2 = Shape3DTech.GetShapeByName("Body2");
+        }
+        
+        // Create a link with current geometry type
+        var result = Shape3DTech.CreateLinkShape("TestLink1", "yellow", body1!, body2!, 0.2, currentLinkGeometryType);
+        return $"Created Link ({currentLinkGeometryType}) between Body1 and Body2. This is an IBodyLink3D (dependent shape)";
+    }, "Create Link failed");
+    
+    private async Task Test_ChangeLinkGeometry() => await ExecuteTest(() =>
+    {
+        var result = Shape3DTech.ChangeLinkGeometryType("TestLink1", currentLinkGeometryType);
+        return $"Changed TestLink1 geometry to {currentLinkGeometryType}";
+    }, "Change Link Geometry failed");
+    
+    private async Task Test_CreatePipeLink() => await ExecuteTest(() =>
+    {
+        // Create two body shapes if they don't exist
+        var body1 = Shape3DTech.GetShapeByName("Body1");
+        if (body1 == null)
+        {
+            Shape3DTech.AddShape("Body1", "cyan", "sphere", -3, 0, 0);
+            body1 = Shape3DTech.GetShapeByName("Body1");
+        }
+        
+        var body2 = Shape3DTech.GetShapeByName("Body2");
+        if (body2 == null)
+        {
+            Shape3DTech.AddShape("Body2", "magenta", "sphere", 3, 0, 0);
+            body2 = Shape3DTech.GetShapeByName("Body2");
+        }
+        
+        // Create a pipe link connecting them
+        var result = Shape3DTech.CreatePipeLink("PipeLink1", "yellow", body1!, body2!, 0.2);
+        return $"Created Pipe Link between Body1 and Body2. This is an IBodyLink3D (dependent shape)";
+    }, "Create Pipe Link failed");
+    
+    private async Task Test_CreatePathwayLink() => await ExecuteTest(() =>
+    {
+        // Create two body shapes if they don't exist
+        var body1 = Shape3DTech.GetShapeByName("Body1");
+        if (body1 == null)
+        {
+            Shape3DTech.AddShape("Body1", "cyan", "sphere", -3, 0, 0);
+            body1 = Shape3DTech.GetShapeByName("Body1");
+        }
+        
+        var body2 = Shape3DTech.GetShapeByName("Body2");
+        if (body2 == null)
+        {
+            Shape3DTech.AddShape("Body2", "magenta", "sphere", 3, 0, 0);
+            body2 = Shape3DTech.GetShapeByName("Body2");
+        }
+        
+        // Create a pathway link
+        var result = Shape3DTech.CreatePathwayLink("Pathway1", body1!, body2!);
+        return $"Created Pathway Link between Body1 and Body2. This is an IBodyLink3D (dependent shape)";
+    }, "Create Pathway Link failed");
+    
+    // ================================================================
     // STEP 4: POSITION OPERATIONS
     // ================================================================
     
@@ -285,6 +365,30 @@ public partial class QuickTestPanel : ComponentBase
     }, "Rotate failed");
     
     // ================================================================
+    // STEP 7: DEMO COMPLEX SHAPES
+    // ================================================================
+    
+    private async Task Test_CreateAudioPanel() => await ExecuteTest(() =>
+    {
+        // Check if AudioPanel already exists
+        var existing = Shape3DTech.GetShapeByName("AudioPanel");
+        if (existing != null)
+        {
+            Shape3DTech.DeleteShape("AudioPanel");
+        }
+        
+        // Create the audio panel
+        var audioPanel = new AudioPanelShape("AudioPanel", panelWidth: 16.0, panelHeight: 4.0);
+        Shape3DTech.EstablishGeometryStage();
+        // TODO: Need to add AddShape method that takes FoShape3D to IShape3DTech
+        var stage = Shape3DTech.EstablishGeometryStage();
+        stage.AddShape(audioPanel);
+        Shape3DTech.RefreshUI();
+        
+        return $"Created AudioPanel with 10 connectors (XLR, 1/4\", Combo jacks). This demonstrates complex shape assembly!";
+    }, "Create Audio Panel failed");
+    
+    // ================================================================
     // UTILITY: CLEANUP
     // ================================================================
     
@@ -330,6 +434,26 @@ public partial class QuickTestPanel : ComponentBase
     {
         var isActive = type == currentGeometryType;
         var bgColor = isActive ? "#0d6efd" : "#6c757d";
+        var fontWeight = isActive ? "700" : "500";
+        return $@"
+            padding: 0.4rem 0.8rem;
+            background: {bgColor};
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: {fontWeight};
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            text-transform: capitalize;
+        ";
+    }
+    
+    private string GetLinkGeometryTypeButtonStyle(string type)
+    {
+        var isActive = type == currentLinkGeometryType;
+        var bgColor = isActive ? "#198754" : "#6c757d";
         var fontWeight = isActive ? "700" : "500";
         return $@"
             padding: 0.4rem 0.8rem;

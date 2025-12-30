@@ -47,6 +47,19 @@ public interface IShape3DTech : ITechnician
 
 
    List<FoShape3D> ChangeColor(string name, string color);
+   
+   List<FoShape3D> ChangeGeometry(string name, string shapeType, double? width = null, double? height = null, double? depth = null);
+   
+   List<FoShape3D> EstablishTextLabel(string parentShapeName, string labelName, string text, double? relativeX = null, double? relativeY = null, double? relativeZ = null, double? fontSize = null, string? color = null);
 
+   LinkShape CreateLinkShape(string name, string color, FoShape3D fromShape, FoShape3D toShape, double radius, string geomType = "Pipe");
+   
+   LinkShape ChangeLinkGeometryType(string name, string geomType);
+   
+   void RefreshUI();
+
+   FoPipe3D CreatePipeLink(string name, string color, FoShape3D fromShape, FoShape3D toShape, double radius);
+
+   FoPathway3D CreatePathwayLink(string name, FoShape3D fromShape, FoShape3D toShape);
    
 }

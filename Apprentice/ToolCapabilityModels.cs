@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace Three2025.Apprentice;
 
 /// <summary>

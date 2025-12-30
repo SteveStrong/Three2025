@@ -114,10 +114,54 @@
         </div>
     </div>
     
-    <!-- Step 5: Rotation Operations -->
+    <!-- Step 5: Create Link Shape -->
+    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0 0 0.75rem 0; color: #e74c3c; border-bottom: 2px solid #e74c3c; padding-bottom: 0.5rem; font-size: 1rem;">
+            🔗 Step 5: Create Link Shape (IBodyLink3D)
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <!-- Link Geometry Type Selector -->
+            <div style="margin-bottom: 0.5rem;">
+                <label style="display: block; font-size: 0.75rem; color: #666; margin-bottom: 0.25rem; font-weight: 600;">
+                    Link Geometry Type:
+                </label>
+                <div style="display: flex; gap: 0.25rem;">
+                    @foreach (var type in availableLinkGeometryTypes)
+                    {
+                        <button @onclick="() => { currentLinkGeometryType = type; StateHasChanged(); }" 
+                                style="@GetLinkGeometryTypeButtonStyle(type)">
+                            @type
+                        </button>
+                    }
+                </div>
+            </div>
+            
+            <button @onclick="Test_CreateLinkShape" style="@GetButtonStyle("#e74c3c")">
+                Create TestLink1 (@currentLinkGeometryType)
+            </button>
+            <button @onclick="Test_ChangeLinkGeometry" style="@GetButtonStyle("#c0392b")">
+                Change TestLink1 to @currentLinkGeometryType
+            </button>
+            <button @onclick="Test_CreatePipeLink" style="@GetButtonStyle("#95a5a6")">
+                Create Pipe Link (legacy)
+            </button>
+            <button @onclick="Test_CreatePathwayLink" style="@GetButtonStyle("#7f8c8d")">
+                Create Pathway Link (legacy)
+            </button>
+            <div style="margin-top: 0.25rem; padding: 0.5rem; background: #fff5f5; border-radius: 4px; border-left: 3px solid #e74c3c;">
+                <div style="font-size: 0.7rem; color: #999; line-height: 1.4;">
+                    💡 Links are <strong>dependent shapes</strong> (IBodyLink3D) that connect to bodies.<br/>
+                    They render AFTER bodies to use their positions.<br/>
+                    <strong>Pipe</strong> = cylinder, <strong>Tube</strong> = smooth tube, <strong>Line</strong> = thin line
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Step 6: Rotation Operations -->
     <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <h4 style="margin: 0 0 0.75rem 0; color: #9b59b6; border-bottom: 2px solid #9b59b6; padding-bottom: 0.5rem; font-size: 1rem;">
-            🔄 Step 5: Rotate TestBox
+            🔄 Step 6: Rotate TestBox
         </h4>
         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
             <button @onclick="Test_RotateX45" style="@GetButtonStyle("#9b59b6")">
@@ -144,6 +188,25 @@
         </div>
     </div>
     
+    <!-- Step 7: Demo Shapes -->
+    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0 0 0.75rem 0; color: #17a2b8; border-bottom: 2px solid #17a2b8; padding-bottom: 0.5rem; font-size: 1rem;">
+            🎸 Step 7: Demo Complex Shapes
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <button @onclick="Test_CreateAudioPanel" style="@GetButtonStyle("#17a2b8")">
+                Create Audio Panel (10 connectors)
+            </button>
+            <div style="margin-top: 0.25rem; padding: 0.5rem; background: #e7f4f6; border-radius: 4px; border-left: 3px solid #17a2b8;">
+                <div style="font-size: 0.7rem; color: #999; line-height: 1.4;">
+                    🎸 Demonstrates complex shape assembly with:<br/>
+                    • 10 different connector types (XLR, 1/4", Combo)<br/>
+                    • Auto-positioned with labels<br/>
+                    • Professional audio equipment back panel
+                </div>
+            </div>
+        </div>
+    </div>
 
     
     <!-- Cleanup -->
