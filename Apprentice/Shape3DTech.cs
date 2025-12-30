@@ -523,14 +523,18 @@ public class Shape3DTech : IShape3DTech
       [Description("The Y coordinate")] double y,
       [Description("The Z coordinate")] double z)
    {
-      var stage = EstablishGeometryStage();
+      EstablishGeometryStage();
 
       // Use ShapeEditor for event-driven update
-      var success = ShapeEditor.SetPosition(name, new Vector3(x, y, z));
+      var result = ShapeEditor.SetPosition(name, new Vector3(x, y, z));
 
-      if (!success)
+      if (result.IsError())
       {
-         $"⚠️  Failed to reposition shape '{name}'".WriteWarning();
+         $"⚠️  {result.Display()}".WriteWarning();
+      }
+      else
+      {
+         $"✅ {result.Display()}".WriteSuccess();
       }
 
       return GetShapes();
@@ -543,7 +547,7 @@ public class Shape3DTech : IShape3DTech
       [Description("Rotation around Y axis in degrees")] double yDegrees,
       [Description("Rotation around Z axis in degrees")] double zDegrees)
    {
-      var stage = EstablishGeometryStage();
+      EstablishGeometryStage();
 
       // Convert degrees to radians
       var xRad = xDegrees * Math.PI / 180.0;
@@ -551,11 +555,15 @@ public class Shape3DTech : IShape3DTech
       var zRad = zDegrees * Math.PI / 180.0;
 
       // Use ShapeEditor for event-driven update
-      var success = ShapeEditor.SetRotation(name, new Euler(xRad, yRad, zRad));
+      var result = ShapeEditor.SetRotation(name, new Euler(xRad, yRad, zRad));
 
-      if (!success)
+      if (result.IsError())
       {
-         $"⚠️  Failed to rotate shape '{name}'".WriteWarning();
+         $"⚠️  {result.Display()}".WriteWarning();
+      }
+      else
+      {
+         $"✅ {result.Display()}".WriteSuccess();
       }
 
       return GetShapes();
@@ -568,14 +576,18 @@ public class Shape3DTech : IShape3DTech
       [Description("Scale factor for Y axis (1.0 = original size)")] double scaleY,
       [Description("Scale factor for Z axis (1.0 = original size)")] double scaleZ)
    {
-      var stage = EstablishGeometryStage();
+      EstablishGeometryStage();
 
       // Use ShapeEditor for event-driven update
-      var success = ShapeEditor.SetScale(name, new Vector3(scaleX, scaleY, scaleZ));
+      var result = ShapeEditor.SetScale(name, new Vector3(scaleX, scaleY, scaleZ));
 
-      if (!success)
+      if (result.IsError())
       {
-         $"⚠️  Failed to scale shape '{name}'".WriteWarning();
+         $"⚠️  {result.Display()}".WriteWarning();
+      }
+      else
+      {
+         $"✅ {result.Display()}".WriteSuccess();
       }
 
       return GetShapes();
@@ -588,14 +600,18 @@ public class Shape3DTech : IShape3DTech
       [Description("New height (Y dimension)")] double height,
       [Description("New depth (Z dimension)")] double depth)
    {
-      var stage = EstablishGeometryStage();
+      EstablishGeometryStage();
 
       // Use ShapeEditor for event-driven update
-      var success = ShapeEditor.SetDimensions(name, width, height, depth);
+      var result = ShapeEditor.SetDimensions(name, width, height, depth);
 
-      if (!success)
+      if (result.IsError())
       {
-         $"⚠️  Failed to resize shape '{name}'".WriteWarning();
+         $"⚠️  {result.Display()}".WriteWarning();
+      }
+      else
+      {
+         $"✅ {result.Display()}".WriteSuccess();
       }
 
       return GetShapes();
@@ -610,76 +626,126 @@ public class Shape3DTech : IShape3DTech
    {
       $"🔧 ChangeColor CALLED: name='{name}', color='{color}'".WriteInfo();
 
-      var stage = EstablishGeometryStage();
-      $"📦 Stage retrieved: {stage?.GetName() ?? "null"}".WriteInfo();
+      EstablishGeometryStage();
+      $"📦 Stage established".WriteInfo();
 
       // Use ShapeEditor for event-driven update
-      var success = ShapeEditor.SetColor(name, color);
+      var result = ShapeEditor.SetColor(name, color);
 
-      if (!success)
+      if (result.IsError())
       {
-         var allShapes = stage.Members<FoGlyph3D>().OfType<GeometryShape>().ToList();
-         $"❌ Failed to change color of shape '{name}'".WriteError();
-         $"📋 Available shapes: {string.Join(", ", allShapes.Select(s => s.GetName()))}".WriteWarning();
+         $"❌ {result.Display()}".WriteError();
+      }
+      else
+      {
+         $"✅ {result.Display()}".WriteSuccess();
       }
 
-      var result = GetShapes();
-      $"📤 Returning {result.Count} shapes".WriteInfo();
+      var shapes = GetShapes();
+      $"📤 Returning {shapes.Count} shapes".WriteInfo();
 
-      return result;
+      return shapes;
    }
 
-
-}
-
-public class GeometryShape : FoShape3D
-{
-   public GeometryShape(string name, string shapeType = "box", double? width = null, double? height = null, double? depth = null) : base(name)
+   [Description("Changes the geometry type of an existing shape")]
+   public List<FoShape3D> ChangeGeometry(
+      [Description("The name of the shape")] string name,
+      [Description("The new geometry type: box, sphere, cylinder, cone, torus, tetrahedron, octahedron, dodecahedron, icosahedron, torusknot, capsule, plane, circle, ring")] string shapeType,
+      [Description("Optional new width (X dimension)")] double? width = null,
+      [Description("Optional new height (Y dimension)")] double? height = null,
+      [Description("Optional new depth (Z dimension)")] double? depth = null)
    {
-      // Use provided dimensions or defaults
-      var w = width ?? 2.0;
-      var h = height ?? 2.0;
-      var d = depth ?? 2.0;
+      EstablishGeometryStage();
 
-      // Switch expression to select factory method
-      Func<string, double, double, double, FoShape3D> factory = shapeType.ToLower() switch
+      // Use ShapeEditor for event-driven update
+      var result = ShapeEditor.SetGeometry(name, shapeType, width, height, depth);
+
+      if (result.IsError())
       {
-         "box" => CreateBox,
-         "sphere" => CreateSphere,
-         "cylinder" => CreateCylinder,
-         "cone" => CreateCone,
-         "torus" => CreateTorus,
-         "tetrahedron" => CreateTetrahedron,
-         "octahedron" => CreateOctahedron,
-         "dodecahedron" => CreateDodecahedron,
-         "icosahedron" => CreateIcosahedron,
-         "torusknot" => CreateTorusKnot,
-         "capsule" => CreateCapsule,
-         "plane" => CreatePlane,
-         "circle" => CreateCircle,
-         "ring" => CreateRing,
-         _ => CreateBox // default
-      };
-
-      factory(name, w, h, d);
-
-      var tag = new FoText3D("tag")
+         $"⚠️  {result.Display()}".WriteWarning();
+      }
+      else
       {
-         Text = name,
-         FontSize = 0.5,
-         Transform = new Transform3("TagTransform")
-         {
-            Position = new Vector3(3, 0, 0),
-         },
-         Color = "black"
-      };
-      AddShape(tag);
-      GetTreeNodeTitle().WriteSuccess();
+         $"✅ Changed geometry of '{name}' to '{shapeType}'".WriteSuccess();
+      }
+
+      return GetShapes();
    }
 
-   public override string GetTreeNodeTitle()
+   [Description("Establish a text label on a shape (creates if missing, updates if exists)")]
+   public List<FoShape3D> EstablishTextLabel(
+      [Description("The name of the parent shape")] string parentShapeName,
+      [Description("The name for the label")] string labelName,
+      [Description("The text to display")] string text,
+      [Description("X position relative to parent (optional)")] double? relativeX = null,
+      [Description("Y position relative to parent (optional, defaults to 2)")] double? relativeY = null,
+      [Description("Z position relative to parent (optional)")] double? relativeZ = null,
+      [Description("Font size (optional, defaults to 0.5)")] double? fontSize = null,
+      [Description("Text color (optional, defaults to 'black')")] string? color = null)
    {
-      var pos = Transform!.Position;
-      return $"{GetName()} {Color}  @ {pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0}";
+      EstablishGeometryStage();
+
+      Vector3? position = null;
+      if (relativeX.HasValue || relativeY.HasValue || relativeZ.HasValue)
+      {
+         position = new Vector3(relativeX ?? 0, relativeY ?? 2, relativeZ ?? 0);
+      }
+
+      var result = ShapeEditor.EstablishTextLabel(parentShapeName, labelName, text, position, fontSize, color);
+
+      if (result.IsError())
+      {
+         $"⚠️  {result.Display()}".WriteWarning();
+      }
+      else
+      {
+         var label = result.Value() as FoText3D;
+         $"✅ Established text label '{labelName}' on '{parentShapeName}': '{label?.Text}'".WriteSuccess();
+      }
+
+      return GetShapes();
    }
+
+   [Description("Remove a child shape from its parent shape")]
+   public List<FoShape3D> RemoveChildShape(
+      [Description("The name of the parent shape")] string parentShapeName,
+      [Description("The name of the child shape to remove")] string childShapeName)
+   {
+      EstablishGeometryStage();
+
+      var result = ShapeEditor.RemoveChildShape(parentShapeName, childShapeName);
+
+      if (result.IsError())
+      {
+         $"⚠️  {result.Display()}".WriteWarning();
+      }
+      else
+      {
+         $"✅ {result.Display()}".WriteSuccess();
+      }
+
+      return GetShapes();
+   }
+
+   [Description("Get the list of child shapes for a parent shape")]
+   public string GetChildShapes(
+      [Description("The name of the parent shape")] string parentShapeName)
+   {
+      EstablishGeometryStage();
+
+      var result = ShapeEditor.GetChildShapes(parentShapeName);
+
+      if (result.IsError())
+      {
+         $"⚠️  {result.Display()}".WriteWarning();
+      }
+      else
+      {
+         $"📋 {result.Display()}".WriteInfo();
+      }
+
+      return result.Display();
+   }
+
+
 }
