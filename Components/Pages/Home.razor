@@ -7,6 +7,21 @@
 @rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
+
+<div class="container-fluid mb-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning text-center p-4" style="border: 3px solid #ff9800;">
+                <h3 class="mb-3">🧪 TESTING - SHAPE LIFECYCLE</h3>
+                <a href="/shape-lifecycle-test" class="btn btn-warning btn-lg" style="font-size: 1.5rem; padding: 15px 40px; font-weight: bold;">
+                    ▶️ GO TO SHAPE LIFECYCLE TEST
+                </a>
+                <p class="mt-3 mb-0 text-muted">Test fundamental shape creation, removal, and recreation mechanics</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <h2>Canvas3DComponent and calls API's on the Arena, Stage, and World</h2>
 
 
@@ -18,7 +33,7 @@
     <ShapeTreeView/>
 
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">
-        <p>Add to Scene</p>
+        <h5>Add to Scene</h5>
         <button class="btn btn-primary" @onclick="DoAddAxisToScene">Axis to Scene</button>
         @* <button class="btn btn-primary" @onclick="DoRequestAddJetToScene">Request Jet to Scene</button>
         <button class="btn btn-primary" @onclick="DoAddBoxToScene">Box to Scene</button>
@@ -26,9 +41,9 @@
         <button class="btn btn-primary" @onclick="DoAddConeToScene">Cone to Scene</button>
         <button class="btn btn-primary" @onclick="DoRequestAddTextToScene">Request Text to Scene</button> *@
         
-
-        <p>Add to Arena</p>
+        <h5 class="mt-3">Add to Arena</h5>
         <button class="btn btn-primary" @onclick="DoAddPipeToArena">Pipe to Arena</button>
+        <button class="btn btn-success" @onclick="DoNavigateToCuckooClock">🦖 T-Rex Cuckoo Clock</button>
         @* <button class="btn btn-primary" @onclick="DoAddGeomToArena">Geometry to Arena</button>
         <button class="btn btn-primary" @onclick="DoAddTRexToArena">T-Rex to Arena</button>
         <button class="btn btn-primary" @onclick="DoAddTRISOCToArena">TRISOC to Arena</button>
@@ -43,5 +58,5 @@
         <button class="btn btn-primary" @onclick="OnAddCage">Add Cage</button>
         <button class="btn btn-primary" @onclick="DoAddTriSocGeometry">TriSoc</button> *@
     </RadzenStack>
-    <AIChat/>
+
 </div>

@@ -79,7 +79,7 @@ public partial class ClockBase : ComponentBase, IDisposable
     public void Dispose()
     {
         // ✅ Phase 0.5: Clear only this page's stage
-        _clockStage?.ClearStage();
+        _ = _clockStage?.ClearAll();
         $"Clock: Cleared ClockStage on dispose".WriteInfo();
         
         _addedModels.Clear(); // Clear guard flags
@@ -108,12 +108,11 @@ public partial class ClockBase : ComponentBase, IDisposable
 
                 if (found && scene != null)
                 {
-                    // ✅ Phase 0.5: Get stage created by Canvas (matches 2D pattern)
-                    var arena = Workspace.GetArena();
-                    _clockStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                    // ✅ Stage-centric pattern: Get stage from Canvas
+                    _clockStage = Canvas3DReference.Stage;
                     
                     // Stage already linked to scene by Canvas - no need to link again
-                    $"Clock: Retrieved ClockStage '{_clockStage.Key}' from arena".WriteSuccess();
+                    $"Clock: Retrieved ClockStage '{_clockStage?.Key}' from Canvas".WriteSuccess();
                     
                     // Try to add a simple object to test rendering
                     // try
@@ -193,7 +192,8 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public void DoRunClock()
     {
-        Tech.RunClock();
+        // Pass the canvas scene name so ClockTech uses the correct stage
+        Tech.RunClock(Canvas3DReference.SceneName);
     }
 
 
@@ -244,7 +244,7 @@ public partial class ClockBase : ComponentBase, IDisposable
                 Position = new Vector3(0, 3, 0),
             },
         };
-        text3d.AddSubGlyph3D(label);
+        text3d.AddShape(label);
         
         // ✅ Phase 0.5: Add to this page's stage
         _clockStage?.AddShape(text3d);
@@ -298,7 +298,7 @@ public partial class ClockBase : ComponentBase, IDisposable
                 Position = new Vector3(0, 3, 0),
             },
         };
-        model3d.AddSubGlyph3D(label);
+        model3d.AddShape(label);
 
         // ✅ Phase 0.5: Add to this page's stage
         _clockStage?.AddShape(model3d);
@@ -398,7 +398,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             Url = url,
             Transform = new Transform3("SubWalkTransform")
             {
-                Position = new Vector3(0, 5, 0), // Start at center, raised up
+                Position = new Vector3(0, 0, 0), // Start at center, on the floor
                 Scale = new Vector3(1, 1, 1), // Normal size for sub
             },
         };

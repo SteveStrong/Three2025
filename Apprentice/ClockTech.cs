@@ -20,7 +20,7 @@ namespace Three2025.Apprentice;
 public interface IClockTech : ITechnician
 {
     FoShape3D CreateClockOnArena();
-    void RunClock();
+    void RunClock(string stageName);
 }
 
 public class ClockTech : IClockTech
@@ -35,6 +35,8 @@ public class ClockTech : IClockTech
     private Mesh3D CenterPost = null!;
 
     private FoShape3D Clock = null!;
+    
+    private string _stageName = null!;
 
     public ClockTech(IFoundryService foundry)
     {
@@ -51,8 +53,10 @@ public class ClockTech : IClockTech
 
 
 
-    public void RunClock()
+    public void RunClock(string stageName)
     {
+        _stageName = stageName;
+        
         if (_timer == null)
         {
             _timer = new Timer(UpdateClock, null, 0, 1000);
@@ -84,7 +88,7 @@ public class ClockTech : IClockTech
             },
         };
 
-        parent.AddSubGlyph3D(letter);
+        parent.AddShape(letter);
         return letter;
     }
 
@@ -126,7 +130,7 @@ public class ClockTech : IClockTech
             // }
         }.CreateBox("Post", 0.2, 1.0, .2);
 
-        clock.AddSubGlyph3D(centerPost);
+        clock.AddShape(centerPost);
 
         //now lets add the secondHand
         var secondHand = new FoShape3D("Hand", "green")
@@ -137,7 +141,7 @@ public class ClockTech : IClockTech
             }
         }.CreateBox("Hand", 1.2 * radius, 2.0, .1);
 
-        centerPost.AddSubGlyph3D(secondHand);
+        centerPost.AddShape(secondHand);
 
         //now lets add the time text at the end of the hand
         var timeText = new FoText3D("TimeText", "white")
@@ -149,7 +153,7 @@ public class ClockTech : IClockTech
                 Position = new Vector3(0.6 * radius, 0, 0),
             }
         };
-        secondHand.AddSubGlyph3D(timeText);
+        secondHand.AddShape(timeText);
 
         return clock;
     }
@@ -161,7 +165,7 @@ public class ClockTech : IClockTech
         var angle = time.Second * (2 * Math.PI / 60) - Math.PI / 2; // Convert seconds to radians
         var radius = 10.0;
         var x = radius * Math.Cos(angle);
-        var y = 2;
+        // var y = 2; // Unused
         var z = radius * Math.Sin(angle);
 
   
@@ -199,8 +203,9 @@ public class ClockTech : IClockTech
         {
             Clock = CreateClockOnArena();
             var arena = FoundryService.Arena();
-            var stage = arena.CurrentStage();
-            arena.AddShapeToStage<FoShape3D>(Clock, stage.GetName());
+            // Use the stage name passed from the page to ensure the stage is linked to the scene
+            var stage = arena.EstablishStage<FoStage3D>(_stageName);
+            stage.AddShape(Clock);
         }
 
     }
@@ -209,7 +214,8 @@ public class ClockTech : IClockTech
    public void UpdateSceneClock(object state)
     {
         // Get scene from the Clock shape's stage
-        var scene = Clock?.ParentStage?.GetAssociatedScene();
+        var parentStage = Clock?.GetParentOfType<FoStage3D>();
+        var scene = parentStage?.GetAssociatedScene();
         if (scene == null) return;
 
         var time = DateTime.Now;

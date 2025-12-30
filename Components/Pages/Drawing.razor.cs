@@ -31,6 +31,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
     [Inject] public IFoundryService FoundryService { get; init; }
 
     public FoundryWorldsAndDrawings.Shared.Canvas3DComponent Canvas3DReference = null;
+    private FoStage3D _drawingStage; // Stage-centric pattern
 
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
@@ -57,6 +58,9 @@ public partial class DrawingBase : ComponentBase, IDisposable
             // Wait for Canvas to initialize (Canvas handles stage-scene linkage)
             await Task.Delay(100);
             
+            // Stage-centric pattern: Get stage from canvas
+            _drawingStage = Canvas3DReference?.Stage;
+            
             CreateMenus(Workspace);
         }
 
@@ -80,9 +84,8 @@ public partial class DrawingBase : ComponentBase, IDisposable
             GlyphId = Guid.NewGuid().ToString(),
             //BoundingBox = new Vector3(bx, by, bz),
         };
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
-        arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
+        if (_drawingStage == null) _drawingStage = Canvas3DReference?.Stage;
+        _drawingStage?.AddShape(shape);
         return shape;
     }
 
@@ -91,29 +94,13 @@ public partial class DrawingBase : ComponentBase, IDisposable
     
     public void CreateMenus(IWorkspace space)
     {
-        var arena = space.GetArena();
-        var stage = arena.CurrentStage();
-
-        // arena.AddAction("Update", "btn-primary", () =>
-        // {
-        // });
-
-        // arena.AddAction("Clear", "btn-primary", () =>
-        // {
-        // });
-
-        // stage.AddAction("Clear", "btn-primary", () =>
-        // {
-        //  });
-
-        // stage.AddAction("Render", "btn-primary", () =>
-        // {
-        // });
+        // Stage-centric pattern: menus don't need stage reference at creation time
+        // Actions will use _drawingStage when invoked
     }
 
     public void CreateServices(IFoundryService manager, IArena arena, FoWorld3D world)
     {
-
+        // Stage-centric pattern: actions use _drawingStage from page context
         world.AddAction("Clear", "btn-primary", () => 
         {
             world.ClearAll();
@@ -121,31 +108,28 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         world.AddAction("Publish", "btn-info", () => 
         {
-            world.PublishToStage(arena.CurrentStage());
+            // TODO: PublishToStage API removed - needs review
+            if (_drawingStage != null)
+                world.PublishToStage(_drawingStage);
         });
 
         world.AddAction("Box", "btn-info", () => 
         {
-
             var box = AddBox(DataGenerator.GenerateName());
-            var stage = arena.CurrentStage();
-            arena.AddShapeToStage<FoShape3D>(box, stage.GetName());
+            if (_drawingStage == null) _drawingStage = Canvas3DReference?.Stage;
+            _drawingStage?.AddShape(box);
         });
 
         world.AddAction("TRex", "btn-primary", () =>
         {
             var url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb");
-            var shape = DoLoad3dModel(url, -2, 6, -2);
-            var stage = arena.CurrentStage();
-            arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
+            DoLoad3dModel(url, -2, 6, -2); // DoLoad3dModel already adds to stage
         });
 
         world.AddAction("Porsche", "btn-primary", () =>
         {
             var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
-            var shape = DoLoad3dModel(url, 2, 6, 2);
-            var stage = arena.CurrentStage();
-            arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
+            DoLoad3dModel(url, 2, 6, 2); // DoLoad3dModel already adds to stage
         });
         
         world.AddAction("Render Tube", "btn-primary", () =>
@@ -182,7 +166,6 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var x = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var arena = Workspace.GetArena();
         var shape = new FoModel3D("T-Rex " + name)
         {
             Url = GetReferenceTo(@"storage/StaticFiles/T_Rex.glb"),
@@ -192,14 +175,8 @@ public partial class DrawingBase : ComponentBase, IDisposable
             }
         };
 
-
-        var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
-        //stage.PreRender(arena);
-
-        // var (found, scene) = GetCurrentScene();
-        // if (found)
-        //     stage.RefreshScene(scene);
+        if (_drawingStage == null) _drawingStage = Canvas3DReference?.Stage;
+        _drawingStage?.AddShape(shape);
     }
 
     
@@ -213,7 +190,6 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-        var arena = Workspace.GetArena();
         var shape = new FoShape3D(name,color)
         {
             Transform = new Transform3("GeomTransform")
@@ -242,15 +218,8 @@ public partial class DrawingBase : ComponentBase, IDisposable
             _ => shape.CreateBox(label, w, h, d),
         };
  
-
-
-
-        var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
-
-        // var (found, scene) = GetCurrentScene();
-        // if (found)
-        //     stage.RefreshScene(scene);
+        if (_drawingStage == null) _drawingStage = Canvas3DReference?.Stage;
+        _drawingStage?.AddShape(shape);
     }
 
     public void OnAddText()
@@ -260,7 +229,6 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var y = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
         var color = DataGenerator.GenerateColor();
-        var arena = Workspace.GetArena();
 
         var shape = new FoText3D(name,color)
         {
@@ -272,21 +240,14 @@ public partial class DrawingBase : ComponentBase, IDisposable
         };
 
 
-        var stage = arena.EstablishStage<FoStage3D>("Main Stage");
-        arena.AddShapeToStage<FoText3D>(shape, stage.GetName());
-
-        // var (found, scene) = GetCurrentScene();
-        // if (found)
-        //     stage.RefreshScene(scene);
+        if (_drawingStage == null) _drawingStage = Canvas3DReference?.Stage;
+        _drawingStage?.AddShape(shape);
     }
 
     public void OnAddPorsche()
     {
         var url = GetReferenceTo(@"storage/StaticFiles/porsche_911.glb");
-        var shape = DoLoad3dModel(url, 2, 6, 2);
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
-        arena.AddShapeToStage<FoShape3D>(shape, stage.GetName());
+        DoLoad3dModel(url, 2, 6, 2); // DoLoad3dModel already adds to stage
     }
 
     public void OnRenderTube()
@@ -308,13 +269,13 @@ public partial class DrawingBase : ComponentBase, IDisposable
         });
     }
 
-    public void OnClearScene()
+    public async void OnClearScene()
     {
         // Clear the 3D scene if available
         var (found, scene) = GetCurrentScene();
         if (found && scene != null)
         {
-            scene.ClearAll();
+            await scene.ClearAll();
         }
     }
 
@@ -364,17 +325,10 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var x = DataGenerator.GenerateDouble(-10, 10);
         var z = DataGenerator.GenerateDouble(-10, 10);
 
-
-        var arena = Workspace.GetArena();
-        var stage = arena.CurrentStage();
+        if (_drawingStage == null) _drawingStage = Canvas3DReference?.Stage;
 
         var box = AddBox(name,x,z);
-        stage.AddShape<Node3D>(box);
-        
-        // var (found, scene) = GetCurrentScene();
-        // if ( found )
-        //     stage.RefreshScene(scene);
-        //await scene.SetCameraPosition(new Vector3(9f, 9f, 9f),box.Position);
+        _drawingStage?.AddShape(box);
     }
 
 
@@ -385,11 +339,8 @@ public partial class DrawingBase : ComponentBase, IDisposable
         var z = DataGenerator.GenerateDouble(-10, 10);
 
         var box = AddCone(name,x,z);
-        var arena = Workspace.GetArena();
-
-        var stage ="Main Stage";
-        arena.EstablishStage<FoStage3D>(stage);
-        arena.AddShapeToStage<Node3D>(box, stage);
+        if (_drawingStage == null) _drawingStage = Canvas3DReference?.Stage;
+        _drawingStage?.AddShape(box);
     }
 
 
@@ -398,7 +349,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
         //"Click Go".WriteInfo();
 
         var drawing = Workspace.GetDrawing();
-        var page = drawing?.CurrentPage();
+        var page = drawing?.FirstPage();
         //$"Current Page {page?.Title}".WriteSuccess();
 
         var shape = new FoShape2D()
@@ -476,8 +427,9 @@ public partial class DrawingBase : ComponentBase, IDisposable
     
     public bool GoToPage(FoPage2D page)
     {
-        var drawing = Workspace.GetDrawing()!;
-        drawing.SetCurrentPage(page);
+        // SetCurrentPage is removed - pages are managed by canvas in stage-centric pattern
+        // Navigation to specific pages should be handled via page routing or canvas switching
+        $"GoToPage: {page?.Title} - navigation pattern needs review".WriteWarning();
         return true;
     }
 

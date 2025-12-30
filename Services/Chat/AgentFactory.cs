@@ -1,0 +1,37 @@
+using Microsoft.Extensions.AI;
+using Three2025.Services.Chat.Agents;
+
+namespace Three2025.Services.Chat;
+
+public class AgentFactory : IAgentFactory
+{
+    private readonly IMultiProviderChatService _chatService;
+    private readonly ILoggerFactory _loggerFactory;
+    
+    public AgentFactory(
+        IMultiProviderChatService chatService,
+        ILoggerFactory loggerFactory)
+    {
+        _chatService = chatService;
+        _loggerFactory = loggerFactory;
+    }
+    
+    // PRIMARY AGENT: 3D Modeling with Shape3DTech tools
+    public ISpecializedAgent Create3DModelingAgent(IEnumerable<AIFunction> tools)
+        => new ThreeDModelingAgent(_chatService, tools, _loggerFactory.CreateLogger<ThreeDModelingAgent>());
+    
+    // FUTURE AGENTS - Commented out for simplicity
+    // Uncomment and refine these once the 3D modeling pattern is proven
+    
+    // public ISpecializedAgent CreateAnimationAgent(IEnumerable<AIFunction> tools)
+    //     => new AnimationAgent(_chatService, tools, _loggerFactory.CreateLogger<AnimationAgent>());
+    
+    // public ISpecializedAgent CreateGeometryAgent(IEnumerable<AIFunction> tools)
+    //     => new GeometryAgent(_chatService, tools, _loggerFactory.CreateLogger<GeometryAgent>());
+    
+    // public ISpecializedAgent CreateClockAgent(IEnumerable<AIFunction> tools)
+    //     => new ClockAgent(_chatService, tools, _loggerFactory.CreateLogger<ClockAgent>());
+    
+    // public ISpecializedAgent CreateGeneralAgent(IEnumerable<AIFunction> tools)
+    //     => new GeneralAgent(_chatService, tools, _loggerFactory.CreateLogger<GeneralAgent>());
+}

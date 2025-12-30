@@ -132,7 +132,7 @@ public class Rack_710 : CircuitBlock_710
     //     return result!;
     // } 
 
-    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view, IArena? page)
+    public override (KnGeometry, KnGeometryParameter) EstablishGeometry3D(string view)
     {
         var result = Compute3DGeometry(view, geom => 
         {

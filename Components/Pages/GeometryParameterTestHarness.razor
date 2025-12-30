@@ -1,0 +1,234 @@
+@page "/geometry-test-harness"
+
+@using FoundryMentorModeler.Model
+@using FoundryMentorModeler.Evaluator
+@using FoundryMentorModeler.Shared
+@using FoundryWorldsAndDrawings.Shape
+@using FoundryWorldsAndDrawings.Solutions
+@using FoundryWorldsAndDrawings.Shared
+@using FoundryRulesAndUnits.Models
+
+@rendermode InteractiveServer
+
+@namespace Three2025.Components.Pages
+
+<h3>Phase 0: Geometry Parameter Test Harness</h3>
+<p class="text-muted">Proves KN layer spreadsheet mechanics. <strong>Width/Height</strong> = RECREATE geometry. <strong>X/Y/Z</strong> = MOVE existing geometry (no recreation).</p>
+
+<div class="container-fluid">
+    <div class="row">
+        @* Left Column - Canvas and Controls *@
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <strong>3D Canvas</strong>
+                    <span class="badge bg-success">@AnimationFrameBus.GetAnimationState()</span>
+                </div>
+                <div class="card-body p-0" style="height: 350px; position: relative; width: 100%;">
+                    <Canvas3DComponent SceneName="GeomTestHarness3D" @ref="Canvas3DReference" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-danger text-white">
+                            <strong>🔄 Geometry (recreates)</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <label class="form-label small">Width</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" class="form-control" @bind="_widthInput" step="1" />
+                                    <button class="btn btn-danger" @onclick="ApplyWidth">Set</button>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Height</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" class="form-control" @bind="_heightInput" step="1" />
+                                    <button class="btn btn-danger" @onclick="ApplyHeight">Set</button>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Depth</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" class="form-control" @bind="_depthInput" step="1" />
+                                    <button class="btn btn-danger" @onclick="ApplyDepth">Set</button>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Geometry Type</label>
+                                <select class="form-select form-select-sm" @bind="_geomTypeInput">
+                                    <option value="Box">Box</option>
+                                    <option value="Sphere">Sphere</option>
+                                    <option value="Cylinder">Cylinder</option>
+                                </select>
+                                <button class="btn btn-danger btn-sm w-100 mt-1" @onclick="ApplyGeomType">Change Type</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-success text-white">
+                            <strong>📍 Position (moves only)</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <label class="form-label small">X Position</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" class="form-control" @bind="_posXInput" step="5" />
+                                    <button class="btn btn-success" @onclick="ApplyPosX">Set</button>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Y Position</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" class="form-control" @bind="_posYInput" step="5" />
+                                    <button class="btn btn-success" @onclick="ApplyPosY">Set</button>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Z Position</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" class="form-control" @bind="_posZInput" step="5" />
+                                    <button class="btn btn-success" @onclick="ApplyPosZ">Set</button>
+                                </div>
+                            </div>
+                            <div class="text-center mt-2">
+                                <small class="text-muted">Position changes move WITHOUT recreation</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between">
+                    <strong>Animation Control</strong>
+                    <span>Tick: @_currentTick</span>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-2">
+                        <button class="btn @(_isAnimating ? "btn-danger" : "btn-success") flex-fill" @onclick="ToggleAnimation">
+                            @(_isAnimating ? "⏹ Stop" : "▶ Start")
+                        </button>
+                        <button class="btn btn-secondary" @onclick="ResetTest">🔄 Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Center Column - Live State Display *@
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header @(_geomIsUnknown ? "bg-warning" : "bg-success text-white")">
+                    <strong>Geometry State</strong>
+                    <span class="float-end badge @(_geomIsUnknown ? "bg-dark" : "bg-light text-dark")">
+                        @(_geomIsUnknown ? "UNKNOWN" : "KNOWN")
+                    </span>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-bordered mb-0">
+                        <tbody>
+                            <tr>
+                                <th style="width: 40%">IsUnknown()</th>
+                                <td class="text-center @(_geomIsUnknown ? "bg-warning" : "bg-success text-white")">
+                                    <strong>@_geomIsUnknown</strong>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>Dimensions</th>
+                                <td>@_shapeDimensions</td>
+                            </tr>
+                            <tr>
+                                <th>Position</th>
+                                <td>@_shapePosition</td>
+                            </tr>
+                            <tr>
+                                <th>DependsOn</th>
+                                <td>@_dependsOnCount parameters</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <strong>Statistics</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="h4 mb-0">@_recreateCount</div>
+                            <small>Recreations</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="h4 mb-0 text-success">@_moveCount</div>
+                            <small>Moves</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <strong>Shape History</strong>
+                </div>
+                <div class="card-body p-0" style="max-height: 200px; overflow-y: auto;">
+                    @foreach (var entry in _shapeHistory.AsEnumerable().Reverse().Take(10))
+                    {
+                        <div class="px-2 py-1 border-bottom small">
+                            <span class="badge @(entry.IsNew ? "bg-danger" : entry.IsMoved ? "bg-success" : "bg-secondary")">
+                                @(entry.IsNew ? "NEW" : entry.IsMoved ? "MOVE" : "SAME")
+                            </span>
+                            <code>@entry.GlyphId</code>
+                            <span class="text-muted">@entry.Info</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* Right Column - Event Log and KnComponent Tree *@
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <strong>Event Log</strong>
+                    <button class="btn btn-sm btn-outline-light" @onclick="ClearLog">Clear</button>
+                </div>
+                <div class="card-body p-0" style="max-height: 350px; overflow-y: auto;">
+                    @foreach (var entry in _eventLog.AsEnumerable().Reverse().Take(50))
+                    {
+                        <div class="px-2 py-1 border-bottom @GetLogClass(entry.Type)" style="font-size: 0.75rem;">
+                            <span class="text-muted">@entry.Tick</span>
+                            <span class="badge @GetLogBadge(entry.Type)">@entry.Type</span>
+                            @entry.Message
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* KnComponent Tree View - Full Width *@
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <strong>📋 KnComponent Tree</strong>
+                </div>
+                <div class="card-body p-0" style="height: 500px; overflow: auto;">
+                    @if (_testComponent != null)
+                    {
+                        <MentorTreeItem Items="@(new List<ITreeNode> { _testComponent })" />
+                    }
+                    else
+                    {
+                        <p class="text-muted p-2">No component loaded</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

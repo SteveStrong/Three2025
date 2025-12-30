@@ -1,0 +1,37 @@
+@namespace Three2025.Components.Shared.Chat
+@using Three2025.Models.Chat
+
+<div @ref="containerRef" class="activity-log">
+    <div class="activity-log-header">
+        <div class="activity-log-header-content">
+            <strong class="activity-log-title">📊 Activity Log</strong>
+            <div class="activity-log-controls">
+                <button @onclick="HandleToggleAutoScroll" 
+                        class="activity-log-button @(AutoScroll ? "active" : "")">
+                    @(AutoScroll ? "🔄 Auto" : "⏸️ Manual")
+                </button>
+                <button @onclick="HandleClear" class="activity-log-button">
+                    Clear
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="activity-log-content">
+        @if (Logs.Any())
+        {
+            foreach (var log in Logs)
+            {
+                <ActivityLogEntry Entry="log" />
+            }
+        }
+        else
+        {
+            <div class="activity-log-empty">
+                No activity yet. Start a conversation to see logs.
+            </div>
+        }
+        
+        <div @ref="scrollAnchor"></div>
+    </div>
+</div>

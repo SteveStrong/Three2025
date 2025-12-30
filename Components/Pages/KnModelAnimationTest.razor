@@ -1,5 +1,5 @@
 @page "/knmodel-animation"
-@page "/"
+
 
 @using FoundryMentorModeler.Shared
 
@@ -33,12 +33,20 @@
 
 <h3>KnModel Animation Test - Animation Loop Event Experiment</h3>
 
-<div style="margin-bottom: 15px; padding: 10px; background-color: #e3f2fd; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 20px;">
-    <div style="display: flex; gap: 10px; align-items: center; flex-shrink: 0;">
+<div style="margin-bottom: 15px; padding: 10px; background-color: #e3f2fd; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+    <div style="display: flex; gap: 10px; align-items: center; flex-shrink: 0; flex-wrap: wrap;">
         <button class="btn btn-success" @onclick="StartAnimation">Start Animation</button>
         <button class="btn btn-warning" @onclick="PauseAnimation">Pause</button>
         <button class="btn btn-info" @onclick="ResumeAnimation">Resume</button>
         <button class="btn btn-secondary" @onclick="ResetTest">Reset</button>
+        <button class="btn @(_clockAnimationEnabled ? "btn-danger" : "btn-primary")" @onclick="ToggleClockAnimation">
+            @(_clockAnimationEnabled ? "⏰ Stop Clock" : "⏰ Start Clock")
+        </button>
+        <span style="border-left: 2px solid #999; height: 30px; margin: 0 5px;"></span>
+        <a href="/shape-lifecycle-test" class="btn btn-outline-success btn-sm" style="font-weight: 600;">
+            🔬 Shape Lifecycle Test
+        </a>
+        <span class="badge bg-warning" style="font-size: 0.85rem; padding: 6px 10px;">◀️ Current Page</span>
     </div>
     <div style="display: flex; gap: 10px; align-items: center; padding: 0 15px; background-color: #fff3cd; border-radius: 5px; flex-shrink: 0;">
         <span style="font-weight: bold;">Animation State:</span>

@@ -57,12 +57,10 @@ public partial class MatrixTest : ComponentBase, IDisposable
         {
             var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
 
-
-            var arena = FoundryService.Arena();
             if (found)
             {
-                // ✅ Phase 0.5: Get this page's stage (Canvas already linked it to scene)
-                _matrixStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                // ✅ Phase 0.5: Get this page's stage from Canvas
+                _matrixStage = Canvas3DReference?.Stage;
                 $"MatrixTest: Retrieved stage '{_matrixStage?.Name}' from Canvas".WriteSuccess();
                 DoRequestAxisToScene(scene!);
                 CreateSpacialBox();
@@ -86,16 +84,16 @@ public partial class MatrixTest : ComponentBase, IDisposable
     {
         try
         {
-            var arena = FoundryService.Arena();
-            if (arena == null)
+            if (_matrixStage == null) _matrixStage = Canvas3DReference?.Stage;
+            if (_matrixStage == null)
             {
-                StatusMessage = "Arena not ready yet. Try again in a moment.";
+                StatusMessage = "Stage not ready yet. Try again in a moment.";
                 StateHasChanged();
                 return;
             }
 
             // ✅ Phase 0.5: Clear only this page's stage
-            _matrixStage?.ClearStage();
+            _ = _matrixStage.ClearAll();
 
             //ok you need to remember that for spacialbox it is in a local coord system with 0,0,0 being the 
             // left , bottom, back corner
@@ -178,16 +176,16 @@ public partial class MatrixTest : ComponentBase, IDisposable
 
     public void ClearAll()
     {
-        var arena = FoundryService.Arena();
-        if (arena == null)
+        if (_matrixStage == null) _matrixStage = Canvas3DReference?.Stage;
+        if (_matrixStage == null)
         {
-            StatusMessage = "Arena not ready yet. Try again in a moment.";
+            StatusMessage = "Stage not ready yet. Try again in a moment.";
             StateHasChanged();
             return;
         }
 
         // ✅ Phase 0.5: Clear only this page's stage
-        _matrixStage?.ClearStage();
+        _ = _matrixStage.ClearAll();
         StateHasChanged();
     }
 
