@@ -88,9 +88,7 @@ public class Shape3DTech : IShape3DTech
    [Description("Clears all shapes from the geometry stage")]
    public void ClearShapes()
    {
-      var stage = EstablishGeometryStage();
-      _ = stage.ClearAll();
-      RefreshUI();
+      ShapeEditor.ClearShapes();
    }
 
    [Description("Saves all shapes to a file for persistence")]
@@ -467,7 +465,6 @@ public class Shape3DTech : IShape3DTech
       }
 
       RefreshUI();
-
       return GetShapes();
    }
 
@@ -494,14 +491,11 @@ public class Shape3DTech : IShape3DTech
          }
       };
 
-
-
       stage.AddShape(newShape);
 
       $"✅ Created {shapeType} '{name}' ({width}x{height}x{depth}) with color '{color}' at ({x:F1}, {y:F1}, {z:F1})".WriteSuccess();
 
       RefreshUI();
-
       return GetShapes();
    }
 
@@ -510,22 +504,7 @@ public class Shape3DTech : IShape3DTech
    public List<FoShape3D> DeleteShape(
       [Description("The name of the shape to delete")] string name)
    {
-      var stage = EstablishGeometryStage();
-      var (success, shape) = stage.FindMember<FoGlyph3D>(name);
-      var geometryShape = shape as GeometryShape;
-
-      if (geometryShape != null)
-      {
-         geometryShape.DeleteFromStage(stage);
-         $"❌ Deleted shape '{name}'".WriteSuccess();
-      }
-      else
-      {
-         $"⚠️  Shape '{name}' not found".WriteWarning();
-      }
-
-      RefreshUI();
-
+      ShapeEditor.DeleteShape(name);
       return GetShapes();
    }
 
@@ -533,24 +512,7 @@ public class Shape3DTech : IShape3DTech
    public List<FoShape3D> DeleteMultipleShapes(
       [Description("List of shape names to delete")] List<string> names)
    {
-      var stage = EstablishGeometryStage();
-      int deletedCount = 0;
-
-      foreach (var name in names)
-      {
-         var (success, found) = stage.FindMember<FoGlyph3D>(name);
-         var shape = found as GeometryShape;
-         if (shape != null)
-         {
-            shape.DeleteFromStage(stage);
-            deletedCount++;
-         }
-      }
-
-      $"❌ Deleted {deletedCount} of {names.Count} shapes".WriteSuccess();
-
-      RefreshUI();
-
+      ShapeEditor.DeleteMultipleShapes(names);
       return GetShapes();
    }
 
@@ -667,113 +629,39 @@ public class Shape3DTech : IShape3DTech
       return result;
    }
 
-   [Description("Duplicates an existing shape with a new name and optional position offset")]
-   public List<FoShape3D> DuplicateShape(
-      [Description("The name of the shape to duplicate")] string sourceName,
-      [Description("Name for the new duplicated shape")] string newName,
-      [Description("X offset from original position")] double offsetX,
-      [Description("Y offset from original position")] double offsetY,
-      [Description("Z offset from original position")] double offsetZ)
-   {
-      var stage = EstablishGeometryStage();
-      var (success, found) = stage.FindMember<FoGlyph3D>(sourceName);
-      var sourceShape = found as GeometryShape;
 
-      if (sourceShape != null)
-      {
-         var pos = sourceShape.Transform?.Position ?? Vector3.Zero;
-
-         var newShape = new GeometryShape(newName, sourceShape.GeomType, sourceShape.Width, sourceShape.Height, sourceShape.Depth)
-         {
-            Color = sourceShape.Color
-         };
-
-         newShape.Transform!.Position = new Vector3(pos.X + offsetX, pos.Y + offsetY, pos.Z + offsetZ);
-
-         if (sourceShape.Transform?.Rotation != null)
-         {
-            newShape.Transform.Rotation = sourceShape.Transform.Rotation;
-         }
-
-         if (sourceShape.Transform?.Scale != null)
-         {
-            newShape.Transform.Scale = sourceShape.Transform.Scale;
-         }
-
-         stage.AddShape(newShape);
-
-         $"📋 Duplicated '{sourceName}' as '{newName}' with offset ({offsetX:F1}, {offsetY:F1}, {offsetZ:F1})".WriteSuccess();
-      }
-      else
-      {
-         $"⚠️  Source shape '{sourceName}' not found".WriteWarning();
-      }
-
-      RefreshUI();
-      return GetShapes();
-   }
 }
 
 public class GeometryShape : FoShape3D
 {
-
-
    public GeometryShape(string name, string shapeType = "box", double? width = null, double? height = null, double? depth = null) : base(name)
    {
-
-
       // Use provided dimensions or defaults
       var w = width ?? 2.0;
       var h = height ?? 2.0;
       var d = depth ?? 2.0;
 
-      // Create shape based on type
-      switch (shapeType.ToLower())
+      // Switch expression to select factory method
+      Func<string, double, double, double, FoShape3D> factory = shapeType.ToLower() switch
       {
-         case "sphere":
-            CreateSphere(name, w, h, d);
-            break;
-         case "cylinder":
-            CreateCylinder(name, w, h, d);
-            break;
-         case "cone":
-            CreateCone(name, w, h, d);
-            break;
-         case "torus":
-            CreateTorus(name, w, h, d);
-            break;
-         case "tetrahedron":
-            CreateTetrahedron(name, w, h, d);
-            break;
-         case "octahedron":
-            CreateOctahedron(name, w, h, d);
-            break;
-         case "dodecahedron":
-            CreateDodecahedron(name, w, h, d);
-            break;
-         case "icosahedron":
-            CreateIcosahedron(name, w, h, d);
-            break;
-         case "torusknot":
-            CreateTorusKnot(name, w, h, d);
-            break;
-         case "capsule":
-            CreateCapsule(name, w, h, d);
-            break;
-         case "plane":
-            CreatePlane(name, w, h, d);
-            break;
-         case "circle":
-            CreateCircle(name, w, h, d);
-            break;
-         case "ring":
-            CreateRing(name, w, h, d);
-            break;
-         case "box":
-         default:
-            CreateBox(name, w, h, d);
-            break;
-      }
+         "box" => CreateBox,
+         "sphere" => CreateSphere,
+         "cylinder" => CreateCylinder,
+         "cone" => CreateCone,
+         "torus" => CreateTorus,
+         "tetrahedron" => CreateTetrahedron,
+         "octahedron" => CreateOctahedron,
+         "dodecahedron" => CreateDodecahedron,
+         "icosahedron" => CreateIcosahedron,
+         "torusknot" => CreateTorusKnot,
+         "capsule" => CreateCapsule,
+         "plane" => CreatePlane,
+         "circle" => CreateCircle,
+         "ring" => CreateRing,
+         _ => CreateBox // default
+      };
+
+      factory(name, w, h, d);
 
       var tag = new FoText3D("tag")
       {
