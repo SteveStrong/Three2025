@@ -1,4 +1,5 @@
 using FoundryWorldsAndDrawings.Shape;
+using FoundryWorldsAndDrawings;
 using FoundryRulesAndUnits.Extensions;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 
@@ -10,8 +11,24 @@ namespace Three2025.Apprentice;
 /// </summary>
 public class AudioPanelShape : FoShape3D
 {
+   /// <summary>
+   /// Default formatter for audio equipment - shows name, feature count, and position
+   /// </summary>
+   public static new readonly Func<FoBase, string> DefaultFormatter = g => 
+   {
+      if (g is FoShape3D shape && shape.Transform?.Position != null)
+      {
+         var pos = shape.Transform.Position;
+         return $"{g.Key} AudioPanel [10 connectors] @ {pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0}";
+      }
+      return $"{g.Key} AudioPanel";
+   };
+
    public AudioPanelShape(string name, double panelWidth = 16.0, double panelHeight = 4.0) : base(name)
    {
+      // Set the formatter to use our static equipment formatter
+      ComputeTreeNodeTitle = DefaultFormatter;
+      
       // Create the main panel body
       CreateBox(name, panelWidth, panelHeight, 1.0);
       Color = "DarkSlateGray";
@@ -154,11 +171,5 @@ public class AudioPanelShape : FoShape3D
          Color = "white"
       };
       AddShape(label);
-   }
-
-   public override string GetTreeNodeTitle()
-   {
-      var pos = Transform!.Position;
-      return $"{GetName()} AudioPanel [10 connectors] @ {pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0}";
    }
 }

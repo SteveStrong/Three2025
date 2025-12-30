@@ -11,6 +11,8 @@ public class Node3D : FoShape3D
 
     public Node3D(string name, string color): base(name, color)
     {
+        // Set the formatter to use our static formatter
+        ComputeTreeNodeTitle = DefaultFormatter;
     }
 
     public string GetTitle()
@@ -85,10 +87,6 @@ public class Node3D : FoShape3D
 
 
 
-    public override string GetTreeNodeTitle()
-    {
-        var pos = Transform!.Position;
-        return $"{base.GetTreeNodeTitle()} Links: {LinkCount()} POS: {pos.X:F1} {pos.Y:F1} {pos.Z:F1}";
-    }
+
 
 }

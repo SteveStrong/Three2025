@@ -105,8 +105,8 @@ public class Shape3DTech : IShape3DTech
       }
       // Use Value() method and cast to List<FoShape3D>
       var shapeList = result.Value() as List<FoShape3D> ?? new List<FoShape3D>();
-      var shapes = shapeList.OfType<GeometryShape>().ToList();
-      var data = CodingExtensions.DehydrateList<GeometryShape>(shapes, false);
+      var shapes = shapeList.ToList(); // Now work with all FoShape3D objects
+      var data = CodingExtensions.DehydrateList<FoShape3D>(shapes, false);
       FileHelpers.WriteData("Data", "shapes.json", data);
    }
 
@@ -114,7 +114,7 @@ public class Shape3DTech : IShape3DTech
    public void RestoreShapes()
    {
       var data = FileHelpers.ReadData("Data", "shapes.json");
-      var list = CodingExtensions.HydrateList<GeometryShape>(data, false);
+      var list = CodingExtensions.HydrateList<FoShape3D>(data, false);
 
       EstablishGeometryStage();
       ShapeEditor.ClearShapes();
@@ -438,6 +438,55 @@ public class Shape3DTech : IShape3DTech
       return result.AsShape3D();
    }
 
+   /// <summary>
+   /// Create a 3D shape using the same factory logic as GeometryShape but without the wrapper class
+   /// </summary>
+   private FoShape3D CreateShapeWithFactory(string name, string shapeType, double width = 2.0, double height = 2.0, double depth = 2.0)
+   {
+      // Create a base shape to use factory methods on
+      var factoryShape = new FoShape3D("factory");
+      
+      // Switch expression to select factory method (same as GeometryShape)
+      Func<string, double, double, double, FoShape3D> factory = shapeType.ToLower() switch
+      {
+         "box" => factoryShape.CreateBox,
+         "sphere" => factoryShape.CreateSphere,
+         "cylinder" => factoryShape.CreateCylinder,
+         "cone" => factoryShape.CreateCone,
+         "torus" => factoryShape.CreateTorus,
+         "tetrahedron" => factoryShape.CreateTetrahedron,
+         "octahedron" => factoryShape.CreateOctahedron,
+         "dodecahedron" => factoryShape.CreateDodecahedron,
+         "icosahedron" => factoryShape.CreateIcosahedron,
+         "torusknot" => factoryShape.CreateTorusKnot,
+         "capsule" => factoryShape.CreateCapsule,
+         "plane" => factoryShape.CreatePlane,
+         "circle" => factoryShape.CreateCircle,
+         "ring" => factoryShape.CreateRing,
+         _ => factoryShape.CreateBox // default
+      };
+      
+      var shape = factory(name, width, height, depth);
+      
+      // Set the spatial formatter (same as GeometryShape.DefaultFormatter)
+      shape.ComputeTreeNodeTitle = TreeNodeFormatters.Spatial;
+      
+      // Add the text tag (same as GeometryShape)
+      var tag = new FoText3D("tag")
+      {
+         Text = name,
+         FontSize = 0.5,
+         Transform = new Transform3("TagTransform")
+         {
+            Position = new Vector3(3, 0, 0),
+         },
+         Color = "black"
+      };
+      shape.AddShape(tag);
+      
+      return shape;
+   }
+
    [Description("Create and add a 3D shape to the geometry stage")]
    public List<FoShape3D> AddShape(
       [Description("The name of the shape to create")] string name,
@@ -449,10 +498,8 @@ public class Shape3DTech : IShape3DTech
    {
       EstablishGeometryStage();
 
-      var newShape = new GeometryShape(name, shapeType)
-      {
-         Color = color
-      };
+      var newShape = CreateShapeWithFactory(name, shapeType);
+      newShape.Color = color;
 
       // Set position if not at origin
       if (x != 0.0 || y != 0.0 || z != 0.0)
@@ -492,13 +539,11 @@ public class Shape3DTech : IShape3DTech
    {
       EstablishGeometryStage();
 
-      var newShape = new GeometryShape(name, shapeType, width, height, depth)
+      var newShape = CreateShapeWithFactory(name, shapeType, width, height, depth);
+      newShape.Color = color;
+      newShape.Transform = new Transform3($"{name}_Transform")
       {
-         Color = color,
-         Transform = new Transform3($"{name}_Transform")
-         { 
-            Position = new Vector3(x, y, z)
-         }
+         Position = new Vector3(x, y, z)
       };
 
       ShapeEditor.AddShape(newShape);
