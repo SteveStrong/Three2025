@@ -1,0 +1,224 @@
+#nullable enable
+@page "/shape-lifecycle-test"
+@using FoundryWorldsAndDrawings.Shape
+
+@rendermode InteractiveServer
+
+@namespace Three2025.Components.Pages
+
+<PageTitle>Shape Lifecycle Test</PageTitle>
+
+<div class="container-fluid mt-3">
+    <!-- Test Dashboard -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="border: 3px solid #2196F3; background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);">
+                <div class="card-body">
+                    <h2 class="text-center mb-4" style="color: #1565C0; font-weight: bold;">🧪 Three-Parameter Architecture Test Dashboard</h2>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100" style="border: 2px solid #4CAF50;">
+                                <div class="card-body text-center">
+                                    <h4 style="color: #2E7D32;">🔬 Shape Lifecycle Test</h4>
+                                    <p class="text-muted">Manual control with single-frame rendering (no animation loop)</p>
+                                    <p><strong>Tests:</strong> Mesh cache survival, Transform-only updates, Parameter propagation</p>
+                                    <span class="badge bg-success" style="font-size: 1rem; padding: 8px 16px;">◀️ CURRENT PAGE</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100" style="border: 2px solid #FF9800;">
+                                <div class="card-body text-center">
+                                    <h4 style="color: #E65100;">⏰ KN Model Clock Animation Test</h4>
+                                    <p class="text-muted">Continuous animation loop with parameter updates</p>
+                                    <p><strong>Tests:</strong> Clock motion, Periodic shape changes, KN layer animation</p>
+                                    <a href="/knmodel-animation" class="btn btn-warning btn-lg mt-2" style="font-weight: bold;">
+                                        ▶️ GO TO ANIMATION TEST
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3>🧪 Shape Lifecycle Test - Manual Rendering</h3>
+    <p class="text-muted">Manual control with single-frame rendering (no animation loop)</p>
+    
+    <div class="row">
+        <!-- Canvas on left -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>3D Canvas</h5>
+                    <Canvas3DComponent SceneName="manual-test-stage" CanvasWidth="400" CanvasHeight="400" @ref="_canvasRef" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls in middle -->
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5>Test Controls</h5>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" @onclick="CreateComponent">2️⃣ Create Component</button>
+                        <button class="btn btn-success" @onclick="CreateGeometry">2️⃣ Create Geometry</button>
+                        <button class="btn btn-success" @onclick="CreateShape">2️⃣ Compute Shape value</button>
+                        <button class="btn btn-success" @onclick="RenderShape">2️⃣ Render</button>
+                        <button class="btn btn-warning" @onclick="RemoveShape" disabled="@(_testComponent == null)">3️⃣ Remove Shape (Smash)</button>
+                        <button class="btn btn-primary" @onclick="TriggerSingleFrame">🎬 Render Single Frame</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5>Parameter Controls</h5>
+                    @if (_testComponent != null)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Geometry Type</label>
+                            <select class="form-select" @onchange="OnGeometryTypeChanged">
+                                <option value="Box">Box</option>
+                                <option value="Sphere">Sphere</option>
+                                <option value="Cylinder">Cylinder</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Width: @_currentWidth</label>
+                            <input type="range" class="form-range" min="0.5" max="10" step="0.5" 
+                                   value="@_currentWidth" @onchange="OnWidthChanged" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Height: @_currentHeight</label>
+                            <input type="range" class="form-range" min="0.5" max="10" step="0.5" 
+                                   value="@_currentHeight" @onchange="OnHeightChanged" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Depth: @_currentDepth</label>
+                            <input type="range" class="form-range" min="0.5" max="10" step="0.5" 
+                                   value="@_currentDepth" @onchange="OnDepthChanged" />
+                        </div>
+                        
+                        <hr />
+                        <h6>Transform Position (Tests Transform-Only Updates)</h6>
+                        <div class="mb-3">
+                            <label class="form-label">X Position: @_currentX</label>
+                            <input type="range" class="form-range" min="-10" max="10" step="0.5" 
+                                   value="@_currentX" @oninput="OnXPositionChanged" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Y Position: @_currentY</label>
+                            <input type="range" class="form-range" min="-10" max="10" step="0.5" 
+                                   value="@_currentY" @oninput="OnYPositionChanged" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Z Position: @_currentZ</label>
+                            <input type="range" class="form-range" min="-10" max="10" step="0.5" 
+                                   value="@_currentZ" @oninput="OnZPositionChanged" />
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Create a component first</p>
+                    }
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5>Current State</h5>
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <th>Stage:</th>
+                                <td>@(_stage != null ? $"✅ {_stage.Key}" : "❌ Not created")</td>
+                            </tr>
+                            <tr>
+                                <th>Current Component:</th>
+                                <td>@(_testComponent != null ? $"✅ '{_testComponent.Name}'" : "❌ None")</td>
+                            </tr>
+                            <tr>
+                                <th>Shapes in Stage:</th>
+                                <td>@(_stage != null ? GetShapeCount() : "N/A")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model tree on right -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(_activeTab == "model" ? "active" : "")" 
+                                    @onclick="@(() => _activeTab = "model")" 
+                                    type="button" role="tab">
+                                📊 Model Tree
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(_activeTab == "shape" ? "active" : "")" 
+                                    @onclick="@(() => _activeTab = "shape")" 
+                                    type="button" role="tab">
+                                🔷 Shape Tree
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(_activeTab == "slots" ? "active" : "")" 
+                                    @onclick="@(() => _activeTab = "slots")" 
+                                    type="button" role="tab">
+                                📦 Slots
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" style="max-height: 1000px; overflow-y: auto; padding-top: 10px;">
+                        @if (_activeTab == "model")
+                        {
+                            <MentorTreeView/>
+                        }
+                        else if (_activeTab == "shape")
+                        {
+                            <ShapeTreeView/>
+                        }
+                        else
+                        {
+                            <div style="font-family: monospace; font-size: 0.85rem; background: #f8f9fa; padding: 1rem;">
+                                @if (_stage != null)
+                                {
+                                    <div><strong>Stage: @_stage.Key</strong></div>
+                                    @foreach (var slot in _stage.AllSlotsOfType<FoGlyph3D>())
+                                    {
+                                        <div style="margin-left: 1rem; border-left: 2px solid #dee2e6; padding-left: 0.5rem;">
+                                            <div><strong>Slot:</strong> @slot.GetName()</div>
+                                            <div><strong>Count:</strong> @slot.Count()</div>
+                                            @foreach (var shape in slot.ValuesOfType<FoGlyph3D>())
+                                            {
+                                                <div style="margin-left: 1rem; border-left: 2px solid #adb5bd; padding-left: 0.5rem; margin-top: 0.5rem;">
+                                                    <div>📦 <strong>@shape.Name</strong></div>
+                                                    <div style="font-size: 0.75rem; color: #6c757d;">GlyphId: @shape.GlyphId[..8]...</div>
+                                                    <div style="font-size: 0.75rem; color: #6c757d;">Key: @shape.Key</div>
+                                                    <div style="font-size: 0.75rem; color: #6c757d;">OnDelete: @(shape.OnDelete != null ? "✅ SET" : "NULL")</div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="text-muted">No stage created</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

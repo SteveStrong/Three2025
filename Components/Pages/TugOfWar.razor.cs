@@ -62,7 +62,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     {
         base.OnInitialized();
         AnimationFrameBus.SubscribeToAnimation(OnAnimationFrame);
-        $"TugOfWar Page OnInitialized".WriteInfo();
+        $"TugOfWar Page OnInitialized - CIRCUIT ACTIVE".WriteInfo();
     }
 
     private void OnAnimationFrame(AnimationEvent animEvent)
@@ -82,22 +82,27 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     {
         if (firstRender)
         {
-            $"TugOfWar Page OnAfterRenderAsync".WriteInfo();
+            $"TugOfWar Page OnAfterRenderAsync - firstRender=true - INTERACTIVE MODE ACTIVE".WriteSuccess();
 
             // Wait a moment for Canvas3DComponent to finish its OnAfterRenderAsync
             await Task.Delay(100);
 
             // Setup 3D Arena-Scene bridge
             var (found3D, scene3D) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
+            $"TugOfWar: GetActiveScene found={found3D}, scene={scene3D?.Title ?? "null"}, Canvas3DReference={Canvas3DReference != null}".WriteInfo();
+            
             if (found3D)
             {
-                // ✅ Phase 0.5: Get stage created by Canvas (matches 2D pattern)
-                var arena = Workspace.GetArena();
-                _tugOfWarStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                // ✅ Stage-centric pattern: Get stage from Canvas
+                _tugOfWarStage = Canvas3DReference.Stage;
                 
                 // Canvas already linked stage ↔ scene - just verify
-                var linkedScene = _tugOfWarStage.GetAssociatedScene();
-                $"TugOfWar: Retrieved TugOfWarStage '{_tugOfWarStage.Key}' linked to scene '{linkedScene?.Title ?? "null"}'".WriteSuccess();
+                var linkedScene = _tugOfWarStage?.GetAssociatedScene();
+                $"TugOfWar: Retrieved TugOfWarStage '{_tugOfWarStage?.Key}' linked to scene '{linkedScene?.Title ?? "null"}'".WriteSuccess();
+            }
+            else
+            {
+                $"TugOfWar: WARNING - No active scene found! Canvas3D may not be initialized".WriteWarning();
             }
 
             
@@ -127,8 +132,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         // Clear existing shapes
         drawing.ClearAll();
         
-        // Disable line router and hit test display for clean display (keep grid visible)
-        var page = drawing.CurrentPage();
+        // Get page using stage-centric pattern (FirstPage or Canvas2DReference.Page)
+        var page = Canvas2DReference?.Page ?? drawing.FirstPage();
         if (page != null)
         {
             page.ShowGrid = true;  // Keep grid visible
@@ -146,9 +151,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         var s2 = new FoShape2D(50, 50, "Orange");
         s2.MoveTo(500, 300);
         
-        // Add shapes to drawing (without selection to avoid debug lines)
-        drawing.AddShapeToPage<FoShape2D>(s1, page.GetName());
-        drawing.AddShapeToPage<FoShape2D>(s2, page.GetName());
+        // Add shapes to page directly (stage-centric pattern)
+        page?.AddShape(s1);
+        page?.AddShape(s2);
 
 
         // Create connecting arrow
@@ -159,14 +164,14 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         };
         wire.GlueStartTo(s1, "RIGHT");
         wire.GlueFinishTo(s2, "LEFT");
-        drawing.AddShapeToPage<FoShape1D>(wire, page.GetName());
+        page?.AddShape(wire);
 
         var text = new FoText2D(100, 50, "Green")
         {
             Text = "Tug of War!",
         };
         text.MoveTo(400, 400);
-        drawing.AddShapeToPage<FoText2D>(text, page.GetName());
+        page?.AddShape(text);
         
         
         // Animate both shapes
@@ -217,9 +222,19 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         
         if (_tugOfWarStage == null)
         {
-            $"ERROR: Stage is null!".WriteError();
-            return;
+            $"ERROR: Stage is null! Canvas3DReference={Canvas3DReference != null}, Canvas3DReference.Stage={Canvas3DReference?.Stage != null}".WriteError();
+            // Try to get it again
+            _tugOfWarStage = Canvas3DReference?.Stage;
+            if (_tugOfWarStage == null)
+            {
+                $"ERROR: Still null after retry!".WriteError();
+                return;
+            }
         }
+
+        // Check if stage is linked to scene
+        var linkedScene = _tugOfWarStage.GetAssociatedScene();
+        $"Stage '{_tugOfWarStage.Key}' linked to scene: {linkedScene?.Title ?? "NULL - THIS IS THE PROBLEM!"}".WriteInfo();
 
         // DON'T clear - let boxes accumulate to test coexistence
         $"Before adding: Stage has {_tugOfWarStage.Members<FoGlyph3D>().Count()} shapes".WriteInfo();
@@ -244,6 +259,20 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
         _tugOfWarStage.AddShape(box3);
         
+        // DIAGNOSTIC: Verify shapes are in the stage
+        var allSlots = _tugOfWarStage.AllSlots();
+        $"After adding: Stage has {allSlots.Count} slots".WriteInfo();
+        foreach (var slot in allSlots)
+        {
+            $"  Slot '{slot.GetName()}' (TypeSpec: {slot.TypeSpec.Name}): {slot.Count()} items".WriteInfo();
+        }
+        
+        var shapes = _tugOfWarStage.Members<FoGlyph3D>();
+        $"Stage.Members<FoGlyph3D>() = {shapes.Count} shapes".WriteInfo();
+        foreach (var shape in shapes)
+        {
+            $"  Shape: {shape.Key}, Stale={shape.IsStale()}, Scene={_tugOfWarStage.GetAssociatedScene()?.Title ?? "NULL"}".WriteInfo();
+        }
          
         // CRITICAL: Trigger immediate render - don't wait for animation loop
         var arena = Workspace.GetArena();
@@ -488,9 +517,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         
         _animationTime = 0;
         
-        // ✅ Phase 0.5: Clear only this page's stage
+        // ✅ Stage-centric pattern: Clear only this page's stage
         if (_tugOfWarStage != null)
-            await _tugOfWarStage.ClearStage();
+            await _tugOfWarStage.ClearAll();
         
         // Clear local references
         _growingPipe = null;
@@ -509,9 +538,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     {
         $"Clearing 3D scene...".WriteInfo();
         
-        // ✅ IMMEDIATE DELETE: ClearStage now sends deletions immediately
+        // ✅ Stage-centric pattern: ClearAll sends deletions immediately
         if (_tugOfWarStage != null)
-            await _tugOfWarStage.ClearStage();
+            await _tugOfWarStage.ClearAll();
         
         $"3D scene cleared - stage now has {_tugOfWarStage?.Members<FoGlyph3D>().Count() ?? 0} shapes".WriteSuccess();
         StateHasChanged();

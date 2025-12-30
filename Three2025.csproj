@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -6,19 +6,28 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Version>4.0.0</Version>
     <LangVersion>12.0</LangVersion>
+    <UserSecretsId>8cdb0fc6-713c-41f2-b893-54c39cbe1ec5</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ApprenticeFoundryMentorModeler" Version="25.4.0" />
-    <PackageReference Include="ApprenticeFoundryRulesAndUnits" Version="10.8.2" />
-    <PackageReference Include="ApprenticeFoundryWorldsAndDrawings" Version="25.4.0" />
+    <!-- <PackageReference Include="ApprenticeFoundryMentorModeler" Version="25.4.0" />
+    <PackageReference Include="ApprenticeFoundryRulesAndUnits" Version="10.9.0" />
+    <PackageReference Include="ApprenticeFoundryWorldsAndDrawings" Version="25.4.0" /> -->
+    <PackageReference Include="OllamaSharp" Version="5.4.12" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.32.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.1.1" />
+    <PackageReference Include="Microsoft.Extensions.AI.Ollama" Version="9.0.1-preview.1.24570.5" />
+    <PackageReference Include="Azure.AI.Inference" Version="1.0.0-beta.5" />
+    <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" Version="10.0.0-preview.1.25559.3" />
+    <PackageReference Include="Microsoft.Agents.AI" Version="1.0.0-preview.251219.1" />
+    <PackageReference Include="AWSSDK.BedrockRuntime" Version="4.0.14.3" />
+    <PackageReference Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.5.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,11 +36,11 @@
     <PackageReference Include="BlazorComponentBus" Version="2.2.0" />
   </ItemGroup>
 
-  <!-- <ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\FoundryRulesAndUnits\FoundryRulesAndUnits.csproj" />
    <ProjectReference Include="..\FoundryMentorModeler\FoundryMentorModeler.csproj" />
    <ProjectReference Include="..\FoundryWorldsAndDrawings\FoundryWorldsAndDrawings.csproj" />
-  </ItemGroup> -->
+  </ItemGroup>
 
   <ItemGroup>
     <!-- Exclude reference pattern file from Plugin_710 project -->

@@ -13,19 +13,10 @@ namespace Three2025.Components.Pages;
 /// </summary>
 public class AnimatedKnModel : PartModel
 {
-    private Action? _onRefresh;
-
+    private bool _animationSetup = false;
+    
     public AnimatedKnModel(string name) : base(name)
     {
-        // Use composition pattern - set up the pre-animation action
-        PreAnimationRefresh((comp, evt) =>
-        {
-            // Refresh every 60 frames to avoid spam
-            if (evt.tick % 60 == 0)
-            {
-                _onRefresh?.Invoke();
-            }
-        });
     }
     
     public AnimatedKnModel(string name, IMentorServices mentorServices) : base(name, mentorServices)
@@ -33,65 +24,51 @@ public class AnimatedKnModel : PartModel
         $"AnimatedKnModel: Constructor called for '{name}'".WriteSuccess();
         
         Calculations([
-            "X: 10",
-            "Y: 100",
-            "Z: 10000",
-            "GeomType: 'Box'",
-            "Material: 'Blue'"
+            "UserName: 'Steve'",
+            "Model: 'Blue'",
+            "Param1: 42"
         ]);
 
-        var param = this.EstablishParameter("Param1");
-        param.SetValue(42);
 
-        // Use composition pattern - set up the pre-animation action
-        PreAnimationRefresh((comp, evt) =>
-        {
-            // Update param and refresh UI every 60 frames
-            if (evt.tick % 60 == 0)
-            {
-                param.SetValue(evt.tick);
-                _onRefresh?.Invoke();
-            }
-        });
+        EnsureAnimationSetup();
         
         $"AnimatedKnModel: PreAnimationRefresh set up, PreContextLink is {(PreContextLink != null ? "SET" : "NULL")}".WriteInfo();
     }
-
-    public void SetRefreshAction(Action onRefresh)
+    
+    /// <summary>
+    /// Ensure animation callback is registered. Called from constructor and from page init
+    /// (in case model already existed and constructor didn't run).
+    /// </summary>
+    public void EnsureAnimationSetup()
     {
-        _onRefresh = onRefresh;
+        if (_animationSetup) return;
+        _animationSetup = true;
+        
+        var param = this.EstablishParameter("Param1");
+        
+        // Update param with tick count and refresh tree
+        PreAnimationRefresh((comp, evt) =>
+        {
+            if (evt.tick % 120 == 0)
+            {
+                param.SetValue(evt.tick);
+                // Get services from model - no need to pass it in
+                var services = GetMentorServices();
+                // Targeted refresh - only update this specific parameter's tree node
+                services?.PubSub?.Publish<RefreshRenderMessage>(RefreshRenderMessage.RefreshValueChanged(param));
+               // $"AnimatedKnModel '{Name}': PreAnimationRefresh tick={evt.tick}".WriteInfo();
+            }
+        });
     }
 
     /// <summary>
     /// Override to properly return KnComponent children.
-    /// The base class uses EstablishFolderForAllOfType which doesn't add to the list.
-    /// Note: Must include AnimatedKnComponent specifically since it has its own slot.
     /// </summary>
     public override IEnumerable<ITreeNode> GetTreeChildren()
     {
-        //var list = new List<ITreeNode>();
-        var list = base.GetTreeChildren().ToList();
-        
-        // Add folders for parameters (like base class)
-        //EstablishFolderIfNotEmpty<KnParameter>(list);
-        //EstablishFolderIfNotEmpty<KnComponent>(list);
-        
-        // // Add KnComponent members as tree children
-        // var components = Members<KnComponent>();
-        // //$"AnimatedKnModel.GetTreeChildren: Members<KnComponent> count = {components.Count}".WriteInfo();
-        // foreach (var component in components)
-        // {
-        //     list.Add(component);
-        // }
-        
-        // // Also add AnimatedKnComponent members (stored in separate slot due to generic Add<T>)
-        // var animatedComponents = Members<AnimatedKnComponent>();
-        // $"AnimatedKnModel.GetTreeChildren: Members<AnimatedKnComponent> count = {animatedComponents.Count}".WriteInfo();
-        // foreach (var component in animatedComponents)
-        // {
-        //     list.Add(component);
-        // }
-        
+        var list = new List<ITreeNode>();
+        EstablishFolderIfNotEmpty<KnParameter>(list);
+        EstablishFolderIfNotEmpty<KnRelationship>(list);
         return list;
     }
 

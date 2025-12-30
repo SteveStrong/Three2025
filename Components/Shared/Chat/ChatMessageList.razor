@@ -1,0 +1,33 @@
+@namespace Three2025.Components.Shared.Chat
+@using Three2025.Models.Chat
+
+<div @ref="containerRef" class="chat-message-list">
+    @foreach (var msg in Messages)
+    {
+        <div class="chat-message-wrapper @(msg.IsUser ? "chat-message-wrapper-user" : "chat-message-wrapper-assistant")">
+            <ChatMessage Message="msg" AgentName="@(msg.AgentName ?? CurrentAgent)" />
+        </div>
+    }
+    
+    @if (IsProcessing && !string.IsNullOrEmpty(StreamingText))
+    {
+        <div class="chat-message-wrapper chat-message-wrapper-assistant">
+            <div class="chat-message chat-message-assistant">
+                <div class="chat-message-header">
+                    <span>@CurrentAgent</span>
+                </div>
+                <div class="chat-message-content">
+                    @((MarkupString)StreamingText)<span class="chat-streaming-cursor">▋</span>
+                </div>
+            </div>
+        </div>
+    }
+    else if (IsProcessing)
+    {
+        <div class="chat-processing-indicator">
+            <em>🤔 @CurrentAgent is thinking...</em>
+        </div>
+    }
+    
+    <div @ref="scrollAnchor"></div>
+</div>

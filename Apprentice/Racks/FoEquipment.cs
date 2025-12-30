@@ -37,9 +37,9 @@ public class FoEquipment : FoShape3D
                 Position = new Vector3(width, 0, 0),
             }
         };
-        box.AddSubGlyph3D<FoText3D>(boxName);
+        box.AddShape<FoText3D>(boxName);
 
-        box.AddSubGlyph3D<FoText3D>(new FoText3D("Front", "black")
+        box.AddShape<FoText3D>(new FoText3D("Front", "black")
         {
             Text = "Front",
             Transform = new Transform3("FrontTransform")

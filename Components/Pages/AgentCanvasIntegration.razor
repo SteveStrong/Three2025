@@ -1,0 +1,434 @@
+@page "/agent-canvas"
+
+@using FoundryWorldsAndDrawings.Shared
+@using FoundryWorldsAndDrawings.Shape
+@using Three2025.Services.Chat
+@using Three2025.Components.Shared.Chat
+@using Three2025.Components.Shared.Testing
+@using Three2025.Models.Chat
+@using Three2025.Apprentice
+@using Microsoft.Extensions.AI
+@using AIChatMessage = Microsoft.Extensions.AI.ChatMessage
+
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@namespace Three2025.Components.Pages
+
+<div style="height: calc(100vh - 2rem); overflow: hidden;">
+    <RadzenSplitter Orientation="Orientation.Horizontal" style="height: 100%;">
+        <!-- Left Panel: AI Chat & Manual Test (resizable) -->
+        <RadzenSplitterPane Size="25%" Min="20%" Max="40%">
+            
+            <!-- Tabs for Chat and Manual Test -->
+            <div style="display: flex; flex-direction: column; height: 100%; background: white;">
+                <ul class="nav nav-tabs" role="tablist" style="flex-shrink: 0; margin: 0; border-bottom: 2px solid #dee2e6;">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "chat" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "chat")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            💬 AI Chat
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "quicktest" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "quicktest")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            🎯 Quick Tests
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "shape3dtech" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "shape3dtech")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            🧪 Shape3DTech
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "modeltech" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "modeltech")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            🏗️ ModelTech
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "shape2dtech" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "shape2dtech")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            🎨 Shape2DTech
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "mentor2dtech" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "mentor2dtech")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            📊 Mentor2DTech
+                        </button>
+                    </li>
+                </ul>
+                
+                <div style="flex: 1; overflow: hidden;">
+                    @if (activeChatTab == "chat")
+                    {
+                        <ChatPanel Messages="@displayMessages"
+                      ActivityLogs="@activityLogEntries"
+                      IsProcessing="@isProcessing"
+                      CurrentAgent="@currentAgent"
+                      InputPlaceholder="Ask me to add shapes, lights, or animations... Try: 'list tools' or 'create a box at 400,300 size 100,80'"
+                      ShowActivityLog="false"
+                      @bind-InputValue="@userInput"
+                      OnSendMessage="@SendMessage">
+                <HeaderContent>
+                    <div style="padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <h3 style="margin: 0; font-size: 1.2rem;">🤖 AI Agent Canvas</h3>
+                        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.25rem;">
+                            <strong>Tools:</strong> @toolCount &nbsp; <strong>Agents:</strong> @availableAgents.Count
+                        </div>
+                        
+                        <!-- Test Sequence Selector -->
+                        <TestSequenceSelector OnSequenceSelected="HandleTestSequenceSelected"
+                                             IsDisabled="isProcessingQueue"
+                                             ShowDescription="true" />
+                    </div>
+                </HeaderContent>
+                <FooterActions>
+                    <button @onclick="NavigateToTestSuites" style="padding: 0.25rem 0.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">
+                        🧪 View All Tests
+                    </button>
+                    <button @onclick='() => QuickTest("Add a red box named RedBox at position 0,2,0")' style="padding: 0.25rem 0.5rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                        📦 Add Box
+                    </button>
+                    <button @onclick='() => QuickTest("Add a blue sphere named BlueSphere at position 2,1,2")' style="padding: 0.25rem 0.5rem; background: #d1ecf1; border: 1px solid #17a2b8; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                        🔵 Add Sphere
+                    </button>
+                    <button @onclick='() => QuickTest("Create a spinning animation")' style="padding: 0.25rem 0.5rem; background: #d4edda; border: 1px solid #28a745; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                        🔄 Animate
+                    </button>
+                    <button @onclick='() => QuickTest("Create a model called RobotArm and add a component named Base")' style="padding: 0.25rem 0.5rem; background: #e7d4f8; border: 1px solid #9b59b6; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                        🏗️ Build Model
+                    </button>
+                    <button @onclick="ShowToolDiagnostics" style="padding: 0.25rem 0.5rem; background: #d1ecf1; border: 1px solid #0dcaf0; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                        🔍 Check Tools
+                    </button>
+                    <button @onclick="ClearChat" style="padding: 0.25rem 0.5rem; background: #f8d7da; border: 1px solid #dc3545; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                        🗑️ Clear
+                    </button>
+                </FooterActions>
+            </ChatPanel>
+                    }
+                    else if (activeChatTab == "shape3dtech")
+                    {
+                        <TechnicianTestPanel TechnicianType="typeof(IShape3DTech)" 
+                                             Title="Shape3DTech Test Panel"
+                                             GroupByCategory="true" />
+                    }
+                    else if (activeChatTab == "modeltech")
+                    {
+                        <TechnicianTestPanel TechnicianType="typeof(IModelTech)" 
+                                             Title="ModelTech Test Panel"
+                                             GroupByCategory="true" />
+                    }
+                    else if (activeChatTab == "shape2dtech")
+                    {
+                        <TechnicianTestPanel TechnicianType="typeof(IShape2DTech)" 
+                                             Title="Shape2DTech Test Panel"
+                                             GroupByCategory="true" />
+                    }
+                    else if (activeChatTab == "mentor2dtech")
+                    {
+                        <TechnicianTestPanel TechnicianType="typeof(IMentor2DTech)" 
+                                             Title="Mentor2DTech Test Panel - Diagrams"
+                                             GroupByCategory="true" />
+                    }
+                    else if (activeChatTab == "quicktest")
+                    {
+                        <QuickTestPanel />
+                    }
+                </div>
+            </div>
+        </RadzenSplitterPane>
+
+        <!-- Center Panel: 3D (top) and 2D (bottom) - resizable -->
+        <RadzenSplitterPane Size="50%" Min="30%" Max="60%">
+            <RadzenSplitter Orientation="Orientation.Vertical" style="height: 100%;">
+                <!-- 3D Canvas (top half) -->
+                <RadzenSplitterPane Size="50%" Min="30%">
+                    <div style="display: flex; flex-direction: column; height: 100%; background: #f0f0f0;">
+                        <div style="padding: 0.5rem 1rem; background: #2c3e50; color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <h4 style="margin: 0; font-size: 1rem;">🎨 3D Canvas</h4>
+                                <!-- Animation Loop Indicator -->
+                                <div style="display: flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; background: rgba(46, 204, 113, 0.2); border-radius: 4px; border: 1px solid #2ecc71;">
+                                    <div class="pulse-dot"></div>
+                                    <span style="font-size: 0.7rem; color: #2ecc71; font-weight: 600;">LIVE</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button @onclick="AddTestBox" style="padding: 0.25rem 0.75rem; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                    Add Box
+                                </button>
+                                <button @onclick="ForceRefresh3D" style="padding: 0.25rem 0.75rem; background: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                    🔄 Refresh
+                                </button>
+                                <button @onclick="ClearScene" style="padding: 0.25rem 0.75rem; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                    Clear Scene
+                                </button>
+                                <button @onclick="Reset3D" style="padding: 0.25rem 0.75rem; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                        <div style="flex: 1; overflow: hidden; position: relative; min-height: 0;">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                                <Canvas3DComponent SceneName="AgentCanvas3D" @ref="Canvas3DReference" />
+                            </div>
+                        </div>
+                    </div>
+                </RadzenSplitterPane>
+
+                <!-- 2D Canvas (bottom half) -->
+                <RadzenSplitterPane Size="50%" Min="30%">
+                    <div style="display: flex; flex-direction: column; height: 100%; background: #f0f0f0;">
+                        <div style="padding: 0.5rem 1rem; background: #34495e; color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <h4 style="margin: 0; font-size: 1rem;">✏️ 2D Canvas</h4>
+                                <!-- Animation Loop Indicator -->
+                                <div style="display: flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; background: rgba(46, 204, 113, 0.2); border-radius: 4px; border: 1px solid #2ecc71;">
+                                    <div class="pulse-dot"></div>
+                                    <span style="font-size: 0.7rem; color: #2ecc71; font-weight: 600;">LIVE</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                    <button @onclick="AddTestCircle" style="padding: 0.25rem 0.75rem; background: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                        Add Circle
+                    </button>
+                    <button @onclick="ForceRefresh2D" style="padding: 0.25rem 0.75rem; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                        🔄 Refresh
+                    </button>
+                    <button @onclick="Reset2D" style="padding: 0.25rem 0.75rem; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                        Reset
+                    </button>
+                </div>
+            </div>
+            <div style="flex: 1; overflow: hidden; position: relative; min-height: 0;">
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                    <Canvas2DComponent SceneName="AgentCanvas2D" @ref="Canvas2DReference" />
+                </div>
+            </div>
+        </div>
+                </RadzenSplitterPane>
+            </RadzenSplitter>
+        </RadzenSplitterPane>
+
+    <!-- Right Panel: Tree View -->
+    <RadzenSplitterPane Size="25%" Min="20%" Max="40%">
+        <div style="display: flex; flex-direction: column; height: 100%; background: white;">
+            <div style="padding: 0.75rem; background: #2c3e50; color: white;">
+                <h4 style="margin: 0; font-size: 1rem;">🌳 Scene Hierarchy</h4>
+            </div>
+        
+        <div style="flex: 1; overflow: hidden; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 0.75rem; display: flex; flex-direction: column;">
+            <ul class="nav nav-tabs" role="tablist" style="flex-shrink: 0;">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(activeTreeTab == "model" ? "active" : "")" 
+                            @onclick="@(() => activeTreeTab = "model")" 
+                            type="button" role="tab"
+                            style="font-size: 0.85rem;">
+                        📊 Model
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(activeTreeTab == "shape" ? "active" : "")" 
+                            @onclick="@(() => activeTreeTab = "shape")" 
+                            type="button" role="tab"
+                            style="font-size: 0.85rem;">
+                        🔷 Shape
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(activeTreeTab == "context" ? "active" : "")" 
+                            @onclick="@(() => activeTreeTab = "context")" 
+                            type="button" role="tab"
+                            style="font-size: 0.85rem;">
+                        🤖 AI Context
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(activeTreeTab == "activity" ? "active" : "")" 
+                            @onclick="@(() => activeTreeTab = "activity")" 
+                            type="button" role="tab"
+                            style="font-size: 0.85rem;">
+                        📊 Activity
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(activeTreeTab == "testlog" ? "active" : "")" 
+                            @onclick="@(() => activeTreeTab = "testlog")" 
+                            type="button" role="tab"
+                            style="font-size: 0.85rem;">
+                        🧪 Test Log
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" style="flex: 1; overflow: auto; padding-top: 0.75rem; background: white; border-radius: 0 0 5px 5px; border: 1px solid #dee2e6; border-top: none;">
+                @if (activeTreeTab == "model")
+                {
+                    <div style="padding: 0.5rem;">
+                        <MentorTreeView/>
+                    </div>
+                }
+                else if (activeTreeTab == "shape")
+                {
+                    <div style="padding: 0.5rem;">
+                        <ShapeTreeView />
+                    </div>
+                }
+                else if (activeTreeTab == "context")
+                {
+                    <div style="padding: 0.75rem;">
+                        <div style="margin-bottom: 1rem; padding: 0.75rem; background-color: #e3f2fd; border-radius: 5px; border-left: 3px solid #2196F3;">
+                            <strong style="color: #1565C0;">Current Agent:</strong>
+                            <div style="font-family: monospace; margin-top: 0.5rem; color: #1976d2; font-weight: bold;">
+                                @currentAgent
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem; padding: 0.75rem; background-color: #f3e5f5; border-radius: 5px; border-left: 3px solid #9c27b0;">
+                            <strong style="color: #6a1b9a;">Available Agents:</strong>
+                            <div style="font-family: monospace; margin-top: 0.5rem; font-size: 0.85rem;">
+                                @foreach (var agent in availableAgents)
+                                {
+                                    <div style="margin-top: 0.25rem; color: #7b1fa2;">
+                                        • @agent
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 0.75rem; background-color: #e8f5e9; border-radius: 5px; border-left: 3px solid #4caf50;">
+                            <strong style="color: #2e7d32;">Tools Discovered:</strong>
+                            <div style="font-family: monospace; margin-top: 0.5rem; color: #388e3c; font-weight: bold; font-size: 1.2rem;">
+                                @toolCount tools available
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 1rem; padding: 0.75rem; background-color: #fff3cd; border-radius: 5px; border-left: 3px solid #ffc107;">
+                            <strong style="color: #f57c00;">Conversation:</strong>
+                            <div style="font-family: monospace; margin-top: 0.5rem; font-size: 0.85rem; color: #e65100;">
+                                @conversationHistory.Count messages
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (activeTreeTab == "activity")
+                {
+                    <div @ref="logContainer" style="background: #1e1e1e; color: #d4d4d4; padding: 0.75rem; height: 100%; overflow-y: auto; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.8rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #3e3e3e;">
+                            <button @onclick="ToggleAutoScroll" style="background: @(autoScrollLogs ? "#264f78" : "#3e3e3e"); color: #d4d4d4; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">
+                                @(autoScrollLogs ? "🔄 Auto" : "⏸️ Manual")
+                            </button>
+                            <button @onclick="ClearLogs" style="background: #3e3e3e; color: #d4d4d4; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">
+                                Clear
+                            </button>
+                        </div>
+                        
+                        @foreach (var log in activityLogs)
+                        {
+                            <div style="margin-bottom: 0.5rem; padding: 0.4rem; background: @GetLogBackgroundColor(log.Type); border-left: 2px solid @GetLogBorderColor(log.Type); border-radius: 3px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                                    <span style="color: @GetLogColor(log.Type); font-weight: 600; font-size: 0.75rem;">@GetLogIcon(log.Type) @log.Type</span>
+                                    <span style="color: #808080; font-size: 0.7rem;">@log.Timestamp.ToString("HH:mm:ss.fff")</span>
+                                </div>
+                                <div style="color: #d4d4d4; word-wrap: break-word; font-size: 0.75rem;">@log.Message</div>
+                                @if (!string.IsNullOrEmpty(log.Details))
+                                {
+                                    <div style="color: #808080; font-size: 0.7rem; margin-top: 0.2rem; font-style: italic;">@log.Details</div>
+                                }
+                            </div>
+                        }
+                        
+                        @if (!activityLogs.Any())
+                        {
+                            <div style="color: #808080; text-align: center; margin-top: 2rem; font-style: italic; font-size: 0.8rem;">
+                                No activity yet. Start chatting to see logs.
+                            </div>
+                        }
+                        
+                        <div @ref="logScrollAnchor"></div>
+                    </div>
+                }
+                else if (activeTreeTab == "testlog")
+                {
+                    <div style="background: #1e1e1e; color: #d4d4d4; padding: 0.75rem; height: 100%; overflow-y: auto; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.8rem;">
+                        <TestResultsLog />
+                    </div>
+                }
+            </div>
+        </div>
+        </div>
+    </RadzenSplitterPane>
+</RadzenSplitter>
+
+</div>
+
+<style>
+    .rz-tabview-panels {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .rz-tabview-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .viewer3dContainer {
+        width: 100% !important;
+        height: 100% !important;
+        position: absolute !important;
+        top: 0;
+        left: 0;
+    }
+    
+    .viewer3dContainer canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Animation Loop Indicator */
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background: #2ecc71;
+        border-radius: 50%;
+        animation: pulse 1.5s ease-in-out infinite;
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+    }
+
+    @@keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+        }
+        50% {
+            box-shadow: 0 0 0 8px rgba(46, 204, 113, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+        }
+    }
+    
+    @@keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+    }
+</style>

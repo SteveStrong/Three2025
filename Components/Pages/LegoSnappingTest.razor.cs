@@ -56,12 +56,10 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
         {
             var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null!);
 
-
-            var arena = Workspace.GetArena();
             if (found)
             {
-                // ✅ Phase 0.5: Get this page's stage (Canvas already linked it to scene)
-                _legoStage = arena.EstablishStage<FoStage3D>(Canvas3DReference.SceneName);
+                // ✅ Phase 0.5: Get this page's stage from Canvas
+                _legoStage = Canvas3DReference?.Stage;
                 $"LegoSnappingTest: Retrieved stage '{_legoStage?.Name}' from Canvas".WriteSuccess();
                 // Create initial components for demonstration
                 CreateComponentA();
@@ -327,11 +325,11 @@ public class LegoSnappingTestBase : ComponentBase, IDisposable
 
     public void ClearVisualization()
     {
-        var arena = Workspace?.GetArena();
-        if (arena == null) return;
+        if (_legoStage == null) _legoStage = Canvas3DReference?.Stage;
+        if (_legoStage == null) return;
         
         // ✅ Phase 0.5: Clear only this page's stage
-        _legoStage?.ClearStage();
+        _ = _legoStage.ClearAll();
         
         // Reset components and status
         ComponentA = null;

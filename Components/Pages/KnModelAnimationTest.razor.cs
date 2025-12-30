@@ -40,6 +40,9 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     protected List<EventLogEntry> _eventLogs = new();
     protected bool _logAllEvents = false;
     
+    // Clock animation control
+    protected bool _clockAnimationEnabled = false;
+    
     // Tree tab selection
     protected string _activeTreeTab = "model";
     
@@ -49,20 +52,29 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     // Stage for 3D objects
     private FoStage3D? _testStage;
     private FoPage2D? _testPage;
-    private int _shapeCount = 0;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
         
-        _knModel = MentorServices.EstablishModel<AnimatedKnModel>("KnModelAnimationTestModel");
-        // Set up refresh callback so model triggers UI update when parameters change
-        _knModel.SetRefreshAction(() => InvokeAsync(StateHasChanged));
-        // Start expanded so tree children are visible
-
-        AddChildComponent();
-        AddChildComponent();
-        AddChildComponent();
+        // Subscribe to refresh messages from model parameter changes
+        MentorServices?.PubSub?.SubscribeTo<RefreshRenderMessage>(OnRefreshRender);
+        
+        if (MentorServices != null)
+        {
+            _knModel = MentorServices.EstablishModel<AnimatedKnModel>("KnModelAnimationTestModel");
+            
+            // Ensure animation callback is set up (may not run if model already exists)
+            _knModel.EnsureAnimationSetup();
+            
+            // Create initial child components using bulk add
+            var initialComponents = CreateChildComponents(3);
+            foreach (var component in initialComponents)
+            {
+                ModelEditor.AddChild(_knModel, component);
+            }
+        }
+        
         _knModel.SetExpanded(true);
         var list = _knModel.Members<KnComponent>().ToList();
         var xxx = _knModel.GetTreeChildren();
@@ -82,13 +94,8 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
             
             await Task.Delay(200); // Wait for canvas initialization
 
-            var drawing = Workspace.GetDrawing();
-            _testPage = drawing.EstablishPage<FoPage2D>("KnModelTest2D");
-            
-            var arena = Workspace.GetArena();
-            _testStage = arena.EstablishStage<FoStage3D>("KnModelTest3D");
-
-
+            _testPage = Canvas2DReference?.Page;
+            _testStage = Canvas3DReference?.Stage;
         }
         
         await base.OnAfterRenderAsync(firstRender);
@@ -116,94 +123,65 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         AddLog("Control", "Animation resumed");
         InvokeAsync(StateHasChanged);
     }
+    
+    protected void ToggleClockAnimation()
+    {
+        _clockAnimationEnabled = !_clockAnimationEnabled;
+        
+        // Get first component to control
+        var firstComponent = _knModel.Members<AnimatedKnComponent>().FirstOrDefault();
+        if (firstComponent != null)
+        {
+            if (_clockAnimationEnabled)
+            {
+                firstComponent.EnableClockAnimation();
+                AddLog("Control", $"Clock animation ENABLED on {firstComponent.Name}");
+            }
+            else
+            {
+                firstComponent.DisableClockAnimation();
+                AddLog("Control", $"Clock animation DISABLED on {firstComponent.Name}");
+            }
+        }
+        else
+        {
+            AddLog("Control", "No components available for clock animation");
+        }
+        
+        InvokeAsync(StateHasChanged);
+    }
 
     protected void ResetTest()
     {
         // Clear components from model but keep the model
         _knModel.GetSlot<AnimatedKnComponent>()?.Clear();
         
-        _testStage?.ClearStage();
-        _shapeCount = 0;
+        _testStage?.ClearAll();
         _eventLogs.Clear();
         
         AddLog("System", "Test reset");
         InvokeAsync(StateHasChanged);
     }
 
-    protected void AddAnimatedBoxOBSOLITE()
+    private void OnRefreshRender(RefreshRenderMessage message)
     {
-        if (_testStage == null)
-        {
-            AddLog("Error", "Stage not ready - cannot add box");
-            return;
-        }
-
-        _shapeCount++;
-        var boxIndex = _shapeCount;
-        var x = (boxIndex - 1) * 3.0 - 3.0; // Spread boxes horizontally
-        
-        var box = new FoShape3D().CreateBox($"AnimatedBox_{boxIndex}", 1.0, 1.0, 1.0);
-        box.Color = GetColorForIndex(boxIndex);
-        box.Transform = new Transform3($"BoxTransform_{boxIndex}")
-        {
-            Position = new Vector3(x, 0.5, 0),
-            Rotation = Euler.FromDegrees(0, 0, 0),
-        };
-
-        _testStage.AddShape(box);
-        
-        AddLog("Shape", $"Added box '{box.Key}' at position ({x:F1}, 0.5, 0)");
-        $"KnModelAnimationTest: Added box '{box.Key}'".WriteSuccess();
+        // Handle refresh messages from model parameter changes
+        InvokeAsync(StateHasChanged);
     }
-
-    protected void AddRotatingGroupOBSOLITE()
-    {
-        if (_testStage == null)
-        {
-            AddLog("Error", "Stage not ready - cannot add group");
-            return;
-        }
-
-        _shapeCount++;
-        var groupIndex = _shapeCount;
-        
-        var group = new FoGroup3D($"RotatingGroup_{groupIndex}")
-        {
-            Transform = new Transform3($"GroupTransform_{groupIndex}")
-            {
-                Position = new Vector3(0, 2, 0),
-                Rotation = Euler.FromDegrees(0, 0, 0),
-            }
-        };
-
-        // Add some child boxes to the group
-        for (int i = 0; i < 3; i++)
-        {
-            var angle = i * (2 * Math.PI / 3);
-            var childBox = new FoShape3D().CreateBox($"GroupChild_{groupIndex}_{i}", 0.5, 0.5, 0.5);
-            childBox.Color = GetColorForIndex(i + 1);
-            childBox.Transform = new Transform3($"ChildTransform_{groupIndex}_{i}")
-            {
-                Position = new Vector3(Math.Cos(angle) * 1.5, 0, Math.Sin(angle) * 1.5),
-            };
-            group.AddShape(childBox);
-        }
-
-        _testStage.AddShape(group);
-        AddLog("Shape", $"Added rotating group '{group.Key}' with 3 children");
-    }
-
-
 
     protected void RenderToCanvas()
     {
         if (Canvas3DReference != null)
         {
-            _knModel.RenderArena3D("KnModelTest3D", false, () => AddLog("Model", "3D render complete"));
+            Task.Run(async () =>
+            {
+                await _knModel.RenderArena3D("KnModelTest3D", false, () => AddLog("Model", "3D render complete"));
+            });
         }
+
         if (Canvas2DReference != null)
         {
-            _knModel.RenderDrawing2D("KnModelTest2D", false, () => AddLog("Model", "2D render complete"));
+         _knModel.RenderDrawing2D("KnModelTest2D", false, () => AddLog("Model", "2D render complete"));
         }
     }
 
@@ -218,41 +196,63 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         var componentCount = _knModel.Members<KnComponent>().Count() + 1;
         
         // Position components in a row
-        var xPosition = (componentCount - 1) * 2.5 - 2.5;
+        var xPosition = (componentCount - 1) * 3.0 - 6.0;
         var colors = new[] { "Blue", "Green", "Red", "Purple", "Orange", "Cyan" };
         var color = colors[(componentCount - 1) % colors.Length];
         
-        // Create component with position and color (constructor initializes KnParameters)
-        var component = new AnimatedKnComponent(
-            $"Component_{componentCount}", 
+        // Use DebugGeometryComponent instead - it's simpler and has working animation
+        var component = new DebugGeometryComponent(
+            $"Shape_{componentCount}", 
             color, 
             new Vector3(xPosition, 1.0, 0)
         );
         
-        // Set geometry configuration via parameters (replaces object initializer)
-        // The constructor already sets these parameters, but we can override:
-        // - GeometryType: "Box" (default)
-        // - Width: 1.0m (default) 
-        // - Height: 1.0m (default)
-        // - Depth: 1.0m (default)
-        // Custom dimensions can be set via: component.FindParameter("Width")?.ApplyFormula("units(1.5, 'm')", KnBase.UnitService);
+        // Set up animation
+        component.SetModelEditor(ModelEditor!);
+        component.SetAnimationEnabled(true);
         
         // Add to model via ModelEditor (fires ModelEditChanged event, triggers tree refresh)
-        ModelEditor.AddChild(_knModel, component);
-        $"AddChildComponent: After ModelEditor.AddChild, AnimatedKnComponent count = {_knModel.Members<AnimatedKnComponent>().Count()}".WriteSuccess();
-        AddLog("Model", $"Added {component.Name} via ModelEditor - tree should auto-refresh");
-        
-        // Create and add geometry to stage
-        // var shape = component.CreateGeometry();
-        // _testStage.AddShape(shape);
+        ModelEditor!.AddChild(_knModel, component);
+        $"AddChildComponent: Added DebugGeometryComponent with animation enabled".WriteSuccess();
+        AddLog("Model", $"Added {component.Name} with animation enabled");
         
         // Ensure model is expanded so tree shows children
         _knModel.SetExpanded(true);
         
-        // Get geometry type from parameter for logging
-        var geomType = component.FindParameter("GeometryType")?.GetValue().Value()?.ToString() ?? "Box";
-        AddLog("Component", $"Added KnComponent '{component.Name}' with {color} {geomType} geometry");
+        AddLog("Component", $"Added animated component '{component.Name}' with {color} color");
         InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Creates multiple child components in bulk for efficient initialization
+    /// </summary>
+    protected List<DebugGeometryComponent> CreateChildComponents(int count)
+    {
+        var colors = new[] { "Blue", "Green", "Red", "Purple", "Orange", "Cyan" };
+        var components = new List<DebugGeometryComponent>();
+        var existingCount = _knModel.Members<KnComponent>().Count();
+        
+        for (int i = 0; i < count; i++)
+        {
+            var componentIndex = existingCount + i + 1;
+            var xPosition = (componentIndex - 1) * 3.0 - 3.0; // Spread out more
+            var color = colors[(componentIndex - 1) % colors.Length];
+            
+            var component = new DebugGeometryComponent(
+                $"Shape_{componentIndex}", 
+                color, 
+                new Vector3(xPosition, 1.0, 0)
+            );
+            
+            // Set up animation
+            component.SetModelEditor(ModelEditor!);
+            component.SetAnimationEnabled(true);
+            
+            components.Add(component);
+        }
+        
+        $"CreateChildComponents: Created {count} animated components".WriteInfo();
+        return components;
     }
 
 
@@ -303,11 +303,14 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     }
 
     public void Dispose()
-    {
-        _testStage?.ClearStage();
+    {        
+         MentorServices?.PubSub?.UnSubscribeFrom<RefreshRenderMessage>(OnRefreshRender);
+        _ = _testStage?.ClearAll();
         
         $"KnModelAnimationTest: Disposed".WriteInfo();
         
         GC.SuppressFinalize(this);
     }
+    
+
 }

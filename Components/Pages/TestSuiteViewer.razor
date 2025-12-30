@@ -1,0 +1,88 @@
+@page "/test-suites"
+@namespace Three2025.Components.Pages
+@using Three2025.Models.Chat
+@using Three2025.Services.Chat
+@using Radzen
+@using Radzen.Blazor
+@rendermode InteractiveServer
+
+<div style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="margin: 0 0 0.5rem 0; color: #667eea;">🧪 Test Suite Viewer</h1>
+        <p style="margin: 0; color: #666; font-size: 1.1rem;">
+            Browse and execute automated test sequences on the Agent Canvas
+        </p>
+    </div>
+
+    <RadzenTabs @bind-SelectedIndex="@selectedTabIndex" RenderMode="TabRenderMode.Client">
+        <Tabs>
+            @foreach (var category in testsByCategory)
+            {
+                var categoryColor = category.Key switch
+                {
+                    "3D Geometry" => "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    "2D Geometry" => "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+                    "Models" => "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                    _ => "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                };
+                
+                var categoryBorderColor = category.Key switch
+                {
+                    "3D Geometry" => "#764ba2",
+                    "2D Geometry" => "#11998e",
+                    "Models" => "#f5576c",
+                    _ => "#764ba2"
+                };
+                
+                var tabIcon = category.Key switch
+                {
+                    "3D Geometry" => "🎲",
+                    "2D Geometry" => "⬛",
+                    "Models" => "🏗️",
+                    _ => "🧪"
+                };
+
+                <RadzenTabsItem Text="@($"{tabIcon} {category.Key}")">
+                    <div style="padding: 1.5rem 0;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 1.5rem;">
+                            @foreach (var test in category.Value)
+                            {
+                                <div style="@($"border: 2px solid {categoryBorderColor}; border-radius: 8px; padding: 1.5rem; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;")">
+                                    
+                                    <h3 style="margin: 0 0 0.75rem 0; color: #333; font-size: 1.2rem;">
+                                        @test.DisplayName
+                                    </h3>
+
+                                    <p style="color: #555; font-size: 0.95rem; line-height: 1.5; margin: 0 0 1rem 0;">
+                                        @test.Description
+                                    </p>
+
+                                    <ol style="margin: 0 0 1rem 0; padding-left: 1.5rem; font-size: 0.9rem; color: #666; line-height: 1.6;">
+                                        @foreach (var prompt in test.Prompts)
+                                        {
+                                            <li style="margin: 0.35rem 0;">@prompt</li>
+                                        }
+                                    </ol>
+
+                                    <button @onclick="@(() => RunTest(test))"
+                                            style="@($"width: 100%; padding: 0.75rem; background: {categoryColor}; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;")">
+                                        ▶️ Run Test on Agent Canvas
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </RadzenTabsItem>
+            }
+        </Tabs>
+    </RadzenTabs>
+
+    <div style="margin-top: 3rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+        <h3 style="margin: 0 0 0.5rem 0; color: #333;">💡 About Test Suites</h3>
+        <p style="margin: 0; color: #666; line-height: 1.6;">
+            These automated test sequences will execute on the <strong>Agent Canvas</strong> page where you can visualize 
+            the 3D geometry being created. Each test sends multiple prompts sequentially with a 500ms delay between them, 
+            allowing you to see the AI agent interpret commands and create shapes in real-time.
+        </p>
+    </div>
+</div>

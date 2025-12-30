@@ -1,0 +1,36 @@
+@namespace Three2025.Components.Shared.Chat
+@using Three2025.Models.Chat
+
+<div class="test-sequence-selector">
+    <label class="test-sequence-label">🧪 Test Sequence:</label>
+    <select @bind="selectedSequenceKey" 
+            class="test-sequence-dropdown"
+            disabled="@IsDisabled">
+        <option value="">-- Select Test --</option>
+        @foreach (var category in sequencesByCategory)
+        {
+            <optgroup label="@category.Key">
+                @foreach (var sequence in category.Value)
+                {
+                    <option value="@sequence.Name">
+                        @sequence.DisplayName (@sequence.PromptCount prompts)
+                    </option>
+                }
+            </optgroup>
+        }
+    </select>
+    
+    <button @onclick="OnRunClicked" 
+            disabled="@(IsDisabled || string.IsNullOrEmpty(selectedSequenceKey))"
+            class="test-sequence-run-button"
+            title="@GetSelectedDescription()">
+        ▶️ Run
+    </button>
+    
+    @if (!string.IsNullOrEmpty(selectedSequenceKey) && ShowDescription)
+    {
+        <div class="test-sequence-description">
+            <strong>📋 Description:</strong> @GetSelectedDescription()
+        </div>
+    }
+</div>

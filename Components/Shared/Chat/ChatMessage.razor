@@ -1,0 +1,18 @@
+@namespace Three2025.Components.Shared.Chat
+@using Three2025.Models.Chat
+
+<div class="chat-message @(Message.IsUser ? "chat-message-user" : "chat-message-assistant")">
+    <div class="chat-message-header">
+        @if (Message.IsUser)
+        {
+            <span>You</span>
+        }
+        else
+        {
+            <span>@(AgentName ?? "Assistant")</span>
+        }
+    </div>
+    <div class="chat-message-content">
+        @((MarkupString)Message.Text)
+    </div>
+</div>

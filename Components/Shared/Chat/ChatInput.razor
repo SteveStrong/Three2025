@@ -1,0 +1,26 @@
+@namespace Three2025.Components.Shared.Chat
+
+<div class="chat-input-container">
+    <div class="chat-input-main">
+        <input type="text" 
+               class="chat-input-field"
+               @bind="Value" 
+               @bind:event="oninput"
+               @bind:after="OnValueChanged"
+               @onkeydown="HandleKeyPress"
+               placeholder="@Placeholder"
+               disabled="@IsProcessing" />
+        <button class="chat-input-send-button" 
+                @onclick="HandleSend" 
+                disabled="@(IsProcessing || string.IsNullOrWhiteSpace(Value))">
+            @(IsProcessing ? "Sending..." : "Send")
+        </button>
+    </div>
+    
+    @if (QuickActions != null)
+    {
+        <div class="chat-input-quick-actions">
+            @QuickActions
+        </div>
+    }
+</div>

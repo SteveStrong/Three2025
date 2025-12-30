@@ -36,7 +36,7 @@ public class FoTray : FoShape3D
                 Position = new Vector3(width, 0, 0),
             }
         };
-        box.AddSubGlyph3D<FoText3D>(boxName);
+        box.AddShape<FoText3D>(boxName);
 
         FoConnector.ForTray(width, depth, box);
         return box;

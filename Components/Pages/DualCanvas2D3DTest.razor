@@ -1,0 +1,107 @@
+@page "/dual-canvas-test"
+
+@using FoundryMentorModeler.Model
+@using FoundryMentorModeler.Evaluator
+@using FoundryWorldsAndDrawings.Shape
+@using FoundryWorldsAndDrawings.Solutions
+@using FoundryWorldsAndDrawings.Shared
+
+@rendermode InteractiveServer
+
+@namespace Three2025.Components.Pages
+
+<h3>Dual Canvas Test: Same KnModel → 2D Page + 3D Stage</h3>
+<p class="text-muted">Proves symmetric rendering: one model, two views. X/Y/Width/Height sync between 2D and 3D. Z is 3D-only.</p>
+
+<div class="container-fluid">
+    <div class="row">
+        @* Left Column - 2D Canvas *@
+        <div class="col-md-5">
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <strong>2D Canvas (Page)</strong>
+                    <span class="badge bg-light text-dark">@_shape2DInfo</span>
+                </div>
+                <div class="card-body p-0" style="height: 350px; position: relative;">
+                    <Canvas2DComponent SceneName="DualTest2D" @ref="Canvas2DReference" />
+                </div>
+            </div>
+        </div>
+
+        @* Right Column - 3D Canvas *@
+        <div class="col-md-5">
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <strong>3D Canvas (Stage)</strong>
+                    <span class="badge bg-light text-dark">@_shape3DInfo</span>
+                </div>
+                <div class="card-body p-0" style="height: 350px; position: relative;">
+                    <Canvas3DComponent SceneName="DualTest3D" @ref="Canvas3DReference" />
+                </div>
+            </div>
+        </div>
+
+        @* Controls Column *@
+        <div class="col-md-2">
+            <div class="card mb-3">
+                <div class="card-header bg-warning">
+                    <strong>Shared Parameters</strong>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <label class="form-label small">Width</label>
+                        <input type="number" class="form-control form-control-sm" @bind="_widthInput" step="10" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Height</label>
+                        <input type="number" class="form-control form-control-sm" @bind="_heightInput" step="10" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">X Position</label>
+                        <input type="number" class="form-control form-control-sm" @bind="_posXInput" step="10" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Y Position</label>
+                        <input type="number" class="form-control form-control-sm" @bind="_posYInput" step="10" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Z Position (3D only)</label>
+                        <input type="number" class="form-control form-control-sm" @bind="_posZInput" step="10" />
+                    </div>
+                    <button class="btn btn-warning w-100 mb-2" @onclick="ApplyChanges">Apply All</button>
+                    <button class="btn btn-danger w-100 mb-2" @onclick="SmashGeometry">💥 Smash Both</button>
+                    <button class="btn btn-secondary w-100" @onclick="ResetTest">🔄 Reset</button>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <strong>State</strong>
+                </div>
+                <div class="card-body small">
+                    <div><strong>Tick:</strong> @_currentTick</div>
+                    <div><strong>2D Unknown:</strong> @_is2DUnknown</div>
+                    <div><strong>3D Unknown:</strong> @_is3DUnknown</div>
+                    <div><strong>2D Recreates:</strong> @_recreate2DCount</div>
+                    <div><strong>3D Recreates:</strong> @_recreate3DCount</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <strong>Event Log</strong>
+                </div>
+                <div class="card-body p-0" style="max-height: 200px; overflow-y: auto; font-size: 0.7rem;">
+                    @foreach (var entry in _eventLog.AsEnumerable().Reverse().Take(20))
+                    {
+                        <div class="px-2 py-1 border-bottom">
+                            <span class="text-muted">@entry.Tick</span>
+                            <span class="badge @GetLogBadge(entry.Type)">@entry.Type</span>
+                            @entry.Message
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

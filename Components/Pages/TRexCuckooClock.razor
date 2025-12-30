@@ -1,0 +1,52 @@
+@page "/trex-cuckoo-clock"
+
+@namespace Three2025.Components.Pages
+@inherits TRexCuckooClockBase
+@rendermode InteractiveServer
+
+<PageTitle>T-Rex Cuckoo Clock</PageTitle>
+<h2>T-Rex Cuckoo Clock - 3D Animated Demo</h2>
+<div style="padding: 10px; background-color: #e8f5e9; margin-bottom: 10px; border-radius: 5px;">
+    <strong>FPS:</strong> @_currentFps.ToString("F1") &nbsp;&nbsp;&nbsp; <strong>Tick:</strong> @_currentTick &nbsp;&nbsp;&nbsp; <strong>State:</strong> @_cuckooState
+</div>
+
+<style>
+    .canvas-container {
+        border: 1px solid #ccc;
+        background-color: #f0f0f0;
+    }
+</style>
+
+<div class="d-flex">
+    <div class="canvas-container">
+        <Canvas3DComponent SceneName="CuckooClockScene" @ref="Canvas3DReference" CanvasWidth=@CanvasWidth CanvasHeight=@CanvasHeight />
+    </div>
+    
+    <ShapeTreeView/>
+    
+    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Start" style="margin-left: 10px;">
+        <h4>Cuckoo Clock Controls</h4>
+        <button class="btn btn-primary" @onclick="DoCreateCuckooClock">Build Clock Housing</button>
+        <button class="btn btn-success" @onclick="DoTriggerCuckoo">Trigger Cuckoo Sequence</button>
+        <button class="btn btn-warning" @onclick="DoTestDoors">Test Doors (Open/Close)</button>
+        <button class="btn btn-danger" @onclick="DoClearStage">Clear All</button>
+        
+        <h4>Animation Control</h4>
+        <button class="btn @(_animationRunning ? "btn-danger" : "btn-success")" @onclick="DoToggleAnimation">
+            @(_animationRunning ? "⏸ Stop Animation" : "▶ Start Animation")
+        </button>
+        
+        <h4>Time Speed Control</h4>
+        <button class="btn btn-info btn-sm" @onclick="@(() => DoSetTimeSpeed(1))">1x (Real Time)</button>
+        <button class="btn btn-info btn-sm" @onclick="@(() => DoSetTimeSpeed(60))">60x (1 sec = 1 min)</button>
+        <button class="btn btn-info btn-sm" @onclick="@(() => DoSetTimeSpeed(3600))">3600x (1 sec = 1 hour)</button>
+        
+        <h4>Debug Info</h4>
+        <div style="font-family: monospace; font-size: 12px;">
+            <p>Clock Created: @_clockCreated</p>
+            <p>Current State: @_cuckooState</p>
+            <p>Animation: @(_animationRunning ? "Running" : "Stopped")</p>
+            <p>Time Speed: @_timeMultiplier x</p>
+        </div>
+    </RadzenStack>
+</div>

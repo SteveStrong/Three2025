@@ -69,13 +69,13 @@ public class FoRack : FoShape3D
                 Position = new Vector3(0, -1 - height/2, 0),
             }
         };
-        group.AddSubGlyph3D<FoText3D>(rackName);       
+        group.AddShape<FoText3D>(rackName);       
 
         foreach (var box in list)
-            group.AddSubGlyph3D<FoEquipment>(box);
+            group.AddShape<FoEquipment>(box);
 
         var tray = FoTray.CreateTray("Tray", height-2, .05);
-        group.AddSubGlyph3D<FoTray>(tray);
+        group.AddShape<FoTray>(tray);
 
 
         return group;

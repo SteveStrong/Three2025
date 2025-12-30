@@ -16,6 +16,7 @@ public partial class DebugCanvasBase : ComponentBase
 {
     public Canvas3DComponent Canvas3DReference;
     public BECanvasComponent BECanvasReference;
+    private FoStage3D _debugStage;
     
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] public IWorkspace Workspace { get; set; }
@@ -28,6 +29,8 @@ public partial class DebugCanvasBase : ComponentBase
         {
             "🔍 DebugCanvas OnAfterRenderAsync - FIRST RENDER".WriteInfo();
             await Task.Delay(500); // Give ViewerThreeD time to initialize
+            
+            _debugStage = Canvas3DReference?.Stage;
             
             var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
             DebugInfo = found ? $"✅ Scene found: {scene?.Title}" : "❌ Scene NOT found!";
@@ -60,10 +63,10 @@ public partial class DebugCanvasBase : ComponentBase
                 return;
             }
 
-            var arena = Workspace?.GetArena();
-            if (arena == null)
+            if (_debugStage == null) _debugStage = Canvas3DReference?.Stage;
+            if (_debugStage == null)
             {
-                DebugInfo = "❌ Arena not found";
+                DebugInfo = "❌ Stage not found";
                 StateHasChanged();
                 return;
             }
@@ -83,8 +86,7 @@ public partial class DebugCanvasBase : ComponentBase
                 new Vector3(5, 5, 0)
             });
 
-            var stage = arena.CurrentStage();
-            arena.AddShapeToStage(pipe, stage.GetName());
+            _debugStage.AddShape(pipe);
             DebugInfo = $"✅ Added pipe to scene '{scene.Title}'";
             StateHasChanged();
         }
@@ -107,10 +109,10 @@ public partial class DebugCanvasBase : ComponentBase
                 return;
             }
 
-            var arena = Workspace?.GetArena();
-            if (arena == null)
+            if (_debugStage == null) _debugStage = Canvas3DReference?.Stage;
+            if (_debugStage == null)
             {
-                DebugInfo = "❌ Arena not found";
+                DebugInfo = "❌ Stage not found";
                 StateHasChanged();
                 return;
             }
@@ -130,8 +132,7 @@ public partial class DebugCanvasBase : ComponentBase
                 new Vector3(-5, -5, 0)
             });
 
-            var stage = arena.CurrentStage();
-            arena.AddShapeToStage(pipe2, stage.GetName());
+            _debugStage.AddShape(pipe2);
             DebugInfo = $"✅ Added pipe2 to scene '{scene.Title}'";
             StateHasChanged();
         }

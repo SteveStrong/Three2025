@@ -1,0 +1,63 @@
+@page "/chat-test"
+@namespace Three2025.Components.Pages
+@using Microsoft.Extensions.AI
+@using Three2025.Components.Shared.Chat
+@using Three2025.Models.Chat
+@using Three2025.Services.Chat
+
+@rendermode InteractiveServer
+
+<ChatPanel Messages="displayMessages"
+           StreamingText="streamingResponse"
+           IsProcessing="isProcessing"
+           CurrentAgent="currentAgent"
+           @bind-InputValue="userInput"
+           OnSendMessage="SendMessage"
+           InputPlaceholder="Ask about geometry, clocks, 3D shapes, or animations..."
+           ShowActivityLog="true"
+           ActivityLogs="activityLogs"
+           AutoScrollLogs="autoScrollLogs"
+           OnToggleAutoScroll="ToggleAutoScroll"
+           OnClearLogs="ClearLogs">
+    
+    <HeaderContent>
+        <h2 style="margin: 0 0 0.5rem 0; font-size: 1.5rem;">🤖 Chat Orchestrator Test</h2>
+        <div style="font-size: 0.9rem; opacity: 0.95; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <strong>Provider:</strong>
+                <select @bind="selectedProvider" 
+                        @bind:after="OnProviderChanged"
+                        style="padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                    @foreach (var provider in AvailableProviders)
+                    {
+                        <option value="@provider" style="color: #333;">@provider</option>
+                    }
+                </select>
+                <span style="padding: 0.25rem 0.5rem; background: rgba(255,255,255,0.2); border-radius: 4px; font-size: 0.85rem;">
+                    @CurrentProvider
+                </span>
+            </div>
+        </div>
+        
+        <!-- Test Sequence Selector -->
+        <TestSequenceSelector OnSequenceSelected="HandleTestSequenceSelected"
+                             IsDisabled="false"
+                             ShowDescription="true" />
+    </HeaderContent>
+    
+    <FooterActions>
+        <button @onclick='() => QuickTest("Create a red Box width:1, Height:2, Depth:3, at position X:4, y:2, Z:5")' 
+                class="chat-quick-action-button chat-quick-action-warning">
+            💡 Test geometry Tool
+        </button>
+        <button @onclick="ShowToolList" 
+                class="chat-quick-action-button chat-quick-action-primary">
+            🔍 Show All Tools
+        </button>
+        <button @onclick="ClearChat" 
+                class="chat-quick-action-button chat-quick-action-danger">
+            🗑️ Clear Chat
+        </button>
+    </FooterActions>
+    
+</ChatPanel>
