@@ -2,6 +2,7 @@
 
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryWorldsAndDrawings.Shape;
+using FoundryMentorModeler.Evaluator;
 
 namespace Three2025.Apprentice;
 
@@ -31,40 +32,60 @@ public interface IShape3DEditor
    /// <summary>
    /// Change the color of a shape
    /// </summary>
-   bool SetColor(string shapeName, string color);
+   OPResult SetColor(string shapeName, string color);
    
    /// <summary>
    /// Change the position of a shape
    /// </summary>
-   bool SetPosition(string shapeName, Vector3 position);
+   OPResult SetPosition(string shapeName, Vector3 position);
    
    /// <summary>
    /// Change the rotation of a shape
    /// </summary>
-   bool SetRotation(string shapeName, Euler rotation);
+   OPResult SetRotation(string shapeName, Euler rotation);
    
    /// <summary>
    /// Change the scale of a shape
    /// </summary>
-   bool SetScale(string shapeName, Vector3 scale);
+   OPResult SetScale(string shapeName, Vector3 scale);
+   
+   /// <summary>
+   /// Change the geometry type of a shape
+   /// </summary>
+   OPResult SetGeometry(string shapeName, string shapeType, double? width = null, double? height = null, double? depth = null);
    
    /// <summary>
    /// Change the dimensions of a shape
    /// </summary>
-   bool SetDimensions(string shapeName, double width, double height, double depth);
+   OPResult SetDimensions(string shapeName, double width, double height, double depth);
+   
+   /// <summary>
+   /// Establish a text label as a child of a shape (creates if missing, updates if exists)
+   /// </summary>
+   OPResult EstablishTextLabel(string parentShapeName, string labelName, string text, Vector3? relativePosition = null, double? fontSize = null, string? color = null);
+   
+   /// <summary>
+   /// Remove a child shape from its parent
+   /// </summary>
+   OPResult RemoveChildShape(string parentShapeName, string childShapeName);
+   
+   /// <summary>
+   /// Get the names of all child shapes for a parent shape
+   /// </summary>
+   OPResult GetChildShapes(string parentShapeName);
    
    /// <summary>
    /// Delete a shape from the stage
    /// </summary>
-   bool DeleteShape(string name);
+   OPResult DeleteShape(string name);
    
    /// <summary>
    /// Delete multiple shapes from the stage
    /// </summary>
-   int DeleteMultipleShapes(List<string> names);
+   OPResult DeleteMultipleShapes(List<string> names);
    
    /// <summary>
    /// Clear all shapes from the stage
    /// </summary>
-   bool ClearShapes();
+   OPResult ClearShapes();
 }
