@@ -54,7 +54,17 @@ public interface IShape3DEditor
    bool SetDimensions(string shapeName, double width, double height, double depth);
    
    /// <summary>
-   /// Change the visibility state of a shape
+   /// Delete a shape from the stage
    /// </summary>
-   bool SetVisibility(string shapeName, bool isVisible);
+   bool DeleteShape(string name);
+   
+   /// <summary>
+   /// Delete multiple shapes from the stage
+   /// </summary>
+   int DeleteMultipleShapes(List<string> names);
+   
+   /// <summary>
+   /// Clear all shapes from the stage
+   /// </summary>
+   bool ClearShapes();
 }
