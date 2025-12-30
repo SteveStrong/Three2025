@@ -340,6 +340,43 @@ public partial class QuickTestPanel : ComponentBase
         return $"Rotated TestBox1 +45° around Z-axis (cumulative)";
     }, "Rotate failed");
     
+    // ================================================================
+    // DYNAMIC FORMATTER DEMONSTRATION
+    // ================================================================
+    
+    private async Task Test_SwitchToTechnicalView() => await ExecuteTest(() =>
+    {
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) throw new Exception("TestBox1 not found");
+        
+        // Dynamically switch to technical formatter at runtime!
+        box.ComputeTreeNodeTitle = TreeNodeFormatters.Technical;
+        
+        return $"Switched TestBox1 to technical view formatter - check tree display!";
+    }, "Formatter switch failed");
+    
+    private async Task Test_SwitchToSpatialView() => await ExecuteTest(() =>
+    {
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) throw new Exception("TestBox1 not found");
+        
+        // Switch back to spatial formatter
+        box.ComputeTreeNodeTitle = TreeNodeFormatters.Spatial;
+        
+        return $"Switched TestBox1 to spatial view formatter - check tree display!";
+    }, "Formatter switch failed");
+    
+    private async Task Test_CustomFormatterDemo() => await ExecuteTest(() =>
+    {
+        var box = Shape3DTech.GetShapeByName("TestBox1");
+        if (box == null) throw new Exception("TestBox1 not found");
+        
+        // Create a custom formatter on the fly!
+        box.ComputeTreeNodeTitle = shape => $"🎯 CUSTOM: {shape.Key} is a {box.GeomType} shape!";
+        
+        return $"Applied custom formatter to TestBox1 - check tree display!";
+    }, "Custom formatter failed");
+    
     private async Task Test_RotateX90() => await ExecuteTest(() =>
     {
         var result = Shape3DTech.RotateShape("TestBox1", xDegrees: 90, yDegrees: 0, zDegrees: 0);

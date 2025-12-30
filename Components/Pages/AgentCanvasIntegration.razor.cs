@@ -490,10 +490,26 @@ public partial class AgentCanvasIntegration : ComponentBase
             var colors = new[] { "red", "blue", "green", "yellow", "purple", "orange", "cyan", "magenta" };
             var color = colors[random.Next(colors.Length)];
             
-            var shape = new GeometryShape(testName, "box", size, size, size)
+            // Create shape using factory methods directly instead of GeometryShape
+            var factoryShape = new FoShape3D("factory");
+            var shape = factoryShape.CreateBox(testName, size, size, size);
+            shape.Color = color;
+            
+            // Set spatial formatter like GeometryShape did
+            shape.ComputeTreeNodeTitle = TreeNodeFormatters.Spatial;
+            
+            // Add text tag like GeometryShape did
+            var tag = new FoText3D("tag")
             {
-                Color = color
+                Text = testName,
+                FontSize = 0.5,
+                Transform = new Transform3("TagTransform")
+                {
+                    Position = new Vector3(3, 0, 0),
+                },
+                Color = "black"
             };
+            shape.AddShape(tag);
             
             // Random position: X: -5 to 5, Y: 0 to 5, Z: -5 to 5
             var x = (float)(random.NextDouble() * 10 - 5);

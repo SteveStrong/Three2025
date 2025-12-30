@@ -68,7 +68,7 @@ public class ChatTestScenarios3D : ChatTestScenariosBase
     {
         "Create a box named box1",
         "Convert it to a sphere",
-        "Convert it to a cylinder",
+        "Convert box1 to a cylinder",
         "Convert it to a cone"
     };
 
