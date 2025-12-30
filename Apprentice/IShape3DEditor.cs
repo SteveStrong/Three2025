@@ -88,4 +88,19 @@ public interface IShape3DEditor
    /// Clear all shapes from the stage
    /// </summary>
    OPResult ClearShapes();
+   
+   /// <summary>
+   /// Get a shape by name
+   /// </summary>
+   OPResult GetShapeByName(string name);
+   
+   /// <summary>
+   /// Get all shapes from the stage
+   /// </summary>
+   OPResult GetAllShapes();
+   
+   /// <summary>
+   /// Add a new shape to the stage
+   /// </summary>
+   OPResult AddShape(FoShape3D shape);
 }

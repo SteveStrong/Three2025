@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.ComponentModel;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.Solutions;
@@ -94,8 +96,16 @@ public class Shape3DTech : IShape3DTech
    [Description("Saves all shapes to a file for persistence")]
    public void SaveShapes()
    {
-      var stage = EstablishGeometryStage();
-      var shapes = stage.Members<FoGlyph3D>().OfType<GeometryShape>().ToList();
+      EstablishGeometryStage();
+      var result = ShapeEditor.GetAllShapes();
+      if (result.IsError())
+      {
+         $"❌ Failed to get shapes: {result.Display()}".WriteError();
+         return;
+      }
+      // Use Value() method and cast to List<FoShape3D>
+      var shapeList = result.Value() as List<FoShape3D> ?? new List<FoShape3D>();
+      var shapes = shapeList.OfType<GeometryShape>().ToList();
       var data = CodingExtensions.DehydrateList<GeometryShape>(shapes, false);
       FileHelpers.WriteData("Data", "shapes.json", data);
    }
@@ -106,16 +116,13 @@ public class Shape3DTech : IShape3DTech
       var data = FileHelpers.ReadData("Data", "shapes.json");
       var list = CodingExtensions.HydrateList<GeometryShape>(data, false);
 
-
-      var stage = EstablishGeometryStage();
-      _ = stage.ClearAll();
+      EstablishGeometryStage();
+      ShapeEditor.ClearShapes();
 
       foreach (var item in list)
       {
-         stage.AddShape(item);
+         ShapeEditor.AddShape(item);
       }
-      RefreshUI();
-
    }
 
    [Description("Generate a Random Color")]
@@ -401,30 +408,34 @@ public class Shape3DTech : IShape3DTech
    [Description("Gets a list of all shapes and their current state")]
    public List<FoShape3D> GetShapes()
    {
-      var stage = EstablishGeometryStage();
-      // Use Stage API to get all shapes
-      var shapes = stage.Members<FoGlyph3D>().OfType<GeometryShape>().ToList();
-      $"📋 Retrieved {shapes.Count} shapes from stage".WriteInfo();
-      return shapes.Cast<FoShape3D>().ToList();
+      EstablishGeometryStage();
+      var result = ShapeEditor.GetAllShapes();
+      if (result.IsError())
+      {
+         $"❌ Failed to get shapes: {result.Display()}".WriteError();
+         return new List<FoShape3D>();
+      }
+      
+      // Use Value() method and cast to List<FoShape3D>
+      if (result.Value() is List<FoShape3D> shapeList)
+         return shapeList;
+         
+      return new List<FoShape3D>();
    }
 
    [Description("Gets information about a specific shape by name")]
    public FoShape3D? GetShapeByName(
       [Description("The name of the shape to query")] string name)
    {
-      var stage = EstablishGeometryStage();
-      var (success, found) = stage.FindMember<FoGlyph3D>(name);
-      var shape = found as GeometryShape;
-      if (shape != null)
-      {
-         $"🔍 Found shape '{name}'".WriteInfo();
-      }
-      else
+      EstablishGeometryStage();
+      var result = ShapeEditor.GetShapeByName(name);
+      if (result.IsError())
       {
          $"⚠️  Shape '{name}' not found".WriteWarning();
+         return null;
       }
-
-      return shape;
+      $"🔍 Found shape '{name}'".WriteInfo();
+      return result.AsShape3D();
    }
 
    [Description("Create and add a 3D shape to the geometry stage")]
@@ -436,7 +447,7 @@ public class Shape3DTech : IShape3DTech
       [Description("Y coordinate position (optional, defaults to 0)")] double y = 0.0,
       [Description("Z coordinate position (optional, defaults to 0)")] double z = 0.0)
    {
-      var stage = EstablishGeometryStage();
+      EstablishGeometryStage();
 
       var newShape = new GeometryShape(name, shapeType)
       {
@@ -453,7 +464,7 @@ public class Shape3DTech : IShape3DTech
          newShape.Transform.Position = new Vector3(x, y, z);
       }
 
-      stage.AddShape(newShape);
+      ShapeEditor.AddShape(newShape);
 
       if (x != 0.0 || y != 0.0 || z != 0.0)
       {
@@ -464,7 +475,6 @@ public class Shape3DTech : IShape3DTech
          $"✅ Created {shapeType} '{name}' with color '{color}'".WriteSuccess();
       }
 
-      RefreshUI();
       return GetShapes();
    }
 
@@ -480,7 +490,7 @@ public class Shape3DTech : IShape3DTech
       [Description("Y coordinate position (optional, defaults to 0)")] double y = 0.0,
       [Description("Z coordinate position (optional, defaults to 0)")] double z = 0.0)
    {
-      var stage = EstablishGeometryStage();
+      EstablishGeometryStage();
 
       var newShape = new GeometryShape(name, shapeType, width, height, depth)
       {
@@ -491,11 +501,10 @@ public class Shape3DTech : IShape3DTech
          }
       };
 
-      stage.AddShape(newShape);
+      ShapeEditor.AddShape(newShape);
 
       $"✅ Created {shapeType} '{name}' ({width}x{height}x{depth}) with color '{color}' at ({x:F1}, {y:F1}, {z:F1})".WriteSuccess();
 
-      RefreshUI();
       return GetShapes();
    }
 
@@ -745,6 +754,101 @@ public class Shape3DTech : IShape3DTech
       }
 
       return result.Display();
+   }
+
+   [Description("Create a link shape (IBodyLink3D) with dynamic geometry type support (Pipe/Tube/Line)")]
+   public LinkShape CreateLinkShape(
+      [Description("The name for the link")] string name,
+      [Description("The color of the link")] string color,
+      [Description("The starting body shape")] FoShape3D fromShape,
+      [Description("The ending body shape")] FoShape3D toShape,
+      [Description("The radius of the link")] double radius,
+      [Description("Geometry type: Pipe, Tube, or Line")] string geomType = "Pipe")
+   {
+      EstablishGeometryStage();
+
+      var link = new LinkShape(name, color, geomType)
+      {
+         FromShape3D = fromShape,
+         ToShape3D = toShape,
+         Radius = radius
+      };
+
+      ShapeEditor.AddShape(link);
+
+      $"✅ Created link '{name}' [{geomType}] connecting '{fromShape.GetName()}' to '{toShape.GetName()}'".WriteSuccess();
+      $"   📍 Link is IBodyLink3D (dependent shape) - renders AFTER bodies".WriteInfo();
+
+      return link;
+   }
+
+   [Description("Change the geometry type of a link shape (Pipe/Tube/Line)")]
+   public LinkShape ChangeLinkGeometryType(
+      [Description("The name of the link to modify")] string name,
+      [Description("New geometry type: Pipe, Tube, or Line")] string geomType)
+   {
+      EstablishGeometryStage();
+      var result = ShapeEditor.GetShapeByName(name);
+
+      if (result.IsError())
+         throw new InvalidOperationException($"Link shape '{name}' not found");
+
+      var link = result.AsShape3D() as LinkShape;
+      if (link == null)
+         throw new InvalidOperationException($"Shape '{name}' is not a LinkShape");
+
+      link.SetLinkGeometry(geomType);
+
+      $"✅ Changed '{name}' geometry to {geomType}".WriteSuccess();
+
+      return link;
+   }
+
+   [Description("Create a pipe link shape (IBodyLink3D) connecting two body shapes")]
+   public FoPipe3D CreatePipeLink(
+      [Description("The name for the pipe link")] string name,
+      [Description("The color of the pipe")] string color,
+      [Description("The starting body shape")] FoShape3D fromShape,
+      [Description("The ending body shape")] FoShape3D toShape,
+      [Description("The radius of the pipe")] double radius)
+   {
+      EstablishGeometryStage();
+
+      var pipe = new FoPipe3D(name, color)
+      {
+         FromShape3D = fromShape,
+         ToShape3D = toShape
+      };
+      pipe.CreatePipe(name, radius);
+
+      ShapeEditor.AddShape(pipe);
+
+      $"✅ Created pipe link '{name}' connecting '{fromShape.GetName()}' to '{toShape.GetName()}'" .WriteSuccess();
+      $"   📍 Pipe is IBodyLink3D (dependent shape) - renders AFTER bodies".WriteInfo();
+
+      return pipe;
+   }
+
+   [Description("Create a pathway link shape (IBodyLink3D) connecting two body shapes")]
+   public FoPathway3D CreatePathwayLink(
+      [Description("The name for the pathway link")] string name,
+      [Description("The starting body shape")] FoShape3D fromShape,
+      [Description("The ending body shape")] FoShape3D toShape)
+   {
+      EstablishGeometryStage();
+
+      var pathway = new FoPathway3D(name)
+      {
+         FromShape3D = fromShape,
+         ToShape3D = toShape
+      };
+
+      ShapeEditor.AddShape(pathway);
+
+      $"✅ Created pathway link '{name}' connecting '{fromShape.GetName()}' to '{toShape.GetName()}'".WriteSuccess();
+      $"   📍 Pathway is IBodyLink3D (dependent shape) - renders AFTER bodies".WriteInfo();
+
+      return pathway;
    }
 
 

@@ -305,6 +305,38 @@ public class Shape3DEditor : IShape3DEditor
       return new OPResult("ClearShapes", ResultStatus.String, $"Cleared {count} shapes from stage");
    }
 
+   public OPResult GetShapeByName(string name)
+   {
+      return FindShape(name);
+   }
+
+   public OPResult GetAllShapes()
+   {
+      if (_stage == null)
+      {
+         $"❌ No stage connected".WriteError();
+         return new OPResult("GetAllShapes", ResultStatus.Error, "No stage connected");
+      }
+
+      var shapes = _stage.Members<FoGlyph3D>().OfType<FoShape3D>().ToList();
+      $"📋 Retrieved {shapes.Count} shapes from stage".WriteInfo();
+      return new OPResult("GetAllShapes", ResultStatus.Shape3D, shapes);
+   }
+
+   public OPResult AddShape(FoShape3D shape)
+   {
+      if (_stage == null)
+      {
+         $"❌ No stage connected".WriteError();
+         return new OPResult("AddShape", ResultStatus.Error, "No stage connected");
+      }
+
+      _stage.AddShape(shape);
+      ShapeChanged();
+      $"✅ Added shape '{shape.GetName()}' to stage".WriteSuccess();
+      return new OPResult("AddShape", ResultStatus.Shape3D, shape);
+   }
+
    private OPResult FindShape(string shapeName)
    {
       if (_stage == null)
