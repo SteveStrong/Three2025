@@ -40,9 +40,19 @@ public interface IShape3DEditor
    OPResult SetPosition(string shapeName, Vector3 position);
    
    /// <summary>
+   /// Move a shape by a relative offset (delta)
+   /// </summary>
+   OPResult MoveBy(string shapeName, double deltaX, double deltaY, double deltaZ);
+   
+   /// <summary>
    /// Change the rotation of a shape
    /// </summary>
    OPResult SetRotation(string shapeName, Euler rotation);
+   
+   /// <summary>
+   /// Rotate a shape by relative angles (in degrees)
+   /// </summary>
+   OPResult RotateBy(string shapeName, double xDegrees, double yDegrees, double zDegrees);
    
    /// <summary>
    /// Change the scale of a shape

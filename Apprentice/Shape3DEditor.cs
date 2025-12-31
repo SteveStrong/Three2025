@@ -61,6 +61,19 @@ public class Shape3DEditor : IShape3DEditor
       return result;
    }
 
+   public OPResult MoveBy(string shapeName, double deltaX, double deltaY, double deltaZ)
+   {
+      var result = FindShape(shapeName);
+      if (result.IsError())
+         return result;
+
+      var shape = result.AsShape3D();
+      EnsureTransform(shape, shapeName);
+      shape.Transform!.MoveBy(deltaX, deltaY, deltaZ);
+      ShapeChanged();
+      return result;
+   }
+
    public OPResult SetRotation(string shapeName, Euler rotation)
    {
       var result = FindShape(shapeName);
@@ -70,6 +83,21 @@ public class Shape3DEditor : IShape3DEditor
       var shape = result.AsShape3D();
       EnsureTransform(shape, shapeName);
       shape.Transform!.Rotation = rotation;
+      ShapeChanged();
+      return result;
+   }
+
+   public OPResult RotateBy(string shapeName, double xDegrees, double yDegrees, double zDegrees)
+   {
+      var result = FindShape(shapeName);
+      if (result.IsError())
+         return result;
+
+      var shape = result.AsShape3D();
+      EnsureTransform(shape, shapeName);
+      
+      // Transform3.RotateBy expects radians and an angle unit
+      shape.Transform!.RotateBy(xDegrees, yDegrees, zDegrees, AngleUnit.Degrees);
       ShapeChanged();
       return result;
    }
