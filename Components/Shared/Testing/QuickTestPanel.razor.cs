@@ -79,7 +79,7 @@ public partial class QuickTestPanel : ComponentBase
         
         // Create new box with current geometry type
         var result = Shape3DTech.AddShape("TestBox1", "red", currentGeometryType);
-        return $"Created TestBox1 (red {currentGeometryType}). Total shapes: {result.Count}";
+        return $"Created TestBox1 (red {currentGeometryType})";
     }, "Create TestBox failed");
     
     // ================================================================
@@ -401,6 +401,40 @@ public partial class QuickTestPanel : ComponentBase
         return $"Rotated TestBox1 (30° X, 45° Y, 60° Z)";
     }, "Rotate failed");
     
+    private async Task Test_MoveBodiesApart() => await ExecuteTest(() =>
+    {
+        // Move Body1 and Body2 apart on the X-axis so the link stretches
+        var body1 = Shape3DTech.GetShapeByName("Body1");
+        var body2 = Shape3DTech.GetShapeByName("Body2");
+        
+        if (body1 == null) throw new Exception("Body1 not found. Create a link first!");
+        if (body2 == null) throw new Exception("Body2 not found. Create a link first!");
+        
+        // Move Body1 left and Body2 right using relative movement
+        Shape3DTech.MoveShapeBy("Body1", -10, 0, 0);
+        Shape3DTech.MoveShapeBy("Body2", 10, 0, 0);
+        
+        return $"Moved Body1 left (-10 X) and Body2 right (+10 X). Watch the link automatically stretch!";
+    }, "Move bodies failed");
+    
+    private async Task Test_MoveBodiesApartAnimated() => await ExecuteTestAsync(async () =>
+    {
+        // Move Body1 and Body2 apart on the X-axis with animation
+        var body1 = Shape3DTech.GetShapeByName("Body1");
+        var body2 = Shape3DTech.GetShapeByName("Body2");
+        
+        if (body1 == null) throw new Exception("Body1 not found. Create a link first!");
+        if (body2 == null) throw new Exception("Body2 not found. Create a link first!");
+        
+        // Animate both bodies moving apart over 2 seconds with elastic easing
+        var task1 = Shape3DTech.AnimateMoveShapeBy("Body1", -10, 0, 0, 2.0f, "ElasticOut");
+        var task2 = Shape3DTech.AnimateMoveShapeBy("Body2", 10, 0, 0, 2.0f, "ElasticOut");
+        
+        await Task.WhenAll(task1, task2);
+        
+        return $"Animated Body1 left (-10 X) and Body2 right (+10 X) over 2s with ElasticOut easing - bouncy!";
+    }, "Animated move failed");
+    
     // ================================================================
     // STEP 7: DEMO COMPLEX SHAPES
     // ================================================================
@@ -425,6 +459,25 @@ public partial class QuickTestPanel : ComponentBase
         return $"Created AudioPanel with 10 connectors (XLR, 1/4\", Combo jacks). This demonstrates complex shape assembly!";
     }, "Create Audio Panel failed");
     
+    private async Task Test_CreateMobileRouter() => await ExecuteTest(() =>
+    {
+        // Check if MobileRouter already exists
+        var existing = Shape3DTech.GetShapeByName("MobileRouter");
+        if (existing != null)
+        {
+            Shape3DTech.DeleteShape("MobileRouter");
+        }
+        
+        // Create the mobile router (wider, flatter to match reference)
+        var router = new MobileRouterShape("MobileRouter", width: 16.0, height: 3.0, depth: 1.5);
+        Shape3DTech.EstablishGeometryStage();
+        var stage = Shape3DTech.EstablishGeometryStage();
+        stage.AddShape(router);
+        Shape3DTech.RefreshUI();
+        
+        return $"Created MobileRouter with power socket, SIM holder, 2 RJ45 ports, and 8 LEDs. 4G/LTE broadband device!";
+    }, "Create Mobile Router failed");
+    
     // ================================================================
     // UTILITY: CLEANUP
     // ================================================================
@@ -432,7 +485,7 @@ public partial class QuickTestPanel : ComponentBase
     private async Task Test_DeleteTestBox() => await ExecuteTest(() =>
     {
         var result = Shape3DTech.DeleteShape("TestBox1");
-        return $"Deleted TestBox1. Remaining shapes: {result.Count}";
+        return result.IsError() ? $"Delete failed: {result.Display()}" : "Deleted TestBox1";
     }, "Delete failed");
     
     private async Task Test_ClearAll() => await ExecuteTest(() =>

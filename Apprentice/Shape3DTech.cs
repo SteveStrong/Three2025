@@ -4,6 +4,7 @@ using System.ComponentModel;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryMentorModeler.Model;
+using FoundryMentorModeler.Evaluator;
 
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
@@ -40,6 +41,7 @@ public class Shape3DTech : IShape3DTech
    public void SetStage(FoStage3D stage)
    {
       Stage = stage;
+      ShapeEditor.SetStage(stage);
    }
 
    [Description("Send a message to refresh the TreeView")]
@@ -96,7 +98,6 @@ public class Shape3DTech : IShape3DTech
    [Description("Saves all shapes to a file for persistence")]
    public void SaveShapes()
    {
-      EstablishGeometryStage();
       var result = ShapeEditor.GetAllShapes();
       if (result.IsError())
       {
@@ -116,7 +117,6 @@ public class Shape3DTech : IShape3DTech
       var data = FileHelpers.ReadData("Data", "shapes.json");
       var list = CodingExtensions.HydrateList<FoShape3D>(data, false);
 
-      EstablishGeometryStage();
       ShapeEditor.ClearShapes();
 
       foreach (var item in list)
@@ -408,7 +408,6 @@ public class Shape3DTech : IShape3DTech
    [Description("Gets a list of all shapes and their current state")]
    public List<FoShape3D> GetShapes()
    {
-      EstablishGeometryStage();
       var result = ShapeEditor.GetAllShapes();
       if (result.IsError())
       {
@@ -427,7 +426,6 @@ public class Shape3DTech : IShape3DTech
    public FoShape3D? GetShapeByName(
       [Description("The name of the shape to query")] string name)
    {
-      EstablishGeometryStage();
       var result = ShapeEditor.GetShapeByName(name);
       if (result.IsError())
       {
@@ -488,7 +486,7 @@ public class Shape3DTech : IShape3DTech
    }
 
    [Description("Create and add a 3D shape to the geometry stage")]
-   public List<FoShape3D> AddShape(
+   public FoShape3D AddShape(
       [Description("The name of the shape to create")] string name,
       [Description("The color of the shape")] string color,
       [Description("The type of shape: box, sphere, cylinder, cone, torus, tetrahedron, octahedron, dodecahedron, icosahedron, torusknot, capsule, plane, circle, ring")] string shapeType = "box",
@@ -496,8 +494,6 @@ public class Shape3DTech : IShape3DTech
       [Description("Y coordinate position (optional, defaults to 0)")] double y = 0.0,
       [Description("Z coordinate position (optional, defaults to 0)")] double z = 0.0)
    {
-      EstablishGeometryStage();
-
       var newShape = CreateShapeWithFactory(name, shapeType);
       newShape.Color = color;
 
@@ -522,11 +518,11 @@ public class Shape3DTech : IShape3DTech
          $"✅ Created {shapeType} '{name}' with color '{color}'".WriteSuccess();
       }
 
-      return GetShapes();
+      return newShape;
    }
 
    [Description("Create and add a 3D shape with specific dimensions")]
-   public List<FoShape3D> AddShapeWithDimensions(
+   public FoShape3D AddShapeWithDimensions(
       [Description("The name of the shape to create")] string name,
       [Description("The color of the shape")] string color,
       [Description("The type of shape")] string shapeType,
@@ -537,8 +533,6 @@ public class Shape3DTech : IShape3DTech
       [Description("Y coordinate position (optional, defaults to 0)")] double y = 0.0,
       [Description("Z coordinate position (optional, defaults to 0)")] double z = 0.0)
    {
-      EstablishGeometryStage();
-
       var newShape = CreateShapeWithFactory(name, shapeType, width, height, depth);
       newShape.Color = color;
       newShape.Transform = new Transform3($"{name}_Transform")
@@ -550,184 +544,195 @@ public class Shape3DTech : IShape3DTech
 
       $"✅ Created {shapeType} '{name}' ({width}x{height}x{depth}) with color '{color}' at ({x:F1}, {y:F1}, {z:F1})".WriteSuccess();
 
-      return GetShapes();
+      return newShape;
    }
 
 
    [Description("Delete a shape from the geometry stage")]
-   public List<FoShape3D> DeleteShape(
+   public OPResult DeleteShape(
       [Description("The name of the shape to delete")] string name)
    {
-      ShapeEditor.DeleteShape(name);
-      return GetShapes();
+      return ShapeEditor.DeleteShape(name);
    }
 
    [Description("Delete multiple shapes from the geometry stage")]
-   public List<FoShape3D> DeleteMultipleShapes(
+   public OPResult DeleteMultipleShapes(
       [Description("List of shape names to delete")] List<string> names)
    {
-      ShapeEditor.DeleteMultipleShapes(names);
-      return GetShapes();
+      return ShapeEditor.DeleteMultipleShapes(names);
    }
 
    [Description("Changes the X, Y, Z position of a shape in 3D space")]
-   public List<FoShape3D> RepositionShape(
+   public OPResult RepositionShape(
       [Description("The name of the shape to reposition")] string name,
       [Description("The X coordinate")] double x,
       [Description("The Y coordinate")] double y,
       [Description("The Z coordinate")] double z)
    {
-      EstablishGeometryStage();
+      return ShapeEditor.SetPosition(name, new Vector3(x, y, z));
+   }
 
-      // Use ShapeEditor for event-driven update
-      var result = ShapeEditor.SetPosition(name, new Vector3(x, y, z));
+   [Description("Moves a shape by a relative offset (delta) from its current position")]
+   public OPResult MoveShapeBy(
+      [Description("The name of the shape to move")] string name,
+      [Description("Offset to add to current X position")] double deltaX,
+      [Description("Offset to add to current Y position")] double deltaY,
+      [Description("Offset to add to current Z position")] double deltaZ)
+   {
+      return ShapeEditor.MoveBy(name, deltaX, deltaY, deltaZ);
+   }
 
-      if (result.IsError())
+   [Description("Animates a shape moving by a relative offset (delta) from its current position")]
+   public async Task<OPResult> AnimateMoveShapeBy(
+      [Description("The name of the shape to move")] string name,
+      [Description("Offset to add to current X position")] double deltaX,
+      [Description("Offset to add to current Y position")] double deltaY,
+      [Description("Offset to add to current Z position")] double deltaZ,
+      [Description("Duration of animation in seconds")] float durationSeconds = 1.0f,
+      [Description("Easing function: Linear, Quad, Cubic, Quart, Quint, Sine, Expo, Circ, Elastic, Back, Bounce (with In/Out/InOut variants like 'QuadInOut')")] string easing = "QuadInOut")
+   {
+      var shape = GetShapeByName(name);
+      if (shape == null)
+         return OPResult.Error($"Shape '{name}' not found");
+
+      var startPos = shape.Transform.Position;
+      var endPos = new Vector3(startPos.X + deltaX, startPos.Y + deltaY, startPos.Z + deltaZ);
+      
+      // Create a temporary Vector3 to tween (not the actual shape position)
+      var currentPos = new Vector3(startPos.X, startPos.Y, startPos.Z);
+      var completed = false;
+      
+      // Use Unglide tweening library for smooth animation
+      var tween = Unglide.Tween.TweenerImpl.Tweener.Tween(
+         currentPos,
+         new { X = endPos.X, Y = endPos.Y, Z = endPos.Z },
+         durationSeconds
+      );
+      
+      // Apply easing function
+      tween.Ease(GetEasingFunction(easing));
+      
+      // OnUpdate: Push the tweened position through ShapeEditor to properly mark shape as stale
+      tween.OnUpdate(_ => 
       {
-         $"⚠️  {result.Display()}".WriteWarning();
-      }
-      else
+         ShapeEditor.SetPosition(name, currentPos);
+      });
+      
+      tween.OnComplete(() => completed = true);
+      
+      // Update loop - pump the tweener until animation completes
+      var elapsed = 0f;
+      var frameTime = 1f / 60f; // ~60 FPS
+      
+      while (!completed && elapsed < durationSeconds + 0.5f)
       {
-         $"✅ {result.Display()}".WriteSuccess();
+         await Task.Delay((int)(frameTime * 1000));
+         Unglide.Tween.TweenerImpl.Tweener.Update(frameTime);
+         elapsed += frameTime;
       }
+      
+      // Ensure final position is exact
+      var result = ShapeEditor.SetPosition(name, endPos);
+      return result.IsError() 
+         ? result 
+         : OPResult.Success($"Animated '{name}' to ({endPos.X:F1}, {endPos.Y:F1}, {endPos.Z:F1}) with {easing} easing");
+   }
 
-      return GetShapes();
+   /// <summary>
+   /// Get the easing function by name from Unglide library
+   /// </summary>
+   private Func<float, float> GetEasingFunction(string easing)
+   {
+      return easing.ToLower() switch
+      {
+         "linear" => t => t, // Linear is just identity function
+         "quadin" => Unglide.Ease.QuadIn,
+         "quadout" => Unglide.Ease.QuadOut,
+         "quadinout" => Unglide.Ease.QuadInOut,
+         "cubicin" => Unglide.Ease.CubeIn,
+         "cubicout" => Unglide.Ease.CubeOut,
+         "cubicinout" => Unglide.Ease.CubeInOut,
+         "quartin" => Unglide.Ease.QuartIn,
+         "quartout" => Unglide.Ease.QuartOut,
+         "quartinout" => Unglide.Ease.QuartInOut,
+         "quintin" => Unglide.Ease.QuintIn,
+         "quintout" => Unglide.Ease.QuintOut,
+         "quintinout" => Unglide.Ease.QuintInOut,
+         "sinein" => Unglide.Ease.SineIn,
+         "sineout" => Unglide.Ease.SineOut,
+         "sineinout" => Unglide.Ease.SineInOut,
+         "expoin" => Unglide.Ease.ExpoIn,
+         "expoout" => Unglide.Ease.ExpoOut,
+         "expoinout" => Unglide.Ease.ExpoInOut,
+         "circin" => Unglide.Ease.CircIn,
+         "circout" => Unglide.Ease.CircOut,
+         "circinout" => Unglide.Ease.CircInOut,
+         "elasticin" => Unglide.Ease.ElasticIn,
+         "elasticout" => Unglide.Ease.ElasticOut,
+         "elasticinout" => Unglide.Ease.ElasticInOut,
+         "backin" => Unglide.Ease.BackIn,
+         "backout" => Unglide.Ease.BackOut,
+         "backinout" => Unglide.Ease.BackInOut,
+         "bouncein" => Unglide.Ease.BounceIn,
+         "bounceout" => Unglide.Ease.BounceOut,
+         "bounceinout" => Unglide.Ease.BounceInOut,
+         _ => Unglide.Ease.QuadInOut // default
+      };
    }
 
    [Description("Rotates a shape around X, Y, Z axes in degrees")]
-   public List<FoShape3D> RotateShape(
+   public OPResult RotateShape(
       [Description("The name of the shape to rotate")] string name,
       [Description("Rotation around X axis in degrees")] double xDegrees,
       [Description("Rotation around Y axis in degrees")] double yDegrees,
       [Description("Rotation around Z axis in degrees")] double zDegrees)
    {
-      EstablishGeometryStage();
-
-      // Convert degrees to radians
-      var xRad = xDegrees * Math.PI / 180.0;
-      var yRad = yDegrees * Math.PI / 180.0;
-      var zRad = zDegrees * Math.PI / 180.0;
-
-      // Use ShapeEditor for event-driven update
-      var result = ShapeEditor.SetRotation(name, new Euler(xRad, yRad, zRad));
-
-      if (result.IsError())
-      {
-         $"⚠️  {result.Display()}".WriteWarning();
-      }
-      else
-      {
-         $"✅ {result.Display()}".WriteSuccess();
-      }
-
-      return GetShapes();
+      return ShapeEditor.RotateBy(name, xDegrees, yDegrees, zDegrees);
    }
 
    [Description("Scales a shape by multiplying its size on X, Y, Z axes")]
-   public List<FoShape3D> ScaleShape(
+   public OPResult ScaleShape(
       [Description("The name of the shape to scale")] string name,
       [Description("Scale factor for X axis (1.0 = original size)")] double scaleX,
       [Description("Scale factor for Y axis (1.0 = original size)")] double scaleY,
       [Description("Scale factor for Z axis (1.0 = original size)")] double scaleZ)
    {
-      EstablishGeometryStage();
-
-      // Use ShapeEditor for event-driven update
-      var result = ShapeEditor.SetScale(name, new Vector3(scaleX, scaleY, scaleZ));
-
-      if (result.IsError())
-      {
-         $"⚠️  {result.Display()}".WriteWarning();
-      }
-      else
-      {
-         $"✅ {result.Display()}".WriteSuccess();
-      }
-
-      return GetShapes();
+      return ShapeEditor.SetScale(name, new Vector3(scaleX, scaleY, scaleZ));
    }
 
    [Description("Changes the dimensions (width, height, depth) of an existing shape")]
-   public List<FoShape3D> ChangeShapeDimensions(
+   public OPResult ChangeShapeDimensions(
       [Description("The name of the shape")] string name,
       [Description("New width (X dimension)")] double width,
       [Description("New height (Y dimension)")] double height,
       [Description("New depth (Z dimension)")] double depth)
    {
-      EstablishGeometryStage();
-
-      // Use ShapeEditor for event-driven update
-      var result = ShapeEditor.SetDimensions(name, width, height, depth);
-
-      if (result.IsError())
-      {
-         $"⚠️  {result.Display()}".WriteWarning();
-      }
-      else
-      {
-         $"✅ {result.Display()}".WriteSuccess();
-      }
-
-      return GetShapes();
+      return ShapeEditor.SetDimensions(name, width, height, depth);
    }
 
 
 
    [Description("Changes the color of a shape")]
-   public List<FoShape3D> ChangeColor(
+   public OPResult ChangeColor(
       [Description("The name of the shape")] string name,
       [Description("The new color for the shape")] string color)
    {
-      $"🔧 ChangeColor CALLED: name='{name}', color='{color}'".WriteInfo();
-
-      EstablishGeometryStage();
-      $"📦 Stage established".WriteInfo();
-
-      // Use ShapeEditor for event-driven update
-      var result = ShapeEditor.SetColor(name, color);
-
-      if (result.IsError())
-      {
-         $"❌ {result.Display()}".WriteError();
-      }
-      else
-      {
-         $"✅ {result.Display()}".WriteSuccess();
-      }
-
-      var shapes = GetShapes();
-      $"📤 Returning {shapes.Count} shapes".WriteInfo();
-
-      return shapes;
+      return ShapeEditor.SetColor(name, color);
    }
 
    [Description("Changes the geometry type of an existing shape")]
-   public List<FoShape3D> ChangeGeometry(
+   public OPResult ChangeGeometry(
       [Description("The name of the shape")] string name,
       [Description("The new geometry type: box, sphere, cylinder, cone, torus, tetrahedron, octahedron, dodecahedron, icosahedron, torusknot, capsule, plane, circle, ring")] string shapeType,
       [Description("Optional new width (X dimension)")] double? width = null,
       [Description("Optional new height (Y dimension)")] double? height = null,
       [Description("Optional new depth (Z dimension)")] double? depth = null)
    {
-      EstablishGeometryStage();
-
-      // Use ShapeEditor for event-driven update
-      var result = ShapeEditor.SetGeometry(name, shapeType, width, height, depth);
-
-      if (result.IsError())
-      {
-         $"⚠️  {result.Display()}".WriteWarning();
-      }
-      else
-      {
-         $"✅ Changed geometry of '{name}' to '{shapeType}'".WriteSuccess();
-      }
-
-      return GetShapes();
+      return ShapeEditor.SetGeometry(name, shapeType, width, height, depth);
    }
 
    [Description("Establish a text label on a shape (creates if missing, updates if exists)")]
-   public List<FoShape3D> EstablishTextLabel(
+   public OPResult EstablishTextLabel(
       [Description("The name of the parent shape")] string parentShapeName,
       [Description("The name for the label")] string labelName,
       [Description("The text to display")] string text,
@@ -737,56 +742,27 @@ public class Shape3DTech : IShape3DTech
       [Description("Font size (optional, defaults to 0.5)")] double? fontSize = null,
       [Description("Text color (optional, defaults to 'black')")] string? color = null)
    {
-      EstablishGeometryStage();
-
       Vector3? position = null;
       if (relativeX.HasValue || relativeY.HasValue || relativeZ.HasValue)
       {
          position = new Vector3(relativeX ?? 0, relativeY ?? 2, relativeZ ?? 0);
       }
 
-      var result = ShapeEditor.EstablishTextLabel(parentShapeName, labelName, text, position, fontSize, color);
-
-      if (result.IsError())
-      {
-         $"⚠️  {result.Display()}".WriteWarning();
-      }
-      else
-      {
-         var label = result.Value() as FoText3D;
-         $"✅ Established text label '{labelName}' on '{parentShapeName}': '{label?.Text}'".WriteSuccess();
-      }
-
-      return GetShapes();
+      return ShapeEditor.EstablishTextLabel(parentShapeName, labelName, text, position, fontSize, color);
    }
 
    [Description("Remove a child shape from its parent shape")]
-   public List<FoShape3D> RemoveChildShape(
+   public OPResult RemoveChildShape(
       [Description("The name of the parent shape")] string parentShapeName,
       [Description("The name of the child shape to remove")] string childShapeName)
    {
-      EstablishGeometryStage();
-
-      var result = ShapeEditor.RemoveChildShape(parentShapeName, childShapeName);
-
-      if (result.IsError())
-      {
-         $"⚠️  {result.Display()}".WriteWarning();
-      }
-      else
-      {
-         $"✅ {result.Display()}".WriteSuccess();
-      }
-
-      return GetShapes();
+      return ShapeEditor.RemoveChildShape(parentShapeName, childShapeName);
    }
 
    [Description("Get the list of child shapes for a parent shape")]
    public string GetChildShapes(
       [Description("The name of the parent shape")] string parentShapeName)
    {
-      EstablishGeometryStage();
-
       var result = ShapeEditor.GetChildShapes(parentShapeName);
 
       if (result.IsError())
@@ -810,8 +786,6 @@ public class Shape3DTech : IShape3DTech
       [Description("The radius of the link")] double radius,
       [Description("Geometry type: Pipe, Tube, or Line")] string geomType = "Pipe")
    {
-      EstablishGeometryStage();
-
       var link = new LinkShape(name, color, geomType)
       {
          FromShape3D = fromShape,
@@ -832,7 +806,6 @@ public class Shape3DTech : IShape3DTech
       [Description("The name of the link to modify")] string name,
       [Description("New geometry type: Pipe, Tube, or Line")] string geomType)
    {
-      EstablishGeometryStage();
       var result = ShapeEditor.GetShapeByName(name);
 
       if (result.IsError())
@@ -857,8 +830,6 @@ public class Shape3DTech : IShape3DTech
       [Description("The ending body shape")] FoShape3D toShape,
       [Description("The radius of the pipe")] double radius)
    {
-      EstablishGeometryStage();
-
       var pipe = new FoPipe3D(name, color)
       {
          FromShape3D = fromShape,
@@ -880,8 +851,6 @@ public class Shape3DTech : IShape3DTech
       [Description("The starting body shape")] FoShape3D fromShape,
       [Description("The ending body shape")] FoShape3D toShape)
    {
-      EstablishGeometryStage();
-
       var pathway = new FoPathway3D(name)
       {
          FromShape3D = fromShape,

@@ -24,12 +24,44 @@
         </div>
     }
     
-    <!-- Step 1: Create TestBox -->
-    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h4 style="margin: 0 0 0.75rem 0; color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 0.5rem; font-size: 1rem;">
-            📦 Step 1: Create TestBox
-        </h4>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+    <!-- Step 1: Demo Complex Shapes -->
+    <details style="background: white; padding: 0; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+        <summary style="cursor: pointer; margin: 0; padding: 1rem; color: #17a2b8; border-bottom: 2px solid #17a2b8; font-size: 1rem; font-weight: 600; user-select: none;">
+            🎸 Step 1: Demo Complex Shapes
+        </summary>
+        <div style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <button @onclick="Test_CreateAudioPanel" style="@GetButtonStyle("#17a2b8")">
+                Create Audio Panel (10 connectors)
+            </button>
+            <div style="margin-top: 0.25rem; padding: 0.5rem; background: #e7f4f6; border-radius: 4px; border-left: 3px solid #17a2b8;">
+                <div style="font-size: 0.7rem; color: #999; line-height: 1.4;">
+                    🎸 Demonstrates complex shape assembly with:<br/>
+                    • 10 different connector types (XLR, 1/4", Combo)<br/>
+                    • Auto-positioned with labels<br/>
+                    • Professional audio equipment back panel
+                </div>
+            </div>
+            
+            <button @onclick="Test_CreateMobileRouter" style="@GetButtonStyle("#17a2b8")">
+                Create Mobile Router (4G/LTE device)
+            </button>
+            <div style="margin-top: 0.25rem; padding: 0.5rem; background: #e7f4f6; border-radius: 4px; border-left: 3px solid #17a2b8;">
+                <div style="font-size: 0.7rem; color: #999; line-height: 1.4;">
+                    📡 Mobile broadband router model with:<br/>
+                    • Power socket, SIM holder, LAN/WAN RJ45 ports<br/>
+                    • 8 status LEDs (PWR, 3G, 4G, signal strength)<br/>
+                    • Mounting hardware and labeled components
+                </div>
+            </div>
+        </div>
+    </details>
+    
+    <!-- Step 2: Create TestBox -->
+    <details style="background: white; padding: 0; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+        <summary style="cursor: pointer; margin: 0; padding: 1rem; color: #dc3545; border-bottom: 2px solid #dc3545; font-size: 1rem; font-weight: 600; user-select: none;">
+            📦 Step 2: Create TestBox
+        </summary>
+        <div style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
             <button @onclick="Test_CreateTestBox" style="@GetButtonStyle("#dc3545")">
                 Create Red TestBox (@currentGeometryType)
             </button>
@@ -46,14 +78,14 @@
                 </div>
             </div>
         </div>
-    </div>
+    </details>
     
-    <!-- Step 2: Color Changes -->
-    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h4 style="margin: 0 0 0.75rem 0; color: #fd7e14; border-bottom: 2px solid #fd7e14; padding-bottom: 0.5rem; font-size: 1rem;">
-            🎨 Step 2: Change Colors
-        </h4>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+    <!-- Step 3: Change Colors -->
+    <details style="background: white; padding: 0; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+        <summary style="cursor: pointer; margin: 0; padding: 1rem; color: #fd7e14; border-bottom: 2px solid #fd7e14; font-size: 1rem; font-weight: 600; user-select: none;">
+            🎨 Step 3: Change Colors
+        </summary>
+        <div style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
             <button @onclick="Test_ChangeToOrange" style="@GetButtonStyle("#fd7e14")">
                 Change to Orange
             </button>
@@ -64,14 +96,14 @@
                 Change to Green
             </button>
         </div>
-    </div>
+    </details>
     
-    <!-- Step 3: Resize Operations -->
-    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h4 style="margin: 0 0 0.75rem 0; color: #17a2b8; border-bottom: 2px solid #17a2b8; padding-bottom: 0.5rem; font-size: 1rem;">
-            📏 Step 3: Resize TestBox
-        </h4>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+    <!-- Step 4: Resize TestBox -->
+    <details style="background: white; padding: 0; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+        <summary style="cursor: pointer; margin: 0; padding: 1rem; color: #17a2b8; border-bottom: 2px solid #17a2b8; font-size: 1rem; font-weight: 600; user-select: none;">
+            📏 Step 4: Resize TestBox
+        </summary>
+        <div style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
             <button @onclick="Test_MakeTaller" style="@GetButtonStyle("#17a2b8")">
                 Make Taller (2x height)
             </button>
@@ -88,14 +120,14 @@
                 Make Smaller (0.5x all)
             </button>
         </div>
-    </div>
+    </details>
     
-    <!-- Step 4: Position Operations -->
-    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h4 style="margin: 0 0 0.75rem 0; color: #0d6efd; border-bottom: 2px solid #0d6efd; padding-bottom: 0.5rem; font-size: 1rem;">
-            🎯 Step 4: Move TestBox
-        </h4>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+    <!-- Step 5: Move TestBox -->
+    <details style="background: white; padding: 0; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+        <summary style="cursor: pointer; margin: 0; padding: 1rem; color: #0d6efd; border-bottom: 2px solid #0d6efd; font-size: 1rem; font-weight: 600; user-select: none;">
+            🎯 Step 5: Move TestBox
+        </summary>
+        <div style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
             <button @onclick="Test_MoveToOrigin" style="@GetButtonStyle("#6c757d")">
                 Move to Origin (0, 0, 0)
             </button>
@@ -112,14 +144,14 @@
                 Move to (3, 2, -4)
             </button>
         </div>
-    </div>
+    </details>
     
-    <!-- Step 5: Create Link Shape -->
-    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h4 style="margin: 0 0 0.75rem 0; color: #e74c3c; border-bottom: 2px solid #e74c3c; padding-bottom: 0.5rem; font-size: 1rem;">
-            🔗 Step 5: Create Link Shape (IBodyLink3D)
-        </h4>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+    <!-- Step 6: Create Link Shape -->
+    <details style="background: white; padding: 0; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+        <summary style="cursor: pointer; margin: 0; padding: 1rem; color: #e74c3c; border-bottom: 2px solid #e74c3c; font-size: 1rem; font-weight: 600; user-select: none;">
+            🔗 Step 6: Create Link Shape (IBodyLink3D)
+        </summary>
+        <div style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
             <!-- Link Geometry Type Selector -->
             <div style="margin-bottom: 0.5rem;">
                 <label style="display: block; font-size: 0.75rem; color: #666; margin-bottom: 0.25rem; font-weight: 600;">
@@ -148,6 +180,12 @@
             <button @onclick="Test_CreatePathwayLink" style="@GetButtonStyle("#7f8c8d")">
                 Create Pathway Link (legacy)
             </button>
+            <button @onclick="Test_MoveBodiesApart" style="@GetButtonStyle("#3498db")">
+                Move Bodies Apart (+10 X)
+            </button>
+            <button @onclick="Test_MoveBodiesApartAnimated" style="@GetButtonStyle("#2ecc71")">
+                🎬 Animated Move Bodies Apart (2s)
+            </button>
             <div style="margin-top: 0.25rem; padding: 0.5rem; background: #fff5f5; border-radius: 4px; border-left: 3px solid #e74c3c;">
                 <div style="font-size: 0.7rem; color: #999; line-height: 1.4;">
                     💡 Links are <strong>dependent shapes</strong> (IBodyLink3D) that connect to bodies.<br/>
@@ -156,14 +194,14 @@
                 </div>
             </div>
         </div>
-    </div>
+    </details>
     
-    <!-- Step 6: Rotation Operations -->
-    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h4 style="margin: 0 0 0.75rem 0; color: #9b59b6; border-bottom: 2px solid #9b59b6; padding-bottom: 0.5rem; font-size: 1rem;">
-            🔄 Step 6: Rotate TestBox
-        </h4>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+    <!-- Step 7: Rotate TestBox -->
+    <details style="background: white; padding: 0; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+        <summary style="cursor: pointer; margin: 0; padding: 1rem; color: #9b59b6; border-bottom: 2px solid #9b59b6; font-size: 1rem; font-weight: 600; user-select: none;">
+            🔄 Step 7: Rotate TestBox
+        </summary>
+        <div style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
             <button @onclick="Test_RotateX45" style="@GetButtonStyle("#9b59b6")">
                 Rotate 45° around X-axis
             </button>
@@ -186,35 +224,15 @@
                 Rotate Multi-Axis (30°, 45°, 60°)
             </button>
         </div>
-    </div>
-    
-    <!-- Step 7: Demo Shapes -->
-    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h4 style="margin: 0 0 0.75rem 0; color: #17a2b8; border-bottom: 2px solid #17a2b8; padding-bottom: 0.5rem; font-size: 1rem;">
-            🎸 Step 7: Demo Complex Shapes
-        </h4>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-            <button @onclick="Test_CreateAudioPanel" style="@GetButtonStyle("#17a2b8")">
-                Create Audio Panel (10 connectors)
-            </button>
-            <div style="margin-top: 0.25rem; padding: 0.5rem; background: #e7f4f6; border-radius: 4px; border-left: 3px solid #17a2b8;">
-                <div style="font-size: 0.7rem; color: #999; line-height: 1.4;">
-                    🎸 Demonstrates complex shape assembly with:<br/>
-                    • 10 different connector types (XLR, 1/4", Combo)<br/>
-                    • Auto-positioned with labels<br/>
-                    • Professional audio equipment back panel
-                </div>
-            </div>
-        </div>
-    </div>
+    </details>
 
     
     <!-- Cleanup -->
-    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h4 style="margin: 0 0 0.75rem 0; color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 0.5rem; font-size: 1rem;">
+    <details style="background: white; padding: 0; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+        <summary style="cursor: pointer; margin: 0; padding: 1rem; color: #dc3545; border-bottom: 2px solid #dc3545; font-size: 1rem; font-weight: 600; user-select: none;">
             🧹 Cleanup
-        </h4>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        </summary>
+        <div style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
             <button @onclick="Test_DeleteTestBox" style="@GetButtonStyle("#dc3545")">
                 Delete TestBox
             </button>
@@ -222,7 +240,7 @@
                 Clear All Shapes
             </button>
         </div>
-    </div>
+    </details>
     
 </div>
 

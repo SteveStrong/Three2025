@@ -1,4 +1,5 @@
 using FoundryWorldsAndDrawings.Shape;
+using FoundryMentorModeler.Evaluator;
 
 
 namespace Three2025.Apprentice;
@@ -29,28 +30,35 @@ public interface IShape3DTech : ITechnician
 
    FoShape3D? GetShapeByName(string name);
 
-   List<FoShape3D> AddShape(string name, string color, string shapeType = "box", double x = 0.0, double y = 0.0, double z = 0.0);
+   FoShape3D AddShape(string name, string color, string shapeType = "box", double x = 0.0, double y = 0.0, double z = 0.0);
 
-   List<FoShape3D> AddShapeWithDimensions(string name, string color, string shapeType, double width, double height, double depth, double x = 0.0, double y = 0.0, double z = 0.0);
+   FoShape3D AddShapeWithDimensions(string name, string color, string shapeType, double width, double height, double depth, double x = 0.0, double y = 0.0, double z = 0.0);
 
-   List<FoShape3D> DeleteShape(string name);
+   OPResult DeleteShape(string name);
 
-   List<FoShape3D> DeleteMultipleShapes(List<string> names);
+   OPResult DeleteMultipleShapes(List<string> names);
 
-   List<FoShape3D> RepositionShape(string name, double x, double y, double z);
+   OPResult RepositionShape(string name, double x, double y, double z);
 
-   List<FoShape3D> RotateShape(string name, double xDegrees, double yDegrees, double zDegrees);
+   OPResult MoveShapeBy(string name, double deltaX, double deltaY, double deltaZ);
 
-   List<FoShape3D> ScaleShape(string name, double scaleX, double scaleY, double scaleZ);
+   /// <summary>
+   /// Animate a shape moving by a relative offset (delta) from its current position
+   /// </summary>
+   Task<OPResult> AnimateMoveShapeBy(string name, double deltaX, double deltaY, double deltaZ, float durationSeconds = 1.0f, string easing = "QuadInOut");
 
-   List<FoShape3D> ChangeShapeDimensions(string name, double width, double height, double depth);
+   OPResult RotateShape(string name, double xDegrees, double yDegrees, double zDegrees);
+
+   OPResult ScaleShape(string name, double scaleX, double scaleY, double scaleZ);
+
+   OPResult ChangeShapeDimensions(string name, double width, double height, double depth);
 
 
-   List<FoShape3D> ChangeColor(string name, string color);
+   OPResult ChangeColor(string name, string color);
    
-   List<FoShape3D> ChangeGeometry(string name, string shapeType, double? width = null, double? height = null, double? depth = null);
+   OPResult ChangeGeometry(string name, string shapeType, double? width = null, double? height = null, double? depth = null);
    
-   List<FoShape3D> EstablishTextLabel(string parentShapeName, string labelName, string text, double? relativeX = null, double? relativeY = null, double? relativeZ = null, double? fontSize = null, string? color = null);
+   OPResult EstablishTextLabel(string parentShapeName, string labelName, string text, double? relativeX = null, double? relativeY = null, double? relativeZ = null, double? fontSize = null, string? color = null);
 
    LinkShape CreateLinkShape(string name, string color, FoShape3D fromShape, FoShape3D toShape, double radius, string geomType = "Pipe");
    
