@@ -1,0 +1,176 @@
+@page "/rack-knowledge-model"
+@rendermode InteractiveServer
+@using FoundryMentorModeler.Model
+@using Three2025.Apprentice.RackEquipment
+@using Three2025.Components.Shared
+@using FoundryWorldsAndDrawings.Shape
+
+<PageTitle>Rack Equipment Knowledge Model</PageTitle>
+
+<div class="container-fluid p-3" style="height: 100vh; display: flex; flex-direction: column;">
+    
+    <!-- Header -->
+    <div class="card mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="card-body p-3">
+            <h3 class="mb-2">🗄️ Rack Equipment Knowledge Model</h3>
+            <p class="mb-0 small">Interactive rack cabinet configuration using PartComponent knowledge models with measured RU (Rack Unit) values</p>
+            <p class="mb-0 small"><strong>1 RU = 1.75 inches</strong> | Standard 40U cabinets with automatic utilization tracking</p>
+        </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="card mb-3">
+        <div class="card-body p-2">
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-primary" @onclick="CreateDataCenterModel" disabled="@_isLoading">
+                    @if (_isLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                    🧠 Create Knowledge Model
+                </button>
+                <button class="btn btn-success" @onclick="GenerateFOGeometry" disabled="@(_model == null || _isLoading)">
+                    🎨 Generate 3D Geometry
+                </button>
+                <button class="btn btn-info" @onclick="RefreshCalculations" disabled="@(_model == null || _isLoading)">
+                    🔄 Refresh Calculations
+                </button>
+                <button class="btn btn-warning" @onclick="ClearModel" disabled="@(_model == null || _isLoading)">
+                    🗑️ Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (_statusMessage != null)
+    {
+        <div class="alert @(_isError ? "alert-danger" : "alert-success") alert-dismissible fade show" role="alert">
+            @_statusMessage
+            <button type="button" class="btn-close" @onclick="() => _statusMessage = null"></button>
+        </div>
+    }
+
+    <div style="height: calc(100vh - 280px); overflow: hidden;">
+        <RadzenSplitter Orientation="Orientation.Horizontal" style="height: 100%;">
+            
+            <!-- Left Side: Model Tree -->
+            <RadzenSplitterPane Size="35%" Min="20%" Max="60%">
+                <div style="display: flex; flex-direction: column; height: 100%; background: white;">
+                    <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <h5 class="mb-0">📊 Knowledge Model Hierarchy</h5>
+                    </div>
+                    <div style="flex: 1; overflow: auto; padding: 8px;">
+                        @if (_model != null)
+                        {
+                            <SuccessTreeView RootItems="@_model.GetTreeChildren()" OnSelect="@HandleItemSelected" />
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted mt-5">
+                                <i class="display-4">🗄️</i>
+                                <p class="mt-3">Click "Create Knowledge Model" to begin</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </RadzenSplitterPane>
+
+            <!-- Middle: Details Panel -->
+            <RadzenSplitterPane Size="35%" Min="20%" Max="60%">
+                <div style="display: flex; flex-direction: column; height: 100%; background: white;">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">🔍 Component Details</h5>
+                        @if (_selectedItem != null)
+                        {
+                            <small>@_selectedItem.GetTreeNodeTitle()</small>
+                        }
+                    </div>
+                    <div style="flex: 1; overflow: auto; padding: 1rem;">
+                        @if (_selectedItem == null)
+                        {
+                            <div class="text-center text-muted mt-5">
+                                <i class="display-4">👈</i>
+                                <p class="mt-3">Select a component from the tree to view details</p>
+                            </div>
+                        }
+                        else if (_selectedItem is DataCenterRackModel dataCenter)
+                        {
+                            <RackKnowledgeModel_RenderDataCenterDetails DataCenter="@dataCenter" />
+                        }
+                        else if (_selectedItem is RackCabinetConcept cabinet)
+                        {
+                            <RackKnowledgeModel_RenderCabinetDetails Cabinet="@cabinet" />
+                        }
+                        else if (_selectedItem is RackEquipmentConcept equipment)
+                        {
+                            <RackKnowledgeModel_RenderEquipmentDetails Equipment="@equipment" />
+                        }
+                        else if (_selectedItem is KnParameter param)
+                        {
+                            <RackKnowledgeModel_RenderParameterDetails Parameter="@param" />
+                        }
+                        else
+                        {
+                            <div class="component-details">
+                                <h4 class="mb-3">@_selectedItem.GetTreeNodeTitle()</h4>
+                                <div class="p-2 bg-light rounded">
+                                    <small class="text-muted">Type: @_selectedItem.GetType().Name</small>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </RadzenSplitterPane>
+
+            <!-- Right Side: 3D Preview -->
+            <RadzenSplitterPane Size="30%" Min="20%" Max="50%">
+                <div style="display: flex; flex-direction: column; height: 100%; background: #2c3e50;">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">🎨 3D Geometry Preview</h5>
+                    </div>
+                    <div style="flex: 1; overflow: auto; padding: 1rem; background: #2c3e50; color: white;">
+                        @if (_generatedStage != null)
+                        {
+                            var cabinetShapes = _generatedStage.GetMembers<RackCabinetShape>();
+                            
+                            <div class="mb-3">
+                                <h6 class="text-white-50">Generated FO Stage</h6>
+                                <div class="p-2 bg-dark rounded">
+                                    <div><strong>Name:</strong> @_generatedStage.Name</div>
+                                    <div><strong>Shapes:</strong> @cabinetShapes.Count()</div>
+                                    <div><strong>Type:</strong> @_generatedStage.GetType().Name</div>
+                                </div>
+                            </div>
+                            
+                            <h6 class="text-white-50 mt-3">Shapes in Stage:</h6>
+                            <div class="list-group">
+                                @foreach (var shape in cabinetShapes)
+                                {
+                                    <div class="list-group-item bg-dark text-white border-secondary">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>@shape.Name</span>
+                                            <span class="badge bg-info">@shape.GetType().Name</span>
+                                        </div>
+                                        @if (shape is RackCabinetShape rackCabinet)
+                                        {
+                                            <small class="text-white-50">
+                                                Equipment: @rackCabinet.GetEquipment().Count | 
+                                                Available: @rackCabinet.GetAvailableRU() RU
+                                            </small>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center text-white-50 mt-5">
+                                <i class="display-4">🎨</i>
+                                <p class="mt-3">Click "Generate 3D Geometry" to create FO shapes</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </RadzenSplitterPane>
+            
+        </RadzenSplitter>
+    </div>
+
+</div>

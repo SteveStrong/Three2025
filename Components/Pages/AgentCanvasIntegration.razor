@@ -7,6 +7,7 @@
 @using Three2025.Components.Shared.Testing
 @using Three2025.Models.Chat
 @using Three2025.Apprentice
+@using Three2025.Apprentice.RackEquipment
 @using Microsoft.Extensions.AI
 @using AIChatMessage = Microsoft.Extensions.AI.ChatMessage
 
@@ -68,6 +69,14 @@
                                 type="button" role="tab"
                                 style="font-size: 0.9rem; font-weight: 600;">
                             📊 Mentor2DTech
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeChatTab == "rackequipment" ? "active" : "")" 
+                                @onclick="@(() => activeChatTab = "rackequipment")" 
+                                type="button" role="tab"
+                                style="font-size: 0.9rem; font-weight: 600;">
+                            🗄️ Rack Equipment
                         </button>
                     </li>
                 </ul>
@@ -148,6 +157,89 @@
                     else if (activeChatTab == "quicktest")
                     {
                         <QuickTestPanel />
+                    }
+                    else if (activeChatTab == "rackequipment")
+                    {
+                        <div style="height: 100%; overflow-y: auto; padding: 1rem; background: #f8f9fa;">
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700;">🗄️ MF Rack Equipment</h3>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; opacity: 0.9;">40U Data Center Cabinets with Rack Unit Positioning</p>
+                            </div>
+                            
+                            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                                <button class="btn btn-primary" @onclick="RackEquip_CreateAllCabinets" disabled="@rackIsLoading">
+                                    @if (rackIsLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                                    🗄️ Load All 4 Cabinets
+                                </button>
+                                <button class="btn btn-success" @onclick="RackEquip_CreateFromKnowledgeModel" disabled="@rackIsLoading">
+                                    @if (rackIsLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                                    🧠 From Knowledge Model
+                                </button>
+                                <button class="btn btn-secondary" @onclick="RackEquip_CreateCabinet1">Cabinet 1</button>
+                                <button class="btn btn-secondary" @onclick="RackEquip_CreateCabinet2">Cabinet 2</button>
+                                <button class="btn btn-secondary" @onclick="RackEquip_CreateCabinet3">Cabinet 3</button>
+                                <button class="btn btn-secondary" @onclick="RackEquip_CreateCabinet4">Cabinet 4</button>
+                                <button class="btn btn-warning" @onclick="RackEquip_ClearCabinets">🗑️ Clear</button>
+                            </div>
+                            
+                            @if (!string.IsNullOrEmpty(rackKnowledgeModelSummary))
+                            {
+                                <div style="background: #e7f3ff; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #0d6efd;">
+                                    <h4 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; color: #0d6efd;">🧠 Knowledge Model</h4>
+                                    <pre style="margin: 0; font-size: 0.85rem; white-space: pre-wrap; color: #495057;">@rackKnowledgeModelSummary</pre>
+                                </div>
+                            }
+                            
+                            @if (rackCabinetCount > 0)
+                            {
+                                <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <h4 style="margin: 0 0 0.75rem 0; font-size: 1rem; color: #495057;">📊 Statistics</h4>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem;">
+                                        <div style="padding: 0.5rem; background: #e7f3ff; border-left: 4px solid #0d6efd; border-radius: 4px;">
+                                            <div style="font-size: 0.75rem; color: #6c757d;">Cabinets</div>
+                                            <div style="font-size: 1.25rem; font-weight: 600; color: #0d6efd;">@rackCabinetCount</div>
+                                        </div>
+                                        <div style="padding: 0.5rem; background: #e8f5e9; border-left: 4px solid #28a745; border-radius: 4px;">
+                                            <div style="font-size: 0.75rem; color: #6c757d;">Equipment</div>
+                                            <div style="font-size: 1.25rem; font-weight: 600; color: #28a745;">@rackEquipmentCount</div>
+                                        </div>
+                                        <div style="padding: 0.5rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                                            <div style="font-size: 0.75rem; color: #6c757d;">RU Used</div>
+                                            <div style="font-size: 1.25rem; font-weight: 600; color: #856404;">@rackTotalRUUsed / @(rackCabinetCount * 40)</div>
+                                        </div>
+                                        <div style="padding: 0.5rem; background: #f8d7da; border-left: 4px solid #dc3545; border-radius: 4px;">
+                                            <div style="font-size: 0.75rem; color: #6c757d;">Available</div>
+                                            <div style="font-size: 1.25rem; font-weight: 600; color: #dc3545;">@rackAvailableRU RU</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <h4 style="margin: 0 0 0.75rem 0; font-size: 1rem; color: #495057;">🗄️ Cabinet Details</h4>
+                                    @foreach (var summary in rackCabinetSummaries)
+                                    {
+                                        <div style="padding: 0.75rem; margin-bottom: 0.5rem; background: #f8f9fa; border-left: 4px solid @summary.BorderColor; border-radius: 4px;">
+                                            <div style="font-weight: 600; color: #495057; margin-bottom: 0.25rem;">@summary.Name</div>
+                                            <div style="font-size: 0.85rem; color: #6c757d;">
+                                                <span>@summary.DeviceCount devices</span> • 
+                                                <span>@summary.UsedRU/@summary.TotalRU RU</span>
+                                                @if (summary.HasPDU)
+                                                {
+                                                    <span> • <span style="color: #dc3545; font-weight: 600;">PDU</span></span>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            
+                            @if (!string.IsNullOrEmpty(rackStatusMessage))
+                            {
+                                <div style="margin-top: 1rem; padding: 0.75rem; background: @(rackStatusIsError ? "#f8d7da" : "#d4edda"); border: 1px solid @(rackStatusIsError ? "#f5c6cb" : "#c3e6cb"); border-radius: 4px; color: @(rackStatusIsError ? "#721c24" : "#155724");">
+                                    @rackStatusMessage
+                                </div>
+                            }
+                        </div>
                     }
                 </div>
             </div>

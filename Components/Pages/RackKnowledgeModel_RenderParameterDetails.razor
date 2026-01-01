@@ -1,0 +1,117 @@
+@using FoundryMentorModeler.Model
+@using FoundryMentorModeler.Tests
+@using FoundryCore
+@using FoundryRulesAndUnits.Models
+
+@code {
+    [Parameter] public KnParameter Parameter { get; set; } = null!;
+}
+
+<div class="parameter-details">
+    <div class="d-flex align-items-center mb-3">
+        <h4 class="mb-0">📊 @Parameter.Name</h4>
+    </div>
+
+    <!-- Current Value -->
+    <div class="card mb-3">
+        <div class="card-header bg-success text-white">
+            <h6 class="mb-0">💡 Current Value</h6>
+        </div>
+        <div class="card-body">
+            @if (Parameter.HasCalculatedValue())
+            {
+                var result = Parameter.GetValue();
+                <div class="p-3 bg-light rounded">
+                    <div class="display-6 mb-2">@result.Display()</div>
+                    <small class="text-muted">Status: @result.GetStatus()</small>
+                </div>
+            }
+            else
+            {
+                <div class="p-3 bg-light rounded text-muted">
+                    <em>Not yet calculated</em>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Formula -->
+    @if (Parameter.Formula != null)
+    {
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">📐 Formula</h6>
+            </div>
+            <div class="card-body">
+                <div class="p-2 bg-light rounded">
+                    <code>@Parameter.Formula.Decompile()</code>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Parent Component -->
+    <div class="card mb-3">
+        <div class="card-header bg-info text-white">
+            <h6 class="mb-0">🔗 Parent Component</h6>
+        </div>
+        <div class="card-body">
+            @{
+                var parent = Parameter.GetKnParent();
+            }
+            @if (parent != null)
+            {
+                <p class="mb-0">
+                    <strong>@parent.Name</strong><br>
+                    <small class="text-muted">Type: @parent.GetType().Name</small>
+                </p>
+            }
+            else
+            {
+                <p class="text-muted mb-0">No parent</p>
+            }
+        </div>
+    </div>
+
+    <!-- Type Info -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h6 class="mb-0">ℹ️ Type Information</h6>
+        </div>
+        <div class="card-body">
+            <p class="mb-0"><small class="text-muted">@Parameter.GetType().Name</small></p>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    @{
+        var knActions = Parameter.GetKnTreeNodeActions()?.ToList() ?? new List<KnTreeNodeAction>();
+        var treeActions = Parameter.GetTreeNodeActions()?.ToList() ?? new List<TreeNodeAction>();
+        var hasActions = knActions.Any() || treeActions.Any();
+        
+        if (hasActions)
+        {
+            <div class="card mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">⚡ Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-2 flex-wrap">
+                        @foreach (var action in knActions)
+                        {
+                            <button class="btn btn-sm btn-outline-secondary">
+                                @action.Name
+                            </button>
+                        }
+                        @foreach (var action in treeActions)
+                        {
+                            <button class="btn btn-sm btn-outline-secondary">
+                                @action.Name
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

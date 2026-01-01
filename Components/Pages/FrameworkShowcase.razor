@@ -208,6 +208,14 @@
             <RadzenTabsItem Text="🏗️ Model Driven">
                 <div class="tab-content-wrapper">
                     <div class="card-grid">
+                        <div class="demo-card" @onclick="@(() => Nav("/rack-knowledge-model"))">
+                            <div class="card-icon">🗄️</div>
+                            <div class="card-title">Rack Knowledge Model</div>
+                            <div class="card-description">Interactive rack equipment knowledge models with PartComponent, measured RU values, and FO geometry generation</div>
+                            <div class="card-route">/rack-knowledge-model</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
                         <div class="demo-card" @onclick="@(() => Nav("/matrixtest"))">
                             <div class="card-icon">🔢</div>
                             <div class="card-title">Matrix Test</div>
@@ -260,6 +268,14 @@
                             <div class="card-title">Collection Demo</div>
                             <div class="card-description">OPResult collection support with 24+ tests for LINQ, type safety, and FoCollection extraction</div>
                             <div class="card-route">/collection-demo</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
+                        <div class="demo-card" @onclick="@(() => Nav("/reduction-operators"))">
+                            <div class="card-icon">🧮</div>
+                            <div class="card-title">Reduction Operators</div>
+                            <div class="card-description">LIST() function and 7 reduction operators (SUM, COUNT, AVG, MIN, MAX, FIRST, LAST) with PartComponent integration tests</div>
+                            <div class="card-route">/reduction-operators</div>
                             <div class="card-status badge-ready">✅ Ready</div>
                         </div>
 

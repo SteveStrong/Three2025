@@ -1,0 +1,107 @@
+@using FoundryMentorModeler.Model
+@using Three2025.Apprentice.RackEquipment
+
+@code {
+    [Parameter] public DataCenterRackModel DataCenter { get; set; } = null!;
+}
+
+<div class="component-details">
+    <h4 class="mb-3">🏢 @DataCenter.Name</h4>
+    
+    <div class="card mb-3">
+        <div class="card-header bg-primary text-white">
+            <h6 class="mb-0">📊 Summary Statistics</h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-6">
+                    <div class="p-2 bg-light rounded">
+                        <small class="text-muted d-block">Total Cabinets</small>
+                        <strong>@(DataCenter.FindParameter("TotalCabinets")?.GetValue().AsNumber() ?? 0)</strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 bg-light rounded">
+                        <small class="text-muted d-block">Total Equipment</small>
+                        <strong>@(DataCenter.FindParameter("TotalEquipment")?.GetValue().AsNumber() ?? 0)</strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 bg-light rounded">
+                        <small class="text-muted d-block">Total RU Used</small>
+                        <strong>@(DataCenter.FindParameter("TotalRUUsed")?.GetValue().AsNumber() ?? 0) RU</strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 bg-light rounded">
+                        <small class="text-muted d-block">Available RU</small>
+                        <strong>@(DataCenter.FindParameter("TotalRUAvailable")?.GetValue().AsNumber() ?? 0) RU</strong>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="p-2 bg-light rounded">
+                        <small class="text-muted d-block">Cabinet Spacing</small>
+                        <strong>@(DataCenter.FindParameter("CabinetSpacing")?.GetValue().AsNumber() ?? 0) inches</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @{
+        var totalCabinets = DataCenter.FindParameter("TotalCabinets")?.GetValue().AsNumber() ?? 0;
+        var totalRU = DataCenter.FindParameter("TotalRUUsed")?.GetValue().AsNumber() ?? 0;
+        var utilization = totalCabinets > 0 ? (totalRU / (totalCabinets * 40) * 100) : 0;
+    }
+
+    <div class="card mb-3">
+        <div class="card-header bg-success text-white">
+            <h6 class="mb-0">📈 Utilization</h6>
+        </div>
+        <div class="card-body">
+            <div class="progress" style="height: 30px;">
+                <div class="progress-bar @(utilization > 80 ? "bg-danger" : utilization > 60 ? "bg-warning" : "bg-success")" 
+                     role="progressbar" 
+                     style="width: @(utilization)%;" 
+                     aria-valuenow="@utilization" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                    @utilization.ToString("F1")%
+                </div>
+            </div>
+            <small class="text-muted mt-2 d-block">
+                @totalRU RU used out of @(totalCabinets * 40) RU total capacity
+            </small>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h6 class="mb-0">🗄️ Cabinets</h6>
+        </div>
+        <div class="card-body">
+            @{
+                var cabinets = DataCenter.ModelComponents<RackCabinetConcept>();
+            }
+            <div class="list-group">
+                @foreach (var cabinet in cabinets)
+                {
+                    var cabinetUsed = cabinet.FindParameter("UsedRU")?.GetValue().AsNumber() ?? 0;
+                    var cabinetTotal = cabinet.FindParameter("TotalRackUnits")?.GetValue().AsNumber() ?? 40;
+                    var cabinetUtil = (cabinetUsed / cabinetTotal * 100);
+                    
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>@cabinet.Name</strong>
+                            <span class="badge bg-secondary">@cabinetUtil.ToString("F1")%</span>
+                        </div>
+                        <small class="text-muted">
+                            @(cabinet.FindParameter("EquipmentCount")?.GetValue().AsNumber() ?? 0) items, 
+                            @cabinetUsed/@cabinetTotal RU
+                        </small>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

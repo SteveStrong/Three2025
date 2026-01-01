@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Three2025.Apprentice;
+using Three2025.Apprentice.RackEquipment;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -477,6 +478,107 @@ public partial class QuickTestPanel : ComponentBase
         
         return $"Created MobileRouter with power socket, SIM holder, 2 RJ45 ports, and 8 LEDs. 4G/LTE broadband device!";
     }, "Create Mobile Router failed");
+    
+    // ================================================================
+    // RACK EQUIPMENT: MF CABINETS
+    // ================================================================
+    
+    private async Task Test_CreateMFCabinet1() => await ExecuteTest(() =>
+    {
+        var existing = Shape3DTech.GetShapeByName("MF_Cabinet_1");
+        if (existing != null)
+        {
+            Shape3DTech.DeleteShape("MF_Cabinet_1");
+        }
+        
+        var cabinet = MFCabinetFactory.CreateMFCabinet1();
+        var stage = Shape3DTech.EstablishGeometryStage();
+        stage.AddShape(cabinet);
+        Shape3DTech.RefreshUI();
+        
+        var equipCount = cabinet.GetEquipment().Count;
+        var availableRU = cabinet.GetAvailableRU();
+        return $"Created MF Cabinet 1: {equipCount} devices, {availableRU} RU available. Includes HPL2, ITC, 3 Storage Drawers, RSI, IPS, MCC.";
+    }, "Create MF Cabinet 1 failed");
+    
+    private async Task Test_CreateMFCabinet2() => await ExecuteTest(() =>
+    {
+        var existing = Shape3DTech.GetShapeByName("MF_Cabinet_2");
+        if (existing != null)
+        {
+            Shape3DTech.DeleteShape("MF_Cabinet_2");
+        }
+        
+        var cabinet = MFCabinetFactory.CreateMFCabinet2();
+        var stage = Shape3DTech.EstablishGeometryStage();
+        stage.AddShape(cabinet);
+        Shape3DTech.RefreshUI();
+        
+        var equipCount = cabinet.GetEquipment().Count;
+        var availableRU = cabinet.GetAvailableRU();
+        return $"Created MF Cabinet 2: {equipCount} devices, {availableRU} RU available. Includes ZIF Connectors, SPPMC, GWT, DCT, PDCS, 4x PDSA.";
+    }, "Create MF Cabinet 2 failed");
+    
+    private async Task Test_CreateMFCabinet3() => await ExecuteTest(() =>
+    {
+        var existing = Shape3DTech.GetShapeByName("MF_Cabinet_3");
+        if (existing != null)
+        {
+            Shape3DTech.DeleteShape("MF_Cabinet_3");
+        }
+        
+        var cabinet = MFCabinetFactory.CreateMFCabinet3();
+        var stage = Shape3DTech.EstablishGeometryStage();
+        stage.AddShape(cabinet);
+        Shape3DTech.RefreshUI();
+        
+        var equipCount = cabinet.GetEquipment().Count;
+        var availableRU = cabinet.GetAvailableRU();
+        return $"Created MF Cabinet 3: {equipCount} devices, {availableRU} RU available. Includes SPPMC, FHPC, TPPMC, HPDS, 4x LPAS.";
+    }, "Create MF Cabinet 3 failed");
+    
+    private async Task Test_CreateMFCabinet4() => await ExecuteTest(() =>
+    {
+        var existing = Shape3DTech.GetShapeByName("MF_Cabinet_4");
+        if (existing != null)
+        {
+            Shape3DTech.DeleteShape("MF_Cabinet_4");
+        }
+        
+        var cabinet = MFCabinetFactory.CreateMFCabinet4();
+        var stage = Shape3DTech.EstablishGeometryStage();
+        stage.AddShape(cabinet);
+        Shape3DTech.RefreshUI();
+        
+        var equipCount = cabinet.GetEquipment().Count;
+        var availableRU = cabinet.GetAvailableRU();
+        return $"Created MF Cabinet 4: {equipCount} devices, {availableRU} RU available. Includes ZIF Connectors, ITA 1, ITA 2, ASM, ASG, LPM.";
+    }, "Create MF Cabinet 4 failed");
+    
+    private async Task Test_CreateAllMFCabinets() => await ExecuteTest(() =>
+    {
+        // Clear existing cabinets
+        var cabinetNames = new[] { "MF_Cabinet_1", "MF_Cabinet_2", "MF_Cabinet_3", "MF_Cabinet_4" };
+        foreach (var name in cabinetNames)
+        {
+            var existing = Shape3DTech.GetShapeByName(name);
+            if (existing != null)
+            {
+                Shape3DTech.DeleteShape(name);
+            }
+        }
+        
+        var cabinets = MFCabinetFactory.CreateAllMFCabinets(spacing: 25.0);
+        var stage = Shape3DTech.EstablishGeometryStage();
+        foreach (var cabinet in cabinets)
+        {
+            stage.AddShape(cabinet);
+        }
+        Shape3DTech.RefreshUI();
+        
+        var totalEquipment = cabinets.Sum(c => c.GetEquipment().Count);
+        return $"Created all 4 MF Cabinets with {totalEquipment} total devices. Full data center rack layout!";
+    }, "Create all MF Cabinets failed");
     
     // ================================================================
     // UTILITY: CLEANUP

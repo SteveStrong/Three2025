@@ -1,0 +1,174 @@
+@page "/reduction-operators"
+@rendermode InteractiveServer
+@using FoundryMentorModeler.Model
+@using FoundryMentorModeler.Tests
+@using FoundryRulesAndUnits.Models
+@using Three2025.Components.Shared
+
+<PageTitle>Reduction Operators Test</PageTitle>
+
+<div class="container-fluid p-3" style="height: 100vh; display: flex; flex-direction: column;">
+    
+    <!-- Header -->
+    <div class="card mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="card-body p-3">
+            <h3 class="mb-2">🧮 Reduction Operators Test</h3>
+            <p class="mb-0 small">Testing LIST() function and 7 reduction operators: SUM, COUNT, AVG, MIN, MAX, FIRST, LAST</p>
+            <p class="mb-0 small"><strong>Success Badges:</strong> ✓ = Success (green) | ✗ = Failure (red) | — = Not yet calculated (gray)</p>
+        </div>
+    </div>
+
+    <div style="height: calc(100vh - 200px); overflow: hidden;">
+        <RadzenSplitter Orientation="Orientation.Horizontal" style="height: 100%;">
+            <!-- Left Side: Model Tree -->
+            <RadzenSplitterPane Size="35%" Min="20%" Max="60%">
+                <div style="display: flex; flex-direction: column; height: 100%; background: white;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">📊 Test Components with Success Indicators</h5>
+                    </div>
+                    <div style="flex: 1; overflow: auto; padding: 8px;">
+                        @if (_model != null)
+                        {
+                            <SuccessTreeView RootItems="@_model.GetTreeChildren()" OnSelect="@HandleItemSelected" />
+                        }
+                    </div>
+                </div>
+            </RadzenSplitterPane>
+
+            <!-- Right Side: Details Panel -->
+            <RadzenSplitterPane Size="65%" Min="40%" Max="80%">
+                <div style="display: flex; flex-direction: column; height: 100%; background: white;">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">🔍 Parameter Details</h5>
+                        @if (_selectedItem != null)
+                        {
+                            <small>@_selectedItem.GetTreeNodeTitle()</small>
+                        }
+                    </div>
+                    <div style="flex: 1; padding: 1rem;">
+                        @if (_selectedItem == null)
+                    {
+                        <div class="text-center text-muted mt-5">
+                            <i class="display-4">👈</i>
+                            <p class="mt-3">Select a parameter from the tree to view details</p>
+                        </div>
+                    }
+                    else if (_selectedItem is KnParameter param)
+                    {
+                        <div class="parameter-details">
+                            <!-- Header with Name and Status -->
+                            <div class="d-flex align-items-center mb-3">
+                                <h4 class="mb-0">@param.Name</h4>
+                                @if (param.HasSuccessTest())
+                                {
+                                    var status = param.EvaluateSuccess();
+                                    <span class="ms-3 badge @GetStatusBadgeClass(status)">
+                                        @GetStatusText(status)
+                                    </span>
+                                }
+                            </div>
+
+                            <!-- Current Value -->
+                            <div class="mb-3">
+                                <h6 class="text-muted">Current Value:</h6>
+                                @if (param.HasCalculatedValue())
+                                {
+                                    var result = param.GetValue();
+                                    <div class="p-2 bg-light rounded">
+                                        <code>@result.Display()</code>
+                                        <small class="text-muted ms-2">(@result.GetStatus())</small>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="p-2 bg-light rounded text-muted">
+                                        <em>Not yet calculated</em>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Formula -->
+                            @if (param.Formula != null)
+                            {
+                                <div class="mb-3">
+                                    <h6 class="text-muted">Formula:</h6>
+                                    <div class="p-2 bg-light rounded">
+                                        <code>@param.Formula.Decompile()</code>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Success Test Info -->
+                            @if (param.HasSuccessTest())
+                            {
+                                <div class="mb-3">
+                                    <h6 class="text-muted">Success Test:</h6>
+                                    @{
+                                        var expectedInfo = GetExpectedValue(param);
+                                    }
+                                    @if (expectedInfo != null)
+                                    {
+                                        <div class="p-2 bg-light rounded">
+                                            <strong>Expected:</strong> <code>@expectedInfo</code>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="p-2 bg-light rounded">
+                                            <em>Custom success evaluator defined</em>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <!-- Type Info -->
+                            <div class="mb-3">
+                                <h6 class="text-muted">Type:</h6>
+                                <small class="text-muted">@param.GetType().Name</small>
+                            </div>
+
+                            <!-- Actions -->
+                            @{
+                                var knActions = param.GetKnTreeNodeActions()?.ToList() ?? new List<KnTreeNodeAction>();
+                                var treeActions = param.GetTreeNodeActions()?.ToList() ?? new List<TreeNodeAction>();
+                                var hasActions = knActions.Any() || treeActions.Any();
+                                
+                                if (hasActions)
+                                {
+                                    <div class="mb-3">
+                                        <h6 class="text-muted">Actions:</h6>
+                                        <div class="d-flex gap-2">
+                                            @foreach (var action in knActions)
+                                            {
+                                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => ExecuteAction(param, action)">
+                                                    @action.Name
+                                                </button>
+                                            }
+                                            @foreach (var action in treeActions)
+                                            {
+                                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => ExecuteAction(param, action)">
+                                                    @action.Name
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="component-details">
+                            <h4 class="mb-3">@_selectedItem.GetTreeNodeTitle()</h4>
+                            <div class="p-2 bg-light rounded">
+                                <small class="text-muted">Type: @_selectedItem.GetType().Name</small>
+                            </div>
+                        </div>
+                    }
+                    </div>
+                </div>
+            </RadzenSplitterPane>
+        </RadzenSplitter>
+    </div>
+
+</div>

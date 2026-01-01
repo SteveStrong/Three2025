@@ -198,6 +198,20 @@ public class ChatTestScenariosModels : ChatTestScenariosBase
         "Add a sphere on the cylinder",
         "Color the assembly blue"
     };
+
+    [TestSequence(
+        DisplayName = "🗄️ Rack Knowledge Model",
+        Description = "Interactive demonstration of rack equipment knowledge models with calculated parameters",
+        Category = "Models")]
+    public string[] RackKnowledgeModelTest => new[]
+    {
+        "Navigate to /rack-knowledge-model",
+        "Click Create Knowledge Model button",
+        "Explore the data center hierarchy in the tree",
+        "Click on MF_Cabinet_1 to see utilization",
+        "Click on equipment items to see RU calculations",
+        "Click Generate 3D Geometry to create FO shapes"
+    };
 }
 
 /// <summary>
