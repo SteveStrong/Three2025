@@ -1,0 +1,172 @@
+@page "/collection-demo"
+@rendermode InteractiveServer
+
+<PageTitle>OPResult Collection Operations</PageTitle>
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 2rem; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh;">
+    
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 700;">📊 OPResult Collection Operations</h1>
+        <p style="margin: 0.5rem 0 0 0; font-size: 1rem; opacity: 0.95;">
+            Live demonstration of Phase 1 collection support - Create, query, and manipulate collections
+        </p>
+    </div>
+
+    <!-- Results Display -->
+    @if (!string.IsNullOrEmpty(output))
+    {
+        <div style="background: #1e1e1e; color: #d4d4d4; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; font-family: 'Consolas', monospace; white-space: pre-wrap; box-shadow: 0 4px 8px rgba(0,0,0,0.2); max-height: 400px; overflow-y: auto;">
+            @((MarkupString)output.Replace("\n", "<br/>"))
+        </div>
+    }
+
+    <!-- Test Categories -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
+        
+        <!-- Basic Operations -->
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h3 style="color: #667eea; margin-top: 0; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                🔢 Basic Operations
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button @onclick="Test_CreateNumberList" class="test-button">
+                    Create Number List [1..10]
+                </button>
+                <button @onclick="Test_SumNumbers" class="test-button">
+                    Sum Collection
+                </button>
+                <button @onclick="Test_Statistics" class="test-button">
+                    Calculate Statistics (Avg, Min, Max)
+                </button>
+                <button @onclick="Test_CountElements" class="test-button">
+                    Count Elements
+                </button>
+            </div>
+        </div>
+
+        <!-- Query Operations -->
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h3 style="color: #17a2b8; margin-top: 0; border-bottom: 2px solid #17a2b8; padding-bottom: 0.5rem;">
+                🔍 Query Operations
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button @onclick="Test_FilterNumbers" class="test-button">
+                    Filter (x > 5)
+                </button>
+                <button @onclick="Test_MapDouble" class="test-button">
+                    Map (x * 2)
+                </button>
+                <button @onclick="Test_FirstLast" class="test-button">
+                    First & Last Elements
+                </button>
+                <button @onclick="Test_AnyAll" class="test-button">
+                    Any/All Predicates
+                </button>
+            </div>
+        </div>
+
+        <!-- Shape Collections -->
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h3 style="color: #28a745; margin-top: 0; border-bottom: 2px solid #28a745; padding-bottom: 0.5rem;">
+                🎨 Shape Collections
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button @onclick="Test_CreateShapes" class="test-button">
+                    Create Shape Collection
+                </button>
+                <button @onclick="Test_FilterShapesByColor" class="test-button">
+                    Filter by Color
+                </button>
+                <button @onclick="Test_ExtractShapeNames" class="test-button">
+                    Extract Shape Names
+                </button>
+                <button @onclick="Test_CountByType" class="test-button">
+                    Count by GeomType
+                </button>
+            </div>
+        </div>
+
+        <!-- Type Safety -->
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h3 style="color: #dc3545; margin-top: 0; border-bottom: 2px solid #dc3545; padding-bottom: 0.5rem;">
+                🛡️ Type Safety
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button @onclick="Test_TypeDetection" class="test-button">
+                    Element Type Detection
+                </button>
+                <button @onclick="Test_TypeMismatch" class="test-button">
+                    Wrong Type Extraction
+                </button>
+                <button @onclick="Test_EmptyCollection" class="test-button">
+                    Empty Collection Handling
+                </button>
+                <button @onclick="Test_ReferenceSematics" class="test-button">
+                    Reference Semantics
+                </button>
+            </div>
+        </div>
+
+        <!-- Advanced -->
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h3 style="color: #fd7e14; margin-top: 0; border-bottom: 2px solid #fd7e14; padding-bottom: 0.5rem;">
+                ⚡ Advanced
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button @onclick="Test_ChainedOperations" class="test-button">
+                    Chained Operations
+                </button>
+                <button @onclick="Test_NestedCollections" class="test-button">
+                    Nested Collections
+                </button>
+                <button @onclick="Test_MixedTypes" class="test-button">
+                    Mixed Type Collections
+                </button>
+                <button @onclick="Test_Performance" class="test-button">
+                    Performance (1000 items)
+                </button>
+            </div>
+        </div>
+
+        <!-- Clear -->
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h3 style="color: #6c757d; margin-top: 0; border-bottom: 2px solid #6c757d; padding-bottom: 0.5rem;">
+                🧹 Actions
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button @onclick="ClearOutput" class="test-button" style="background: #6c757d;">
+                    Clear Output
+                </button>
+                <button @onclick="RunAllTests" class="test-button" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    ▶️ Run All Tests
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .test-button {
+        padding: 0.75rem 1rem;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: left;
+    }
+
+    .test-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .test-button:active {
+        transform: translateY(0);
+    }
+</style>

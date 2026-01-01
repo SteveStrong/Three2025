@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using FoundryWorldsAndDrawings.Shape;
+using FoundryMentorModeler.Evaluator;
 
 namespace Three2025.Apprentice;
 
@@ -26,7 +27,7 @@ public interface IShape2DTech : ITechnician
     // ============================================
     
     [Description("Add a rectangle to the 2D canvas with specified dimensions and position")]
-    Shape2DInfo AddRectangle(
+    OPResult AddRectangle(
         [Description("Unique name for the rectangle")] string name,
         [Description("Width in pixels")] int width,
         [Description("Height in pixels")] int height,
@@ -35,7 +36,7 @@ public interface IShape2DTech : ITechnician
         [Description("Y coordinate position")] int y);
     
     [Description("Add a circle to the 2D canvas with specified radius and position")]
-    Shape2DInfo AddCircle(
+    OPResult AddCircle(
         [Description("Unique name for the circle")] string name,
         [Description("Radius in pixels")] int radius,
         [Description("Color name (red, blue, green) or hex code (#ff0000)")] string color,
@@ -43,7 +44,7 @@ public interface IShape2DTech : ITechnician
         [Description("Y coordinate position")] int y);
     
     [Description("Add a text label to the canvas at specified position")]
-    Shape2DInfo AddText(
+    OPResult AddText(
         [Description("Unique name for the text")] string name,
         [Description("The text content to display")] string text,
         [Description("X coordinate position")] int x,
@@ -51,7 +52,7 @@ public interface IShape2DTech : ITechnician
         [Description("Text color name or hex code")] string color);
     
     [Description("Connect two shapes with a line that automatically tracks their positions when they move")]
-    Shape2DInfo ConnectShapes(
+    OPResult ConnectShapes(
         [Description("Unique name for the connector line")] string connectorName,
         [Description("Name of the shape where the line starts")] string startShapeName,
         [Description("Name of the shape where the line ends")] string endShapeName,
@@ -63,19 +64,19 @@ public interface IShape2DTech : ITechnician
     // ============================================
     
     [Description("Move a shape to a new position immediately")]
-    Shape2DInfo MoveShape(
+    OPResult MoveShape(
         [Description("Name of the shape to move")] string name,
         [Description("New X coordinate")] int x,
         [Description("New Y coordinate")] int y);
     
     [Description("Animate a shape moving smoothly to a new position")]
-    Shape2DInfo AnimateMove(
+    OPResult AnimateMove(
         [Description("Name of the shape to animate")] string name,
         [Description("Target X coordinate")] int x,
         [Description("Target Y coordinate")] int y);
     
     [Description("Change the color of an existing shape")]
-    Shape2DInfo SetColor(
+    OPResult SetColor(
         [Description("Name of the shape")] string name,
         [Description("New color name or hex code")] string color);
     
@@ -84,10 +85,10 @@ public interface IShape2DTech : ITechnician
     // ============================================
     
     [Description("Get a list of all shapes currently on the 2D canvas")]
-    List<Shape2DInfo> GetShapes();
+    OPResult GetShapes();
     
     [Description("Get information about a specific shape by name")]
-    Shape2DInfo? GetShape(
+    OPResult GetShape(
         [Description("Name of the shape to find")] string name);
     
     // ============================================
@@ -95,9 +96,9 @@ public interface IShape2DTech : ITechnician
     // ============================================
     
     [Description("Delete a specific shape from the canvas")]
-    void DeleteShape(
+    OPResult DeleteShape(
         [Description("Name of the shape to delete")] string name);
     
     [Description("Clear all shapes from the canvas")]
-    void ClearAll();
+    OPResult ClearAll();
 }
