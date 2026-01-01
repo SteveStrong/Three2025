@@ -242,15 +242,14 @@ public class Shape3DEditor : IShape3DEditor
       var parentShape = result.AsShape3D();
       var children = parentShape.GetMembers<FoGlyph3D>();
       
+      // Return empty collection if no children (not an error - makes consumer code simpler)
       if (children == null || children.Count == 0)
       {
-         return new OPResult("GetChildShapes", ResultStatus.String, $"Shape '{parentShapeName}' has no child shapes");
+         return OPResult.Collection<FoGlyph3D>(new List<FoGlyph3D>());
       }
       
-      var childNames = children.Select(c => c.GetName()).ToList();
-      var message = $"Shape '{parentShapeName}' has {childNames.Count} child shapes: {string.Join(", ", childNames)}";
-      
-      return new OPResult("GetChildShapes", ResultStatus.String, message);
+      // Return actual shape collection - consumer can query, filter, extract names, etc.
+      return OPResult.Collection(children);
    }
 
    public OPResult DeleteShape(string name)
@@ -348,7 +347,9 @@ public class Shape3DEditor : IShape3DEditor
 
       var shapes = _stage.Members<FoGlyph3D>().OfType<FoShape3D>().ToList();
       $"📋 Retrieved {shapes.Count} shapes from stage".WriteInfo();
-      return new OPResult("GetAllShapes", ResultStatus.Shape3D, shapes);
+      
+      // Return as collection - consumer can filter, query, count, etc.
+      return OPResult.Collection(shapes);
    }
 
    public OPResult AddShape(FoShape3D shape)
