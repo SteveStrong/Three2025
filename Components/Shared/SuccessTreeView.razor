@@ -1,0 +1,37 @@
+@using FoundryMentorModeler.Model
+@using FoundryMentorModeler.Tests
+@using FoundryCore
+@using FoundryRulesAndUnits.Models
+@inherits ComponentBase
+
+@namespace Three2025.Components.Shared
+
+<style>
+    .success-tree-container {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 0;
+    }
+
+    .success-tree-container ul {
+        margin: 0;
+        padding: 0;
+    }
+</style>
+
+<div class="success-tree-container">
+    <ul>
+        <SuccessTreeItem 
+            Items="@RootItems" 
+            Level="0"
+            OnSelect="@OnSelect">
+        </SuccessTreeItem>
+    </ul>
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<ITreeNode>? RootItems { get; set; }
+
+    [Parameter]
+    public Action<ITreeNode>? OnSelect { get; set; }
+}

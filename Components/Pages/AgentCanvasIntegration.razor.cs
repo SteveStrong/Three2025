@@ -7,6 +7,7 @@ using FoundryWorldsAndDrawings.PubSub;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using Three2025.Services.Chat;
 using Three2025.Apprentice;
+using Three2025.Apprentice.RackEquipment;
 using Three2025.Models.Chat;
 using Microsoft.Extensions.AI;
 using AIChatMessage = Microsoft.Extensions.AI.ChatMessage;
@@ -48,6 +49,17 @@ public partial class AgentCanvasIntegration : ComponentBase
     protected int toolCount = 0;
     protected List<string> availableAgents = new();
     protected string currentAgent = "Assistant";
+    
+    // Rack Equipment State
+    protected bool rackIsLoading = false;
+    protected string rackStatusMessage = "";
+    protected bool rackStatusIsError = false;
+    protected int rackCabinetCount = 0;
+    protected int rackEquipmentCount = 0;
+    protected int rackTotalRUUsed = 0;
+    protected int rackAvailableRU = 0;
+    protected List<RackCabinetSummary> rackCabinetSummaries = new();
+    protected string rackKnowledgeModelSummary = "";
     
     // Queue management for test sequences
     private Queue<string> messageQueue = new();
@@ -697,5 +709,220 @@ public partial class AgentCanvasIntegration : ComponentBase
         public string Message { get; set; } = "";
         public string Details { get; set; } = "";
         public DateTime Timestamp { get; set; }
+    }
+    
+    // ================================================================
+    // RACK EQUIPMENT METHODS
+    // ================================================================
+    
+    protected async Task RackEquip_CreateAllCabinets()
+    {
+        await RackEquip_ExecuteWithLoading(async () =>
+        {
+            var stage = Canvas3DReference?.Stage;
+            if (stage == null)
+            {
+                RackEquip_SetStatus("Stage not initialized", isError: true);
+                return;
+            }
+
+            RackEquip_ClearCabinets();
+
+            var cabinets = MFCabinetFactory.CreateAllMFCabinets(spacing: 25.0);
+            foreach (var cabinet in cabinets)
+            {
+                stage.AddShape(cabinet);
+            }
+
+            RackEquip_UpdateStatistics();
+            RackEquip_SetStatus($"Successfully created {rackCabinetCount} cabinets with {rackEquipmentCount} devices", isError: false);
+
+            await Task.Delay(100);
+            StateHasChanged();
+        });
+    }
+    
+    protected async Task RackEquip_CreateFromKnowledgeModel()
+    {
+        await RackEquip_ExecuteWithLoading(async () =>
+        {
+            var stage = Canvas3DReference?.Stage;
+            if (stage == null)
+            {
+                RackEquip_SetStatus("Stage not initialized", isError: true);
+                return;
+            }
+
+            RackEquip_ClearCabinets();
+
+            // Create knowledge model
+            var dataCenterModel = new DataCenterRackModel("MF_DataCenter");
+            
+            // Get summary from knowledge model
+            rackKnowledgeModelSummary = RackKnowledgeToFoFactory.GetKnowledgeModelSummary(dataCenterModel);
+            
+            // Generate FO objects from knowledge model
+            var dataCenter = RackKnowledgeToFoFactory.GenerateDataCenter(dataCenterModel);
+            
+            // Add all shapes to stage
+            foreach (var shape in dataCenter.GetMembers<RackCabinetShape>())
+            {
+                stage.AddShape(shape);
+            }
+
+            RackEquip_UpdateStatistics();
+            RackEquip_SetStatus($"✅ Generated from Knowledge Model: {rackCabinetCount} cabinets with {rackEquipmentCount} devices", isError: false);
+
+            await Task.Delay(100);
+            StateHasChanged();
+        });
+    }
+
+    protected async Task RackEquip_CreateCabinet1() => await RackEquip_CreateSingleCabinet(() => MFCabinetFactory.CreateMFCabinet1(), "MF Cabinet 1");
+    protected async Task RackEquip_CreateCabinet2() => await RackEquip_CreateSingleCabinet(() => MFCabinetFactory.CreateMFCabinet2(), "MF Cabinet 2");
+    protected async Task RackEquip_CreateCabinet3() => await RackEquip_CreateSingleCabinet(() => MFCabinetFactory.CreateMFCabinet3(), "MF Cabinet 3");
+    protected async Task RackEquip_CreateCabinet4() => await RackEquip_CreateSingleCabinet(() => MFCabinetFactory.CreateMFCabinet4(), "MF Cabinet 4");
+
+    private async Task RackEquip_CreateSingleCabinet(Func<RackCabinetShape> factory, string name)
+    {
+        await RackEquip_ExecuteWithLoading(async () =>
+        {
+            var stage = Canvas3DReference?.Stage;
+            if (stage == null)
+            {
+                RackEquip_SetStatus("Stage not initialized", isError: true);
+                return;
+            }
+
+            var (found, existing) = stage.FindMember<RackCabinetShape>(name.Replace(" ", "_"));
+            if (found && existing != null)
+            {
+                stage.RemoveShape(existing);
+            }
+
+            var cabinet = factory();
+            stage.AddShape(cabinet);
+
+            RackEquip_UpdateStatistics();
+
+            var equipCount = cabinet.GetEquipment().Count;
+            var availRU = cabinet.GetAvailableRU();
+            RackEquip_SetStatus($"Created {name}: {equipCount} devices, {availRU} RU available", isError: false);
+
+            await Task.Delay(50);
+            StateHasChanged();
+        });
+    }
+
+    protected void RackEquip_ClearCabinets()
+    {
+        var stage = Canvas3DReference?.Stage;
+        if (stage == null) return;
+
+        var cabinets = stage.GetMembers<RackCabinetShape>().ToList();
+        foreach (var cabinet in cabinets)
+        {
+            stage.RemoveShape(cabinet);
+        }
+
+        rackKnowledgeModelSummary = "";  // Clear knowledge model summary
+        RackEquip_UpdateStatistics();
+        RackEquip_SetStatus("Cabinets cleared", isError: false);
+        StateHasChanged();
+    }
+
+    private void RackEquip_UpdateStatistics()
+    {
+        var stage = Canvas3DReference?.Stage;
+        if (stage == null)
+        {
+            rackCabinetCount = 0;
+            rackEquipmentCount = 0;
+            rackTotalRUUsed = 0;
+            rackAvailableRU = 0;
+            rackCabinetSummaries.Clear();
+            return;
+        }
+
+        var cabinets = stage.GetMembers<RackCabinetShape>().ToList();
+        rackCabinetCount = cabinets.Count;
+        rackEquipmentCount = 0;
+        rackTotalRUUsed = 0;
+        rackAvailableRU = 0;
+        rackCabinetSummaries.Clear();
+
+        foreach (var cabinet in cabinets)
+        {
+            var equipment = cabinet.GetEquipment();
+            var usedRU = equipment.Sum(e => (int)Math.Ceiling(e.HeightInRU));
+            var availRU = cabinet.GetAvailableRU();
+
+            rackEquipmentCount += equipment.Count;
+            rackTotalRUUsed += usedRU;
+            rackAvailableRU += availRU;
+
+            rackCabinetSummaries.Add(new RackCabinetSummary
+            {
+                Name = cabinet.Key,
+                DeviceCount = equipment.Count,
+                UsedRU = usedRU,
+                TotalRU = RackCabinetShape.TOTAL_RACK_UNITS,
+                HasPDU = cabinet.HasPDU,
+                BorderColor = RackEquip_GetCabinetColor(cabinet.Key)
+            });
+        }
+    }
+
+    private string RackEquip_GetCabinetColor(string cabinetName) => cabinetName switch
+    {
+        "MF_Cabinet_1" => "#8e44ad",
+        "MF_Cabinet_2" => "#9b59b6",
+        "MF_Cabinet_3" => "#a569bd",
+        "MF_Cabinet_4" => "#bb8fce",
+        _ => "#6c757d"
+    };
+
+    private void RackEquip_SetStatus(string message, bool isError)
+    {
+        rackStatusMessage = message;
+        rackStatusIsError = isError;
+
+        if (isError)
+        {
+            FoundryService.Toast().Error(message);
+        }
+        else
+        {
+            FoundryService.Toast().Success(message);
+        }
+    }
+
+    private async Task RackEquip_ExecuteWithLoading(Func<Task> action)
+    {
+        try
+        {
+            rackIsLoading = true;
+            StateHasChanged();
+            await action();
+        }
+        catch (Exception ex)
+        {
+            RackEquip_SetStatus($"Error: {ex.Message}", isError: true);
+        }
+        finally
+        {
+            rackIsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected class RackCabinetSummary
+    {
+        public string Name { get; set; } = "";
+        public int DeviceCount { get; set; }
+        public int UsedRU { get; set; }
+        public int TotalRU { get; set; }
+        public bool HasPDU { get; set; }
+        public string BorderColor { get; set; } = "";
     }
 }
