@@ -48,29 +48,23 @@ public class RackCabinetConcept : PartComponent
             "TotalHeight|in: TotalRackUnits@",   // Auto-converts 40 RU to 70 inches
             "RailThickness|in: 0.5",
             "RailDepth|in: 0.5",
-            "EquipmentCount: 0",
-            "UsedRU|RU: 0",
-            "AvailableRU|RU: TotalRackUnits@ - UsedRU@"
+            
+            // Lazy formulas - automatically recalculate when equipment changes
+            "equipment: SUBCOMPONENTS()",
+            "equipmentCount: COUNT(equipment@)",
+            "heights: COLLECT(equipment@, 'HeightRU')",
+            "usedRU|RU: SUM(heights@)",
+            "availableRU|RU: TotalRackUnits@ - usedRU@"
         ]);
     }
     
     /// <summary>
-    /// Add equipment to the cabinet
+    /// Add equipment to the cabinet - formulas will automatically recalculate
     /// </summary>
     public void AddEquipment(RackEquipmentConcept equipment)
     {
-        // Add as subcomponent
+        // Just add as subcomponent - formulas handle the rest
         AddSubComponent(equipment);
-        
-        // Update utilization calculations
-        var currentCount = FindParameter("EquipmentCount")?.GetValue().AsNumber() ?? 0;
-        var currentUsed = FindParameter("UsedRU")?.GetValue().AsNumber() ?? 0;
-        var equipmentHeight = equipment.FindParameter("HeightRU")?.GetValue().AsNumber() ?? 0;
-        
-        Calculations([
-            $"EquipmentCount: {currentCount + 1}",
-            $"UsedRU|RU: {currentUsed + equipmentHeight}"
-        ]);
     }
 }
 
@@ -279,12 +273,17 @@ public class DataCenterRackModel : PartComponent
         Calculations([
             "CabinetSpacing|in: 25",
             "TotalCabinets: 4",
-            "TotalEquipment: 0",
-            "TotalRUUsed|RU: 0",
-            "TotalRUAvailable|RU: 0"
+            
+            // Lazy formulas - automatically aggregate from all cabinet subcomponents
+            "cabinets: SUBCOMPONENTS('RackCabinetConcept')",
+            "equipmentCounts: COLLECT(cabinets@, 'equipmentCount')",
+            "TotalEquipment: SUM(equipmentCounts@)",
+            "usedRUs: COLLECT(cabinets@, 'usedRU')",
+            "TotalRUUsed|RU: SUM(usedRUs@)",
+            "TotalRUAvailable|RU: (TotalCabinets@ * 40) - TotalRUUsed@"
         ]);
         
-        // Create all 4 cabinets
+        // Create all 4 cabinets - formulas will automatically aggregate
         var cabinet1 = new MFCabinet1Concept("MF_Cabinet_1");
         AddSubComponent(cabinet1);
         
@@ -296,17 +295,5 @@ public class DataCenterRackModel : PartComponent
         
         var cabinet4 = new MFCabinet4Concept("MF_Cabinet_4");
         AddSubComponent(cabinet4);
-        
-        // Calculate totals from all cabinets
-        var cabinets = ModelComponents<RackCabinetConcept>();
-        var totalEquip = cabinets.Sum(c => c.FindParameter("EquipmentCount")?.GetValue().AsNumber() ?? 0);
-        var totalRU = cabinets.Sum(c => c.FindParameter("UsedRU")?.GetValue().AsNumber() ?? 0);
-        var totalAvail = (4 * 40) - totalRU;
-        
-        Calculations([
-            $"TotalEquipment: {totalEquip}",
-            $"TotalRUUsed|RU: {totalRU}",
-            $"TotalRUAvailable|RU: {totalAvail}"
-        ]);
     }
 }

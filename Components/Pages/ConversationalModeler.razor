@@ -1,0 +1,480 @@
+@page "/conversational-modeler"
+@namespace Three2025.Components.Pages
+@using Radzen
+@using Radzen.Blazor
+@using FoundryMentorModeler.Model
+@using Three2025.Components.Shared
+@rendermode InteractiveServer
+
+<PageTitle>Conversational Modeler</PageTitle>
+
+<div class="conversational-modeler-page">
+    <div class="page-header">
+        <h2>🗣️ Conversational Modeler</h2>
+        <p class="lead">Build knowledge models through natural language conversation</p>
+    </div>
+
+    <div class="modeler-container">
+        <!-- Chat Panel (Left) -->
+        <div class="chat-panel" style="width: @ChatPanelWidth%">
+            <div class="chat-header">
+                <h3>💬 Conversation</h3>
+                <select class="test-prompt-dropdown" @onchange="OnTestPromptSelected">
+                    <option value="">-- Select Test Prompt --</option>
+                    <optgroup label="Structural">
+                        <option value="beam-simple">Simple Beam Deflection</option>
+                        <option value="beam-cantilever">Cantilever Beam</option>
+                    </optgroup>
+                    <optgroup label="Thermal">
+                        <option value="heat-wall">Heat Transfer Through Wall</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="conversation-history">
+                @foreach (var msg in ChatMessages)
+                {
+                    <div class="message @msg.Role">
+                        <div class="message-content">@msg.Content</div>
+                        <div class="timestamp">@msg.Timestamp.ToString("HH:mm:ss")</div>
+                    </div>
+                }
+            </div>
+
+            <div class="input-panel">
+                <div class="input-controls">
+                    <button class="voice-btn" @onclick="StartVoiceInput" title="Voice input">
+                        🎤
+                    </button>
+                    <input type="text" 
+                           class="message-input" 
+                           placeholder="Describe your engineering problem..."
+                           @bind="UserInput"
+                           @bind:event="oninput"
+                           @onkeydown="OnInputKeyDown" />
+                    <button class="send-btn" @onclick="SendMessage" disabled="@string.IsNullOrWhiteSpace(UserInput)">
+                        📤
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Splitter -->
+        <div class="splitter" 
+             @onmousedown="StartResize"
+             @ondblclick="ResetSplit">
+        </div>
+
+        <!-- Model Panel (Right) -->
+        <div class="model-panel" style="width: @ModelPanelWidth%">
+            <div class="panel-header">
+                <h3>🏗️ Model</h3>
+                <button class="clear-btn" @onclick="ClearModel">Clear</button>
+            </div>
+
+            <div class="model-tree-container">
+                <h4>Components</h4>
+                @if (CurrentModel == null)
+                {
+                    <div class="empty-state">
+                        <p>No model created yet.</p>
+                        <p class="hint">Start a conversation to build a model!</p>
+                    </div>
+                }
+                else
+                {
+                    <SuccessTreeView RootItems="@CurrentModel.GetTreeChildren()" OnSelect="@HandleTreeSelection" />
+                }
+            </div>
+
+            <div class="parameter-panel">
+                <h4>Parameters</h4>
+                @if (SelectedComponent != null)
+                {
+                    <div class="parameter-grid">
+                        <div class="grid-header">Name</div>
+                        <div class="grid-header">Value</div>
+                        <div class="grid-header">Formula</div>
+                        
+                        @foreach (var param in GetParameters(SelectedComponent))
+                        {
+                            <div class="param-name">@param.Name</div>
+                            <div class="param-value @(param.IsCalculated ? "calculated" : "")">
+                                @param.DisplayValue
+                            </div>
+                            <div class="param-formula">@param.Formula</div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="hint">Select a component to view parameters</p>
+                }
+            </div>
+
+            <div class="api-log-panel">
+                <div class="log-header">
+                    <h4>API Calls</h4>
+                    <button class="clear-log-btn" @onclick="ClearLog">Clear</button>
+                </div>
+                <div class="log-content">
+                    @foreach (var call in ApiCallLog)
+                    {
+                        <div class="log-entry">@call.FormatLog()</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .conversational-modeler-page {
+        padding: 20px;
+        height: calc(100vh - 60px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .page-header {
+        margin-bottom: 20px;
+    }
+
+    .page-header h2 {
+        margin: 0 0 8px 0;
+        font-size: 2rem;
+    }
+
+    .page-header .lead {
+        margin: 0;
+        color: #666;
+        font-size: 1.1rem;
+    }
+
+    .modeler-container {
+        display: flex;
+        flex: 1;
+        gap: 0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    .chat-panel {
+        display: flex;
+        flex-direction: column;
+        background: #f9f9f9;
+        border-right: 1px solid #ddd;
+        min-width: 300px;
+    }
+
+    .chat-header {
+        padding: 16px;
+        border-bottom: 1px solid #ddd;
+        background: white;
+    }
+
+    .chat-header h3 {
+        margin: 0 0 12px 0;
+        font-size: 1.2rem;
+    }
+
+    .test-prompt-dropdown {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .conversation-history {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        min-height: 0;
+    }
+
+    .message {
+        margin-bottom: 12px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        max-width: 85%;
+        animation: slideIn 0.2s ease-out;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .message.user {
+        background: #0078d4;
+        color: white;
+        margin-left: auto;
+    }
+
+    .message.assistant {
+        background: #e8e8e8;
+        color: black;
+    }
+
+    .message-content {
+        margin-bottom: 4px;
+        word-wrap: break-word;
+    }
+
+    .timestamp {
+        font-size: 0.7rem;
+        opacity: 0.7;
+    }
+
+    .input-panel {
+        padding: 16px;
+        border-top: 1px solid #ddd;
+        background: white;
+    }
+
+    .input-controls {
+        display: flex;
+        gap: 8px;
+    }
+
+    .voice-btn, .send-btn {
+        padding: 10px 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: background 0.2s;
+    }
+
+    .voice-btn:hover, .send-btn:hover {
+        background: #f0f0f0;
+    }
+
+    .send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .message-input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+
+    .splitter {
+        width: 4px;
+        background: #ccc;
+        cursor: col-resize;
+        transition: background 0.2s;
+        flex-shrink: 0;
+    }
+
+    .splitter:hover {
+        background: #0078d4;
+    }
+
+    .model-panel {
+        display: flex;
+        flex-direction: column;
+        background: white;
+        min-width: 300px;
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .panel-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+
+    .clear-btn, .clear-log-btn {
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+
+    .model-tree-container {
+        padding: 16px;
+        border-bottom: 1px solid #ddd;
+        max-height: 30%;
+        overflow-y: auto;
+    }
+
+    .model-tree-container h4 {
+        margin: 0 0 12px 0;
+        font-size: 1rem;
+        color: #666;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 20px;
+        color: #999;
+    }
+
+    .empty-state .hint {
+        font-size: 0.9rem;
+        margin-top: 8px;
+    }
+
+    .tree-node {
+        padding: 8px 12px;
+        margin: 4px 0;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: 'Cascadia Code', monospace;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.15s;
+    }
+
+    .tree-node:hover {
+        background: #f0f0f0;
+    }
+
+    .tree-node.selected {
+        background: #e3f2fd;
+        border-left: 3px solid #0078d4;
+    }
+
+    .tree-node.sub-node {
+        margin-left: 20px;
+    }
+
+    .node-icon {
+        color: #666;
+    }
+
+    .node-name {
+        font-weight: 500;
+    }
+
+    .node-type {
+        color: #666;
+        font-size: 0.85rem;
+    }
+
+    .param-badge {
+        margin-left: auto;
+        padding: 2px 8px;
+        background: #e0e0e0;
+        border-radius: 12px;
+        font-size: 0.75rem;
+    }
+
+    .parameter-panel {
+        padding: 16px;
+        border-bottom: 1px solid #ddd;
+        max-height: 40%;
+        overflow-y: auto;
+    }
+
+    .parameter-panel h4 {
+        margin: 0 0 12px 0;
+        font-size: 1rem;
+        color: #666;
+    }
+
+    .parameter-grid {
+        display: grid;
+        grid-template-columns: 120px 140px 1fr;
+        gap: 8px;
+        font-size: 0.85rem;
+    }
+
+    .grid-header {
+        font-weight: 600;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #ddd;
+        color: #666;
+    }
+
+    .param-name {
+        font-weight: 500;
+        font-family: 'Cascadia Code', monospace;
+    }
+
+    .param-value {
+        color: #333;
+    }
+
+    .param-value.calculated {
+        color: #0078d4;
+        font-weight: 500;
+    }
+
+    .param-formula {
+        font-family: 'Cascadia Code', monospace;
+        color: #666;
+        font-size: 0.8rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .api-log-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .log-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .log-header h4 {
+        margin: 0;
+        font-size: 1rem;
+        color: #666;
+    }
+
+    .log-content {
+        flex: 1;
+        padding: 12px;
+        overflow-y: auto;
+        background: #f9f9f9;
+        font-family: 'Cascadia Code', monospace;
+        font-size: 0.8rem;
+    }
+
+    .log-entry {
+        padding: 4px 0;
+        color: #333;
+        line-height: 1.4;
+    }
+
+    .hint {
+        color: #999;
+        font-size: 0.9rem;
+        text-align: center;
+        padding: 20px;
+    }
+</style>

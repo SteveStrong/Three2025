@@ -235,7 +235,34 @@
                 </div>
             </RadzenTabsItem>
 
-            <!-- Tab 6: AI & Tools -->
+            <!-- Tab 6: Conversational -->
+            <RadzenTabsItem Text="🗣️ Conversational">
+                <div class="tab-content-wrapper">
+                    <div class="section-header">
+                        <h3>🗣️ Conversational Model Construction</h3>
+                        <p>Build knowledge models through natural language conversation. The chatbot generates formulas and the model evaluates them.</p>
+                    </div>
+                    <div class="card-grid">
+                        <div class="demo-card" @onclick="@(() => Nav("/conversational-modeler"))">
+                            <div class="card-icon">🗣️</div>
+                            <div class="card-title">Conversational Modeler</div>
+                            <div class="card-description">Split-panel interface: chat on left builds models on right. Test prompt library for beam deflection, thermal analysis, and more. Real-time API call logging and parameter display.</div>
+                            <div class="card-route">/conversational-modeler</div>
+                            <div class="card-status badge-testing">🟡 Phase 1</div>
+                        </div>
+                        
+                        <div class="demo-card" @onclick="@(() => Nav("/mentor2d-modeler"))">
+                            <div class="card-icon">🎨</div>
+                            <div class="card-title">Mentor 2D Visual Modeler</div>
+                            <div class="card-description">Visual knowledge model construction playground. Click toolbar buttons to create shapes (Concept, Property, Role, etc.), drag to attach, build models interactively. Real-time model tree and activity logging.</div>
+                            <div class="card-route">/mentor2d-modeler</div>
+                            <div class="card-status badge-testing">🟡 Phase 1</div>
+                        </div>
+                    </div>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- Tab 7: AI & Tools -->
             <RadzenTabsItem Text="🤖 AI & Tools">
                 <div class="tab-content-wrapper">
                     <div class="card-grid">
