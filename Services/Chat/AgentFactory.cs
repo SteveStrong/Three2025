@@ -32,6 +32,6 @@ public class AgentFactory : IAgentFactory
     // public ISpecializedAgent CreateClockAgent(IEnumerable<AIFunction> tools)
     //     => new ClockAgent(_chatService, tools, _loggerFactory.CreateLogger<ClockAgent>());
     
-    // public ISpecializedAgent CreateGeneralAgent(IEnumerable<AIFunction> tools)
-    //     => new GeneralAgent(_chatService, tools, _loggerFactory.CreateLogger<GeneralAgent>());
+    public ISpecializedAgent CreateGeneralAgent(IEnumerable<AIFunction> tools)
+        => new GeneralAgent(_chatService, tools, _loggerFactory.CreateLogger<GeneralAgent>());
 }

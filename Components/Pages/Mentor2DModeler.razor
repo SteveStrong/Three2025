@@ -1,181 +1,248 @@
 @page "/mentor2d-modeler"
 @namespace Three2025.Components.Pages
 @using FoundryMentorModeler.Model
+@using FoundryMentorModeler.Shared
 @using FoundryWorldsAndDrawings.Shape
 @using FoundryWorldsAndDrawings.Solutions
+@using FoundryWorldsAndDrawings.Shared
 @using Three2025.Components.Shared
-@inject IMentorServices MentorServices
-@inject IWorkspace Workspace
-@rendermode InteractiveServer
+@using Three2025.Components.Shared.Testing
+@using Three2025.Components.Shared.Chat
+@using Three2025.Apprentice
+@using Three2025.Models.Chat
+@using Three2025.Services.Chat
+@using Microsoft.Extensions.AI
+@using AIChatMessage = Microsoft.Extensions.AI.ChatMessage
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 
 <PageTitle>Mentor 2D Visual Modeler</PageTitle>
 
-<div class="mentor2d-page">
-    <!-- Toolbar -->
-    <div class="toolbar">
-        <div class="toolbar-section">
-            <span class="section-label">Knowledge Types</span>
-            <button class="tool-btn concept" @onclick="() => CreateKnowledgeShape(KnowledgeType.Concept)" title="Concept - Entities and Classes">
-                📘 Concept
-            </button>
-            <button class="tool-btn property" @onclick="() => CreateKnowledgeShape(KnowledgeType.Property)" title="Property - Attributes and Fields">
-                📋 Property
-            </button>
-            <button class="tool-btn role" @onclick="() => CreateKnowledgeShape(KnowledgeType.Role)" title="Role - Hierarchical Behaviors">
-                👤 Role
-            </button>
-            <button class="tool-btn context" @onclick="() => CreateKnowledgeShape(KnowledgeType.Context)" title="Context - Question Groups">
-                📦 Context
-            </button>
-            <button class="tool-btn component" @onclick="() => CreateKnowledgeShape(KnowledgeType.Component)" title="Component - Physical Parts">
-                🔧 Component
-            </button>
-            <button class="tool-btn formula" @onclick="() => CreateKnowledgeShape(KnowledgeType.Formula)" title="Formula - Calculations">
-                ƒ Formula
-            </button>
-            <button class="tool-btn feature" @onclick="() => CreateKnowledgeShape(KnowledgeType.Feature)" title="Feature - Typed Properties">
-                ⚙️ Feature
-            </button>
-            <button class="tool-btn relation" @onclick="() => CreateKnowledgeShape(KnowledgeType.Relation)" title="Relation - Links Between Concepts">
-                🔗 Relation
-            </button>
-            <button class="tool-btn variable" @onclick="() => CreateKnowledgeShape(KnowledgeType.Variable)" title="Variable - Formula Variables">
-                🔢 Variable
-            </button>
-            <button class="tool-btn validvalues" @onclick="() => CreateKnowledgeShape(KnowledgeType.ValidValues)" title="Valid Values - Enumeration">
-                ✓ ValidValues
-            </button>
-        </div>
-
-        <div class="toolbar-section">
-            <span class="section-label">Actions</span>
-            <button class="action-btn" @onclick="ClearCanvas" title="Clear Canvas">
-                🗑️ Clear
-            </button>
-            <button class="action-btn" @onclick="SaveModel" title="Save Model">
-                💾 Save
-            </button>
-            <button class="action-btn" @onclick="LoadModel" title="Load Model">
-                📂 Load
-            </button>
-        </div>
-
-        <div class="toolbar-section">
-            <span class="section-label">Examples</span>
-            <button class="example-btn" @onclick="CreateBeamExample" title="Create Simple Beam Model">
-                🔨 Beam
-            </button>
-            <button class="example-btn" @onclick="CreateStrategicPlanExample" title="Create Strategic Plan">
-                📊 Strategic Plan
-            </button>
-        </div>
-    </div>
-
-    <!-- Main Content Area -->
-    <div class="content-container">
-        <!-- Canvas Area (Left Side - 70%) -->
-        <div class="canvas-panel" style="width: 70%">
-            <div class="canvas-header">
-                <h3>🎨 2D Canvas</h3>
-                <div class="canvas-controls">
-                    <span class="shape-count">Shapes: @ShapeCount</span>
-                    <span class="zoom-level">Zoom: 100%</span>
-                </div>
-            </div>
-            <div class="canvas-wrapper" @ref="canvasContainer">
-                <!-- Canvas will be rendered here by the IDrawing system -->
-                <div class="canvas-placeholder">
-                    @if (ShapeCount == 0)
-                    {
-                        <div class="empty-canvas-message">
-                            <h4>👆 Click a button above to create your first shape!</h4>
-                            <p>Or try an example to see the system in action.</p>
+<div style="height: calc(100vh - 2rem); overflow: hidden;">
+    <RadzenSplitter Orientation="Orientation.Horizontal" style="height: 100%;">
+        <!-- Left Panel: Chat Window -->
+        <RadzenSplitterPane Size="25%" Min="20%" Max="40%">
+            <div style="display: flex; flex-direction: column; height: 100%; background: white;">
+                <ChatPanel Messages="chatMessages" 
+                           OnSendMessage="SendChatMessage"
+                           @bind-InputValue="@chatInputValue"
+                           InputPlaceholder="Ask me to create shapes, models, or diagrams..."
+                           CurrentAgent="@currentAgent"
+                           IsProcessing="isProcessingChat">
+                    <HeaderContent>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem;">
+                            <div style="padding: 0.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 6px; text-align: center; font-weight: 600; font-size: 0.85rem;">
+                                🎨 Mentor 2D AI Assistant
+                            </div>
+                            <div style="display: flex; gap: 0.25rem; flex-wrap: wrap; font-size: 0.75rem;">
+                                <span style="padding: 0.25rem 0.5rem; background: #e3f2fd; border-radius: 4px; color: #1976d2;">
+                                    📘 Concepts
+                                </span>
+                                <span style="padding: 0.25rem 0.5rem; background: #fff3e0; border-radius: 4px; color: #f57c00;">
+                                    📋 Properties
+                                </span>
+                                <span style="padding: 0.25rem 0.5rem; background: #f3e5f5; border-radius: 4px; color: #7b1fa2;">
+                                    👤 Roles
+                                </span>
+                            </div>
+                            
+                            <!-- Test Sequence Selector -->
+                            <TestSequenceSelector OnSequenceSelected="HandleTestSequenceSelected"
+                                                 IsDisabled="isProcessingChat"
+                                                 ShowDescription="true" />
                         </div>
-                    }
+                    </HeaderContent>
+                    <FooterActions>
+                        <button @onclick='() => QuickTest("create a concept shape")' style="padding: 0.25rem 0.5rem; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 500;">
+                            📘 Test Concept
+                        </button>
+                        <button @onclick='() => QuickTest("create a property shape")' style="padding: 0.25rem 0.5rem; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 500;">
+                            📋 Test Property
+                        </button>
+                        <button @onclick='() => QuickTest("create a concept called Table with properties Width and Height")' style="padding: 0.25rem 0.5rem; background: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 500;">
+                            🏗️ Test Model
+                        </button>
+                        <button @onclick='() => QuickTest("list all tools you have access to")' style="padding: 0.25rem 0.5rem; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 500;">
+                            🔍 List Tools
+                        </button>
+                        <button @onclick="CreateBeamExample" style="padding: 0.25rem 0.5rem; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                            🔨 Quick Beam
+                        </button>
+                        <button @onclick="CreateStrategicPlanExample" style="padding: 0.25rem 0.5rem; background: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                            📊 Strategic Plan
+                        </button>
+                        <button @onclick="ClearCanvas" style="padding: 0.25rem 0.5rem; background: #f8d7da; border: 1px solid #dc3545; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                            🗑️ Clear
+                        </button>
+                    </FooterActions>
+                </ChatPanel>
+            </div>
+        </RadzenSplitterPane>
+
+        <!-- Center Panel: Canvas with Toolbar -->
+        <RadzenSplitterPane Size="50%" Min="30%" Max="60%">
+            <div style="height: 100%; display: flex; flex-direction: column; background: #f5f5f5;">
+                <!-- Toolbar -->
+                <div style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; border-bottom: 2px solid #5a67d8;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <button @onclick="CreateConcept" 
+                                style="padding: 0.35rem 0.75rem; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.35rem;"
+                                title="Create Concept">
+                            📘 <span>Concept</span>
+                        </button>
+                        <button @onclick="CreateProperty" 
+                                style="padding: 0.35rem 0.75rem; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.35rem;"
+                                title="Create Property">
+                            📋 <span>Property</span>
+                        </button>
+                        <button @onclick="CreateRole" 
+                                style="padding: 0.35rem 0.75rem; background: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.35rem;"
+                                title="Create Role">
+                            👤 <span>Role</span>
+                        </button>
+                        <button @onclick="CreateContext" 
+                                style="padding: 0.35rem 0.75rem; background: #95a5a6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.35rem;"
+                                title="Create Context">
+                            📦 <span>Context</span>
+                        </button>
+                        <button @onclick="CreateComponent" 
+                                style="padding: 0.35rem 0.75rem; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.35rem;"
+                                title="Create Component">
+                            🔧 <span>Component</span>
+                        </button>
+                        <button @onclick="CreateFormula" 
+                                style="padding: 0.35rem 0.75rem; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.35rem;"
+                                title="Create Formula">
+                            ƒ <span>Formula</span>
+                        </button>
+                        <button @onclick="CreateFeature" 
+                                style="padding: 0.35rem 0.75rem; background: #34495e; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.35rem;"
+                                title="Create Feature">
+                            ⚙️ <span>Feature</span>
+                        </button>
+                        <button @onclick="CreateRelation" 
+                                style="padding: 0.35rem 0.75rem; background: #16a085; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.35rem;"
+                                title="Create Relation">
+                            🔗 <span>Relation</span>
+                        </button>
+                        <button @onclick="CreateVariable" 
+                                style="padding: 0.35rem 0.75rem; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.35rem;"
+                                title="Create Variable">
+                            🔢 <span>Variable</span>
+                        </button>
+                        <button @onclick="CreateValidValues" 
+                                style="padding: 0.35rem 0.75rem; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.35rem;"
+                                title="Create Valid Values">
+                            ✓ <span>ValidValues</span>
+                        </button>
+                    </div>
+                    <div style="margin-left: auto; display: flex; gap: 0.5rem;">
+                        <button @onclick="AddTestCircle" 
+                                style="padding: 0.35rem 0.6rem; background: rgba(67,233,123,0.9); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;"
+                                title="Add a random test circle to verify canvas rendering">
+                            ⭕ Test Circle
+                        </button>
+                        <button @onclick="ClearCanvas" 
+                                style="padding: 0.35rem 0.6rem; background: rgba(255,152,0,0.9); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;"
+                                title="Clear all shapes from canvas">
+                            🗑️ Clear
+                        </button>
+                        <button @onclick="AddTestConcept" style="padding: 0.35rem 0.6rem; background: rgba(76,175,80,0.9); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;" title="Quick test - adds a random concept shape">
+                            🧪 Test
+                        </button>
+                        <button @onclick="SaveModel" style="padding: 0.35rem 0.6rem; background: rgba(255,255,255,0.9); color: #5a67d8; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">
+                            💾 Save
+                        </button>
+                        <button @onclick="LoadModel" style="padding: 0.35rem 0.6rem; background: rgba(255,255,255,0.9); color: #5a67d8; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">
+                            📂 Load
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Canvas -->
+                <div style="flex: 1; position: relative; overflow: hidden;">
+                    <Canvas2DComponent SceneName="Mentor2DModeler" @ref="Canvas2DReference" />
                 </div>
             </div>
-        </div>
+        </RadzenSplitterPane>
 
-        <!-- Right Panel - Model Tree & Status (30%) -->
-        <div class="info-panel" style="width: 30%">
-            <!-- Model Tree -->
-            <div class="tree-section">
-                <div class="section-header">
-                    <h4>🌳 Model Structure</h4>
-                    <button class="compact-btn" @onclick="RefreshTree" title="Refresh Tree">
-                        🔄
-                    </button>
+        <!-- Right Panel: Model & Shape Trees -->
+        <RadzenSplitterPane Size="25%" Min="20%" Max="40%">
+            <div style="display: flex; flex-direction: column; height: 100%; background: white;">
+                <div style="padding: 0.75rem; background: #2c3e50; color: white;">
+                    <h3 style="margin: 0; font-size: 1rem;">🌳 Model Explorer</h3>
                 </div>
-                <div class="tree-content">
-                    @if (ModelTreeItems.Count == 0)
-                    {
-                        <p class="hint">No model yet - create shapes to build model</p>
-                    }
-                    else
-                    {
-                        <div class="tree-list">
-                            @foreach (var item in ModelTreeItems)
-                            {
-                                <div class="tree-item" @onclick="() => SelectShape(item)">
-                                    <span class="tree-icon">@GetKnowledgeTypeIcon(item.Type)</span>
-                                    <span class="tree-name">@item.Name</span>
-                                    @if (item.Children.Count > 0)
-                                    {
-                                        <span class="tree-count">(@item.Children.Count)</span>
-                                    }
-                                </div>
-                                @if (item.Children.Count > 0)
-                                {
-                                    <div class="tree-children">
-                                        @foreach (var child in item.Children)
-                                        {
-                                            <div class="tree-item child" @onclick="() => SelectShape(child)">
-                                                <span class="tree-icon">@GetKnowledgeTypeIcon(child.Type)</span>
-                                                <span class="tree-name">@child.Name</span>
-                                            </div>
-                                        }
-                                    </div>
-                                }
-                            }
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Status Log -->
-            <div class="log-section">
-                <div class="section-header">
-                    <h4>📝 Activity Log</h4>
-                    <button class="compact-btn" @onclick="ClearLog" title="Clear Log">
-                        ✖️
-                    </button>
-                </div>
-                <div class="log-content">
-                    @foreach (var entry in ActivityLog.TakeLast(20))
-                    {
-                        <div class="log-entry @entry.Level">
-                            <span class="log-time">@entry.Timestamp.ToString("HH:mm:ss")</span>
-                            <span class="log-message">@entry.Message</span>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Instructions -->
-            <div class="help-section">
-                <h4>💡 Tips</h4>
-                <ul class="help-list">
-                    <li>Click toolbar buttons to create shapes</li>
-                    <li>Shapes appear at auto-positioned locations</li>
-                    <li>Drag shapes to reposition them</li>
-                    <li>Drag shape onto another to attach (if valid)</li>
-                    <li>Green highlight = valid attachment</li>
-                    <li>Red highlight = invalid attachment</li>
-                    <li>Delete key removes selected shapes</li>
+                <ul class="nav nav-tabs" role="tablist" style="flex-shrink: 0; margin: 0; border-bottom: 2px solid #dee2e6;">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(_activeTreeTab == "model" ? "active" : "")" 
+                                @onclick="@(() => _activeTreeTab = "model")" 
+                                type="button" role="tab"
+                                style="font-size: 0.85rem;">
+                            📊 Model
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(_activeTreeTab == "shape" ? "active" : "")" 
+                                @onclick="@(() => _activeTreeTab = "shape")" 
+                                type="button" role="tab"
+                                style="font-size: 0.85rem;">
+                            🔷 Shapes
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(_activeTreeTab == "activity" ? "active" : "")" 
+                                @onclick="@(() => _activeTreeTab = "activity")" 
+                                type="button" role="tab"
+                                style="font-size: 0.85rem;">
+                            📊 Activity
+                        </button>
+                    </li>
                 </ul>
+                <div style="flex: 1; overflow: auto; padding: 1rem; background: white;">
+                    @if (_activeTreeTab == "model")
+                    {
+                        <MentorTreeView/>
+                    }
+                    else if (_activeTreeTab == "shape")
+                    {
+                        <ShapeTreeView/>
+                    }
+                    else if (_activeTreeTab == "activity")
+                    {
+                        <div @ref="logContainer" style="background: #1e1e1e; color: #d4d4d4; padding: 0.75rem; height: 100%; overflow-y: auto; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.8rem; margin: -1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #3e3e3e;">
+                                <button @onclick="ToggleAutoScroll" style="background: @(autoScrollLogs ? "#264f78" : "#3e3e3e"); color: #d4d4d4; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">
+                                    @(autoScrollLogs ? "🔄 Auto" : "⏸️ Manual")
+                                </button>
+                                <button @onclick="ClearActivityLogs" style="background: #3e3e3e; color: #d4d4d4; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">
+                                    Clear
+                                </button>
+                            </div>
+                            
+                            @foreach (var log in ActivityLog)
+                            {
+                                <div style="margin-bottom: 0.5rem; padding: 0.4rem; background: @GetLogBackgroundColor(log.Level); border-left: 2px solid @GetLogBorderColor(log.Level); border-radius: 3px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                                        <span style="color: @GetLogColor(log.Level); font-weight: 600; font-size: 0.75rem;">@GetLogIcon(log.Level) @log.Level</span>
+                                        <span style="color: #808080; font-size: 0.7rem;">@log.Timestamp.ToString("HH:mm:ss.fff")</span>
+                                    </div>
+                                    <div style="color: #d4d4d4; word-wrap: break-word; font-size: 0.75rem;">@log.Message</div>
+                                </div>
+                            }
+                            
+                            @if (!ActivityLog.Any())
+                            {
+                                <div style="color: #808080; text-align: center; margin-top: 2rem; font-style: italic; font-size: 0.8rem;">
+                                    No activity yet. Use toolbar buttons or chat to see logs.
+                                </div>
+                            }
+                            
+                            <div @ref="logScrollAnchor"></div>
+                        </div>
+                    }
+                </div>
             </div>
-        </div>
-    </div>
+        </RadzenSplitterPane>
+    </RadzenSplitter>
 </div>
 
 <style>
@@ -517,262 +584,3 @@
         padding: 20px;
     }
 </style>
-
-@code {
-    private ElementReference canvasContainer;
-    private IMentorPlayground? Playground;
-    private IDrawing? Drawing;
-    private int nextX = 100;
-    private int nextY = 100;
-
-    private int ShapeCount => Drawing?.FirstPage()?.AllShapes2D().OfType<MentorShape2D>().Count() ?? 0;
-    private List<TreeItemData> ModelTreeItems = new();
-    private List<LogEntry> ActivityLog = new();
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        
-        Drawing = Workspace.GetDrawing();
-        Playground = new MentorPlayground(Workspace, MentorServices.PubSub, MentorServices);
-        
-        LogInfo("Mentor 2D Visual Modeler initialized");
-        LogInfo("Workspace ready");
-    }
-
-    private void CreateKnowledgeShape(KnowledgeType type)
-    {
-        if (Playground == null)
-        {
-            LogError("Playground not initialized");
-            return;
-        }
-
-        try
-        {
-            MentorShape2D? shape = type switch
-            {
-                KnowledgeType.Concept => Playground.CreateShape<KnConcept>(),
-                KnowledgeType.Property => Playground.CreateShape<KnProperty>(),
-                KnowledgeType.Role => Playground.CreateShape<KnRole>(),
-                KnowledgeType.Context => Playground.CreateShape<KnContext>(),
-                KnowledgeType.Component => Playground.CreateShape<KnComponent>(),
-                KnowledgeType.Formula => Playground.CreateShape<KnFormula>(),
-                KnowledgeType.Feature => Playground.CreateShape<KnFeature>(),
-                KnowledgeType.Relation => Playground.CreateShape<KnRelation>(),
-                KnowledgeType.Variable => Playground.CreateShape<KnVariable>(),
-                KnowledgeType.ValidValues => Playground.CreateShape<KnValidValues>(),
-                _ => null
-            };
-
-            if (shape != null)
-            {
-                // Position the shape
-                shape.MoveTo(nextX, nextY);
-                
-                // Add to drawing
-                Drawing?.FirstPage()?.Add(shape);
-                
-                // Update position for next shape
-                nextX += 150;
-                if (nextX > 800)
-                {
-                    nextX = 100;
-                    nextY += 150;
-                }
-                if (nextY > 600)
-                {
-                    nextY = 100;
-                }
-
-                LogSuccess($"Created {type}: {shape.Text}");
-                RefreshTree();
-                StateHasChanged();
-            }
-            else
-            {
-                LogError($"Failed to create {type}");
-            }
-        }
-        catch (Exception ex)
-        {
-            LogError($"Error creating {type}: {ex.Message}");
-        }
-    }
-
-    private void CreateBeamExample()
-    {
-        LogInfo("Creating Beam Example...");
-        
-        // Create Beam Concept
-        var beam = Playground?.CreateShape<KnConcept>("Beam");
-        if (beam != null)
-        {
-            beam.MoveTo(200, 200);
-            Drawing?.FirstPage()?.Add(beam);
-            LogSuccess("Created Beam Concept");
-
-            // Create Properties
-            var length = Playground?.CreateShape<KnProperty>("Length");
-            if (length != null)
-            {
-                Playground?.Attach(length, beam);
-                LogSuccess("Added Length Property");
-            }
-
-            var width = Playground?.CreateShape<KnProperty>("Width");
-            if (width != null)
-            {
-                Playground?.Attach(width, beam);
-                LogSuccess("Added Width Property");
-            }
-
-            var height = Playground?.CreateShape<KnProperty>("Height");
-            if (height != null)
-            {
-                Playground?.Attach(height, beam);
-                LogSuccess("Added Height Property");
-            }
-
-            LogSuccess("Beam example created!");
-            RefreshTree();
-            StateHasChanged();
-        }
-    }
-
-    private void CreateStrategicPlanExample()
-    {
-        LogInfo("Creating Strategic Plan Example...");
-        LogWarning("Strategic Plan example not yet implemented - complex example coming soon!");
-    }
-
-    private void ClearCanvas()
-    {
-        Drawing?.ClearAll();
-        nextX = 100;
-        nextY = 100;
-        ModelTreeItems.Clear();
-        LogWarning("Canvas cleared");
-        StateHasChanged();
-    }
-
-    private void SaveModel()
-    {
-        MentorServices?.MentorModel?.SaveModel<FoundryMentorModeler.Persistence.KnowledgePersist>();
-        LogSuccess("Model saved");
-    }
-
-    private void LoadModel()
-    {
-        MentorServices?.MentorModel?.RestoreModel<FoundryMentorModeler.Persistence.KnowledgePersist>();
-        RefreshTree();
-        LogSuccess("Model loaded");
-        StateHasChanged();
-    }
-
-    private void RefreshTree()
-    {
-        ModelTreeItems.Clear();
-        
-        // Get all shapes from current page
-        var page = Drawing?.FirstPage();
-        if (page == null) return;
-        
-        var shapes = page.AllShapes2D().OfType<MentorShape2D>() ?? Enumerable.Empty<MentorShape2D>();
-        
-        foreach (var shape in shapes.Where(s => s.ParentShape == null))
-        {
-            ModelTreeItems.Add(new TreeItemData
-            {
-                Name = shape.Text,
-                Type = shape.GetKnowledgeType(),
-                ShapeId = shape.GetGlyphId(),
-                Children = GetChildrenRecursive(shape)
-            });
-        }
-
-        StateHasChanged();
-    }
-
-    private List<TreeItemData> GetChildrenRecursive(MentorShape2D parent)
-    {
-        var children = new List<TreeItemData>();
-        
-        foreach (var child in parent.GetSubshapes<MentorShape2D>() ?? Enumerable.Empty<MentorShape2D>())
-        {
-            children.Add(new TreeItemData
-            {
-                Name = child.Text,
-                Type = child.GetKnowledgeType(),
-                ShapeId = child.GetGlyphId(),
-                Children = GetChildrenRecursive(child)
-            });
-        }
-        
-        return children;
-    }
-
-    private void SelectShape(TreeItemData item)
-    {
-        LogInfo($"Selected: {item.Name}");
-    }
-
-    private string GetKnowledgeTypeIcon(KnowledgeType type)
-    {
-        return type switch
-        {
-            KnowledgeType.Concept => "📘",
-            KnowledgeType.Property => "📋",
-            KnowledgeType.Role => "👤",
-            KnowledgeType.Context => "📦",
-            KnowledgeType.Component => "🔧",
-            KnowledgeType.Formula => "ƒ",
-            KnowledgeType.Feature => "⚙️",
-            KnowledgeType.Relation => "🔗",
-            KnowledgeType.Variable => "🔢",
-            KnowledgeType.ValidValues => "✓",
-            _ => "❓"
-        };
-    }
-
-    private void ClearLog()
-    {
-        ActivityLog.Clear();
-        StateHasChanged();
-    }
-
-    private void LogInfo(string message)
-    {
-        ActivityLog.Add(new LogEntry { Level = "info", Message = message, Timestamp = DateTime.Now });
-    }
-
-    private void LogSuccess(string message)
-    {
-        ActivityLog.Add(new LogEntry { Level = "success", Message = message, Timestamp = DateTime.Now });
-    }
-
-    private void LogWarning(string message)
-    {
-        ActivityLog.Add(new LogEntry { Level = "warning", Message = message, Timestamp = DateTime.Now });
-    }
-
-    private void LogError(string message)
-    {
-        ActivityLog.Add(new LogEntry { Level = "error", Message = message, Timestamp = DateTime.Now });
-    }
-
-    private class TreeItemData
-    {
-        public string Name { get; set; } = "";
-        public KnowledgeType Type { get; set; }
-        public string ShapeId { get; set; } = "";
-        public List<TreeItemData> Children { get; set; } = new();
-    }
-
-    private class LogEntry
-    {
-        public string Level { get; set; } = "info";
-        public string Message { get; set; } = "";
-        public DateTime Timestamp { get; set; }
-    }
-}

@@ -222,7 +222,60 @@ public record ConstructionStats(
 );
 ```
 
-### 1.4 Integration with MentorPlayground
+### 1.4 Understanding the Existing Infrastructure
+
+**Critical Discovery**: The mentor infrastructure already exists and uses standard Foundry components!
+
+**MentorWorkbook Pattern**:
+```csharp
+// MentorWorkbook extends FoWorkbook, uses standard IDrawing
+public class MentorWorkbook : FoWorkbook, IMentorWorkbook
+{
+    private IDrawing Drawing { get; set; }  // Standard FoDrawing2D from workspace!
+    private IMentorPlayground Playground { get; set; }
+    
+    public MentorWorkbook(IWorkspace space, IFoundryService foundry) : base(space, foundry)
+    {
+        // Gets existing drawing infrastructure
+        Drawing = space.GetDrawing()!;
+        
+        // Creates pages for different contexts
+        EstablishCurrentPage<FoPage2D>("Definitions", "orange");
+        EstablishCurrentPage<FoPage2D>("Racks", "blue");
+        EstablishCurrentPage<FoPage2D>("Mentor", "grey");
+    }
+}
+```
+
+**MentorPlayground.CreateShape Pattern**:
+```csharp
+// One method creates BOTH knowledge object AND visual shape
+public MentorShape2D CreateShape<T>(string title="") where T : KnBase
+{
+    // 1. Create knowledge model object (KnConcept, KnProperty, etc.)
+    var item = Activator.CreateInstance(typeof(T), name) as T;
+    
+    // 2. Add to ModelManager (lookup table)
+    ModelManager.AddKnowledge<T>(item);
+    
+    // 3. Create visual shape linked to model
+    var shape = CreateNodeShape<MentorShape2D>(item);
+    
+    // 4. Add to drawing page
+    var page = Drawing.FirstPage();
+    page.Add(shape);  // Automatic rendering!
+    
+    // 5. Position and publish event
+    shape.MoveTo(x, y);
+    PubSub.Publish<DrawingEditChanged>(DrawingEditChanged.Created(shape));
+    
+    return shape;
+}
+```
+
+**Key Insight**: No specialized drawing class needed - standard `FoDrawing2D` with `MentorShape2D` shapes is sufficient!
+
+### 1.5 Integration with MentorPlayground
 
 Mentor2DTech needs to inject and delegate to MentorPlayground AND track all actions:
 
@@ -256,7 +309,7 @@ public class Mentor2DTech : IMentor2DTech
         // Parse knowledge type enum
         var type = Enum.Parse<KnowledgeType>(knowledgeType);
         
-        // Delegate to playground (same pattern as MentorWorkbook.CreateShape)
+        // Delegate to playground (uses MentorPlayground.CreateShape pattern)
         var shape = type switch
         {
             KnowledgeType.Concept => _playground.CreateShape<KnConcept>(title),

@@ -1,6 +1,7 @@
 using System.ComponentModel;
-using FoundryWorldsAndDrawings.Solutions;
 using FoundryMentorModeler.Model;
+using FoundryWorldsAndDrawings.Shape;
+using FoundryWorldsAndDrawings.Solutions;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 using Three2025.Components.Pages;
@@ -69,6 +70,31 @@ public interface IModelTech : ITechnician
     /// List all components in current model (or specified model)
     /// </summary>
     List<KnComponent> ListComponents(string? modelName = null);
+    
+    /// <summary>
+    /// Set the page context for visual shape creation
+    /// </summary>
+    void SetPageContext(FoPage2D canvasPage, IMentorStudio mentorStudio);
+    
+    /// <summary>
+    /// Create a visual concept shape on the canvas
+    /// </summary>
+    string CreateConceptShape(string conceptName, string? description = null);
+    
+    /// <summary>
+    /// Create a visual property shape on the canvas
+    /// </summary>
+    string CreatePropertyShape(string propertyName, string? propertyType = null);
+    
+    /// <summary>
+    /// Create an engineering system with concept and properties
+    /// </summary>
+    string CreateEngineeringSystem(string systemName, params string[] properties);
+    
+    /// <summary>
+    /// Attach a property shape to a concept shape
+    /// </summary>
+    bool AttachPropertyToConcept(string propertyId, string conceptId);
 }
 
 /// <summary>
@@ -79,6 +105,9 @@ public class ModelTech : IModelTech
 {
     private readonly IMentorServices _mentorServices;
     private readonly IModelEditor _modelEditor;
+    private IMentorStudio? _mentorStudio;
+    private FoPage2D? _currentPage;
+    private MentorShape2D? _lastCreatedConcept; // Track for property attachment
     
     public KnModel? CurrentModel { get; private set; }
     public KnComponent? CurrentComponent { get; private set; }
@@ -88,6 +117,17 @@ public class ModelTech : IModelTech
         _mentorServices = mentorServices;
         _modelEditor = modelEditor;
         "ModelTech: Initialized".WriteSuccess();
+    }
+    
+    /// <summary>
+    /// Set the current page context and mentor studio for visual shape creation
+    /// Must be called before visual shape creation methods
+    /// </summary>
+    public void SetPageContext(FoPage2D page, IMentorStudio mentorStudio)
+    {
+        _currentPage = page;
+        _mentorStudio = mentorStudio;
+        $"ModelTech: Connected to page '{page.GetName()}' with MentorStudio".WriteSuccess();
     }
     
     [Description("Create or retrieve a named model and set as current working model")]
@@ -473,5 +513,309 @@ public class ModelTech : IModelTech
             Unit = null,
             IsFormula = !string.IsNullOrEmpty(p.Expression)
         }).ToList();
+    }
+
+    // ============================================
+    // VISUAL SHAPE CREATION METHODS
+    // ============================================
+
+    [Description("Create a visual Concept shape on the canvas with engineering properties")]
+    public string CreateConceptShape(
+        [Description("Name/title of the concept (e.g., 'Steel Beam', 'Motor')")] string conceptName,
+        [Description("Optional description of the concept")] string? description = null)
+    {
+        if (_mentorStudio == null || _currentPage == null)
+        {
+            throw new InvalidOperationException("ModelTech not connected to page. Call SetPageContext first.");
+        }
+
+        try
+        {
+            var shape = _mentorStudio.CreateShape<KnConcept>(conceptName, _currentPage);
+            
+            // Position in center of canvas
+            var centerX = _currentPage.PageWidth.AsPixels() / 2;
+            var centerY = _currentPage.PageHeight.AsPixels() / 2;
+            shape.MoveTo((int)centerX, (int)centerY);
+            
+            // Track for property attachment
+            _lastCreatedConcept = shape;
+            
+            var shapeId = shape.GetGlyphId();
+            $"ModelTech: Created Concept shape '{conceptName}' (ID: {shapeId}) at center ({centerX}, {centerY})".WriteSuccess();
+            return shapeId;
+        }
+        catch (Exception ex)
+        {
+            $"ModelTech.CreateConceptShape failed: {ex.Message}".WriteError();
+            throw;
+        }
+    }
+
+    [Description("Create a visual Property shape on the canvas for engineering parameters")]
+    public string CreatePropertyShape(
+        [Description("Name of the property (e.g., 'Yield Strength', 'Flow Rate')")] string propertyName,
+        [Description("Optional value or units (e.g., '350 MPa', '100 GPM')")] string? value = null)
+    {
+        if (_mentorStudio == null || _currentPage == null)
+        {
+            throw new InvalidOperationException("ModelTech not connected to page. Call SetPageContext first.");
+        }
+
+        try
+        {
+            var displayName = value != null ? $"{propertyName}: {value}" : propertyName;
+            var shape = _mentorStudio.CreateShape<KnProperty>(displayName, _currentPage);
+            
+            // Position near center but offset for readability
+            var centerX = _currentPage.PageWidth.AsPixels() / 2;
+            var centerY = _currentPage.PageHeight.AsPixels() / 2;
+            var random = new Random();
+            var offsetX = random.Next(-200, 200); // Random offset around center
+            var offsetY = random.Next(-150, 150);
+            shape.MoveTo((int)(centerX + offsetX), (int)(centerY + offsetY));
+            
+            // Attach to last created concept if available
+            if (_lastCreatedConcept != null)
+            {
+                var attached = _mentorStudio.Attach(shape, _lastCreatedConcept);
+                $"ModelTech: Attached Property '{displayName}' to Concept '{_lastCreatedConcept.Text}'".WriteSuccess();
+                
+                // Trigger parent shape to resize and encompass children
+                _lastCreatedConcept.ResizeToFitChildren();
+                $"ModelTech: Resized parent concept '{_lastCreatedConcept.Text}' to encompass children".WriteSuccess();
+            }
+            
+            var shapeId = shape.GetGlyphId();
+            $"ModelTech: Created Property shape '{displayName}' (ID: {shapeId})".WriteSuccess();
+            return shapeId;
+        }
+        catch (Exception ex)
+        {
+            $"ModelTech.CreatePropertyShape failed: {ex.Message}".WriteError();
+            throw;
+        }
+    }
+
+    [Description("Create an engineering system model with concept and key properties")]
+    public string CreateEngineeringSystem(
+        [Description("Name of the engineering system (e.g., 'Bridge Beam', 'Pump System')")] string systemName,
+        [Description("Array of key properties to include (e.g., ['Length', 'Material', 'Load Capacity'])")] string[] properties)
+    {
+        if (_mentorStudio == null || _currentPage == null)
+        {
+            throw new InvalidOperationException("ModelTech not connected to page. Call SetPageContext first.");
+        }
+
+        try
+        {
+            // Create the main concept
+            var conceptShape = _mentorStudio.CreateShape<KnConcept>(systemName, _currentPage);
+            var conceptId = conceptShape.GetGlyphId();
+            
+            // Create and attach properties  
+            foreach (var propName in properties)
+            {
+                var propShape = _mentorStudio.CreateShape<KnProperty>(propName, _currentPage);
+                _mentorStudio.Attach(propShape, conceptShape);
+            }
+            
+            // Trigger parent shape to resize and encompass all children
+            conceptShape.ResizeToFitChildren();
+            
+            $"ModelTech: Created engineering system '{systemName}' with {properties.Length} properties and resized to fit".WriteSuccess();
+            return conceptId;
+        }
+        catch (Exception ex)
+        {
+            $"ModelTech.CreateEngineeringSystem failed: {ex.Message}".WriteError();
+            throw;
+        }
+    }
+
+    [Description("Attach a property shape to a concept shape for visual containment")]
+    public bool AttachPropertyToConcept(
+        [Description("ID of the property shape to attach")] string propertyId,
+        [Description("ID of the concept shape to attach to")] string conceptId)
+    {
+        if (_mentorStudio == null || _currentPage == null)
+        {
+            throw new InvalidOperationException("ModelTech not connected to page. Call SetPageContext first.");
+        }
+
+        try
+        {
+            // Find shapes by ID using public methods
+            var propertyShape = _currentPage.LookupShape2D(propertyId) as MentorShape2D;
+            var conceptShape = _currentPage.LookupShape2D(conceptId) as MentorShape2D;
+            
+            if (propertyShape == null)
+            {
+                $"ModelTech: Property shape with ID '{propertyId}' not found".WriteError();
+                return false;
+            }
+            
+            if (conceptShape == null)
+            {
+                $"ModelTech: Concept shape with ID '{conceptId}' not found".WriteError();
+                return false;
+            }
+            
+            // Attach property to concept
+            _mentorStudio.Attach(propertyShape, conceptShape);
+            $"ModelTech: Successfully attached Property '{propertyShape.Text}' to Concept '{conceptShape.Text}'".WriteSuccess();
+            
+            // Trigger parent shape to resize and encompass children
+            conceptShape.ResizeToFitChildren();
+            $"ModelTech: Resized concept '{conceptShape.Text}' to encompass all children".WriteSuccess();
+            
+            return true;
+        }
+        catch (Exception ex)
+        {
+            $"ModelTech.AttachPropertyToConcept failed: {ex.Message}".WriteError();
+            return false;
+        }
+    }
+
+    [Description("Create a dynamic class hierarchy using concept inheritance relationships")]
+    public string CreateClassHierarchy(
+        [Description("Name of the root class")] string rootClassName,
+        [Description("Child class names (comma-separated)")] string childClasses = "Engine,Transmission,Suspension,Brakes",
+        [Description("Properties for each class (comma-separated)")] string properties = "Type,Model,Manufacturer")
+    {
+        if (_mentorStudio == null || _currentPage == null)
+        {
+            throw new InvalidOperationException("ModelTech not connected to page. Call SetPageContext first.");
+        }
+
+        try
+        {
+            var childNames = childClasses.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                        .Select(p => p.Trim())
+                                        .ToArray();
+            
+            var propertyNames = properties.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                         .Select(p => p.Trim())
+                                         .ToArray();
+            
+            // Create the root concept
+            var centerX = (int)(_currentPage.Width / 2);
+            var centerY = (int)(_currentPage.Height / 3); // Higher up for hierarchy
+            
+            var rootConcept = _mentorStudio.CreateShape<KnConcept>(rootClassName, _currentPage);
+            rootConcept.MoveTo(centerX, centerY);
+            
+            // Add properties to root concept
+            foreach (var propName in propertyNames)
+            {
+                var propShape = _mentorStudio.CreateShape<KnProperty>($"{rootClassName}.{propName}", _currentPage);
+                _mentorStudio.Attach(propShape, rootConcept);
+            }
+            
+            // Create child concepts and attach them to root (inheritance)
+            var childConcepts = new List<MentorShape2D>();
+            foreach (var childName in childNames)
+            {
+                var childConcept = _mentorStudio.CreateShape<KnConcept>(childName, _currentPage);
+                
+                // Position children below and spread horizontally
+                var offsetX = (childConcepts.Count - childNames.Length / 2.0) * 250;
+                childConcept.MoveTo((int)(centerX + offsetX), centerY + 200);
+                
+                // Add specific properties to child
+                foreach (var propName in propertyNames)
+                {
+                    var childProp = _mentorStudio.CreateShape<KnProperty>($"{childName}.{propName}", _currentPage);
+                    _mentorStudio.Attach(childProp, childConcept);
+                }
+                
+                // Create inheritance relationship (child concept attached to parent concept)
+                _mentorStudio.Attach(childConcept, rootConcept);
+                childConcepts.Add(childConcept);
+                
+                $"ModelTech: Created child concept '{childName}' with {propertyNames.Length} properties".WriteInfo();
+            }
+            
+            _lastCreatedConcept = rootConcept;
+            var rootId = rootConcept.GetGlyphId();
+            
+            $"ModelTech: Created class hierarchy '{rootClassName}' with {childNames.Length} child classes and automatic resizing".WriteSuccess();
+            return rootId;
+        }
+        catch (Exception ex)
+        {
+            $"ModelTech.CreateClassHierarchy failed: {ex.Message}".WriteError();
+            throw;
+        }
+    }
+
+    [Description("Create a role-based composition structure showing organizational relationships")]
+    public string CreateRoleComposition(
+        [Description("Name of the organization")] string organizationName,
+        [Description("Role names (comma-separated)")] string roles = "Manager,Engineer,Technician,Analyst",
+        [Description("Responsibilities for each role (comma-separated)")] string responsibilities = "Planning,Design,Implementation,Testing")
+    {
+        if (_mentorStudio == null || _currentPage == null)
+        {
+            throw new InvalidOperationException("ModelTech not connected to page. Call SetPageContext first.");
+        }
+
+        try
+        {
+            var roleNames = roles.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                .Select(p => p.Trim())
+                                .ToArray();
+            
+            var respNames = responsibilities.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                          .Select(p => p.Trim())
+                                          .ToArray();
+            
+            // Create the organization context
+            var centerX = (int)(_currentPage.Width / 2);
+            var centerY = (int)(_currentPage.Height / 3);
+            
+            var orgContext = _mentorStudio.CreateShape<KnContext>(organizationName, _currentPage);
+            orgContext.MoveTo(centerX, centerY);
+            
+            // Create roles and attach to organization
+            var createdRoles = new List<MentorShape2D>();
+            foreach (var roleName in roleNames)
+            {
+                var roleShape = _mentorStudio.CreateShape<KnRole>(roleName, _currentPage);
+                
+                // Position roles in a grid below organization
+                var col = createdRoles.Count % 2;
+                var row = createdRoles.Count / 2;
+                var offsetX = (col - 0.5) * 300;
+                var offsetY = (row + 1) * 150;
+                
+                roleShape.MoveTo((int)(centerX + offsetX), (int)(centerY + offsetY));
+                
+                // Add responsibilities to each role
+                foreach (var respName in respNames)
+                {
+                    var responsibility = _mentorStudio.CreateShape<KnProperty>($"{roleName}: {respName}", _currentPage);
+                    _mentorStudio.Attach(responsibility, roleShape);
+                }
+                
+                // Attach role to organization (composition)
+                _mentorStudio.Attach(roleShape, orgContext);
+                createdRoles.Add(roleShape);
+                
+                $"ModelTech: Created role '{roleName}' with {respNames.Length} responsibilities".WriteInfo();
+            }
+            
+            _lastCreatedConcept = orgContext;
+            var orgId = orgContext.GetGlyphId();
+            
+            $"ModelTech: Created role composition '{organizationName}' with {roleNames.Length} roles and automatic resizing".WriteSuccess();
+            return orgId;
+        }
+        catch (Exception ex)
+        {
+            $"ModelTech.CreateRoleComposition failed: {ex.Message}".WriteError();
+            throw;
+        }
     }
 }

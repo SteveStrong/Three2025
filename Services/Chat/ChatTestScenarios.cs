@@ -215,6 +215,165 @@ public class ChatTestScenariosModels : ChatTestScenariosBase
 }
 
 /// <summary>
+/// Knowledge engineering test scenarios for Mentor 2D modeling
+/// These prompts ask engineering questions that should result in concept/property creation
+/// </summary>
+public class ChatTestScenariosKnowledge : ChatTestScenariosBase
+{
+    public override string Domain => "Knowledge Engineering";
+
+    [TestSequence(
+        DisplayName = "🏗️ Structural Engineering",
+        Description = "Model structural engineering concepts with properties",
+        Category = "Knowledge Engineering")]
+    public string[] StructuralEngineeringTest => new[]
+    {
+        "I need to model a steel beam for a bridge. What properties should I consider?",
+        "Add material properties like yield strength and elastic modulus",
+        "Include geometric properties like moment of inertia", 
+        "Show the relationship between beam dimensions and load capacity"
+    };
+
+    [TestSequence(
+        DisplayName = "⚙️ Mechanical Systems",
+        Description = "Model mechanical components and their specifications", 
+        Category = "Knowledge Engineering")]
+    public string[] MechanicalSystemsTest => new[]
+    {
+        "Design a motor specification with key performance parameters",
+        "Add efficiency and power ratings",
+        "Include operating temperature range and RPM specifications",
+        "Model the relationship between torque and speed"
+    };
+
+    [TestSequence(
+        DisplayName = "🔌 Electrical Components", 
+        Description = "Model electrical engineering concepts",
+        Category = "Knowledge Engineering")]
+    public string[] ElectricalComponentsTest => new[]
+    {
+        "Create a resistor component model with electrical properties",
+        "Add voltage and current ratings", 
+        "Include power dissipation and tolerance specifications",
+        "Show how resistance affects power consumption"
+    };
+
+    [TestSequence(
+        DisplayName = "📊 System Requirements",
+        Description = "Model system-level engineering requirements",
+        Category = "Knowledge Engineering")]
+    public string[] SystemRequirementsTest => new[]
+    {
+        "Model a water pump system with performance requirements",
+        "Add flow rate and pressure head specifications",
+        "Include efficiency and NPSH requirements",
+        "Model the pump curve relationship between flow and head"
+    };
+
+    [TestSequence(
+        DisplayName = "🧪 Material Properties",
+        Description = "Model material science concepts with measured properties",
+        Category = "Knowledge Engineering")]
+    public string[] MaterialPropertiesTest => new[]
+    {
+        "Model aluminum alloy 6061 with its key properties",
+        "Add density, thermal conductivity, and strength properties",
+        "Include corrosion resistance and machinability ratings",
+        "Show the relationship between alloy composition and properties"
+    };
+
+    [TestSequence(
+        DisplayName = "🔧 Tool Capabilities",
+        Description = "Test knowledge modeling tool discovery",
+        Category = "Knowledge Engineering")]
+    public string[] ToolCapabilitiesTest => new[]
+    {
+        "What tools do you have for creating engineering models?",
+        "Create a simple concept with properties",
+        "Show how concepts can contain other concepts",
+        "Demonstrate connecting related concepts with relationships"
+    };
+
+    [TestSequence(
+        DisplayName = "🎯 Specific Motor Model",
+        Description = "Create a motor concept with exact properties",
+        Category = "Knowledge Engineering")]
+    public string[] SpecificMotorTest => new[]
+    {
+        "Create a Motor concept",
+        "Add an RPM property to the Motor",
+        "Add a Voltage property to the Motor", 
+        "Add a Current property to the Motor",
+        "Add a Power property to the Motor"
+    };
+
+    [TestSequence(
+        DisplayName = "🎯 Specific Pump Model", 
+        Description = "Create a pump concept with exact flow properties",
+        Category = "Knowledge Engineering")]
+    public string[] SpecificPumpTest => new[]
+    {
+        "Create a Pump concept",
+        "Add a Flow Rate property to the Pump",
+        "Add a Pressure property to the Pump",
+        "Add an Efficiency property to the Pump",
+        "Add a NPSH property to the Pump"
+    };
+
+    [TestSequence(
+        DisplayName = "🎯 Specific Valve Model",
+        Description = "Create a valve concept with control properties", 
+        Category = "Knowledge Engineering")]
+    public string[] SpecificValveTest => new[]
+    {
+        "Create a Valve concept",
+        "Add a Size property to the Valve",
+        "Add a Material property to the Valve",
+        "Add a Pressure Rating property to the Valve",
+        "Add a Flow Coefficient property to the Valve"
+    };
+
+    [TestSequence(
+        DisplayName = "🎯 Battery Specifications",
+        Description = "Create a battery with electrical specifications",
+        Category = "Knowledge Engineering")]
+    public string[] BatterySpecTest => new[]
+    {
+        "Create a Battery concept",
+        "Add a Capacity property with units Ah", 
+        "Add a Voltage property with value 12V",
+        "Add a Chemistry property with value Lithium-Ion",
+        "Add a Cycle Life property"
+    };
+
+    [TestSequence(
+        DisplayName = "🎯 Heat Exchanger Model",
+        Description = "Create heat exchanger with thermal properties",
+        Category = "Knowledge Engineering")]
+    public string[] HeatExchangerTest => new[]
+    {
+        "Create a Heat Exchanger concept",
+        "Add a Heat Transfer Rate property in BTU/hr",
+        "Add an Inlet Temperature property",
+        "Add an Outlet Temperature property",
+        "Add a Pressure Drop property"
+    };
+
+    [TestSequence(
+        DisplayName = "🎯 Building HVAC System",
+        Description = "Create interconnected HVAC components",
+        Category = "Knowledge Engineering")]
+    public string[] HVACSystemTest => new[]
+    {
+        "Create an HVAC System concept",
+        "Create an Air Handler concept with CFM property",
+        "Create a Chiller concept with Cooling Capacity property",  
+        "Create a Ductwork concept with Size property",
+        "Connect these components in the HVAC System"
+    };
+}
+
+/// <summary>
 /// Central discovery class for all test scenarios
 /// </summary>
 public static class ChatTestScenarios
@@ -226,7 +385,8 @@ public static class ChatTestScenarios
     {
         typeof(ChatTestScenarios3D),
         typeof(ChatTestScenarios2D),
-        typeof(ChatTestScenariosModels)
+        typeof(ChatTestScenariosModels),
+        typeof(ChatTestScenariosKnowledge)
     };
 
     /// <summary>
