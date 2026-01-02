@@ -142,6 +142,73 @@ No domain-specific code written. Knowledge model + formulas = solver.
 
 ---
 
+## Infrastructure: Proven and Production-Ready
+
+### MentorWorkbook + MentorPlayground Pattern
+
+**Discovery**: The infrastructure already exists in `FoundryMentorModeler` library!
+
+```csharp
+// MentorWorkbook - Multi-page drawing environment
+public class MentorWorkbook : FoWorkbook, IMentorWorkbook
+{
+    private IDrawing Drawing { get; set; }  // Standard FoDrawing2D
+    private IMentorPlayground Playground { get; set; }
+    
+    public MentorWorkbook(IWorkspace space, IFoundryService foundry)
+    {
+        Drawing = space.GetDrawing()!;  // Uses existing drawing infrastructure!
+        
+        // Creates pages for different contexts
+        EstablishCurrentPage<FoPage2D>("Definitions", "orange");
+        EstablishCurrentPage<FoPage2D>("Mentor", "grey");
+    }
+}
+
+// MentorPlayground - Shape creation factory
+public class MentorPlayground : KnBase, IMentorPlayground
+{
+    public MentorShape2D CreateShape<T>(string title="") where T : KnBase
+    {
+        // 1. Create knowledge object
+        var item = Activator.CreateInstance(typeof(T), name) as T;
+        ModelManager.AddKnowledge<T>(item);
+        
+        // 2. Create visual shape
+        var shape = CreateNodeShape<MentorShape2D>(item);
+        
+        // 3. Add to page (automatic rendering)
+        Drawing.FirstPage().Add(shape);
+        
+        // 4. Publish event
+        PubSub.Publish<DrawingEditChanged>(DrawingEditChanged.Created(shape));
+        
+        return shape;
+    }
+}
+```
+
+**Key Benefits**:
+- ✅ **No specialized drawing class needed** - Uses standard `FoDrawing2D`
+- ✅ **Automatic shape-model linking** - `CreateShape<T>()` creates both at once
+- ✅ **Event-driven assembly** - `DrawingEditChanged` events trigger model updates
+- ✅ **Multi-page support** - Different pages for different contexts
+- ✅ **Rule enforcement** - `IsDropAllowed()` / `IsConnectAllowed()` prevent invalid constructions
+- ✅ **Proven in production** - Already used in existing mentor applications
+
+### The CreateShape Magic
+
+One method call creates:
+1. **Knowledge model object** (`KnConcept`, `KnProperty`, etc.)
+2. **Visual shape** (`MentorShape2D`)
+3. **Bidirectional link** (shape ↔ model via `ModelManager.Lookup` table)
+4. **Canvas rendering** (automatic via animation loop)
+5. **Event notification** (observers can learn from action)
+
+LLM just needs to call `CreateKnowledgeShape("Concept", "Beam", 100, 100)` - the rest happens automatically!
+
+---
+
 ## Development Strategy: Test-Driven with North Star
 
 ### The North Star Code

@@ -46,13 +46,17 @@ public class ChatOrchestrator : IChatOrchestrator
     {
         _logger.LogInformation("🔧 Starting agent initialization...");
         
-        // SIMPLIFIED: Only create the 3D Modeling Agent with Shape3DTech tools
-        // This agent handles all geometry creation, manipulation, and scene operations
+        // General Agent - Primary agent for general questions and broad conversations
+        // Has access to ALL tools but focuses on helpful conversation
+        var generalAgent = _agentFactory.CreateGeneralAgent(_technicianTools);
+        RegisterAgent(generalAgent);
+        
+        // 3D Modeling Agent - Specialized for geometry creation and manipulation
         var modelingAgent = _agentFactory.Create3DModelingAgent(_technicianTools);
         RegisterAgent(modelingAgent);
         
         // FUTURE AGENTS - Commented out until we establish the right pattern
-        // Once 3D modeling works well, we can add specialized agents for:
+        // Once the agent system works well, we can add more specialized agents:
         // - Animation (keyframes, tweens, motion paths)
         // - Lighting (if we add light-specific tools)
         // - Physics (if we add physics simulation)
@@ -66,9 +70,6 @@ public class ChatOrchestrator : IChatOrchestrator
         
         // var clockAgent = _agentFactory.CreateClockAgent(_technicianTools);
         // RegisterAgent(clockAgent);
-        
-        // var generalAgent = _agentFactory.CreateGeneralAgent(_technicianTools);
-        // RegisterAgent(generalAgent);
         
         _logger.LogInformation($"✅ Initialized {_agents.Count} agent(s): {string.Join(", ", _agents.Keys)}");
     }
@@ -209,6 +210,11 @@ public class ChatOrchestrator : IChatOrchestrator
             
             Available agents for this context ({{context.PageName}}):
             {{agentDescriptions}}
+            
+            IMPORTANT ROUTING GUIDELINES:
+            - Use "General Agent" for: general questions, conversations, explanations, jokes, advice, engineering discussions
+            - Use specialized agents ONLY when the user explicitly requests specific tool actions (e.g., "create a box", "add a sphere")
+            - When in doubt, prefer "General Agent" - it has access to all tools and can handle both conversation and actions
             
             User message: {{userMessage}}
             

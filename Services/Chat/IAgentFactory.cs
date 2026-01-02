@@ -17,5 +17,5 @@ public interface IAgentFactory
     // ISpecializedAgent CreateAnimationAgent(IEnumerable<AIFunction> tools);
     // ISpecializedAgent CreateGeometryAgent(IEnumerable<AIFunction> tools);
     // ISpecializedAgent CreateClockAgent(IEnumerable<AIFunction> tools);
-    // ISpecializedAgent CreateGeneralAgent(IEnumerable<AIFunction> tools);
+    ISpecializedAgent CreateGeneralAgent(IEnumerable<AIFunction> tools);
 }

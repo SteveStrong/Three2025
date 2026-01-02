@@ -844,7 +844,7 @@ public partial class AgentCanvasIntegration : ComponentBase
             return;
         }
 
-        var cabinets = stage.GetMembers<RackCabinetShape>().ToList();
+        var cabinets = stage.GetMembers<RackCabinetShape>()?.ToList() ?? new List<RackCabinetShape>();
         rackCabinetCount = cabinets.Count;
         rackEquipmentCount = 0;
         rackTotalRUUsed = 0;
