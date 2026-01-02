@@ -4,106 +4,84 @@ using FoundryMentorModeler.Model;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 using Three2025.Components.Pages;
+using Three2025.Models.Apprentice;
 
 namespace Three2025.Apprentice;
 
 #nullable enable
 
 /// <summary>
-/// Interface for model manipulation operations
+/// Interface for model manipulation operations with context tracking
 /// </summary>
 public interface IModelTech : ITechnician
 {
     /// <summary>
-    /// Create or get existing model by name
+    /// Current working model - set by EstablishModel or SetCurrentModel
     /// </summary>
-    ModelInfo EstablishModel(string modelName, string? modelType = null);
+    KnModel? CurrentModel { get; }
     
     /// <summary>
-    /// Get information about a specific model
+    /// Current working component - set by AddComponent or SetCurrentComponent
     /// </summary>
-    ModelInfo? GetModel(string modelName);
+    KnComponent? CurrentComponent { get; }
+    
+    /// <summary>
+    /// Create or get existing model and set as current
+    /// </summary>
+    KnModel EstablishModel(string modelName, string? modelType = null);
+    
+    /// <summary>
+    /// Set current working model
+    /// </summary>
+    KnModel? SetCurrentModel(string? modelName);
+    
+    /// <summary>
+    /// Set current working component by path
+    /// </summary>
+    KnComponent? SetCurrentComponent(string? componentPath);
     
     /// <summary>
     /// List all available models
     /// </summary>
-    List<ModelInfo> ListModels();
+    List<KnModel> ListModels();
     
     /// <summary>
-    /// Add a component to a model
+    /// Add a component to current model (or specified model), becomes current component
     /// </summary>
-    ComponentInfo AddComponent(string modelName, string componentName, string componentType, string? parentComponentPath = null);
+    KnComponent AddComponent(string componentName, string? modelName = null, string? parentComponentPath = null);
     
     /// <summary>
-    /// Remove a component from a model
+    /// Remove current component (or specified component)
     /// </summary>
-    bool RemoveComponent(string modelName, string componentPath);
+    bool RemoveComponent(string? componentPath = null);
     
     /// <summary>
-    /// Set a parameter value on a component
+    /// Set parameter on current component (or specified component)
     /// </summary>
-    ParameterInfo SetParameter(string modelName, string componentPath, string parameterName, string value);
+    KnParameter SetParameter(string parameterName, string value, string? componentPath = null);
     
     /// <summary>
-    /// Get parameter value from a component
+    /// Get parameter from current component (or specified component)
     /// </summary>
-    ParameterInfo? GetParameter(string modelName, string componentPath, string parameterName);
+    KnParameter? GetParameter(string parameterName, string? componentPath = null);
     
     /// <summary>
-    /// List all components in a model
+    /// List all components in current model (or specified model)
     /// </summary>
-    List<ComponentInfo> ListComponents(string modelName);
-    
-    /// <summary>
-    /// Get component details including parameters
-    /// </summary>
-    ComponentInfo? GetComponent(string modelName, string componentPath);
+    List<KnComponent> ListComponents(string? modelName = null);
 }
 
 /// <summary>
-/// Information about a KnModel
-/// </summary>
-public class ModelInfo
-{
-    public string Name { get; set; } = "";
-    public string Type { get; set; } = "";
-    public int ComponentCount { get; set; }
-    public int ParameterCount { get; set; }
-    public bool IsExpanded { get; set; }
-}
-
-/// <summary>
-/// Information about a KnComponent
-/// </summary>
-public class ComponentInfo
-{
-    public string Name { get; set; } = "";
-    public string Path { get; set; } = "";
-    public string Type { get; set; } = "";
-    public string? ParentPath { get; set; }
-    public int ChildCount { get; set; }
-    public List<ParameterInfo> Parameters { get; set; } = new();
-}
-
-/// <summary>
-/// Information about a KnParameter
-/// </summary>
-public class ParameterInfo
-{
-    public string Name { get; set; } = "";
-    public string Value { get; set; } = "";
-    public string? Unit { get; set; }
-    public string? Formula { get; set; }
-}
-
-/// <summary>
-/// ITechnician implementation for KnModel/KnComponent operations
+/// ITechnician implementation for KnModel/KnComponent operations with context tracking
 /// </summary>
 [Description("Model manipulation tools for creating and managing hierarchical component models with parameters")]
 public class ModelTech : IModelTech
 {
     private readonly IMentorServices _mentorServices;
     private readonly IModelEditor _modelEditor;
+    
+    public KnModel? CurrentModel { get; private set; }
+    public KnComponent? CurrentComponent { get; private set; }
 
     public ModelTech(IMentorServices mentorServices, IModelEditor modelEditor)
     {
@@ -111,9 +89,9 @@ public class ModelTech : IModelTech
         _modelEditor = modelEditor;
         "ModelTech: Initialized".WriteSuccess();
     }
-
-    [Description("Create or get existing model by name. Returns model information including component count.")]
-    public ModelInfo EstablishModel(
+    
+    [Description("Create or retrieve a named model and set as current working model")]
+    public KnModel EstablishModel(
         [Description("Name of the model to create or retrieve")] string modelName, 
         [Description("Type of model (defaults to 'KnModel')")] string? modelType = null)
     {
@@ -131,18 +109,12 @@ public class ModelTech : IModelTech
             };
             
             model.SetExpanded(true);
+            CurrentModel = model;
+            CurrentComponent = null; // Reset component when model changes
             
-            var info = new ModelInfo
-            {
-                Name = model.Name ?? modelName,
-                Type = model.GetType().Name,
-                ComponentCount = model.Members<KnComponent>().Count(),
-                ParameterCount = model.Members<KnParameter>().Count(),
-                IsExpanded = true
-            };
-            
-            $"✅ Model '{modelName}' established with {info.ComponentCount} components".WriteSuccess();
-            return info;
+            var componentCount = model.Members<KnComponent>().Count();
+            $"✅ Model '{modelName}' established with {componentCount} components (now current)".WriteSuccess();
+            return model;
         }
         catch (Exception ex)
         {
@@ -151,72 +123,89 @@ public class ModelTech : IModelTech
         }
     }
 
-    [Description("Get information about a specific model including component and parameter counts")]
-    public ModelInfo? GetModel([Description("Name of the model")] string modelName)
+    [Description("Set the current working model by name")]
+    public KnModel? SetCurrentModel([Description("Name of the model (null to clear)")] string? modelName)
     {
-        try
+        if (string.IsNullOrEmpty(modelName))
         {
-            var model = _mentorServices.FindModel<KnModel>(modelName);
-            if (model == null)
-            {
-                $"⚠️ Model '{modelName}' not found".WriteWarning();
-                return null;
-            }
-            
-            return new ModelInfo
-            {
-                Name = model.Name ?? modelName,
-                Type = model.GetType().Name,
-                ComponentCount = model.Members<KnComponent>().Count(),
-                ParameterCount = model.Members<KnParameter>().Count(),
-                IsExpanded = true
-            };
-        }
-        catch (Exception ex)
-        {
-            $"❌ Error getting model: {ex.Message}".WriteError();
+            CurrentModel = null;
+            CurrentComponent = null;
+            "⚙️ Cleared current model".WriteInfo();
             return null;
         }
+        
+        var model = _mentorServices.FindModel<KnModel>(modelName);
+        if (model == null)
+        {
+            $"⚠️ Model '{modelName}' not found".WriteWarning();
+            return null;
+        }
+        
+        CurrentModel = model;
+        CurrentComponent = null;
+        $"⚙️ Set current model to '{modelName}'".WriteInfo();
+        return model;
+    }
+
+    [Description("Set the current working component by path")]
+    public KnComponent? SetCurrentComponent([Description("Path to component (null to clear)")] string? componentPath)
+    {
+        if (string.IsNullOrEmpty(componentPath))
+        {
+            CurrentComponent = null;
+            "⚙️ Cleared current component".WriteInfo();
+            return null;
+        }
+        
+        if (CurrentModel == null)
+        {
+            "⚠️ No current model set".WriteWarning();
+            return null;
+        }
+        
+        var component = FindComponentByPath(CurrentModel, componentPath);
+        if (component == null)
+        {
+            $"⚠️ Component '{componentPath}' not found".WriteWarning();
+            return null;
+        }
+        
+        CurrentComponent = component;
+        $"⚙️ Set current component to '{componentPath}'".WriteInfo();
+        return component;
     }
 
     [Description("List all available models in the system")]
-    public List<ModelInfo> ListModels()
+    public List<KnModel> ListModels()
     {
         try
         {
             var models = _mentorServices.MentorModel.GetAllModels();
-            var infos = models.Select(m => new ModelInfo
-            {
-                Name = m.Name ?? "",
-                Type = m.GetType().Name,
-                ComponentCount = m.Members<KnComponent>().Count(),
-                ParameterCount = m.Members<KnParameter>().Count(),
-                IsExpanded = true
-            }).ToList();
-            
-            $"📋 Found {infos.Count} models".WriteInfo();
-            return infos;
+            $"📋 Found {models.Count} models".WriteInfo();
+            return models;
         }
         catch (Exception ex)
         {
             $"❌ Error listing models: {ex.Message}".WriteError();
-            return new List<ModelInfo>();
+            return new List<KnModel>();
         }
     }
-
-    [Description("Add a component to a model. Component path uses '/' separator (e.g., 'Root/SubSystem')")]
-    public ComponentInfo AddComponent(
-        [Description("Name of the model")] string modelName,
+    
+    [Description("Add a component to the current model (or specified model) and make it current")]
+    public KnComponent AddComponent(
         [Description("Name for the new component")] string componentName,
-        [Description("Type of component (KnComponent, PartComponent, etc.)")] string componentType,
+        [Description("Model name (optional, uses current model)")] string? modelName = null,
         [Description("Path to parent component (optional, defaults to model root)")] string? parentComponentPath = null)
     {
         try
         {
-            var model = _mentorServices.FindModel<KnModel>(modelName);
+            var model = !string.IsNullOrEmpty(modelName) 
+                ? _mentorServices.FindModel<KnModel>(modelName) 
+                : CurrentModel;
+                
             if (model == null)
             {
-                throw new Exception($"Model '{modelName}' not found");
+                throw new Exception(modelName != null ? $"Model '{modelName}' not found" : "No current model set");
             }
             
             // Find parent component or use model as parent
@@ -233,18 +222,11 @@ public class ModelTech : IModelTech
             // Add to parent via ModelEditor (triggers events)
             _modelEditor.AddChild(parent, component);
             
-            var info = new ComponentInfo
-            {
-                Name = component.Name ?? componentName,
-                Path = GetComponentPath(component),
-                Type = component.GetType().Name,
-                ParentPath = parent != model ? GetComponentPath(parent) : null,
-                ChildCount = component.Members<KnComponent>().Count(),
-                Parameters = GetComponentParameters(component)
-            };
+            // Make this the current component
+            CurrentComponent = component;
             
-            $"✅ Added component '{componentName}' to '{modelName}'".WriteSuccess();
-            return info;
+            $"✅ Added component '{componentName}' (now current)".WriteSuccess();
+            return component;
         }
         catch (Exception ex)
         {
@@ -253,74 +235,74 @@ public class ModelTech : IModelTech
         }
     }
 
-    [Description("Remove a component from a model using its path")]
+    [Description("Remove current component or specified component by path")]
     public bool RemoveComponent(
-        [Description("Name of the model")] string modelName,
-        [Description("Path to component to remove")] string componentPath)
+        [Description("Path to component (optional, uses current component)")] string? componentPath = null)
     {
         try
         {
-            var model = _mentorServices.FindModel<KnModel>(modelName);
-            if (model == null)
+            if (CurrentModel == null)
             {
-                $"⚠️ Model '{modelName}' not found".WriteWarning();
+                "⚠️ No current model set".WriteWarning();
                 return false;
             }
             
-            var component = FindComponentByPath(model, componentPath);
+            var component = !string.IsNullOrEmpty(componentPath)
+                ? FindComponentByPath(CurrentModel, componentPath)
+                : CurrentComponent;
+                
             if (component == null)
             {
-                $"⚠️ Component '{componentPath}' not found".WriteWarning();
+                $"⚠️ Component not found".WriteWarning();
                 return false;
             }
             
-            var parent = component.GetKnParent() as KnComponent ?? model;
+            var parent = component.GetKnParent() as KnComponent ?? CurrentModel;
             _modelEditor.RemoveChild(parent, component);
             
-            $"✅ Removed component '{componentPath}' from '{modelName}'".WriteSuccess();
+            // Clear current component if it was the one removed
+            if (CurrentComponent == component)
+            {
+                CurrentComponent = null;
+            }
+            
+            $"✅ Removed component '{componentPath}'".WriteSuccess();
             return true;
         }
         catch (Exception ex)
         {
-            $"❌ Error removing component: {ex.Message}".WriteError();
+            $"❌ Error removing component '{componentPath}': {ex.Message}".WriteError();
             return false;
         }
     }
-
-    [Description("Set a parameter value on a component. Value can be a number, formula, or units expression")]
-    public ParameterInfo SetParameter(
-        [Description("Name of the model")] string modelName,
-        [Description("Path to component")] string componentPath,
+    
+    [Description("Set a parameter value on the current component (or specified component). Value can be a number, formula, or units expression")]
+    public KnParameter SetParameter(
         [Description("Name of the parameter")] string parameterName,
-        [Description("Value as formula string (e.g., '42', 'Width * 2', 'units(100, \"cm\")')")] string value)
+        [Description("Value as formula string (e.g., '42', 'Width * 2', 'units(100, \"cm\")')")] string value,
+        [Description("Path to component (optional, uses current component)")] string? componentPath = null)
     {
         try
         {
-            var model = _mentorServices.FindModel<KnModel>(modelName);
-            if (model == null)
+            if (CurrentModel == null)
             {
-                throw new Exception($"Model '{modelName}' not found");
+                throw new Exception("No current model set");
             }
             
-            var component = FindComponentByPath(model, componentPath);
+            var component = !string.IsNullOrEmpty(componentPath)
+                ? FindComponentByPath(CurrentModel, componentPath)
+                : CurrentComponent;
+                
             if (component == null)
             {
-                throw new Exception($"Component '{componentPath}' not found");
+                throw new Exception(componentPath != null ? $"Component '{componentPath}' not found" : "No current component set");
             }
             
             // Set parameter via ModelEditor (triggers dependency cascade)
             var param = _modelEditor.SetParameter(component, parameterName, value);
             
-            var info = new ParameterInfo
-            {
-                Name = param.Name ?? parameterName,
-                Value = param.GetValue()?.ToString() ?? "",
-                Unit = null,
-                Formula = param.Formula?.ToString() ?? ""
-            };
-            
-            $"✅ Set parameter '{parameterName}' = '{value}' on '{componentPath}'".WriteSuccess();
-            return info;
+            $"✅ Set parameter '{parameterName}' = '{value}'".WriteSuccess();
+            return param;
         }
         catch (Exception ex)
         {
@@ -329,30 +311,36 @@ public class ModelTech : IModelTech
         }
     }
 
-    [Description("Get parameter value from a component")]
-    public ParameterInfo? GetParameter(
-        [Description("Name of the model")] string modelName,
-        [Description("Path to component")] string componentPath,
-        [Description("Name of the parameter")] string parameterName)
+    [Description("Get parameter value from current component (or specified component)")]
+    public KnParameter? GetParameter(
+        [Description("Name of the parameter")] string parameterName,
+        [Description("Path to component (optional, uses current component)")] string? componentPath = null)
     {
         try
         {
-            var model = _mentorServices.FindModel<KnModel>(modelName);
-            if (model == null) return null;
+            if (CurrentModel == null)
+            {
+                "⚠️ No current model set".WriteWarning();
+                return null;
+            }
             
-            var component = FindComponentByPath(model, componentPath);
-            if (component == null) return null;
+            var component = !string.IsNullOrEmpty(componentPath)
+                ? FindComponentByPath(CurrentModel, componentPath)
+                : CurrentComponent;
+                
+            if (component == null)
+            {
+                "⚠️ Component not found".WriteWarning();
+                return null;
+            }
             
             var param = component.EstablishParameter(parameterName);
-            if (param == null) return null;
-            
-            return new ParameterInfo
+            if (param == null)
             {
-                Name = param.Name ?? parameterName,
-                Value = param.GetValue()?.ToString() ?? "",
-                Unit = null,
-                Formula = param.Formula?.ToString() ?? ""
-            };
+                $"⚠️ Parameter '{parameterName}' not found".WriteWarning();
+            }
+            
+            return param;
         }
         catch (Exception ex)
         {
@@ -361,43 +349,49 @@ public class ModelTech : IModelTech
         }
     }
 
-    [Description("List all components in a model with their paths and types")]
-    public List<ComponentInfo> ListComponents([Description("Name of the model")] string modelName)
+    [Description("List all components in current model (or specified model)")]
+    public List<KnComponent> ListComponents(
+        [Description("Model name (optional, uses current model)")] string? modelName = null)
     {
         try
         {
-            var model = _mentorServices.FindModel<KnModel>(modelName);
+            var model = !string.IsNullOrEmpty(modelName)
+                ? _mentorServices.FindModel<KnModel>(modelName)
+                : CurrentModel;
+                
             if (model == null)
             {
-                $"⚠️ Model '{modelName}' not found".WriteWarning();
-                return new List<ComponentInfo>();
+                "⚠️ No model specified or current".WriteWarning();
+                return new List<KnComponent>();
             }
             
-            var components = new List<ComponentInfo>();
-            CollectComponents(model, components);
-            
-            $"📋 Found {components.Count} components in '{modelName}'".WriteInfo();
+            var components = model.Members<KnComponent>().ToList();
+            $"📋 Found {components.Count} components".WriteInfo();
             return components;
         }
         catch (Exception ex)
         {
             $"❌ Error listing components: {ex.Message}".WriteError();
-            return new List<ComponentInfo>();
+            return new List<KnComponent>();
         }
     }
-
-    [Description("Get detailed information about a specific component including all parameters")]
-    public ComponentInfo? GetComponent(
-        [Description("Name of the model")] string modelName,
-        [Description("Path to component")] string componentPath)
+    
+    public ComponentInfo? GetComponent(string componentPath)
     {
         try
         {
-            var model = _mentorServices.FindModel<KnModel>(modelName);
-            if (model == null) return null;
+            if (CurrentModel == null)
+            {
+                "⚠️ No current model set".WriteWarning();
+                return null;
+            }
             
-            var component = FindComponentByPath(model, componentPath);
-            if (component == null) return null;
+            var component = FindComponentByPath(CurrentModel, componentPath);
+            if (component == null)
+            {
+                $"⚠️ Component '{componentPath}' not found".WriteWarning();
+                return null;
+            }
             
             var parent = component.GetKnParent() as KnComponent;
             
@@ -477,7 +471,7 @@ public class ModelTech : IModelTech
             Name = p.Name ?? "",
             Value = p.GetValue()?.ToString() ?? "",
             Unit = null,
-            Formula = p.Formula?.ToString() ?? ""
+            IsFormula = !string.IsNullOrEmpty(p.Expression)
         }).ToList();
     }
 }
