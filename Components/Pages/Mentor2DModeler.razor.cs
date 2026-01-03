@@ -272,24 +272,24 @@ _ = LogSuccess($"✅ Connected Shape2DTech to page '{canvasPage.Name}'");
             if (length != null)
             {
                 Playground?.Attach(length, beam);
-                LogSuccess("Added Length Property");
+                _ = LogSuccess("Added Length Property");
             }
 
             var width = Playground?.CreateShape<KnProperty>("Width");
             if (width != null)
             {
                 Playground?.Attach(width, beam);
-                LogSuccess("Added Width Property");
+                _ = LogSuccess("Added Width Property");
             }
 
             var height = Playground?.CreateShape<KnProperty>("Height");
             if (height != null)
             {
                 Playground?.Attach(height, beam);
-                LogSuccess("Added Height Property");
+                _ = LogSuccess("Added Height Property");
             }
 
-            LogSuccess("Beam example created!");
+            _ = LogSuccess("Beam example created!");
             RefreshTree();
             StateHasChanged();
         }
@@ -383,7 +383,7 @@ _ = LogSuccess($"✅ Connected Shape2DTech to page '{canvasPage.Name}'");
         nextX = 100;
         nextY = 100;
         ModelTreeItems.Clear();
-        LogWarning("Canvas cleared");
+        _ = LogWarning("Canvas cleared");
         StateHasChanged();
     }
 

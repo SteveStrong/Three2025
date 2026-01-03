@@ -13,10 +13,11 @@ using AIChatMessage = Microsoft.Extensions.AI.ChatMessage;
 using FoundryWorldsAndDrawings.Solutions;
 using Three2025.Apprentice;
 using Three2025.Models.Apprentice;
+using FoundryMentorModeler.Persistence;
 
 namespace Three2025.Components.Pages;
 
-public partial class ConversationalModeler : ComponentBase
+public partial class ConversationalModeler : ComponentBase, IDisposable
 {
     [Inject] private IMentorServices MentorServices { get; set; } = default!;
     [Inject] private IWorkspace Workspace { get; set; } = default!;
@@ -58,6 +59,25 @@ public partial class ConversationalModeler : ComponentBase
         
         _ = LogInfo("Conversational Modeler initializing...");
         
+        // Subscribe to model change events to refresh UI
+        MentorServices?.PubSub?.SubscribeTo<ModelEditChanged>(OnModelEditChanged);
+        
+        // Optional: Create a demo model for immediate testing (can be removed later)
+        // Following GeometryDebugTest pattern for model establishment
+        if (ModelTech != null)
+        {
+            try
+            {
+                // This ensures we have something to show in the tree for testing
+                // Real models will be created by Knowledge Modeling Agent via chat
+                _ = LogInfo("Setting up demo model for testing purposes...");
+            }
+            catch (Exception ex)
+            {
+                _ = LogWarning($"Demo model setup failed: {ex.Message}");
+            }
+        }
+        
         // Welcome message
         chatMessages.Add(new ChatDisplayMessage
         {
@@ -74,6 +94,9 @@ public partial class ConversationalModeler : ComponentBase
         {
             _ = LogInfo($"🔧 Initialized with {ChatOrchestrator.GetToolCount()} tools available for AI");
             _ = LogSuccess($"✅ Conversational Modeler ready for knowledge model construction");
+            
+            // Debug: Log initial model state following GeometryDebugTest pattern
+            LogModelState("FirstRender");
             
             await InvokeAsync(StateHasChanged);
         }
@@ -242,41 +265,39 @@ public partial class ConversationalModeler : ComponentBase
         // TODO: Implement component selection handling
     }
 
-    private IEnumerable<ParameterInfo> GetParameters(object? component)
+    private IEnumerable<KnParameter> GetParameters(object? component)
     {
         if (component is not KnComponent knComponent)
-            return new List<ParameterInfo>();
+            return new List<KnParameter>();
             
-        return knComponent.Members<KnParameter>().Select(p => new ParameterInfo
-        {
-            Name = p.Name ?? "",
-            Value = p.GetValue()?.ToString() ?? "",
-            Unit = null, // TODO: Extract unit from parameter if available
-            IsFormula = !string.IsNullOrEmpty(p.Expression)
-        });
+        return knComponent.Members<KnParameter>();
     }
 
     // Activity logging methods
     private async Task LogInfo(string message)
     {
+        Logger.LogInformation(message);
         ActivityLog.Add(new LogEntry { Level = "info", Message = message, Timestamp = DateTime.Now });
         await ScrollToBottomIfNeeded();
     }
 
     private async Task LogSuccess(string message)
     {
+        Logger.LogInformation("✅ " + message);
         ActivityLog.Add(new LogEntry { Level = "success", Message = message, Timestamp = DateTime.Now });
         await ScrollToBottomIfNeeded();
     }
 
     private async Task LogWarning(string message)
     {
+        Logger.LogWarning(message);
         ActivityLog.Add(new LogEntry { Level = "warning", Message = message, Timestamp = DateTime.Now });
         await ScrollToBottomIfNeeded();
     }
 
     private async Task LogError(string message)
     {
+        Logger.LogError(message);
         ActivityLog.Add(new LogEntry { Level = "error", Message = message, Timestamp = DateTime.Now });
         await ScrollToBottomIfNeeded();
     }
@@ -361,5 +382,67 @@ public partial class ConversationalModeler : ComponentBase
         public string Level { get; set; } = "info";
         public string Message { get; set; } = "";
         public DateTime Timestamp { get; set; }
+    }
+
+    private void OnModelEditChanged(ModelEditChanged message)
+    {
+        _ = LogSuccess($"Model '{message.State}' edited - refreshing Model Explorer");
+        
+        // Debug: Log current model state following GeometryDebugTest pattern
+        LogModelState($"ModelEdit_{message.State}");
+        
+        // Force refresh of the Model Explorer UI
+        // CurrentModel property automatically reflects MentorServices.CurrentModel via ModelTech
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        MentorServices?.PubSub?.UnSubscribeFrom<ModelEditChanged>(OnModelEditChanged);
+        GC.SuppressFinalize(this);
+    }
+
+    // Debug helper method following GeometryDebugTest pattern
+    private void LogModelState(string context)
+    {
+        try
+        {
+            _ = LogInfo($"=== Model State Debug ({context}) ===");
+            
+            if (ModelTech?.CurrentModel != null)
+            {
+                var model = ModelTech.CurrentModel;
+                var components = model.Members<KnComponent>().ToList();
+                _ = LogSuccess($"✓ Current Model: '{model.GetName()}'");
+                _ = LogInfo($"  - Components: {components.Count}");
+                
+                foreach (var comp in components.Take(3)) // Show first 3 components
+                {
+                    var paramCount = comp.Members<KnParameter>().Count();
+                    _ = LogInfo($"    • {comp.GetName()} ({paramCount} parameters)");
+                }
+            }
+            else
+            {
+                _ = LogWarning("✗ No current model in ModelTech");
+            }
+            
+            // Check MentorServices model collection
+            if (MentorServices?.MentorModel != null)
+            {
+                var allModels = MentorServices.MentorModel.GetAllModels();
+                _ = LogInfo($"  - Total models in MentorServices: {allModels.Count}");
+                foreach (var model in allModels.Take(3))
+                {
+                    _ = LogInfo($"    • {model.GetName()} ({model.Members<KnComponent>().Count()} components)");
+                }
+            }
+            
+            _ = LogInfo("=== End Model State ===");
+        }
+        catch (Exception ex)
+        {
+            _ = LogError($"Error logging model state: {ex.Message}");
+        }
     }
 }

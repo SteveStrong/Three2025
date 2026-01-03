@@ -28,11 +28,11 @@ public class Shape3DTech : IShape3DTech
 
 
 
-   public Shape3DTech(IWorkspace workspace, IFoundryService foundryService, IShape3DEditor shapeEditor)
+   public Shape3DTech(IWorkspace workspace, IFoundryService foundryService)
    {
       Workspace = workspace;
       FoundryService = foundryService;
-      ShapeEditor = shapeEditor;
+      ShapeEditor = new Shape3DEditor(foundryService); // Create editor dynamically
    }
 
    /// <summary>

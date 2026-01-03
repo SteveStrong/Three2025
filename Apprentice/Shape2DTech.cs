@@ -17,11 +17,13 @@ public class Shape2DTech : IShape2DTech
     private readonly IWorkspace _workspace;
     private readonly IShape2DEditor _editor;
     private readonly ILogger<Shape2DTech> _logger;
+    private readonly IFoundryService _foundryService;
 
-    public Shape2DTech(IWorkspace workspace, IShape2DEditor editor, ILogger<Shape2DTech> logger)
+    public Shape2DTech(IWorkspace workspace, IFoundryService foundryService, ILogger<Shape2DTech> logger)
     {
         _workspace = workspace;
-        _editor = editor;
+        _foundryService = foundryService;
+        _editor = new Shape2DEditor(foundryService); // Create editor dynamically
         _logger = logger;
     }
 

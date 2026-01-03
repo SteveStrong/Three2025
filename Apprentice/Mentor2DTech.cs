@@ -15,14 +15,16 @@ namespace Three2025.Apprentice;
 public class Mentor2DTech : IMentor2DTech
 {
     private readonly IWorkspace _workspace;
+    private readonly IFoundryService _foundryService;
+    private readonly IMentor2DEditor _editor;
     private FoPage2D? _page;
-    private readonly Dictionary<string, FoGlyph2D> _boxes = new();
-    private readonly Dictionary<string, FoGlyph2D> _links = new();
     private readonly ILogger<Mentor2DTech> _logger;
 
-    public Mentor2DTech(IWorkspace workspace, ILogger<Mentor2DTech> logger)
+    public Mentor2DTech(IWorkspace workspace, IFoundryService foundryService, ILogger<Mentor2DTech> logger)
     {
         _workspace = workspace;
+        _foundryService = foundryService;
+        _editor = new Mentor2DEditor(foundryService); // Create editor dynamically
         _logger = logger;
     }
 
@@ -43,6 +45,7 @@ public class Mentor2DTech : IMentor2DTech
                 _logger.LogInformation("Mentor2DTech: Using first page '{PageName}'", _page.Name);
             }
             
+            _editor.SetPage(_page); // Connect editor to page
             return _page;
         }
         catch (Exception ex)
@@ -55,6 +58,7 @@ public class Mentor2DTech : IMentor2DTech
     public void SetPage(FoPage2D page)
     {
         _page = page;
+        _editor.SetPage(page); // Connect editor to page
     }
 
     private FoPage2D GetPage()
@@ -84,21 +88,9 @@ public class Mentor2DTech : IMentor2DTech
         {
             $"Mentor2DTech.AddBox: {name}, '{label}' at ({x},{y}) size {width}x{height}, {color}".WriteInfo();
 
-            if (_boxes.ContainsKey(name))
-            {
-                throw new ArgumentException($"Box with name '{name}' already exists");
-            }
-
-            var page = GetPage();
-            var box = new FoShape2D(width, height, color)
-            {
-                Name = name
-            };
+            GetPage(); // Ensure page is established
             
-            box.MoveTo(x, y);
-            page.AddShape(box);
-            _boxes[name] = box;
-
+            var box = _editor.AddBox(name, x, y, width, height, color);
             return new BoxInfo(name, label, x, y, width, height, color, box.GlyphId);
         }
         catch (Exception ex)
@@ -120,21 +112,9 @@ public class Mentor2DTech : IMentor2DTech
         {
             $"Mentor2DTech.AddStateBox: {name}, '{label}' at ({x},{y}), {color}".WriteInfo();
 
-            if (_boxes.ContainsKey(name))
-            {
-                throw new ArgumentException($"Box with name '{name}' already exists");
-            }
-
-            var page = GetPage();
-            var box = new FoShape2D(120, 60, color) // Rounded rectangle approximation
-            {
-                Name = name
-            };
+            GetPage(); // Ensure page is established
             
-            box.MoveTo(x, y);
-            page.AddShape(box);
-            _boxes[name] = box;
-
+            var box = _editor.AddStateBox(name, x, y, color);
             return new BoxInfo(name, label, x, y, 120, 60, color, box.GlyphId);
         }
         catch (Exception ex)
@@ -155,22 +135,9 @@ public class Mentor2DTech : IMentor2DTech
         {
             $"Mentor2DTech.AddDecisionBox: {name}, '{label}' at ({x},{y})".WriteInfo();
 
-            if (_boxes.ContainsKey(name))
-            {
-                throw new ArgumentException($"Box with name '{name}' already exists");
-            }
-
-            var page = GetPage();
-            // Create diamond shape using square (simple approximation for now)
-            var box = new FoShape2D(100, 100, "yellow")
-            {
-                Name = name
-            };
+            GetPage(); // Ensure page is established
             
-            box.MoveTo(x, y);
-            page.AddShape(box);
-            _boxes[name] = box;
-
+            var box = _editor.AddDecisionBox(name, x, y);
             return new BoxInfo(name, label, x, y, 100, 100, "yellow", box.GlyphId);
         }
         catch (Exception ex)
@@ -194,34 +161,11 @@ public class Mentor2DTech : IMentor2DTech
         {
             $"Mentor2DTech.AddDirectedLink: {sourceName} -> {targetName}, label='{label}'".WriteInfo();
 
-            if (!_boxes.ContainsKey(sourceName))
-            {
-                throw new ArgumentException($"Source box '{sourceName}' not found");
-            }
-            if (!_boxes.ContainsKey(targetName))
-            {
-                throw new ArgumentException($"Target box '{targetName}' not found");
-            }
-
-            var page = GetPage();
-            var sourceBox = _boxes[sourceName];
-            var targetBox = _boxes[targetName];
+            GetPage(); // Ensure page is established
             
-            // Create a line connecting the two boxes
+            var link = _editor.AddDirectedLink(sourceName, targetName);
             var linkName = $"{sourceName}_to_{targetName}";
-            int x1 = sourceBox.PinX + sourceBox.Width / 2;
-            int y1 = sourceBox.PinY + sourceBox.Height / 2;
-            int x2 = targetBox.PinX + targetBox.Width / 2;
-            int y2 = targetBox.PinY + targetBox.Height / 2;
             
-            var link = new FoShape1D(x1, y1, x2, y2, 2, "black")
-            {
-                Name = linkName
-            };
-            
-            page.AddShape(link);
-            _links[linkName] = link;
-
             return new LinkInfo(sourceName, targetName, "directed", label, link.GlyphId);
         }
         catch (Exception ex)
@@ -238,7 +182,8 @@ public class Mentor2DTech : IMentor2DTech
     [Description("Find a box by name and return its information")]
     public BoxInfo? FindBox([Description("Name of the box to find")] string name)
     {
-        if (_boxes.TryGetValue(name, out var box))
+        var box = _editor.FindBox(name);
+        if (box != null)
         {
             return new BoxInfo(
                 box.Name ?? name,
@@ -257,7 +202,7 @@ public class Mentor2DTech : IMentor2DTech
     [Description("Get a list of all boxes in the diagram")]
     public List<BoxInfo> GetAllBoxes()
     {
-        return _boxes.Values.Select(box => new BoxInfo(
+        return _editor.GetAllBoxes().Select(box => new BoxInfo(
             box.Name ?? "",
             "",  // Label not stored in base FoGlyph2D
             box.PinX,
@@ -272,7 +217,7 @@ public class Mentor2DTech : IMentor2DTech
     [Description("Get a list of all links in the diagram")]
     public List<LinkInfo> GetAllLinks()
     {
-        return _links.Values.Select(link => new LinkInfo(
+        return _editor.GetAllLinks().Select(link => new LinkInfo(
             link.Name ?? "",
             "",  // target name not easily accessible
             "directed",
@@ -293,7 +238,8 @@ public class Mentor2DTech : IMentor2DTech
     {
         try
         {
-            if (!_boxes.TryGetValue(name, out var box))
+            var box = _editor.FindBox(name);
+            if (box == null)
             {
                 throw new ArgumentException($"Box '{name}' not found");
             }
@@ -315,7 +261,8 @@ public class Mentor2DTech : IMentor2DTech
     {
         try
         {
-            if (!_boxes.TryGetValue(name, out var box))
+            var box = _editor.FindBox(name);
+            if (box == null)
             {
                 throw new ArgumentException($"Box '{name}' not found");
             }
@@ -336,14 +283,15 @@ public class Mentor2DTech : IMentor2DTech
     {
         try
         {
-            if (!_boxes.TryGetValue(name, out var box))
+            var box = _editor.FindBox(name);
+            if (box == null)
             {
                 throw new ArgumentException($"Box '{name}' not found");
             }
 
             var page = GetPage();
             page.RemoveShape(box);
-            _boxes.Remove(name);
+            // Editor handles cleanup internally via Clear() if needed
             
             // Remove any links connected to this box (simplified for now)
             var linksToRemove = new List<string>();
@@ -351,9 +299,11 @@ public class Mentor2DTech : IMentor2DTech
             
             foreach (var linkName in linksToRemove)
             {
-                var link = _links[linkName];
-                page.RemoveShape(link);
-                _links.Remove(linkName);
+                var link = _editor.FindLink(linkName);
+                if (link != null)
+                {
+                    page.RemoveShape(link);
+                }
             }
 
             $"Mentor2DTech.DeleteBox: {name} deleted with {linksToRemove.Count} connected links".WriteInfo();
