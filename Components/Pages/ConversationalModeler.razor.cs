@@ -1,357 +1,365 @@
 #nullable enable
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using FoundryMentorModeler.Model;
-using FoundryRulesAndUnits;
-using FoundryRulesAndUnits.Models;
+using FoundryMentorModeler.Shared;
+using FoundryWorldsAndDrawings.Shape;
+using FoundryWorldsAndDrawings.Shared;
+using Three2025.Components.Shared.Chat;
+using Three2025.Models.Chat;
+using Three2025.Services.Chat;
+using AIChatMessage = Microsoft.Extensions.AI.ChatMessage;
+using FoundryWorldsAndDrawings.Solutions;
 using Three2025.Apprentice;
+using Three2025.Models.Apprentice;
 
 namespace Three2025.Components.Pages;
 
 public partial class ConversationalModeler : ComponentBase
 {
-    [Inject] private NavigationManager? Nav { get; set; }
-    [Inject] private IModelTech? ModelTech { get; set; }
-    [Inject] private IMentorServices? MentorServices { get; set; }
+    [Inject] private IMentorServices MentorServices { get; set; } = default!;
+    [Inject] private IWorkspace Workspace { get; set; } = default!;
+    [Inject] private IChatOrchestrator ChatOrchestrator { get; set; } = default!;
+    [Inject] private ILogger<ConversationalModeler> Logger { get; set; } = default!;
+    [Inject] protected IModelTech ModelTech { get; set; } = default!;
 
-    // Panel sizing
-    private int ChatPanelWidth { get; set; } = 50;
-    private int ModelPanelWidth => 100 - ChatPanelWidth;
+    private string _activeTreeTab = "model";
+    private string chatInputValue = "";
     
-    // Chat state
-    private List<ChatMessage> ChatMessages { get; set; } = new();
-    private string UserInput { get; set; } = "";
-    
-    // Model state
-    private PartComponent? CurrentModel { get; set; }
-    private PartComponent? SelectedComponent { get; set; }
-    private List<ApiCall> ApiCallLog { get; set; } = new();
-    
-    // Test prompts
-    private static readonly Dictionary<string, string> TestPrompts = new()
+    // Chat-related fields
+    private List<ChatDisplayMessage> chatMessages = new();
+    private List<AIChatMessage> conversationHistory = new();
+    private bool isProcessingChat = false;
+    private string currentAgent = "Conversational Modeler AI";
+    private Queue<string> messageQueue = new();
+    private bool isProcessingQueue = false;
+    private PageContext pageContext = new PageContext
     {
-        ["beam-simple"] = @"I have a simply-supported steel beam, 10 feet long, with a 500 lb point load at the center. The I-beam has a moment of inertia of 10.9 in^4. What's the deflection at the center?",
-        ["beam-cantilever"] = @"Calculate the maximum deflection of a cantilever beam. Length is 6 feet, uniformly distributed load of 100 lb/ft, aluminum (E = 10 Mpsi), rectangular cross-section 2in x 4in.",
-        ["heat-wall"] = @"A concrete wall is 8 inches thick. Inside temperature is 70°F, outside is 20°F. Concrete has thermal conductivity of 0.8 BTU/(hr·ft·°F). What's the heat flux through the wall?"
+        PageName = "Conversational Modeler",
+        PageRoute = "/conversational-modeler",
+        DomainFocus = "Conversational AI Assistant specialized in creating knowledge models through natural language. Expert in engineering analysis, calculations, and model construction. Can build structural beam models, thermal analysis, electrical circuits, and other engineering systems through conversation."
     };
+
+    // Model-related properties  
+    private KnModel? CurrentModel => ModelTech?.CurrentModel; // Get current model from ModelTech
+    private KnComponent? SelectedComponent => ModelTech?.CurrentComponent; // Get current component from ModelTech
+    private List<TreeItemData> ModelTreeItems = new();
+    private List<LogEntry> ActivityLog = new();
+    
+    // Activity logging infrastructure
+    private bool autoScrollLogs = true;
+    private ElementReference logContainer;
+    private ElementReference logScrollAnchor;
 
     protected override void OnInitialized()
     {
+        base.OnInitialized();
+        
+        _ = LogInfo("Conversational Modeler initializing...");
+        
         // Welcome message
-        ChatMessages.Add(new ChatMessage
+        chatMessages.Add(new ChatDisplayMessage
         {
-            Role = "assistant",
-            Content = "Hello! I'm the Conversational Modeler. Describe an engineering problem and I'll build a knowledge model to solve it. You can also select a test prompt from the dropdown above.",
+            IsUser = false,
+            Text = "Hello! I'm the Conversational Modeler. Describe an engineering problem and I'll build a knowledge model to solve it through natural conversation.",
+            AgentName = currentAgent,
             Timestamp = DateTime.Now
         });
     }
 
-    private void OnTestPromptSelected(ChangeEventArgs e)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var key = e.Value?.ToString();
-        if (!string.IsNullOrEmpty(key) && TestPrompts.TryGetValue(key, out var prompt))
+        if (firstRender)
         {
-            UserInput = prompt;
-            StateHasChanged();
-        }
-    }
-
-    private async Task OnInputKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter" && !e.ShiftKey && !string.IsNullOrWhiteSpace(UserInput))
-        {
-            await SendMessage();
-        }
-    }
-
-    private async Task SendMessage()
-    {
-        if (string.IsNullOrWhiteSpace(UserInput)) return;
-
-        var message = UserInput.Trim();
-        UserInput = "";
-
-        // Add user message
-        ChatMessages.Add(new ChatMessage
-        {
-            Role = "user",
-            Content = message,
-            Timestamp = DateTime.Now
-        });
-
-        StateHasChanged();
-
-        // Process message (for now, echo back with model construction intent)
-        await ProcessUserMessage(message);
-    }
-
-    private async Task ProcessUserMessage(string message)
-    {
-        // For now, demonstrate the API with a simple response
-        // In Phase 3, this will call the actual LLM with function calling
-        
-        await Task.Delay(500); // Simulate processing
-
-        var response = "I understand you want to solve an engineering problem. ";
-        
-        // Simple pattern matching for demo
-        if (message.Contains("beam", StringComparison.OrdinalIgnoreCase))
-        {
-            response += "I'll create a beam model with the parameters you provided.\n\n";
-            response += "API calls that will be made:\n";
-            response += "• CreateComponent(\"BeamConcept\", \"beam1\")\n";
-            response += "• AddCalculation(\"beam1\", \"Length|ft: 10\")\n";
-            response += "• AddCalculation(\"beam1\", \"Load|lb: 500\")\n";
-            response += "• AddCalculation(\"beam1\", \"E|psi: 29e6\")\n";
-            response += "• AddCalculation(\"beam1\", \"I|in4: 10.9\")\n";
-            response += "• AddCalculation(\"beam1\", \"deflection|in: (Load@ * Length@^3) / (48 * E@ * I@)\")\n";
-            response += "• GetParameter(\"beam1\", \"deflection\")\n\n";
-            response += "📝 Note: Full model construction API integration coming in Phase 3!";
+            _ = LogInfo($"🔧 Initialized with {ChatOrchestrator.GetToolCount()} tools available for AI");
+            _ = LogSuccess($"✅ Conversational Modeler ready for knowledge model construction");
             
-            // Demonstrate creating a simple model
-            CreateDemoBeamModel();
+            await InvokeAsync(StateHasChanged);
         }
-        else
-        {
-            response += "Right now I'm in demo mode. Try asking about a beam deflection problem to see the model construction workflow!";
-        }
-
-        ChatMessages.Add(new ChatMessage
-        {
-            Role = "assistant",
-            Content = response,
-            Timestamp = DateTime.Now
-        });
-
-        StateHasChanged();
     }
 
-    private void CreateDemoBeamModel()
+    private async Task SendChatMessage()
     {
-        if (ModelTech == null || MentorServices == null)
-        {
-            ChatMessages.Add(new ChatMessage
-            {
-                Role = "assistant",
-                Content = "❌ Error: ModelTech service not available",
-                Timestamp = DateTime.Now
-            });
-            return;
-        }
-
+        if (isProcessingChat || string.IsNullOrWhiteSpace(chatInputValue)) return;
+        
+        var userMessage = chatInputValue;
+        chatInputValue = ""; // Clear input
+        
+        // Add user message to display
+        chatMessages.Add(new ChatDisplayMessage 
+        { 
+            IsUser = true,
+            Text = userMessage,
+            Timestamp = DateTime.Now
+        });
+        await InvokeAsync(StateHasChanged);
+        
+        isProcessingChat = true;
         try
         {
-            // Use ModelTech API to create model dynamically
-            var modelInfo = ModelTech.EstablishModel("BeamModel", "AnimatedKnModel");
-            LogApiCall("EstablishModel", ["BeamModel", "AnimatedKnModel"], modelInfo.Name);
+            Logger.LogInformation($"🔵 Processing message: '{userMessage}'");
+            _ = LogInfo($"🔵 User: {userMessage}");
             
-            // Add a PartComponent for the beam
-            var component = ModelTech.AddComponent("beam1", "BeamModel");
-            LogApiCall("AddComponent", ["beam1", "BeamModel"], component.Name ?? "");
+            // Add to conversation history
+            conversationHistory.Add(new AIChatMessage(ChatRole.User, userMessage));
             
-            // Set parameters using ModelTech
-            ModelTech.SetParameter("Length", "units(10, 'ft')", "beam1");
-            LogApiCall("SetParameter", ["Length", "units(10, 'ft')", "beam1"], null);
+            // Call the LLM through ChatOrchestrator
+            var response = await ChatOrchestrator.ProcessMessageAsync(
+                userMessage,
+                pageContext,
+                conversationHistory,
+                onAgentSwitch: async (agentName) => 
+                {
+                    currentAgent = agentName;
+                    Logger.LogInformation($"🔀 Agent Switch: {agentName}");
+                    await InvokeAsync(StateHasChanged);
+                });
             
-            ModelTech.SetParameter("Load", "units(500, 'lb')", "beam1");
-            LogApiCall("SetParameter", ["Load", "units(500, 'lb')", "beam1"], null);
+            var fullResponse = response.Content;
+            currentAgent = response.AgentName;
             
-            ModelTech.SetParameter("E", "units(29e6, 'psi')", "beam1");
-            LogApiCall("SetParameter", ["E", "units(29e6, 'psi')", "beam1"], null);
+            Logger.LogInformation($"✅ Response received: Length={fullResponse.Length}");
+            _ = LogSuccess($"✅ {currentAgent}: {fullResponse.Substring(0, Math.Min(100, fullResponse.Length))}...");
             
-            ModelTech.SetParameter("I", "units(10.9, 'in4')", "beam1");
-            LogApiCall("SetParameter", ["I", "units(10.9, 'in4')", "beam1"], null);
+            // Add AI response to chat history
+            conversationHistory.Add(new AIChatMessage(ChatRole.Assistant, fullResponse));
             
-            // Set formula for deflection
-            ModelTech.SetParameter("deflection", "(Load@ * Length@^3) / (48 * E@ * I@)", "beam1");
-            LogApiCall("SetParameter", ["deflection", "(Load@ * Length@^3) / (48 * E@ * I@)", "beam1"], null);
+            // Add to display messages
+            chatMessages.Add(new ChatDisplayMessage 
+            { 
+                IsUser = false,
+                Text = fullResponse,
+                AgentName = currentAgent,
+                Timestamp = DateTime.Now
+            });
             
-            // Get the calculated result
-            var deflectionParam = ModelTech.GetParameter("deflection", "beam1");
-            var deflectionValue = deflectionParam?.GetValue()?.ToString() ?? "N/A";
-            LogApiCall("GetParameter", ["deflection", "beam1"], deflectionValue);
-            
-            // Retrieve the actual model to display
-            var model = MentorServices.FindModel<KnModel>("BeamModel");
-            if (model != null)
-            {
-                CurrentModel = model.Members<PartComponent>().FirstOrDefault();
-                SelectedComponent = CurrentModel;
-            }
-            
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
-            ChatMessages.Add(new ChatMessage
-            {
-                Role = "assistant",
-                Content = $"❌ Error creating model: {ex.Message}",
+            Logger.LogError(ex, "Error processing chat message");
+            _ = LogError($"❌ Error: {ex.Message}");
+            
+            chatMessages.Add(new ChatDisplayMessage 
+            { 
+                IsUser = false,
+                Text = $"❌ Error: {ex.Message}",
+                AgentName = "System",
                 Timestamp = DateTime.Now
             });
-            StateHasChanged();
+            
+            await InvokeAsync(StateHasChanged);
+        }
+        finally
+        {
+            isProcessingChat = false;
         }
     }
 
-    private void StartVoiceInput()
+    private async Task QuickTest(string testPrompt)
     {
-        // Placeholder for voice input - will use JSInterop with Web Speech API
-        ChatMessages.Add(new ChatMessage
-        {
-            Role = "assistant",
-            Content = "🎤 Voice input coming in Phase 5! For now, please type your message.",
-            Timestamp = DateTime.Now
-        });
-        StateHasChanged();
+        Logger.LogInformation($"🧪 Quick Test: {testPrompt}");
+        _ = LogInfo($"🧪 Quick Test: {testPrompt}");
+        chatInputValue = testPrompt;
+        await SendChatMessage();
     }
-
-    private void HandleTreeSelection(FoundryRulesAndUnits.Models.ITreeNode node)
+    
+    protected async Task HandleTestSequenceSelected(TestSequenceMetadata sequence)
     {
-        if (node is PartComponent component)
+        if (isProcessingQueue)
         {
-            SelectedComponent = component;
+            _ = LogWarning("Cannot start test - already processing another sequence");
+            return;
         }
-        StateHasChanged();
+
+        _ = LogInfo($"🧪 Starting test: {sequence.DisplayName} ({sequence.PromptCount} prompts)");
+
+        // Load all prompts into the queue
+        messageQueue.Clear();
+        foreach (var prompt in sequence.Prompts)
+        {
+            messageQueue.Enqueue(prompt);
+        }
+
+        // Start processing
+        await ProcessMessageQueue();
+        
+        _ = LogSuccess($"✅ Test sequence completed: {sequence.DisplayName}");
+    }
+    
+    private async Task ProcessMessageQueue()
+    {
+        if (isProcessingQueue || messageQueue.Count == 0) return;
+        
+        isProcessingQueue = true;
+        
+        try
+        {
+            while (messageQueue.Count > 0)
+            {
+                var message = messageQueue.Dequeue();
+                _ = LogInfo($"🚀 Auto-executing: {message}");
+                
+                chatInputValue = message;
+                await SendChatMessage();
+                
+                // Wait between messages to avoid overwhelming
+                if (messageQueue.Count > 0)
+                {
+                    await Task.Delay(2000);
+                }
+            }
+        }
+        finally
+        {
+            isProcessingQueue = false;
+        }
     }
 
     private void ClearModel()
     {
-        CurrentModel = null;
-        SelectedComponent = null;
-        ApiCallLog.Clear();
+        _ = LogInfo("🗑️ Clearing conversation and model...");
+        conversationHistory.Clear();
+        chatMessages.Clear();
         
-        ChatMessages.Add(new ChatMessage
+        // Add welcome message back
+        chatMessages.Add(new ChatDisplayMessage
         {
-            Role = "assistant",
-            Content = "Model cleared. Ready to build a new model!",
+            IsUser = false,
+            Text = "Model cleared! Ready to start fresh. Describe an engineering problem and I'll build a knowledge model to solve it.",
+            AgentName = currentAgent,
             Timestamp = DateTime.Now
         });
         
         StateHasChanged();
+        _ = LogSuccess("✅ Model and conversation cleared");
     }
 
-    private void ClearLog()
+    private void HandleTreeSelection(object selectedItem)
     {
-        ApiCallLog.Clear();
-        StateHasChanged();
+        _ = LogInfo($"🔍 Selected tree item: {selectedItem}");
+        // TODO: Implement component selection handling
     }
 
-    // Splitter functionality
-    private void StartResize(MouseEventArgs e)
+    private IEnumerable<ParameterInfo> GetParameters(object? component)
     {
-        // TODO: Add mouse move/up event handlers via JSInterop for smooth dragging
-    }
-
-    private void ResetSplit()
-    {
-        ChatPanelWidth = 50;
-        StateHasChanged();
-    }
-
-    // Helper methods
-    private int GetParameterCount(PartComponent component)
-    {
-        return component.Members<KnParameter>().Count();
-    }
-
-    private List<PartComponent> GetSubComponents(PartComponent component)
-    {
-        return component.ModelComponents<PartComponent>().ToList();
-    }
-
-    private List<DisplayParameterInfo> GetParameters(PartComponent component)
-    {
-        var result = new List<DisplayParameterInfo>();
-        
-        foreach (var param in component.Members<KnParameter>())
+        if (component is not KnComponent knComponent)
+            return new List<ParameterInfo>();
+            
+        return knComponent.Members<KnParameter>().Select(p => new ParameterInfo
         {
-            var opResult = param.GetValue();
-            var displayValue = "N/A";
-            
-            if (opResult.IsNumberWithUnits())
-            {
-                var mv = opResult.AsMeasuredValue();
-                displayValue = $"{mv.Value} {mv.Units}";
-            }
-            else if (opResult.IsNumber())
-            {
-                displayValue = opResult.AsNumber().ToString("F3");
-            }
-            else if (opResult.IsString())
-            {
-                displayValue = opResult.AsString();
-            }
-            
-            var formula = param.Expression;
-            
-            result.Add(new DisplayParameterInfo
-            {
-                Name = param.Name ?? "",
-                DisplayValue = displayValue,
-                Formula = formula ?? "",
-                IsCalculated = !string.IsNullOrEmpty(formula)
-            });
-        }
-        
-        return result;
-    }
-
-    private void LogApiCall(string method, object[] args, object? result)
-    {
-        ApiCallLog.Add(new ApiCall
-        {
-            Timestamp = DateTime.Now,
-            Method = method,
-            Arguments = args,
-            Result = result
+            Name = p.Name ?? "",
+            Value = p.GetValue()?.ToString() ?? "",
+            Unit = null, // TODO: Extract unit from parameter if available
+            IsFormula = !string.IsNullOrEmpty(p.Expression)
         });
     }
-    
-    // Simple concrete beam class for demo
-    private class BeamConcept : PartComponent
+
+    // Activity logging methods
+    private async Task LogInfo(string message)
     {
-        public BeamConcept(string name) : base(name)
+        ActivityLog.Add(new LogEntry { Level = "info", Message = message, Timestamp = DateTime.Now });
+        await ScrollToBottomIfNeeded();
+    }
+
+    private async Task LogSuccess(string message)
+    {
+        ActivityLog.Add(new LogEntry { Level = "success", Message = message, Timestamp = DateTime.Now });
+        await ScrollToBottomIfNeeded();
+    }
+
+    private async Task LogWarning(string message)
+    {
+        ActivityLog.Add(new LogEntry { Level = "warning", Message = message, Timestamp = DateTime.Now });
+        await ScrollToBottomIfNeeded();
+    }
+
+    private async Task LogError(string message)
+    {
+        ActivityLog.Add(new LogEntry { Level = "error", Message = message, Timestamp = DateTime.Now });
+        await ScrollToBottomIfNeeded();
+    }
+    
+    private void ClearActivityLogs()
+    {
+        ActivityLog.Clear();
+        StateHasChanged();
+    }
+    
+    private void ToggleAutoScroll()
+    {
+        autoScrollLogs = !autoScrollLogs;
+        StateHasChanged();
+    }
+    
+    private async Task ScrollToBottomIfNeeded()
+    {
+        if (autoScrollLogs && _activeTreeTab == "activity")
         {
-            Calculations([
-                "Length|ft: 10",
-                "Load|lb: 500",
-                "E|psi: 29e6",
-                "I|in4: 10.9",
-                "L_inches|in: Length@",
-                "deflection|in: (Load@ * L_inches@^3) / (48 * E@ * I@)"
-            ]);
+            await Task.Delay(50); // Let DOM update
+            await InvokeAsync(async () =>
+            {
+                try
+                {
+                    await logScrollAnchor.FocusAsync();
+                }
+                catch
+                {
+                    // Ignore focus errors
+                }
+            });
         }
     }
-}
-
-// Supporting classes
-public class ChatMessage
-{
-    public required string Role { get; set; } // "user" or "assistant"
-    public required string Content { get; set; }
-    public DateTime Timestamp { get; set; }
-}
-
-public class DisplayParameterInfo
-{
-    public required string Name { get; set; }
-    public required string DisplayValue { get; set; }
-    public required string Formula { get; set; }
-    public bool IsCalculated { get; set; }
-}
-
-public class ApiCall
-{
-    public DateTime Timestamp { get; set; }
-    public required string Method { get; set; }
-    public object[] Arguments { get; set; } = Array.Empty<object>();
-    public object? Result { get; set; }
     
-    public string FormatLog()
+    private string GetLogBackgroundColor(string level) => level.ToLower() switch
     {
-        var args = string.Join(", ", Arguments.Select(a =>
-            a is string s ? $"\"{s}\"" : a?.ToString() ?? "null"));
-        var result = Result != null ? $" → {Result}" : "";
-        return $"{Timestamp:HH:mm:ss} {Method}({args}){result}";
+        "error" => "#3c1e1e",
+        "warning" => "#3c3c1e", 
+        "success" => "#1e3c1e",
+        "info" => "#1e2a3c",
+        _ => "#2e2e2e"
+    };
+    
+    private string GetLogBorderColor(string level) => level.ToLower() switch
+    {
+        "error" => "#dc3545",
+        "warning" => "#ffc107",
+        "success" => "#28a745", 
+        "info" => "#17a2b8",
+        _ => "#6c757d"
+    };
+    
+    private string GetLogColor(string level) => level.ToLower() switch
+    {
+        "error" => "#ff6b6b",
+        "warning" => "#ffd93d",
+        "success" => "#51cf66",
+        "info" => "#74c0fc", 
+        _ => "#d4d4d4"
+    };
+    
+    private string GetLogIcon(string level) => level.ToLower() switch
+    {
+        "error" => "❌",
+        "warning" => "⚠️",
+        "success" => "✅",
+        "info" => "ℹ️",
+        _ => "📝"
+    };
+
+    private class TreeItemData
+    {
+        public string Name { get; set; } = "";
+        public KnowledgeType Type { get; set; }
+        public string ShapeId { get; set; } = "";
+        public List<TreeItemData> Children { get; set; } = new();
+    }
+
+    private class LogEntry
+    {
+        public string Level { get; set; } = "info";
+        public string Message { get; set; } = "";
+        public DateTime Timestamp { get; set; }
     }
 }

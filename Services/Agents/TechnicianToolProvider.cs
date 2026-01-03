@@ -33,14 +33,30 @@ public class TechnicianToolProvider : ITechnicianToolProvider
         
         _logger.LogInformation($"📋 Found {technicianTypes.Count} ITechnician interfaces: {string.Join(", ", technicianTypes.Select(t => t.Name))}");
         
+        // DIAGNOSTIC: Check if IModelTech is in the list
+        var hasModelTech = technicianTypes.Any(t => t.Name == "IModelTech");
+        _logger.LogInformation($"🔍 DIAGNOSTIC: IModelTech found in interfaces: {hasModelTech}");
+        
         var allTools = new List<AIFunction>();
         
         foreach (var interfaceType in technicianTypes)
         {
             try
             {
+                _logger.LogInformation($"🔍 Processing interface: {interfaceType.Name}");
                 var tools = GetToolsFor(interfaceType);
                 allTools.AddRange(tools);
+                _logger.LogInformation($"  ➡️ Added {tools.Count()} tools from {interfaceType.Name}");
+                
+                // DIAGNOSTIC: Special logging for IModelTech
+                if (interfaceType.Name == "IModelTech")
+                {
+                    _logger.LogInformation($"🎯 MODELTECH DIAGNOSTIC: Found {tools.Count()} tools from IModelTech");
+                    foreach (var tool in tools.Take(10))
+                    {
+                        _logger.LogInformation($"  📦 ModelTech tool: {tool.Name}");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -105,6 +121,7 @@ public class TechnicianToolProvider : ITechnicianToolProvider
         }
         
         var implementationType = implementation.GetType();
+        _logger.LogInformation($"  🔧 Found implementation: {implementationType.Name} for {interfaceType.Name}");
         
         // Find methods with [AgentTool] or [Description]
         var methods = implementationType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
@@ -114,10 +131,16 @@ public class TechnicianToolProvider : ITechnicianToolProvider
                  m.DeclaringType == implementationType))
             .ToList();
         
+        _logger.LogInformation($"  🔍 Found {methods.Count} methods with Description/AgentTool attributes in {implementationType.Name}");
+        
         // Only log if tools were found
         if (methods.Count > 0)
         {
             _logger.LogInformation($"  ✓ {interfaceType.Name} -> {implementation.GetType().Name}: {methods.Count} tools");
+        }
+        else
+        {
+            _logger.LogWarning($"  ⚠️ {interfaceType.Name} -> {implementation.GetType().Name}: NO TOOLS FOUND");
         }
         
         foreach (var method in methods)

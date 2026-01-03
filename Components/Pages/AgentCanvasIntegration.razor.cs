@@ -765,7 +765,7 @@ public partial class AgentCanvasIntegration : ComponentBase
             var dataCenter = RackKnowledgeToFoFactory.GenerateDataCenter(dataCenterModel);
             
             // Add all shapes to stage
-            foreach (var shape in dataCenter.GetMembers<RackCabinetShape>())
+            foreach (var shape in dataCenter.GetMembers<RackCabinetShape>() ?? Enumerable.Empty<RackCabinetShape>())
             {
                 stage.AddShape(shape);
             }
@@ -819,7 +819,9 @@ public partial class AgentCanvasIntegration : ComponentBase
         var stage = Canvas3DReference?.Stage;
         if (stage == null) return;
 
-        var cabinets = stage.GetMembers<RackCabinetShape>().ToList();
+        var cabinets = stage.GetMembers<RackCabinetShape>()?.ToList();
+        if (cabinets == null) return;
+        
         foreach (var cabinet in cabinets)
         {
             stage.RemoveShape(cabinet);

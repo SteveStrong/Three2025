@@ -1,38 +1,98 @@
-# Conversational Modeler UI Specification
+# Conversational Design Partner - UI Specification
 
-## Overview
+**Updated**: January 2, 2026  
+**Status**: ✅ Implemented - AI Design Partner & Memory System  
+**Vision**: Engineers converse with AI agents that take structured notes, build calculable models, and synthesize designs
 
-The Conversational Modeler is a split-panel interface that combines natural language interaction with real-time knowledge model construction and evaluation. The chatbot constructs declarative models through conversation, and the model panel displays the resulting calculations with proper units.
+## Mission: AI as Intelligent Design Partner
+
+The ConversationalModeler enables **engineer-AI design partnerships** where AI agents:
+- 📝 **Take Structured Notes** → Convert conversation into calculable SysML 2 models
+- 🧮 **Build Living Calculations** → Spreadsheet-like formulas with dependencies  
+- 💾 **Maintain Design Memory** → Short-term (conversation) + Long-term (patterns)
+- 🎯 **Synthesize Solutions** → Apply domain knowledge to generate designs
+- 🔄 **Enable Iteration** → Update models as conversations evolve
+
+### The Engineer-AI Design Conversation
+
+```
+Engineer: "I need an HVAC system for a 3-story office building, 
+          10,000 sq ft per floor, with standard office loads."
+
+AI Design Partner Response:
+✅ I'll create a comprehensive HVAC model with load calculations.
+
+AI Function Calls (Structured Note-Taking):
+1. establish_model("Office_HVAC_System")
+2. add_component("Building", modelName="Office_HVAC_System")  
+3. set_parameter("Floors", "3", componentPath="Building")
+4. set_parameter("FloorArea", "10000 ft²", componentPath="Building")
+5. add_component("Zone1", parentPath="Building")
+6. set_parameter("Area", "FloorArea@ / 1", componentPath="Zone1")  
+7. set_parameter("OccupancyLoad", "250 BTU/hr/person", componentPath="Zone1")
+8. set_parameter("LightingLoad", "Area@ * 3 BTU/hr/ft²", componentPath="Zone1")
+9. set_parameter("EquipmentLoad", "Area@ * 2 BTU/hr/ft²", componentPath="Zone1")
+10. set_parameter("TotalCoolingLoad", "OccupancyLoad@ + LightingLoad@ + EquipmentLoad@", componentPath="Zone1")
+
+Result: Living model that calculates loads, sizes equipment, and updates automatically
+```
 
 ## Architecture
 
+✅ **IMPLEMENTED**: Engineer-AI Design Partnership Interface
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Conversational Modeler                       │
+│               ConversationalModeler                             │
+│           AI Design Partner & Memory System                     │
 ├──────────────────────────────┬──────────────────────────────────┤
-│   CHAT PANEL (Left)          │   MODEL PANEL (Right)            │
+│   ENGINEER CONVERSATION (50%) │   DESIGN MEMORY SYSTEM (50%)     │
 │                              │                                  │
-│  [Test Prompt Dropdown ▼]    │   Model Tree:                    │
-│  ┌─────────────────────────┐ │   ⊟ beam1 (BeamConcept)         │
-│  │ Conversation History    │ │     ├─ Length: 10 ft            │
-│  │                         │ │     ├─ Load: 500 lb             │
-│  │ User: I have a 10 ft   │ │     ├─ E: 29000000 psi          │
-│  │ steel beam...          │ │     ├─ I: 10.9 in⁴             │
-│  │                         │ │     └─ deflection: 0.154 in    │
-│  │ Copilot: I'll calculate│ │                                  │
-│  │ the deflection...      │ │   Parameters:                   │
-│  │                         │ │   ┌────────────────────────┐   │
-│  │                         │ │   │ Name: deflection       │   │
-│  │                         │ │   │ Value: 0.154 in        │   │
-│  └─────────────────────────┘ │   │ Formula: (Load@ * ...  │   │
-│                              │   └────────────────────────┘   │
-│  [🎤] Type message...   [📤] │                                  │
-│                              │   API Calls Log:                │
-│                              │   • CreateComponent(...)        │
-│                              │   • AddCalculation(...)         │
+│  [Engineering Test Cases ▼]  │   Tabs: [Models] [Calculations] │
+│                              │        [Memory] [Synthesis]      │ 
+│  ┌─────────────────────────┐ │                                  │
+│  │ 👨‍💼 Domain Expert Input   │ │   📊 AI Note-Taking Activity     │
+│  │                         │ │   ┌────────────────────────────┐ │
+│  │ Engineer: "Design a     │ │   │ 📝 Captured: Building area │ │
+│  │ cooling system for      │ │   │ 🧮 Calculated: Total load  │ │
+│  │ 50,000 sq ft warehouse  │ │   │ 🎯 Applied: HVAC patterns  │ │
+│  │ with 24/7 operation"    │ │   │ 💾 Stored: Equipment specs │ │
+│  │                         │ │   │ 🔄 Updated: Dependencies   │ │
+│  │ 🤖 AI Design Partner:   │ │   └────────────────────────────┘ │
+│  │ "I'll model this as a   │ │                                  │
+│  │ industrial HVAC system  │ │   📁 SysML 2 Object Hierarchy    │
+│  │ with zone-based cooling │ │   ⊞ WarehouseHVAC               │
+│  │ and calculate loads     │ │     ⊞ Building (Component)      │
+│  │ based on usage..."      │ │       • TotalArea|ft²: 50000    │
+│  │                         │ │       • OperatingHours|hr: 24   │
+│  │ ✅ Created HVAC model   │ │       • HeatGainRate|BTU/ft²/hr │
+│  │ 📝 Applied load calcs   │ │     ⊞ CoolingZones (Collection) │
+│  │ 🧮 Sized equipment      │ │       • Zone1: Area@ * 0.6     │
+│  │ 💡 Suggested controls   │ │       • Zone2: Area@ * 0.4     │
+│  └─────────────────────────┘ │       • LoadPerZone|BTU:        │
+│                              │         HeatGainRate@ * Area@  │
+│  ┌─────────────────────────┐ │     ⊞ Equipment (PartInstance)  │
+│  │ 💬 "What about energy   │ │       • RequiredCapacity|Tons:  │
+│  │ efficiency options?"    │ │         TotalLoad@ / 12000     │
+│  │                    [📤] │ │                                  │
+│  └─────────────────────────┘ │   🧠 AI Memory & Synthesis       │
+│                              │   • Short-term: This building   │
+│  Test Engineering Scenarios: │   • Long-term: HVAC patterns    │
+│  • Industrial HVAC Design    │   • Active: Equipment selection │
+│  • Structural Load Analysis  │   • Learning: Energy optimization│
+│  • Power System Sizing       │                                  │
+│  • Process Control Design    │   💡 Design Synthesis Engine     │
 └──────────────────────────────┴──────────────────────────────────┘
-                    [Resizable Splitter]
+                    [Resizable RadzenSplitter]
 ```
+
+### Technical Implementation: AI Memory Architecture
+
+**Conversation Processing**: Multi-agent system with domain expertise  
+**Note-Taking Engine**: ModelTech API with SysML 2 structured modeling  
+**Calculation System**: Spreadsheet-like formula dependencies with real-time updates  
+**Memory Systems**: Short-term (conversation context) + Long-term (design patterns)  
+**Synthesis Engine**: Combines domain knowledge with conversational inputs for design generation
 
 ## Left Panel: Chat Interface
 
@@ -103,10 +163,148 @@ public class TestPrompts
             aluminum (E = 10 Mpsi), rectangular cross-section 2in x 4in.",
             
         ["heat-wall"] = @"A concrete wall is 8 inches thick. Inside temperature 
-            is 70°F, outside is 20°F. Concrete has thermal conductivity of 
-            0.8 BTU/(hr·ft·°F). What's the heat flux through the wall?"
-    };
+---
+
+## 🔧 ModelTech API Integration
+
+The ConversationalModeler uses the **ModelTech** interface for all AI-driven model manipulation. This provides a clean, documented API that ChatOrchestrator can use for function calling.
+
+### Core Operations
+
+```csharp
+@inject IModelTech ModelTech
+
+// AI Function Calling Examples:
+ModelTech.EstablishModel("StructuralAnalysis");               // Create/get model
+ModelTech.AddComponent("SteelBeam");                          // Add component  
+ModelTech.SetParameter("Length", "10 ft");                   // Set parameter
+ModelTech.GetParameter("deflection");                        // Get calculated result
+```
+
+### Function Calling Tools Generated from ModelTech
+
+Each ModelTech method becomes an AI tool through its `[Description]` attributes:
+
+**establish_model**
+```json
+{
+  "name": "establish_model",
+  "description": "Create or retrieve a named model and set as current working model",
+  "parameters": {
+    "modelName": {"type": "string", "description": "Name of the model to create or retrieve"},
+    "modelType": {"type": "string", "description": "Type of model (defaults to 'KnModel')"}
+  }
 }
+```
+
+**add_component**
+```json
+{
+  "name": "add_component", 
+  "description": "Add a component to the current model and make it current",
+  "parameters": {
+    "componentName": {"type": "string", "description": "Name for the new component"},
+    "modelName": {"type": "string", "description": "Model name (optional, uses current model)"},
+    "parentComponentPath": {"type": "string", "description": "Path to parent component (optional)"}
+  }
+}
+```
+
+**set_parameter**
+```json
+{
+  "name": "set_parameter",
+  "description": "Set a parameter value on current component. Value can be number, formula, or units expression", 
+  "parameters": {
+    "parameterName": {"type": "string", "description": "Name of the parameter"},
+    "value": {"type": "string", "description": "Value as formula string (e.g., '42', 'Width * 2', 'units(100, \"cm\")')"},
+    "componentPath": {"type": "string", "description": "Path to component (optional, uses current component)"}
+  }
+}
+```
+
+### PartComponent Calculations Integration
+
+The AI can create engineering models using declarative **Calculations** syntax:
+
+```
+User: "Create a cantilever beam 8 feet long with 1000 lb tip load"
+
+AI Response:
+✅ I'll create a cantilever beam model for you.
+
+AI Function Calls:
+1. establish_model("CantileverAnalysis")
+2. add_component("CantileverBeam") 
+3. set_parameter("Length", "8 ft")
+4. set_parameter("TipLoad", "1000 lb")
+5. set_parameter("E", "29000000 psi")  # Steel modulus
+6. set_parameter("I", "54.0 in^4")     # Beam moment of inertia  
+7. set_parameter("deflection", "(TipLoad@ * Length@^3) / (3 * E@ * I@)")
+
+Result: δ = (1000 * 8^3 * 12^3) / (3 * 29000000 * 54.0) = 2.34 inches
+```
+
+The `@` syntax in formulas creates dependencies - changing Length automatically recalculates deflection.
+
+### Event-Driven UI Updates
+
+ModelTech uses ModelEditor which publishes events for automatic UI refresh:
+
+```csharp
+// ModelTech calls ModelEditor internally
+public KnComponent AddComponent(string componentName, ...)
+{
+    var component = new KnComponent(componentName);
+    _modelEditor.AddChild(parent, component);  // Publishes ModelEditChanged.ChildAdded
+    return component;
+}
+
+// MentorModelManager subscribes and refreshes UI
+private void OnModelChanged(ModelEditChanged message)
+{
+    // ConversationalModeler tree view refreshes automatically
+    // Activity log shows new entry
+    // Parameter panel updates
+}
+```
+
+### Activity Logging Integration
+
+ModelTech methods use color-coded logging that appears in the Activity Log panel:
+
+```csharp
+public KnModel EstablishModel(string modelName, string? modelType = null)
+{
+    $"ModelTech.EstablishModel: Creating/retrieving '{modelName}' of type {modelType}".WriteInfo();
+    // ... create model ...
+    $"✅ Model '{modelName}' established with {componentCount} components (now current)".WriteSuccess();
+}
+```
+
+This creates real-time feedback in the ConversationalModeler Activity Log:
+- ℹ️ **Info**: API method calls and progress
+- ✅ **Success**: Completed operations with results  
+- ⚠️ **Warning**: Non-fatal issues (component not found, etc.)
+- ❌ **Error**: Failed operations with error messages
+
+### Context Tracking
+
+ModelTech maintains conversational context across AI interactions:
+
+```csharp
+public KnModel? CurrentModel { get; private set; }        // Active model
+public KnComponent? CurrentComponent { get; private set; } // Active component
+
+// AI can reference context implicitly
+User: "Set the load to 500 pounds"
+// AI calls: set_parameter("Load", "500 lb")  
+// Uses CurrentComponent automatically
+```
+
+This eliminates the need to specify full paths in every AI function call.
+
+---
 ```
 
 ## Right Panel: Model Visualization

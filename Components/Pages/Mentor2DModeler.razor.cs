@@ -25,7 +25,6 @@ public partial class Mentor2DModeler : ComponentBase
     [Inject] protected IModelTech ModelTech { get; set; } = default!;
     [Inject] protected IShape2DTech Shape2DTech { get; set; } = default!;
 
-    private ElementReference canvasContainer;
     private Canvas2DComponent? Canvas2DReference;
     private IMentorStudio? Playground;
     private IDrawing? Drawing;
@@ -57,11 +56,11 @@ public partial class Mentor2DModeler : ComponentBase
     private ElementReference logContainer;
     private ElementReference logScrollAnchor;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         base.OnInitialized();
         
-        LogInfo("Mentor 2D Visual Modeler initializing...");
+        await LogInfo("Mentor 2D Visual Modeler initializing...");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -73,7 +72,7 @@ public partial class Mentor2DModeler : ComponentBase
             
             if (Canvas2DReference?.Page == null)
             {
-                LogError("❌ Canvas2DReference.Page is null - shapes won't render!");
+                _ = LogError("❌ Canvas2DReference.Page is null - shapes won't render!");
                 return;
             }
             
@@ -81,29 +80,29 @@ public partial class Mentor2DModeler : ComponentBase
             Drawing = Workspace.GetDrawing();
             var canvasPage = Canvas2DReference.Page;
             
-            LogInfo($"✅ Canvas page available: {canvasPage.Name}");
+            _ = LogInfo($"✅ Canvas page available: {canvasPage.Name}");
             
             // CRITICAL: Connect technicians to canvas so AI can create shapes
             Shape2DTech.SetPage(canvasPage);
-            LogSuccess($"✅ Connected Shape2DTech to page '{canvasPage.Name}'");
-            LogInfo($"🔧 Initialized with {ChatOrchestrator.GetToolCount()} tools available for AI");
+_ = LogSuccess($"✅ Connected Shape2DTech to page '{canvasPage.Name}'");
+            _ = LogInfo($"🔧 Initialized with {ChatOrchestrator.GetToolCount()} tools available for AI");
             
             // Create MentorStudio - it will register MentorConstructTool automatically
             Playground = new MentorStudio(Workspace, MentorServices.PubSub, MentorServices);
             
             // CRITICAL: Connect ModelTech to MentorStudio so AI can create MentorShape2D
             ModelTech.SetPageContext(canvasPage, Playground);
-            LogSuccess($"✅ Connected ModelTech to MentorStudio for visual shape creation");
+            _ = LogSuccess($"✅ Connected ModelTech to MentorStudio for visual shape creation");
             
             // Verify the studio is using the correct page
             var studioPage = Drawing?.FirstPage();
             if (studioPage != null && studioPage == canvasPage)
             {
-                LogSuccess($"✅ MentorStudio connected to canvas page '{canvasPage.Name}'");
+                _ = LogSuccess($"✅ MentorStudio connected to canvas page '{canvasPage.Name}'");
             }
             else
             {
-                LogWarning($"⚠️ Page mismatch - Studio: {studioPage?.Name}, Canvas: {canvasPage.Name}");
+                _ = LogWarning($"⚠️ Page mismatch - Studio: {studioPage?.Name}, Canvas: {canvasPage.Name}");
             }
             
             StateHasChanged();
@@ -136,7 +135,7 @@ public partial class Mentor2DModeler : ComponentBase
         
         if (Playground == null || page == null)
         {
-            LogError($"❌ Not ready to create {typeName} - Playground:{Playground != null}, Page:{page != null}");
+            _ = LogError($"❌ Not ready to create {typeName} - Playground:{Playground != null}, Page:{page != null}");
             return;
         }
 
@@ -161,18 +160,18 @@ public partial class Mentor2DModeler : ComponentBase
                     nextY = 100;
                 }
 
-                LogSuccess($"✅ Created {typeName}: {shape.Text} at ({shape.PinX},{shape.PinY})");
+                _ = LogSuccess($"✅ Created {typeName}: {shape.Text} at ({shape.PinX},{shape.PinY})");
                 RefreshTree();
                 StateHasChanged();
             }
             else
             {
-                LogError($"❌ Factory returned null for {typeName}");
+                _ = LogError($"❌ Factory returned null for {typeName}");
             }
         }
         catch (Exception ex)
         {
-            LogError($"❌ Error creating {typeName}: {ex.Message}");
+            _ = LogError($"❌ Error creating {typeName}: {ex.Message}");
             Logger.LogError(ex, "Exception in CreateShape");
         }
     }
@@ -188,7 +187,7 @@ public partial class Mentor2DModeler : ComponentBase
             var page = Canvas2DReference?.Page;
             if (page == null)
             {
-                LogError("❌ Canvas2D page not available for test circle");
+                _ = LogError("❌ Canvas2D page not available for test circle");
                 return;
             }
 
@@ -211,12 +210,12 @@ public partial class Mentor2DModeler : ComponentBase
             shape.MoveTo(x, y);
             
             page.AddShape(shape);
-            LogSuccess($"⭕ Added {color} test circle radius={radius} at ({x},{y})");
+            _ = LogSuccess($"⭕ Added {color} test circle radius={radius} at ({x},{y})");
             StateHasChanged();
         }
         catch (Exception ex)
         {
-            LogError($"Failed to add test circle: {ex.Message}");
+            _ = LogError($"Failed to add test circle: {ex.Message}");
         }
     }
 
@@ -226,7 +225,7 @@ public partial class Mentor2DModeler : ComponentBase
         {
             if (Playground == null)
             {
-                LogError("Playground not initialized");
+                _ = LogError("Playground not initialized");
                 return;
             }
 
@@ -246,27 +245,27 @@ public partial class Mentor2DModeler : ComponentBase
                 var y = random.Next(50, 500);
                 shape.MoveTo(x, y);
                 
-                LogSuccess($"✅ Added test concept '{conceptText}' at ({x},{y})");
+                _ = LogSuccess($"✅ Added test concept '{conceptText}' at ({x},{y})");
                 RefreshTree();
                 StateHasChanged();
             }
         }
         catch (Exception ex)
         {
-            LogError($"Failed to add test concept: {ex.Message}");
+            _ = LogError($"Failed to add test concept: {ex.Message}");
         }
     }
 
     private void CreateBeamExample()
     {
-        LogInfo("Creating Beam Example...");
+        _ = LogInfo("Creating Beam Example...");
         
         // Create Beam Concept (already added to page by Playground)
         var beam = Playground?.CreateShape<KnConcept>("Beam");
         if (beam != null)
         {
             beam.MoveTo(200, 200);
-            LogSuccess("Created Beam Concept");
+            _ = LogSuccess("Created Beam Concept");
 
             // Create Properties and attach them
             var length = Playground?.CreateShape<KnProperty>("Length");
@@ -298,11 +297,11 @@ public partial class Mentor2DModeler : ComponentBase
 
     private void CreateStrategicPlanExample()
     {
-        LogInfo("Creating Strategic Plan Example...");
+        _ = LogInfo("Creating Strategic Plan Example...");
         
         if (Playground == null)
         {
-            LogError("Playground not initialized");
+            _ = LogError("Playground not initialized");
             return;
         }
 
@@ -357,7 +356,7 @@ public partial class Mentor2DModeler : ComponentBase
         Playground.Attach(e2, p2);
         Playground.Attach(CreateShapeWithType(KnowledgeType.Concept, "On-going Non-profit TEMPLATE"), p2);
 
-        LogSuccess("Strategic Plan created successfully!");
+        _ = LogSuccess("Strategic Plan created successfully!");
         RefreshTree();
         StateHasChanged();
     }
@@ -391,14 +390,14 @@ public partial class Mentor2DModeler : ComponentBase
     private void SaveModel()
     {
         MentorServices?.MentorModel?.SaveModel<FoundryMentorModeler.Persistence.KnowledgePersist>();
-        LogSuccess("Model saved");
+        _ = LogSuccess("Model saved");
     }
 
     private void LoadModel()
     {
         MentorServices?.MentorModel?.RestoreModel<FoundryMentorModeler.Persistence.KnowledgePersist>();
         RefreshTree();
-        LogSuccess("Model loaded");
+        _ = LogSuccess("Model loaded");
         StateHasChanged();
     }
 
@@ -446,7 +445,7 @@ public partial class Mentor2DModeler : ComponentBase
 
     private void SelectShape(TreeItemData item)
     {
-        LogInfo($"Selected: {item.Name}");
+        _ = LogInfo($"Selected: {item.Name}");
     }
 
     private string GetKnowledgeTypeIcon(KnowledgeType type)
@@ -473,34 +472,34 @@ public partial class Mentor2DModeler : ComponentBase
         StateHasChanged();
     }
 
-    private void LogInfo(string message)
+    private async Task LogInfo(string message)
     {
         ActivityLog.Add(new LogEntry { Level = "info", Message = message, Timestamp = DateTime.Now });
-        ScrollToBottomIfNeeded();
+        await ScrollToBottomIfNeeded();
     }
 
-    private void LogSuccess(string message)
+    private async Task LogSuccess(string message)
     {
         ActivityLog.Add(new LogEntry { Level = "success", Message = message, Timestamp = DateTime.Now });
-        ScrollToBottomIfNeeded();
+        await ScrollToBottomIfNeeded();
     }
 
-    private void LogWarning(string message)
+    private async Task LogWarning(string message)
     {
         ActivityLog.Add(new LogEntry { Level = "warning", Message = message, Timestamp = DateTime.Now });
-        ScrollToBottomIfNeeded();
+        await ScrollToBottomIfNeeded();
     }
 
-    private void LogError(string message)
+    private async Task LogError(string message)
     {
         ActivityLog.Add(new LogEntry { Level = "error", Message = message, Timestamp = DateTime.Now });
-        ScrollToBottomIfNeeded();
+        await ScrollToBottomIfNeeded();
     }
     
-    private void AddActivityLog(string level, string message)
+    private async Task AddActivityLog(string level, string message)
     {
         ActivityLog.Add(new LogEntry { Level = level, Message = message, Timestamp = DateTime.Now });
-        ScrollToBottomIfNeeded();
+        await ScrollToBottomIfNeeded();
         StateHasChanged();
     }
     
@@ -582,11 +581,11 @@ public partial class Mentor2DModeler : ComponentBase
     {
         if (isProcessingQueue)
         {
-            LogWarning("Cannot start test - already processing another sequence");
+            _ = LogWarning("Cannot start test - already processing another sequence");
             return;
         }
 
-        LogInfo($"🧪 Starting test: {sequence.DisplayName} ({sequence.PromptCount} prompts)");
+        _ = LogInfo($"🧪 Starting test: {sequence.DisplayName} ({sequence.PromptCount} prompts)");
 
         // Load all prompts into the queue
         messageQueue.Clear();
@@ -598,7 +597,7 @@ public partial class Mentor2DModeler : ComponentBase
         // Start processing
         await ProcessMessageQueue();
         
-        LogSuccess($"✅ Test sequence completed: {sequence.DisplayName}");
+        _ = LogSuccess($"✅ Test sequence completed: {sequence.DisplayName}");
     }
     
     private async Task ProcessMessageQueue()
@@ -612,7 +611,7 @@ public partial class Mentor2DModeler : ComponentBase
             while (messageQueue.Count > 0)
             {
                 var message = messageQueue.Dequeue();
-                LogInfo($"🚀 Auto-executing: {message}");
+                _ = LogInfo($"🚀 Auto-executing: {message}");
                 
                 chatInputValue = message;
                 await SendChatMessage();
