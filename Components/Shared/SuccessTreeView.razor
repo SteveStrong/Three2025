@@ -1,6 +1,5 @@
 @using FoundryMentorModeler.Model
-@using FoundryMentorModeler.Tests
-@using FoundryCore
+@using FoundryMentorModeler.Shared
 @using FoundryRulesAndUnits.Models
 @inherits ComponentBase
 
@@ -20,11 +19,12 @@
 
 <div class="success-tree-container">
     <ul>
-        <SuccessTreeItem 
+        <MentorTreeItem 
             Items="@RootItems" 
             Level="0"
-            OnSelect="@OnSelect">
-        </SuccessTreeItem>
+            ShowSuccessBadges="true"
+            OnSelect="@HandleSelect">
+        </MentorTreeItem>
     </ul>
 </div>
 
@@ -34,4 +34,9 @@
 
     [Parameter]
     public Action<ITreeNode>? OnSelect { get; set; }
+    
+    private void HandleSelect(ITreeNode item)
+    {
+        OnSelect?.Invoke(item);
+    }
 }

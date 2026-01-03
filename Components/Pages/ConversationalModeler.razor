@@ -58,8 +58,8 @@
                         <button @onclick='() => QuickTest("Create a heat transfer model for a concrete wall")' style="padding: 0.25rem 0.5rem; background: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
                             🌡️ Heat Transfer
                         </button>
-                        <button @onclick='() => QuickTest("Design a voltage divider circuit")' style="padding: 0.25rem 0.5rem; background: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
-                            ⚡ Circuit Design
+                        <button @onclick='() => QuickTest("Design a voltage divider to convert 12V to 5V at 10mA")' style="padding: 0.25rem 0.5rem; background: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                            ⚡ Voltage Divider
                         </button>
                         <button @onclick='() => QuickTest("Create a truss analysis model")' style="padding: 0.25rem 0.5rem; background: #9c27b0; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
                             🏗️ Truss Analysis
@@ -131,13 +131,13 @@
                                 <div class="grid-header">Value</div>
                                 <div class="grid-header">Formula</div>
                                 
-                                @foreach (var param in GetParameters(SelectedComponent))
+                                @foreach (KnParameter param in GetParameters(SelectedComponent))
                                 {
                                     <div class="param-name">@param.Name</div>
                                     <div class="param-value @(param.IsCalculated ? "calculated" : "")">
                                         @param.DisplayValue
                                     </div>
-                                    <div class="param-formula">@param.Formula</div>
+                                    <div class="param-formula">@param.Expression</div>
                                 }
                             </div>
                         }

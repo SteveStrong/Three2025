@@ -4,6 +4,7 @@ using FoundryRulesAndUnits.Units;
 using Radzen;
 using FoundryRulesAndUnits.Extensions;
 using FoundryMentorModeler;
+using FoundryMentorModeler.Model;
 
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -88,12 +89,16 @@ builder.Services.AddScoped<ICageTech, CageTech>();
 builder.Services.AddScoped<IClockTech, ClockTech>();
 builder.Services.AddScoped<ICuckooClockTech, CuckooClockTech>();
 builder.Services.AddScoped<ITrisocTech, TrisocTech>();
-builder.Services.AddScoped<IShape3DEditor, Shape3DEditor>();
 builder.Services.AddScoped<IShape3DTech, Shape3DTech>();
-builder.Services.AddScoped<IShape2DEditor, Shape2DEditor>();
 builder.Services.AddScoped<IShape2DTech, Shape2DTech>();
 builder.Services.AddScoped<IMentor2DTech, Mentor2DTech>();
+
+// Model management - MentorServices holds CurrentModel/CurrentComponent state
+builder.Services.AddScoped<IMentorServices, MentorServices>();
 builder.Services.AddScoped<IModelTech, ModelTech>();
+
+// Note: Editors (ModelEditor, Shape2DEditor, Shape3DEditor) are NOT in DI
+// Each technician creates and manages its own editor instances dynamically
 
 // Register tool provider for agent system (Phase 0) - MUST BE SCOPED to access scoped technicians
 builder.Services.AddScoped<Three2025.Services.Agents.ITechnicianToolProvider, Three2025.Services.Agents.TechnicianToolProvider>();

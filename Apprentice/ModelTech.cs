@@ -7,6 +7,7 @@ using FoundryRulesAndUnits.Models;
 using Three2025.Components.Pages;
 using Three2025.Models.Apprentice;
 using Three2025.Services.Agents;
+using FoundryMentorModeler.Evaluator;
 
 namespace Three2025.Apprentice;
 
@@ -110,13 +111,23 @@ public class ModelTech : IModelTech
     private FoPage2D? _currentPage;
     private MentorShape2D? _lastCreatedConcept; // Track for property attachment
     
-    public KnModel? CurrentModel { get; private set; }
-    public KnComponent? CurrentComponent { get; private set; }
+    // Use MentorServices for shared state
+    public KnModel? CurrentModel 
+    { 
+        get => _mentorServices.CurrentModel; 
+        private set => _mentorServices.CurrentModel = value;
+    }
+    
+    public KnComponent? CurrentComponent 
+    { 
+        get => _mentorServices.CurrentComponent; 
+        private set => _mentorServices.CurrentComponent = value;
+    }
 
-    public ModelTech(IMentorServices mentorServices, IModelEditor modelEditor)
+    public ModelTech(IMentorServices mentorServices)
     {
         _mentorServices = mentorServices;
-        _modelEditor = modelEditor;
+        _modelEditor = new ModelEditor(mentorServices); // Create editor dynamically
         "ModelTech: Initialized".WriteSuccess();
     }
     
@@ -139,20 +150,24 @@ public class ModelTech : IModelTech
     {
         try
         {
-            modelType ??= "KnModel";
+            modelType ??= "PartModel";
             
             $"ModelTech.EstablishModel: Creating/retrieving '{modelName}' of type {modelType}".WriteInfo();
             
-            // For now, we only support KnModel and AnimatedKnModel
+            // Support PartModel (default), KnModel, and AnimatedKnModel
             KnModel model = modelType.ToLower() switch
             {
                 "animatedknmodel" => _mentorServices.EstablishModel<AnimatedKnModel>(modelName),
-                _ => _mentorServices.EstablishModel<KnModel>(modelName)
+                "knmodel" => _mentorServices.EstablishModel<KnModel>(modelName),
+                _ => _mentorServices.EstablishModel<PartModel>(modelName)
             };
             
             model.SetExpanded(true);
             CurrentModel = model;
             CurrentComponent = null; // Reset component when model changes
+            
+            // Publish event so UI knows model was created/established
+            _mentorServices.PubSub.Publish(ModelEditChanged.Created(model));
             
             var componentCount = model.Members<KnComponent>().Count();
             $"✅ Model '{modelName}' established with {componentCount} components (now current)".WriteSuccess();
@@ -260,8 +275,8 @@ public class ModelTech : IModelTech
                     ?? throw new Exception($"Parent component '{parentComponentPath}' not found");
             }
             
-            // Create component - for now only support KnComponent
-            var component = new KnComponent(componentName);
+            // Create PartComponent (now concrete, not abstract)
+            var component = new PartComponent(componentName);
             
             // Add to parent via ModelEditor (triggers events)
             _modelEditor.AddChild(parent, component);
@@ -321,10 +336,10 @@ public class ModelTech : IModelTech
     }
     
     [AgentTool("set_parameter")]
-    [Description("Set a parameter value on the current component (or specified component). Value can be a number, formula, or units expression")]
+    [Description("Set a parameter value on the current component. CRITICAL SYNTAX: For literal values with units, use units(value, 'unit') with unit in SINGLE QUOTES. For formulas, reference other parameters with @ suffix (no quotes on parameter names).")]
     public KnParameter SetParameter(
         [Description("Name of the parameter")] string parameterName,
-        [Description("Value as formula string (e.g., '42', 'Width * 2', 'units(100, \"cm\")')")] string value,
+        [Description("Value as formula string. EXAMPLES: Literal with units: units(12, 'V') or units(100, 'Ω'). Formula: InputVoltage@ * (R2@ / (R1@ + R2@)). Simple value: '42' or '3.14'. NEVER use units(12, V) - unit MUST be quoted!")] string value,
         [Description("Path to component (optional, uses current component)")] string? componentPath = null)
     {
         try
@@ -423,39 +438,33 @@ public class ModelTech : IModelTech
         }
     }
     
-    public ComponentInfo? GetComponent(string componentPath)
+    [AgentTool("get_component")]
+    [Description("Get a component by path from the current model")]
+    public OPResult GetComponent(
+        [Description("Path to the component (e.g., 'Specifications' or 'Resistor1')")] string componentPath)
     {
         try
         {
             if (CurrentModel == null)
             {
                 "⚠️ No current model set".WriteWarning();
-                return null;
+                return OPResult.Error("No current model set");
             }
             
             var component = FindComponentByPath(CurrentModel, componentPath);
             if (component == null)
             {
                 $"⚠️ Component '{componentPath}' not found".WriteWarning();
-                return null;
+                return OPResult.Error($"Component '{componentPath}' not found");
             }
             
-            var parent = component.GetKnParent() as KnComponent;
-            
-            return new ComponentInfo
-            {
-                Name = component.Name ?? "",
-                Path = GetComponentPath(component),
-                Type = component.GetType().Name,
-                ParentPath = parent != null ? GetComponentPath(parent) : null,
-                ChildCount = component.Members<KnComponent>().Count(),
-                Parameters = GetComponentParameters(component)
-            };
+            $"✅ Found component '{componentPath}'".WriteSuccess();
+            return new OPResult("component", ResultStatus.Instance, component);
         }
         catch (Exception ex)
         {
             $"❌ Error getting component: {ex.Message}".WriteError();
-            return null;
+            return OPResult.Error($"Error getting component: {ex.Message}");
         }
     }
 
@@ -490,37 +499,6 @@ public class ModelTech : IModelTech
         return string.Join("/", parts);
     }
     
-    private void CollectComponents(KnComponent parent, List<ComponentInfo> infos)
-    {
-        foreach (var child in parent.Members<KnComponent>())
-        {
-            var parentComp = child.GetKnParent() as KnComponent;
-            
-            infos.Add(new ComponentInfo
-            {
-                Name = child.Name ?? "",
-                Path = GetComponentPath(child),
-                Type = child.GetType().Name,
-                ParentPath = parentComp != null && parentComp is not KnModel ? GetComponentPath(parentComp) : null,
-                ChildCount = child.Members<KnComponent>().Count(),
-                Parameters = GetComponentParameters(child)
-            });
-            
-            // Recurse into children
-            CollectComponents(child, infos);
-        }
-    }
-    
-    private List<ParameterInfo> GetComponentParameters(KnComponent component)
-    {
-        return component.Members<KnParameter>().Select(p => new ParameterInfo
-        {
-            Name = p.Name ?? "",
-            Value = p.GetValue()?.ToString() ?? "",
-            Unit = null,
-            IsFormula = !string.IsNullOrEmpty(p.Expression)
-        }).ToList();
-    }
 
     // ============================================
     // VISUAL SHAPE CREATION METHODS
