@@ -63,4 +63,14 @@ public partial class ChatInput
     {
         await ValueChanged.InvokeAsync(Value);
     }
+
+    private async void OnSpeechCaptured(string speechValue)
+    {
+        Value += speechValue;
+        await InvokeAsync(async () =>
+        {
+            await ValueChanged.InvokeAsync(Value);
+            StateHasChanged();
+        });
+    }
 }

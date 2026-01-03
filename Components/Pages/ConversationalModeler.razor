@@ -30,46 +30,64 @@
                            IsProcessing="isProcessingChat">
                     <HeaderContent>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem;">
-                            <div style="padding: 0.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 6px; text-align: center; font-weight: 600; font-size: 0.85rem;">
-                                🗣️ Conversational Modeler Assistant
-                            </div>
-                            <div style="display: flex; gap: 0.25rem; flex-wrap: wrap; font-size: 0.75rem;">
-                                <span style="padding: 0.25rem 0.5rem; background: #e3f2fd; border-radius: 4px; color: #1976d2;">
-                                    📊 Models
-                                </span>
-                                <span style="padding: 0.25rem 0.5rem; background: #fff3e0; border-radius: 4px; color: #f57c00;">
-                                    🧮 Calculations
-                                </span>
-                                <span style="padding: 0.25rem 0.5rem; background: #f3e5f5; border-radius: 4px; color: #7b1fa2;">
-                                    📐 Engineering
-                                </span>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 6px;">
+                                <span style="font-weight: 600; font-size: 0.85rem;">🗣️ Conversational Modeler Assistant</span>
+                                <button @onclick="ClearChat" style="padding: 0.25rem 0.75rem; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 500; transition: all 0.2s;">
+                                    🗑️ Clear
+                                </button>
                             </div>
                             
-                            <!-- Test Sequence Selector -->
-                            <TestSequenceSelector OnSequenceSelected="HandleTestSequenceSelected"
-                                                 IsDisabled="isProcessingChat"
-                                                 ShowDescription="true" />
+                            <!-- Available Tools Display -->
+                            <div style="display: flex; gap: 0.25rem; flex-wrap: wrap; font-size: 0.7rem; padding: 0.5rem; background: rgba(255,255,255,0.1); border-radius: 4px; border: 1px solid rgba(0,0,0,0.05);">
+                                <span style="color: #666; font-weight: 600; margin-right: 0.25rem;">🛠️ Tools:</span>
+                                <span style="padding: 0.15rem 0.4rem; background: #e8f5e9; border-radius: 3px; color: #2e7d32;" title="Create or retrieve a named model">establish_model</span>
+                                <span style="padding: 0.15rem 0.4rem; background: #e3f2fd; border-radius: 3px; color: #1565c0;" title="Add a component to the current model or parent">add_component</span>
+                                <span style="padding: 0.15rem 0.4rem; background: #fff3e0; border-radius: 3px; color: #e65100;" title="Set a parameter value with formula or numeric value">set_parameter</span>
+                                <span style="padding: 0.15rem 0.4rem; background: #fce4ec; border-radius: 3px; color: #c2185b;" title="Get parameter value from a component">get_parameter</span>
+                                <span style="padding: 0.15rem 0.4rem; background: #f3e5f5; border-radius: 3px; color: #6a1b9a;" title="List all components in current model">list_components</span>
+                                <span style="padding: 0.15rem 0.4rem; background: #e0f2f1; border-radius: 3px; color: #00695c;" title="Get specific component details">get_component</span>
+                                <span style="padding: 0.15rem 0.4rem; background: #ede7f6; border-radius: 3px; color: #4527a0;" title="Switch to a different model">set_current_model</span>
+                            </div>
+                            
+                            <!-- Test Sequence Selector and Create Model Button -->
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div style="flex: 1;">
+                                    <TestSequenceSelector OnSequenceSelected="HandleTestSequenceSelected"
+                                                         IsDisabled="isProcessingChat"
+                                                         ShowDescription="true" />
+                                </div>
+                                <button @onclick="ForceCreateModel" 
+                                        disabled="@isProcessingChat"
+                                        style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 600; white-space: nowrap; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+                                        title="Force the agent to create a model based on the current conversation">
+                                    🏗️ Create Model
+                                </button>
+                            </div>
                         </div>
                     </HeaderContent>
                     <FooterActions>
-                        <button @onclick='() => QuickTest("Calculate beam deflection for a 10 ft steel beam with 500 lb center load")' style="padding: 0.25rem 0.5rem; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
-                            🔨 Beam Deflection
+                        <button @onclick='() => QuickTest("Create a bill of materials for an office desk assembly with desktop, legs, and hardware")' style="padding: 0.25rem 0.5rem; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                            🪑 Office Desk BOM
                         </button>
-                        <button @onclick='() => QuickTest("Create a heat transfer model for a concrete wall")' style="padding: 0.25rem 0.5rem; background: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
-                            🌡️ Heat Transfer
+                        <button @onclick='() => QuickTest("I need materials for a 100 square foot brick patio including pavers, sand, and edge restraints")' style="padding: 0.25rem 0.5rem; background: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                            🧱 Brick Patio
                         </button>
-                        <button @onclick='() => QuickTest("Design a voltage divider to convert 12V to 5V at 10mA")' style="padding: 0.25rem 0.5rem; background: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                        <button @onclick='() => QuickTest("Configure an edge AI inference machine for local LLM deployment with high VRAM GPU, fast storage, and adequate cooling")' style="padding: 0.25rem 0.5rem; background: #00bcd4; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                            🤖 Edge AI Machine
+                        </button>
+                        <button @onclick='() => QuickTest("Design a voltage divider to convert 12V to 5V at 100mA")' style="padding: 0.25rem 0.5rem; background: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
                             ⚡ Voltage Divider
                         </button>
-                        <button @onclick='() => QuickTest("Create a truss analysis model")' style="padding: 0.25rem 0.5rem; background: #9c27b0; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
-                            🏗️ Truss Analysis
+                        <button @onclick='() => QuickTest("Calculate beam deflection for a 10 ft steel beam with 500 lb center load")' style="padding: 0.25rem 0.5rem; background: #9c27b0; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                            🔨 Beam Deflection
+                        </button>
+                        <button @onclick='() => QuickTest("Create a heat transfer model for a concrete wall")' style="padding: 0.25rem 0.5rem; background: #795548; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                            🌡️ Heat Transfer
                         </button>
                         <button @onclick='() => QuickTest("List all available tools and functions")' style="padding: 0.25rem 0.5rem; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 500;">
                             🔍 List Tools
                         </button>
-                        <button @onclick="ClearModel" style="padding: 0.25rem 0.5rem; background: #f8d7da; border: 1px solid #dc3545; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
-                            🗑️ Clear Model
-                        </button>
+
                     </FooterActions>
                 </ChatPanel>
             </div>
@@ -78,8 +96,11 @@
         <!-- Right Panel: Model & Activity Explorer -->
         <RadzenSplitterPane Size="50%" Min="30%" Max="70%">
             <div style="display: flex; flex-direction: column; height: 100%; background: white;">
-                <div style="padding: 0.75rem; background: #2c3e50; color: white;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #2c3e50; color: white;">
                     <h3 style="margin: 0; font-size: 1rem;">🏗️ Model Explorer</h3>
+                    <button @onclick="ClearModel" style="padding: 0.25rem 0.75rem; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 500;">
+                        🗑️ Clear
+                    </button>
                 </div>
                 <ul class="nav nav-tabs" role="tablist" style="flex-shrink: 0; margin: 0; border-bottom: 2px solid #dee2e6;">
                     <li class="nav-item" role="presentation">

@@ -27,6 +27,8 @@ public interface IModelTech : ITechnician
     /// Current working component - set by AddComponent or SetCurrentComponent
     /// </summary>
     KnComponent? CurrentComponent { get; }
+
+    void ClearModel();
     
     /// <summary>
     /// Create or get existing model and set as current
@@ -129,6 +131,18 @@ public class ModelTech : IModelTech
         _mentorServices = mentorServices;
         _modelEditor = new ModelEditor(mentorServices); // Create editor dynamically
         "ModelTech: Initialized".WriteSuccess();
+    }
+
+    public void ClearModel()
+    {
+
+        // Use the model's built-in method to clear all children
+        CurrentModel?.ClearAllChildren();
+        
+        
+        CurrentModel = null;
+        CurrentComponent = null;
+        "ModelTech: Cleared current model and component".WriteInfo();
     }
     
     /// <summary>

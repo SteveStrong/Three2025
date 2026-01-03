@@ -242,6 +242,35 @@ public partial class ConversationalModeler : ComponentBase, IDisposable
 
     private void ClearModel()
     {
+        if (ModelTech?.CurrentModel != null)
+        {
+            var modelName = ModelTech.CurrentModel.GetName();
+            _ = LogInfo($"🗑️ Clearing current model: {modelName}...");
+            ModelTech.ClearModel();
+            _ = LogSuccess($"✅ Model '{modelName}' cleared");
+            
+            // Refresh UI
+            InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            _ = LogWarning("No current model to clear");
+        }
+    }
+
+    private async Task ForceCreateModel()
+    {
+        Logger.LogInformation("🏗️ Force Create Model button clicked");
+        _ = LogInfo("🏗️ Forcing model creation from conversation...");
+        
+        string createPrompt = "Based on our conversation above, I need you to:\n\n1. First, clearly describe the model structure you're going to build - what will be the main model name, what components it will contain, what parameters each component will have, and any formulas.\n\n2. After explaining your plan, proceed to actually build it using the establish_model, add_component, and set_parameter tools.\n\nPlease be explicit about what you're creating before you create it.";
+        
+        chatInputValue = createPrompt;
+        await SendChatMessage();
+    }
+
+    private void ClearChat()
+    {
         _ = LogInfo("🗑️ Clearing conversation and model...");
         conversationHistory.Clear();
         chatMessages.Clear();
