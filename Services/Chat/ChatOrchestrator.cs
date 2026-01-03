@@ -55,6 +55,10 @@ public class ChatOrchestrator : IChatOrchestrator
         var modelingAgent = _agentFactory.Create3DModelingAgent(_technicianTools);
         RegisterAgent(modelingAgent);
         
+        // Knowledge Modeling Agent - Specialized for conceptual design and ModelTech tools
+        var knowledgeAgent = _agentFactory.CreateKnowledgeModelingAgent(_technicianTools);
+        RegisterAgent(knowledgeAgent);
+        
         // FUTURE AGENTS - Commented out until we establish the right pattern
         // Once the agent system works well, we can add more specialized agents:
         // - Animation (keyframes, tweens, motion paths)
@@ -213,8 +217,11 @@ public class ChatOrchestrator : IChatOrchestrator
             
             IMPORTANT ROUTING GUIDELINES:
             - Use "General Agent" for: general questions, conversations, explanations, jokes, advice, engineering discussions
-            - Use specialized agents ONLY when the user explicitly requests specific tool actions (e.g., "create a box", "add a sphere")
-            - When in doubt, prefer "General Agent" - it has access to all tools and can handle both conversation and actions
+            - Use "Knowledge Modeling Agent" for: creating models, components, setting parameters, design analysis, systems engineering, battery models, motor models, structural models, etc.
+            - Use "Shape3D Technician" for: 3D geometry creation, visual shapes, boxes, spheres, meshes, scene manipulation
+            - When user mentions models like "Battery model", "Motor model", "Beam model", "System model" -> use "Knowledge Modeling Agent"
+            - When user mentions visual shapes like "box", "sphere", "cylinder" -> use "Shape3D Technician"
+            - When in doubt about models vs visual, prefer "Knowledge Modeling Agent" for engineering design
             
             User message: {{userMessage}}
             

@@ -6,6 +6,7 @@ using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 using Three2025.Components.Pages;
 using Three2025.Models.Apprentice;
+using Three2025.Services.Agents;
 
 namespace Three2025.Apprentice;
 
@@ -130,6 +131,7 @@ public class ModelTech : IModelTech
         $"ModelTech: Connected to page '{page.GetName()}' with MentorStudio".WriteSuccess();
     }
     
+    [AgentTool("establish_model")]
     [Description("Create or retrieve a named model and set as current working model")]
     public KnModel EstablishModel(
         [Description("Name of the model to create or retrieve")] string modelName, 
@@ -163,6 +165,7 @@ public class ModelTech : IModelTech
         }
     }
 
+    [AgentTool("set_current_model")]
     [Description("Set the current working model by name")]
     public KnModel? SetCurrentModel([Description("Name of the model (null to clear)")] string? modelName)
     {
@@ -231,6 +234,7 @@ public class ModelTech : IModelTech
         }
     }
     
+    [AgentTool("add_component")]
     [Description("Add a component to the current model (or specified model) and make it current")]
     public KnComponent AddComponent(
         [Description("Name for the new component")] string componentName,
@@ -316,6 +320,7 @@ public class ModelTech : IModelTech
         }
     }
     
+    [AgentTool("set_parameter")]
     [Description("Set a parameter value on the current component (or specified component). Value can be a number, formula, or units expression")]
     public KnParameter SetParameter(
         [Description("Name of the parameter")] string parameterName,
@@ -351,6 +356,7 @@ public class ModelTech : IModelTech
         }
     }
 
+    [AgentTool("get_parameter")]
     [Description("Get parameter value from current component (or specified component)")]
     public KnParameter? GetParameter(
         [Description("Name of the parameter")] string parameterName,
@@ -389,6 +395,7 @@ public class ModelTech : IModelTech
         }
     }
 
+    [AgentTool("list_components")]
     [Description("List all components in current model (or specified model)")]
     public List<KnComponent> ListComponents(
         [Description("Model name (optional, uses current model)")] string? modelName = null)
@@ -519,10 +526,10 @@ public class ModelTech : IModelTech
     // VISUAL SHAPE CREATION METHODS
     // ============================================
 
-    [Description("Create a visual Concept shape on the canvas with engineering properties")]
+    [Description("Create a visual Model shape on the canvas with engineering properties")]
     public string CreateConceptShape(
-        [Description("Name/title of the concept (e.g., 'Steel Beam', 'Motor')")] string conceptName,
-        [Description("Optional description of the concept")] string? description = null)
+        [Description("Name/title of the model (e.g., 'Steel Beam', 'Motor')")] string conceptName,
+        [Description("Optional description of the model")] string? description = null)
     {
         if (_mentorStudio == null || _currentPage == null)
         {
@@ -597,7 +604,7 @@ public class ModelTech : IModelTech
         }
     }
 
-    [Description("Create an engineering system model with concept and key properties")]
+    [Description("Create an engineering system model with components and key properties")]
     public string CreateEngineeringSystem(
         [Description("Name of the engineering system (e.g., 'Bridge Beam', 'Pump System')")] string systemName,
         [Description("Array of key properties to include (e.g., ['Length', 'Material', 'Load Capacity'])")] string[] properties)
@@ -633,10 +640,10 @@ public class ModelTech : IModelTech
         }
     }
 
-    [Description("Attach a property shape to a concept shape for visual containment")]
+    [Description("Attach a property shape to a model shape for visual containment")]
     public bool AttachPropertyToConcept(
         [Description("ID of the property shape to attach")] string propertyId,
-        [Description("ID of the concept shape to attach to")] string conceptId)
+        [Description("ID of the model shape to attach to")] string conceptId)
     {
         if (_mentorStudio == null || _currentPage == null)
         {
@@ -678,7 +685,7 @@ public class ModelTech : IModelTech
         }
     }
 
-    [Description("Create a dynamic class hierarchy using concept inheritance relationships")]
+    [Description("Create a dynamic class hierarchy using model inheritance relationships")]
     public string CreateClassHierarchy(
         [Description("Name of the root class")] string rootClassName,
         [Description("Child class names (comma-separated)")] string childClasses = "Engine,Transmission,Suspension,Brakes",

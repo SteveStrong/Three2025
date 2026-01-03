@@ -13,6 +13,11 @@ public interface IAgentFactory
     /// </summary>
     ISpecializedAgent Create3DModelingAgent(IEnumerable<AIFunction> tools);
     
+    /// <summary>
+    /// Create knowledge modeling agent specialized for conceptual design and ModelTech tools
+    /// </summary>
+    ISpecializedAgent CreateKnowledgeModelingAgent(IEnumerable<AIFunction> tools);
+    
     // FUTURE AGENTS - Commented out for simplicity
     // ISpecializedAgent CreateAnimationAgent(IEnumerable<AIFunction> tools);
     // ISpecializedAgent CreateGeometryAgent(IEnumerable<AIFunction> tools);

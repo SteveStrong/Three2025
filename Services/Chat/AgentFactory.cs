@@ -20,6 +20,9 @@ public class AgentFactory : IAgentFactory
     public ISpecializedAgent Create3DModelingAgent(IEnumerable<AIFunction> tools)
         => new ThreeDModelingAgent(_chatService, tools, _loggerFactory.CreateLogger<ThreeDModelingAgent>());
     
+    public ISpecializedAgent CreateKnowledgeModelingAgent(IEnumerable<AIFunction> tools)
+        => new KnowledgeModelingAgent(_chatService, tools, _loggerFactory.CreateLogger<KnowledgeModelingAgent>());
+    
     // FUTURE AGENTS - Commented out for simplicity
     // Uncomment and refine these once the 3D modeling pattern is proven
     

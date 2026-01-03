@@ -252,7 +252,7 @@ public class ChatTestScenariosKnowledge : ChatTestScenariosBase
         Category = "Knowledge Engineering")]
     public string[] ElectricalComponentsTest => new[]
     {
-        "Create a resistor component model with electrical properties",
+        "Create a Resistor model with electrical properties",
         "Add voltage and current ratings", 
         "Include power dissipation and tolerance specifications",
         "Show how resistance affects power consumption"
@@ -289,9 +289,9 @@ public class ChatTestScenariosKnowledge : ChatTestScenariosBase
     public string[] ToolCapabilitiesTest => new[]
     {
         "What tools do you have for creating engineering models?",
-        "Create a simple concept with properties",
-        "Show how concepts can contain other concepts",
-        "Demonstrate connecting related concepts with relationships"
+        "Create a simple model with properties",
+        "Show how models can contain component instances",
+        "Demonstrate connecting related models with relationships"
     };
 
     [TestSequence(
@@ -300,7 +300,7 @@ public class ChatTestScenariosKnowledge : ChatTestScenariosBase
         Category = "Knowledge Engineering")]
     public string[] SpecificMotorTest => new[]
     {
-        "Create a Motor concept",
+        "Create a Motor model",
         "Add an RPM property to the Motor",
         "Add a Voltage property to the Motor", 
         "Add a Current property to the Motor",
@@ -313,7 +313,7 @@ public class ChatTestScenariosKnowledge : ChatTestScenariosBase
         Category = "Knowledge Engineering")]
     public string[] SpecificPumpTest => new[]
     {
-        "Create a Pump concept",
+        "Create a Pump model",
         "Add a Flow Rate property to the Pump",
         "Add a Pressure property to the Pump",
         "Add an Efficiency property to the Pump",
@@ -326,7 +326,7 @@ public class ChatTestScenariosKnowledge : ChatTestScenariosBase
         Category = "Knowledge Engineering")]
     public string[] SpecificValveTest => new[]
     {
-        "Create a Valve concept",
+        "Create a Valve model",
         "Add a Size property to the Valve",
         "Add a Material property to the Valve",
         "Add a Pressure Rating property to the Valve",
@@ -339,7 +339,7 @@ public class ChatTestScenariosKnowledge : ChatTestScenariosBase
         Category = "Knowledge Engineering")]
     public string[] BatterySpecTest => new[]
     {
-        "Create a Battery concept",
+        "Create a Battery model",
         "Add a Capacity property with units Ah", 
         "Add a Voltage property with value 12V",
         "Add a Chemistry property with value Lithium-Ion",
@@ -352,7 +352,7 @@ public class ChatTestScenariosKnowledge : ChatTestScenariosBase
         Category = "Knowledge Engineering")]
     public string[] HeatExchangerTest => new[]
     {
-        "Create a Heat Exchanger concept",
+        "Create a Heat Exchanger model",
         "Add a Heat Transfer Rate property in BTU/hr",
         "Add an Inlet Temperature property",
         "Add an Outlet Temperature property",
@@ -365,10 +365,10 @@ public class ChatTestScenariosKnowledge : ChatTestScenariosBase
         Category = "Knowledge Engineering")]
     public string[] HVACSystemTest => new[]
     {
-        "Create an HVAC System concept",
-        "Create an Air Handler concept with CFM property",
-        "Create a Chiller concept with Cooling Capacity property",  
-        "Create a Ductwork concept with Size property",
+        "Create an HVAC System model",
+        "Create an Air Handler component with CFM property",
+        "Create a Chiller component with Cooling Capacity property",  
+        "Create a Ductwork component with Size property",
         "Connect these components in the HVAC System"
     };
 }
