@@ -3,6 +3,7 @@ using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryRulesAndUnits.Extensions;
 using Three2025.Models.Apprentice;
+using FoundryMentorModeler.Model;
 
 namespace Three2025.Apprentice;
 
@@ -19,13 +20,28 @@ public class Mentor2DTech : IMentor2DTech
     private readonly IMentor2DEditor _editor;
     private FoPage2D? _page;
     private readonly ILogger<Mentor2DTech> _logger;
+    
+    // Knowledge-aware dependencies (optional - injected when available)
+    private readonly IMentorStudio? _studio;
+    private readonly IMentorModelManager? _modelManager;
+    
+    // Track shapes and actions for learning
+    private readonly Dictionary<string, MentorShape2D> _knowledgeShapes = new();
+    private readonly List<HumanAction> _actionHistory = new(1000); // Keep last 1000 actions
 
-    public Mentor2DTech(IWorkspace workspace, IFoundryService foundryService, ILogger<Mentor2DTech> logger)
+    public Mentor2DTech(
+        IWorkspace workspace, 
+        IFoundryService foundryService, 
+        ILogger<Mentor2DTech> logger,
+        IMentorStudio? studio = null,
+        IMentorModelManager? modelManager = null)
     {
         _workspace = workspace;
         _foundryService = foundryService;
         _editor = new Mentor2DEditor(foundryService); // Create editor dynamically
         _logger = logger;
+        _studio = studio;
+        _modelManager = modelManager;
     }
 
     public FoPage2D EstablishCanvas2D(string? pageName = null)
