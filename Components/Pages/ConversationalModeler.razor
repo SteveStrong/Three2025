@@ -37,16 +37,13 @@
                                 </button>
                             </div>
                             
-                            <!-- Available Tools Display -->
-                            <div style="display: flex; gap: 0.25rem; flex-wrap: wrap; font-size: 0.7rem; padding: 0.5rem; background: rgba(255,255,255,0.1); border-radius: 4px; border: 1px solid rgba(0,0,0,0.05);">
-                                <span style="color: #666; font-weight: 600; margin-right: 0.25rem;">🛠️ Tools:</span>
-                                <span style="padding: 0.15rem 0.4rem; background: #e8f5e9; border-radius: 3px; color: #2e7d32;" title="Create or retrieve a named model">establish_model</span>
-                                <span style="padding: 0.15rem 0.4rem; background: #e3f2fd; border-radius: 3px; color: #1565c0;" title="Add a component to the current model or parent">add_component</span>
-                                <span style="padding: 0.15rem 0.4rem; background: #fff3e0; border-radius: 3px; color: #e65100;" title="Set a parameter value with formula or numeric value">set_parameter</span>
-                                <span style="padding: 0.15rem 0.4rem; background: #fce4ec; border-radius: 3px; color: #c2185b;" title="Get parameter value from a component">get_parameter</span>
-                                <span style="padding: 0.15rem 0.4rem; background: #f3e5f5; border-radius: 3px; color: #6a1b9a;" title="List all components in current model">list_components</span>
-                                <span style="padding: 0.15rem 0.4rem; background: #e0f2f1; border-radius: 3px; color: #00695c;" title="Get specific component details">get_component</span>
-                                <span style="padding: 0.15rem 0.4rem; background: #ede7f6; border-radius: 3px; color: #4527a0;" title="Switch to a different model">set_current_model</span>
+                            <!-- Available Tool Categories -->
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; font-size: 0.75rem; padding: 0.5rem; background: rgba(255,255,255,0.1); border-radius: 4px; border: 1px solid rgba(0,0,0,0.05);">
+                                <span style="color: #666; font-weight: 600; margin-right: 0.25rem;">🛠️ Tool Categories:</span>
+                                <span style="padding: 0.25rem 0.6rem; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-radius: 4px; color: #2e7d32; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" 
+                                      title="Model manipulation tools for creating and managing hierarchical component models with parameters (7 tools)">
+                                    ModelTech <span style="font-size: 0.65rem; opacity: 0.7;">(7)</span>
+                                </span>
                             </div>
                             
                             <!-- Test Sequence Selector and Create Model Button -->
@@ -66,22 +63,22 @@
                         </div>
                     </HeaderContent>
                     <FooterActions>
-                        <button @onclick='() => QuickTest("Create a bill of materials for an office desk assembly with desktop, legs, and hardware")' style="padding: 0.25rem 0.5rem; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
-                            🪑 Office Desk BOM
+                        <button @onclick='() => QuickTest("I need an office desk for one person. Requirements: width 60 inches, depth 30 inches, height adjustable 28-34 inches, weight capacity 200 lbs, budget under $400. What components do I need and what will it cost?")' style="padding: 0.25rem 0.5rem; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                            🪑 Office Desk
                         </button>
-                        <button @onclick='() => QuickTest("I need materials for a 100 square foot brick patio including pavers, sand, and edge restraints")' style="padding: 0.25rem 0.5rem; background: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                        <button @onclick='() => QuickTest("I want to build a brick patio. Specifications: 10 feet by 10 feet (100 sq ft), standard brick pavers with herringbone pattern, needs proper base and edge containment, budget around $500. What materials and quantities do I need?")' style="padding: 0.25rem 0.5rem; background: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
                             🧱 Brick Patio
                         </button>
-                        <button @onclick='() => QuickTest("Configure an edge AI inference machine for local LLM deployment with high VRAM GPU, fast storage, and adequate cooling")' style="padding: 0.25rem 0.5rem; background: #00bcd4; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                        <button @onclick='() => QuickTest("I need a local AI inference machine. Requirements: run Llama 3.1 70B model, 8-bit quantization, 32K context window, inference speed at least 20 tokens/sec, budget $3000-4000. What hardware configuration will meet these specs?")' style="padding: 0.25rem 0.5rem; background: #00bcd4; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
                             🤖 Edge AI Machine
                         </button>
-                        <button @onclick='() => QuickTest("Design a voltage divider to convert 12V to 5V at 100mA")' style="padding: 0.25rem 0.5rem; background: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                        <button @onclick='() => QuickTest("I need to power a 5V device drawing 100mA from a 12V source. Design a voltage divider circuit. Calculate required resistor values, power dissipation, and component specifications.")' style="padding: 0.25rem 0.5rem; background: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
                             ⚡ Voltage Divider
                         </button>
-                        <button @onclick='() => QuickTest("Calculate beam deflection for a 10 ft steel beam with 500 lb center load")' style="padding: 0.25rem 0.5rem; background: #9c27b0; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                        <button @onclick='() => QuickTest("I have a simply-supported steel beam. Specifications: 10 feet span, 500 lb center point load, maximum deflection limit 0.5 inches, safety factor 2.0. Determine the required beam size and actual deflection.")' style="padding: 0.25rem 0.5rem; background: #9c27b0; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
                             🔨 Beam Deflection
                         </button>
-                        <button @onclick='() => QuickTest("Create a heat transfer model for a concrete wall")' style="padding: 0.25rem 0.5rem; background: #795548; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                        <button @onclick='() => QuickTest("Analyze heat transfer through an exterior concrete wall. Specifications: 8 inch thick concrete, inside temperature 70°F, outside temperature 30°F, wall area 100 sq ft. Calculate heat loss rate and recommend insulation requirements.")' style="padding: 0.25rem 0.5rem; background: #795548; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
                             🌡️ Heat Transfer
                         </button>
                         <button @onclick='() => QuickTest("List all available tools and functions")' style="padding: 0.25rem 0.5rem; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 500;">
