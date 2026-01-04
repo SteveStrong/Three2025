@@ -2,6 +2,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Agents.AI;
 using System.ComponentModel;
 using OllamaSharp;
+using FoundryMentorModeler.Evaluator;
 
 namespace Three2025.Services.Chat;
 
@@ -44,11 +45,6 @@ public interface IMultiProviderChatService
         List<ChatMessage> conversationHistory,
         IEnumerable<AIFunction>? tools = null,
         CancellationToken cancellationToken = default);
-    
-    /// <summary>
-    /// Event for logging/debugging information
-    /// </summary>
-    event Action<string>? OnLog;
 }
 
 public class MultiProviderChatService : IMultiProviderChatService
@@ -58,12 +54,15 @@ public class MultiProviderChatService : IMultiProviderChatService
     private ChatClientAgent? _currentAgent;
     private List<AIFunction> _currentTools = new();
     private readonly ILogger<MultiProviderChatService> _logger;
-    
-    public event Action<string>? OnLog;
+    private readonly ILoggerFactory _loggerFactory;
 
-    public MultiProviderChatService(IConfiguration configuration, ILogger<MultiProviderChatService> logger)
+    public MultiProviderChatService(
+        IConfiguration configuration, 
+        ILogger<MultiProviderChatService> logger,
+        ILoggerFactory loggerFactory)
     {
         _logger = logger;
+        _loggerFactory = loggerFactory;
         _logger.LogInformation("🚀 MultiProviderChatService constructor starting...");
         // Initialize providers based on available configuration
         InitializeProviders(configuration);
@@ -78,12 +77,13 @@ public class MultiProviderChatService : IMultiProviderChatService
         
         if (!string.IsNullOrEmpty(githubToken))
         {
-            _providers["GitHub Models"] = new GitHubModelProvider(githubToken, "gpt-4o-mini");
-            LogMessage("✓ GitHub Models provider available");
+            var githubLogger = _loggerFactory.CreateLogger<GitHubChatClient>();
+            _providers["GitHub Models"] = new GitHubModelProvider(githubToken, "gpt-4o-mini", githubLogger);
+            _logger.LogInformation("✓ GitHub Models provider available");
         }
         else
         {
-            LogMessage("✗ GitHub Models provider unavailable (no token)");
+            _logger.LogInformation("✗ GitHub Models provider unavailable (no token)");
         }
 
         // Try to add AWS Bedrock provider
@@ -113,16 +113,16 @@ public class MultiProviderChatService : IMultiProviderChatService
                     awsSecretKey, 
                     awsRegion, 
                     awsModel);
-                LogMessage($"✓ AWS Bedrock provider available (region: {awsRegion}, model: {awsModel})");
+                _logger.LogInformation($"✓ AWS Bedrock provider available (region: {awsRegion}, model: {awsModel})");
             }
             catch (Exception ex)
             {
-                LogMessage($"✗ AWS Bedrock provider failed: {ex.Message}");
+                _logger.LogInformation($"✗ AWS Bedrock provider failed: {ex.Message}");
             }
         }
         else
         {
-            LogMessage("✗ AWS Bedrock provider unavailable (no credentials)");
+            _logger.LogInformation("✗ AWS Bedrock provider unavailable (no credentials)");
         }
 
         // Try to add Ollama provider (local)
@@ -136,11 +136,11 @@ public class MultiProviderChatService : IMultiProviderChatService
         try
         {
             _providers["Ollama (Local)"] = new OllamaProvider(ollamaEndpoint, ollamaModel);
-            LogMessage($"✓ Ollama provider available ({ollamaEndpoint}, model: {ollamaModel})");
+            _logger.LogInformation($"✓ Ollama provider available ({ollamaEndpoint}, model: {ollamaModel})");
         }
         catch (Exception ex)
         {
-            LogMessage($"✗ Ollama provider unavailable: {ex.Message}");
+            _logger.LogInformation($"✗ Ollama provider unavailable: {ex.Message}");
         }
 
         // Set default provider - PREFER BEDROCK > GITHUB > OLLAMA
@@ -150,22 +150,22 @@ public class MultiProviderChatService : IMultiProviderChatService
             if (_providers.ContainsKey("AWS Bedrock"))
             {
                 _currentProvider = _providers["AWS Bedrock"];
-                LogMessage("🎯 Default provider: AWS Bedrock");
+                _logger.LogInformation("🎯 Default provider: AWS Bedrock");
             }
             else if (_providers.ContainsKey("GitHub Models"))
             {
                 _currentProvider = _providers["GitHub Models"];
-                LogMessage("🎯 Default provider: GitHub Models (gpt-4o-mini) - WARNING: May be rate limited");
+                _logger.LogInformation("🎯 Default provider: GitHub Models (gpt-4o-mini) - WARNING: May be rate limited");
             }
             else if (_providers.ContainsKey("Ollama (Local)"))
             {
                 _currentProvider = _providers["Ollama (Local)"];
-                LogMessage("🎯 Default provider: Ollama (Local)");
+                _logger.LogInformation("🎯 Default provider: Ollama (Local)");
             }
             else
             {
                 _currentProvider = _providers.First().Value;
-                LogMessage($"🎯 Default provider: {_currentProvider.ProviderName}");
+                _logger.LogInformation($"🎯 Default provider: {_currentProvider.ProviderName}");
             }
             
             InitializeAgent();
@@ -177,12 +177,6 @@ public class MultiProviderChatService : IMultiProviderChatService
         if (_currentProvider == null) return;
 
         var chatClient = _currentProvider.GetChatClient();
-        
-        // Wire up logging if it's a GitHubChatClient
-        if (chatClient is GitHubChatClient githubClient)
-        {
-            githubClient.OnLog += LogMessage;
-        }
 
         // Combine built-in tools with provided tools
         var allTools = new List<AIFunction>();
@@ -193,23 +187,23 @@ public class MultiProviderChatService : IMultiProviderChatService
         {
             allTools.AddRange(tools);
             _currentTools = tools.ToList();
-            LogMessage($"Agent initialized with {allTools.Count} tools ({_currentTools.Count} from technicians)");
+            _logger.LogInformation($"Agent initialized with {allTools.Count} tools ({_currentTools.Count} from technicians)");
         }
         
         // For Ollama, use ChatClientAgent directly (as per Microsoft sample)
         // Note: ChatClientAgent doesn't support tools via constructor, but will use them via options
         if (chatClient is OllamaApiClient)
         {
-            LogMessage("🦙 Creating ChatClientAgent directly for Ollama");
+            _logger.LogInformation("🦙 Creating ChatClientAgent directly for Ollama");
             _currentAgent = new ChatClientAgent(
                 chatClient,
                 name: "3D Assistant",
                 instructions: "You are a helpful 3D modeling and visualization assistant working with Three.js and Blazor.");
-            LogMessage("✅ Ollama ChatClientAgent created successfully");
+            _logger.LogInformation("✅ Ollama ChatClientAgent created successfully");
         }
         else
         {
-            LogMessage($"🔧 Creating agent via CreateAIAgent for {_currentProvider.ProviderName}");
+            _logger.LogInformation($"🔧 Creating agent via CreateAIAgent for {_currentProvider.ProviderName}");
             // Create the agent with all tools using extension method
             _currentAgent = chatClient.CreateAIAgent(
                 instructions: "You are a helpful 3D modeling and visualization assistant working with Three.js and Blazor. Use the available tools to help users create and manipulate 3D geometry.",
@@ -228,7 +222,7 @@ public class MultiProviderChatService : IMultiProviderChatService
         {
             _currentProvider = provider;
             InitializeAgent();
-            LogMessage($"Switched to provider: {providerName} ({provider.ModelName})");
+            _logger.LogInformation($"Switched to provider: {providerName} ({provider.ModelName})");
             return true;
         }
         return false;
@@ -242,7 +236,7 @@ public class MultiProviderChatService : IMultiProviderChatService
     {
         if (_currentProvider == null)
         {
-            LogMessage("❌ ERROR: No AI provider configured");
+            _logger.LogInformation("❌ ERROR: No AI provider configured");
             yield return "Error: No AI provider configured.";
             yield break;
         }
@@ -259,7 +253,7 @@ public class MultiProviderChatService : IMultiProviderChatService
             {
                 Tools = toolsList.Select(t => (AITool)t).ToList()
             };
-            LogMessage($"🔧 Passing {toolsList.Count} tools to LLM");
+            _logger.LogInformation($"🔧 Passing {toolsList.Count} tools to LLM");
         }
         
         // Create timeout cancellation token (30 seconds)
@@ -285,7 +279,7 @@ public class MultiProviderChatService : IMultiProviderChatService
                 var toolCallsInThisTurn = new List<FunctionCallContent>();
                 var textInThisTurn = new System.Text.StringBuilder();
                 
-                LogMessage($"🔄 Turn {currentTurn}: Calling LLM...");
+                _logger.LogInformation($"🔄 Turn {currentTurn}: Calling LLM...");
                 
                 await foreach (var update in chatClient.GetStreamingResponseAsync(conversationHistory, options: chatOptions, linkedCts.Token))
                 {
@@ -299,7 +293,7 @@ public class MultiProviderChatService : IMultiProviderChatService
                             if (content is FunctionCallContent toolCall)
                             {
                                 toolCallsInThisTurn.Add(toolCall);
-                                LogMessage($"🔧 Tool call detected: {toolCall.Name}");
+                                _logger.LogInformation($"🔧 Tool call detected: {toolCall.Name}");
                             }
                         }
                     }
@@ -325,13 +319,13 @@ public class MultiProviderChatService : IMultiProviderChatService
                     assistantContents.AddRange(toolCallsInThisTurn);
                     
                     conversationHistory.Add(new ChatMessage(ChatRole.Assistant, assistantContents));
-                    LogMessage($"📝 Assistant response: {assistantMessage.Length} chars, {toolCallsInThisTurn.Count} tool calls");
+                    _logger.LogInformation($"📝 Assistant response: {assistantMessage.Length} chars, {toolCallsInThisTurn.Count} tool calls");
                 }
                 
                 // Execute tools if any were called
                 if (toolCallsInThisTurn.Any())
                 {
-                    LogMessage($"⚙️ Executing {toolCallsInThisTurn.Count} tool calls...");
+                    _logger.LogInformation($"⚙️ Executing {toolCallsInThisTurn.Count} tool calls...");
                     
                     foreach (var toolCall in toolCallsInThisTurn)
                     {
@@ -340,7 +334,7 @@ public class MultiProviderChatService : IMultiProviderChatService
                         {
                             try
                             {
-                                LogMessage($"▶️ Executing tool: {toolCall.Name}");
+                                _logger.LogInformation($"▶️ Executing tool: {toolCall.Name}");
                                 
                                 // Execute the tool
                                 var args = toolCall.Arguments != null 
@@ -353,35 +347,44 @@ public class MultiProviderChatService : IMultiProviderChatService
                                     var argDict = toolCall.Arguments as IDictionary<string, object?>;
                                     var shapeName = argDict?.ContainsKey("name") == true ? argDict["name"]?.ToString() : "unknown";
                                     var color = argDict?.ContainsKey("color") == true ? argDict["color"]?.ToString() : "unknown";
-                                    LogMessage($"🎨 ChangeColor called with: name='{shapeName}', color='{color}'");
+                                    _logger.LogInformation($"🎨 ChangeColor called with: name='{shapeName}', color='{color}'");
                                 }
                                 
                                 var result = await tool.InvokeAsync(args, cancellationToken);
-                                var resultStr = result?.ToString() ?? "null";
                                 
-                                LogMessage($"✅ Tool '{toolCall.Name}' executed successfully: {resultStr.Substring(0, Math.Min(100, resultStr.Length))}");
+                                // DIAGNOSTIC: Log what type we actually got back
+                                _logger.LogInformation($"🔍 Tool result type: {result?.GetType().FullName ?? "null"}");
+                                if (result != null)
+                                {
+                                    _logger.LogInformation($"🔍 Tool result value: {result}");
+                                }
+                                
+                                // Format OPResult for LLM - gives structured success/error/data info
+                                object resultForLLM = OPResult.AsToolResult(result);
+                                
+                                _logger.LogInformation($"✅ Tool '{toolCall.Name}' result: {resultForLLM}");
                                 
                                 // Add tool result to conversation
-                                var resultContent = new FunctionResultContent(toolCall.CallId, result);
+                                var resultContent = new FunctionResultContent(toolCall.CallId, resultForLLM);
                                 conversationHistory.Add(new ChatMessage(ChatRole.Tool, [resultContent]));
                             }
                             catch (Exception ex)
                             {
-                                LogMessage($"❌ Tool '{toolCall.Name}' execution failed: {ex.Message}");
+                                _logger.LogInformation($"❌ Tool '{toolCall.Name}' execution failed: {ex.Message}");
                                 var errorContent = new FunctionResultContent(toolCall.CallId, $"Error: {ex.Message}");
                                 conversationHistory.Add(new ChatMessage(ChatRole.Tool, [errorContent]));
                             }
                         }
                         else
                         {
-                            LogMessage($"⚠️ Tool '{toolCall.Name}' not found in available tools");
+                            _logger.LogInformation($"⚠️ Tool '{toolCall.Name}' not found in available tools");
                             var errorContent = new FunctionResultContent(toolCall.CallId, $"Error: Tool '{toolCall.Name}' not found");
                             conversationHistory.Add(new ChatMessage(ChatRole.Tool, [errorContent]));
                         }
                     }
                     
                     // Continue conversation to let LLM process tool results
-                    LogMessage($"🔄 Continuing conversation with tool results...");
+                    _logger.LogInformation($"🔄 Continuing conversation with tool results...");
                 }
                 else
                 {
@@ -392,24 +395,24 @@ public class MultiProviderChatService : IMultiProviderChatService
             
             if (currentTurn >= maxTurns)
             {
-                LogMessage($"⚠️ Reached maximum turns ({maxTurns}), stopping conversation loop");
+                _logger.LogInformation($"⚠️ Reached maximum turns ({maxTurns}), stopping conversation loop");
             }
             
-            LogMessage($"✅ Streaming complete: {chunks.Count} text chunks, {chunkCount} total updates");
+            _logger.LogInformation($"✅ Streaming complete: {chunks.Count} text chunks, {chunkCount} total updates");
         }
         catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
         {
-            LogMessage("⏱️ ERROR: Request timed out after 30 seconds");
+            _logger.LogInformation("⏱️ ERROR: Request timed out after 30 seconds");
             errorMessage = "\n\n❌ **Error**: Request timed out. The LLM provider may be rate limiting or unavailable.";
         }
         catch (HttpRequestException ex)
         {
-            LogMessage($"🌐 ERROR: Network error - {ex.Message}");
+            _logger.LogInformation($"🌐 ERROR: Network error - {ex.Message}");
             errorMessage = $"\n\n❌ **Error**: Network issue - {ex.Message}";
         }
         catch (Exception ex)
         {
-            LogMessage($"❌ ERROR: {ex.GetType().Name} - {ex.Message}");
+            _logger.LogInformation($"❌ ERROR: {ex.GetType().Name} - {ex.Message}");
             
             // Check for rate limit errors
             if (ex.Message.Contains("Too many requests", StringComparison.OrdinalIgnoreCase) ||
@@ -446,12 +449,12 @@ public class MultiProviderChatService : IMultiProviderChatService
     {
         if (_currentProvider == null)
         {
-            LogMessage("❌ No provider available");
+            _logger.LogInformation("❌ No provider available");
             return "Error: No AI provider configured";
         }
 
         var chatClient = _currentProvider.GetChatClient();
-        LogMessage($"💬 SendMessageAsync: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}... with {tools?.Count() ?? 0} tools");
+        _logger.LogInformation($"💬 SendMessageAsync: {userMessage.Substring(0, Math.Min(50, userMessage.Length))}... with {tools?.Count() ?? 0} tools");
 
         ChatOptions? chatOptions = null;
         if (tools != null && tools.Any())
@@ -482,7 +485,7 @@ public class MultiProviderChatService : IMultiProviderChatService
                     {
                         if (content is FunctionCallContent toolCall)
                         {
-                            LogMessage($"🔧 Executing tool: {toolCall.Name}");
+                            _logger.LogInformation($"🔧 Executing tool: {toolCall.Name}");
                             
                             // Find and execute the tool
                             var tool = tools?.FirstOrDefault(t => t.Name == toolCall.Name);
@@ -496,16 +499,25 @@ public class MultiProviderChatService : IMultiProviderChatService
                                         : new AIFunctionArguments();
                                     
                                     var result = await tool.InvokeAsync(args, cancellationToken);
-                                    var resultStr = result?.ToString() ?? "null";
-                                    LogMessage($"✅ Tool '{toolCall.Name}' result: {resultStr.Substring(0, Math.Min(100, resultStr.Length))}");
+
+                                    // DIAGNOSTIC: Log what type we actually got back
+                                    _logger.LogInformation($"🔍 Tool result type: {result?.GetType().FullName ?? "null"}");
+                                    if (result != null)
+                                    {
+                                        _logger.LogInformation($"🔍 Tool result value: {result}");
+                                    }
+                                    
+                                    // Format OPResult for LLM - gives structured success/error/data info
+                                    object resultForLLM = OPResult.AsToolResult(result);
+                                    _logger.LogInformation($"✅ Tool '{toolCall.Name}' result: {resultForLLM}");
                                     
                                     // Add tool result back to conversation for LLM (pass as content list)
-                                    var resultContent = new FunctionResultContent(toolCall.CallId, result);
+                                    var resultContent = new FunctionResultContent(toolCall.CallId, resultForLLM);
                                     conversationHistory.Add(new ChatMessage(ChatRole.Tool, [resultContent]));
                                 }
                                 catch (Exception ex)
                                 {
-                                    LogMessage($"❌ Tool '{toolCall.Name}' failed: {ex.Message}");
+                                    _logger.LogInformation($"❌ Tool '{toolCall.Name}' failed: {ex.Message}");
                                     var errorContent = new FunctionResultContent(toolCall.CallId, $"Error: {ex.Message}");
                                     conversationHistory.Add(new ChatMessage(ChatRole.Tool, [errorContent]));
                                 }
@@ -515,20 +527,14 @@ public class MultiProviderChatService : IMultiProviderChatService
                 }
             }
             
-            LogMessage($"✅ Response complete: {response.Length} chars");
+            _logger.LogInformation($"✅ Response complete: {response.Length} chars");
             return response.ToString();
         }
         catch (Exception ex)
         {
-            LogMessage($"❌ Error: {ex.Message}");
+            _logger.LogInformation($"❌ Error: {ex.Message}");
             return $"Error: {ex.Message}";
         }
-    }
-    
-    private void LogMessage(string message)
-    {
-        _logger.LogInformation(message);
-        OnLog?.Invoke(message);
     }
 
     // Tool: Get current date and time

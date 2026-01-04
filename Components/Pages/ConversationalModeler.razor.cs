@@ -12,7 +12,6 @@ using Three2025.Services.Chat;
 using AIChatMessage = Microsoft.Extensions.AI.ChatMessage;
 using FoundryWorldsAndDrawings.Solutions;
 using Three2025.Apprentice;
-using Three2025.Models.Apprentice;
 using FoundryMentorModeler.Persistence;
 
 namespace Three2025.Components.Pages;

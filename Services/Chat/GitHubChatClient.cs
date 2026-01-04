@@ -1,6 +1,7 @@
 using Azure;
 using Azure.AI.Inference;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
@@ -9,18 +10,17 @@ namespace Three2025.Services.Chat;
 #nullable enable
 
 /// <summary>
-/// Custom IChatClient implementation for GitHub Models that provides logging and event tracking
+/// Custom IChatClient implementation for GitHub Models that provides logging via standard ILogger
 /// </summary>
 public class GitHubChatClient : IChatClient
 {
     private readonly IChatClient _innerClient;
+    private readonly ILogger<GitHubChatClient> _logger;
     private readonly string _modelId;
 
-    // Event for logging conversation updates to UI
-    public event Action<string>? OnLog;
-
-    public GitHubChatClient(string token, string modelId)
+    public GitHubChatClient(string token, string modelId, ILogger<GitHubChatClient> logger)
     {
+        _logger = logger;
         _modelId = modelId;
         
         // Create the underlying client using Azure.AI.Inference
@@ -68,82 +68,67 @@ public class GitHubChatClient : IChatClient
         LogConversation("=== GetStreamingResponseAsync Called ===", messageList);
         
         // Stream the response
-        OnLog?.Invoke("📡 Calling GitHub API...");
+        _logger.LogInformation("📡 Calling GitHub API...");
         int chunkCount = 0;
         await foreach (var update in _innerClient.GetStreamingResponseAsync(messageList, options, cancellationToken))
         {
             chunkCount++;
             if (chunkCount == 1)
             {
-                OnLog?.Invoke($"✅ Received first chunk from GitHub API");
+                _logger.LogDebug("✅ Received first chunk from GitHub API");
             }
             yield return update;
         }
-        OnLog?.Invoke($"✅ GitHub API streaming complete. Total chunks: {chunkCount}");
+        _logger.LogDebug("✅ GitHub API streaming complete. Total chunks: {ChunkCount}", chunkCount);
     }
 
     private void LogConversation(string header, IList<ChatMessage> messages)
     {
-        var logBuilder = new System.Text.StringBuilder();
-        logBuilder.AppendLine();
-        logBuilder.AppendLine(header);
-        logBuilder.AppendLine($"Total Messages: {messages.Count}");
+        _logger.LogDebug("{Header} Total Messages: {MessageCount}", header, messages.Count);
         
         for (int i = 0; i < messages.Count; i++)
         {
             var message = messages[i];
-            logBuilder.AppendLine($"\n[Message {i + 1}] Role: {message.Role}");
             
             foreach (var content in message.Contents)
             {
                 switch (content)
                 {
                     case TextContent text:
-                        logBuilder.AppendLine($"  Type: Text");
-                        logBuilder.AppendLine($"  Content: {TruncateForLog(text.Text)}");
+                        _logger.LogDebug("[Message {Index}] {Role}: {Text}", i + 1, message.Role, TruncateForLog(text.Text));
                         break;
                         
                     case FunctionCallContent toolCall:
-                        logBuilder.AppendLine($"  Type: Function Call");
-                        logBuilder.AppendLine($"  Function: {toolCall.Name}");
-                        logBuilder.AppendLine($"  CallId: {toolCall.CallId}");
-                        logBuilder.AppendLine($"  Arguments: {SerializeArguments(toolCall.Arguments)}");
+                        _logger.LogDebug("[Message {Index}] {Role} → Tool: {ToolName}({Arguments})", 
+                            i + 1, message.Role, toolCall.Name, TruncateForLog(SerializeArguments(toolCall.Arguments), 50));
                         break;
                         
                     case FunctionResultContent toolResult:
-                        logBuilder.AppendLine($"  Type: Function Result");
-                        logBuilder.AppendLine($"  CallId: {toolResult.CallId}");
-                        logBuilder.AppendLine($"  Result: {TruncateForLog(toolResult.Result?.ToString())}");
+                        _logger.LogDebug("[Message {Index}] {Role} ← Result: {Result}", 
+                            i + 1, message.Role, TruncateForLog(toolResult.Result?.ToString(), 80));
                         break;
                         
                     default:
-                        logBuilder.AppendLine($"  Type: {content.GetType().Name}");
+                        _logger.LogDebug("[Message {Index}] {Role}: {ContentType}", i + 1, message.Role, content.GetType().Name);
                         break;
                 }
             }
         }
-        
-        logBuilder.AppendLine();
-        logBuilder.AppendLine("================");
-        
-        OnLog?.Invoke(logBuilder.ToString());
     }
 
     private void LogCompletion(ChatResponse completion)
     {
-        var logBuilder = new System.Text.StringBuilder();
-        logBuilder.AppendLine("\n=== Response Received ===");
-        logBuilder.AppendLine($"Finish Reason: {completion.FinishReason}");
-        logBuilder.AppendLine($"Model: {completion.ModelId}");
-        
         if (completion.Usage != null)
         {
-            logBuilder.AppendLine($"Tokens - Input: {completion.Usage.InputTokenCount}, Output: {completion.Usage.OutputTokenCount}, Total: {completion.Usage.TotalTokenCount}");
+            _logger.LogInformation("✅ Response: {FinishReason} Tokens: {InputTokens}in/{OutputTokens}out", 
+                completion.FinishReason, 
+                completion.Usage.InputTokenCount, 
+                completion.Usage.OutputTokenCount);
         }
-        
-        logBuilder.AppendLine("================");
-        
-        OnLog?.Invoke(logBuilder.ToString());
+        else
+        {
+            _logger.LogInformation("✅ Response: {FinishReason}", completion.FinishReason);
+        }
     }
 
     private static string? TruncateForLog(string? text, int maxLength = 100)

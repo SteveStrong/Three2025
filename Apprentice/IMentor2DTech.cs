@@ -1,5 +1,5 @@
 using FoundryWorldsAndDrawings.Shape;
-using Three2025.Models.Apprentice;
+using FoundryMentorModeler.Evaluator;
 
 namespace Three2025.Apprentice;
 
@@ -15,17 +15,17 @@ public interface IMentor2DTech
     void SetPage(FoPage2D page);
     
     // Box/Node Operations
-    BoxInfo AddBox(string name, string label, int x, int y, int width, int height, string color);
-    BoxInfo AddStateBox(string name, string label, int x, int y, string color);
-    BoxInfo AddDecisionBox(string name, string label, int x, int y);
+    OPResult AddBox(string name, string label, int x, int y, int width, int height, string color);
+    OPResult AddStateBox(string name, string label, int x, int y, string color);
+    OPResult AddDecisionBox(string name, string label, int x, int y);
     
     // Connector/Link Operations
-    LinkInfo AddDirectedLink(string sourceName, string targetName, string label);
+    OPResult AddDirectedLink(string sourceName, string targetName, string label);
     
     // Query Operations
-    BoxInfo? FindBox(string name);
-    List<BoxInfo> GetAllBoxes();
-    List<LinkInfo> GetAllLinks();
+    OPResult FindBox(string name);
+    OPResult GetAllBoxes();
+    OPResult GetAllLinks();
     
     // Modification Operations
     void MoveBox(string name, int x, int y);

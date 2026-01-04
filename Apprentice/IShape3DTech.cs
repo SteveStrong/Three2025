@@ -14,9 +14,7 @@ public interface IShape3DTech : ITechnician
    /// Establish a geometry stage for managing 3D shapes
    /// </summary>
    /// <param name="stageName">Optional stage name to connect to. If null, uses "AgentCanvas3D" as default.</param>
-   FoStage3D EstablishGeometryStage(string? stageName = null);
-
-   ToolCapabilities GetToolCapabilities();
+   OPResult EstablishGeometryStage(string? stageName = null);
 
    void ClearShapes();
 
@@ -24,16 +22,15 @@ public interface IShape3DTech : ITechnician
 
    void RestoreShapes();
 
-   string PickARandomColor();
+   OPResult PickARandomColor();
 
-   List<FoShape3D> GetShapes();
+   OPResult GetShapes();
 
-   FoShape3D? GetShapeByName(string name);
+   OPResult GetShapeByName(string name);
 
-   FoShape3D AddShape(string name, string color, string shapeType = "box", double x = 0.0, double y = 0.0, double z = 0.0);
+   OPResult AddShape(string name, string color, string shapeType = "box", double x = 0.0, double y = 0.0, double z = 0.0);
 
-   FoShape3D AddShapeWithDimensions(string name, string color, string shapeType, double width, double height, double depth, double x = 0.0, double y = 0.0, double z = 0.0);
-
+   OPResult AddShapeWithDimensions(string name, string color, string shapeType, double width, double height, double depth, double x = 0.0, double y = 0.0, double z = 0.0);
    OPResult DeleteShape(string name);
 
    OPResult DeleteMultipleShapes(List<string> names);
@@ -60,14 +57,14 @@ public interface IShape3DTech : ITechnician
    
    OPResult EstablishTextLabel(string parentShapeName, string labelName, string text, double? relativeX = null, double? relativeY = null, double? relativeZ = null, double? fontSize = null, string? color = null);
 
-   LinkShape CreateLinkShape(string name, string color, FoShape3D fromShape, FoShape3D toShape, double radius, string geomType = "Pipe");
+   OPResult CreateLinkShape(string name, string color, FoShape3D fromShape, FoShape3D toShape, double radius, string geomType = "Pipe");
    
-   LinkShape ChangeLinkGeometryType(string name, string geomType);
+   OPResult ChangeLinkGeometryType(string name, string geomType);
    
    void RefreshUI();
 
-   FoPipe3D CreatePipeLink(string name, string color, FoShape3D fromShape, FoShape3D toShape, double radius);
+   OPResult CreatePipeLink(string name, string color, FoShape3D fromShape, FoShape3D toShape, double radius);
 
-   FoPathway3D CreatePathwayLink(string name, FoShape3D fromShape, FoShape3D toShape);
+   OPResult CreatePathwayLink(string name, FoShape3D fromShape, FoShape3D toShape);
    
 }

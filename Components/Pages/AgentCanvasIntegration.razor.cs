@@ -761,14 +761,8 @@ public partial class AgentCanvasIntegration : ComponentBase
             // Get summary from knowledge model
             rackKnowledgeModelSummary = RackKnowledgeToFoFactory.GetKnowledgeModelSummary(dataCenterModel);
             
-            // Generate FO objects from knowledge model
-            var dataCenter = RackKnowledgeToFoFactory.GenerateDataCenter(dataCenterModel);
-            
-            // Add all shapes to stage
-            foreach (var shape in dataCenter.GetMembers<RackCabinetShape>() ?? Enumerable.Empty<RackCabinetShape>())
-            {
-                stage.AddShape(shape);
-            }
+            // Generate FO objects directly into stage (technician operates on stage, doesn't create it)
+            RackKnowledgeToFoFactory.GenerateDataCenter(dataCenterModel, stage);
 
             RackEquip_UpdateStatistics();
             RackEquip_SetStatus($"✅ Generated from Knowledge Model: {rackCabinetCount} cabinets with {rackEquipmentCount} devices", isError: false);

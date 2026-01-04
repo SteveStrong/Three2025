@@ -9,11 +9,12 @@ namespace Three2025.Apprentice.RackEquipment;
 public static class RackKnowledgeToFoFactory
 {
     /// <summary>
-    /// Generate a complete data center with all cabinets from knowledge model
+    /// Generate a complete data center with all cabinets from knowledge model.
+    /// Technician operates on provided stage - does not instantiate modeling objects.
     /// </summary>
-    public static FoStage3D GenerateDataCenter(DataCenterRackModel model)
+    public static FoStage3D GenerateDataCenter(DataCenterRackModel model, FoStage3D stage)
     {
-        var stage = new FoStage3D("DataCenter");
+        // Use provided stage - technician operates on context, doesn't create it
         
         // Get cabinet spacing
         var spacing = model.FindParameter("CabinetSpacing")?.GetValue().AsNumber() ?? 25.0;

@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Components;
 using Three2025.Models.Chat;
+using Markdig;
 
 namespace Three2025.Components.Shared.Chat;
 
@@ -33,4 +34,22 @@ public partial class ChatMessageList
 
     private ElementReference containerRef;
     private ElementReference scrollAnchor;
+    
+    /// <summary>
+    /// Markdown pipeline for rendering markdown to HTML
+    /// </summary>
+    private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
+        .UseAdvancedExtensions()
+        .Build();
+    
+    /// <summary>
+    /// Get rendered HTML for streaming text
+    /// </summary>
+    private string GetStreamingHtml()
+    {
+        if (string.IsNullOrWhiteSpace(StreamingText))
+            return string.Empty;
+            
+        return Markdown.ToHtml(StreamingText, Pipeline);
+    }
 }

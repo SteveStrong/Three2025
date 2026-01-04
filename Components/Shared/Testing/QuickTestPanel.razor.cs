@@ -28,6 +28,17 @@ public partial class QuickTestPanel : ComponentBase
     // UTILITY: ERROR HANDLING WRAPPER
     // ================================================================
     
+    /// <summary>
+    /// Helper to extract FoShape3D from OPResult (since all technician methods return OPResult)
+    /// </summary>
+    private FoundryWorldsAndDrawings.Shape.FoShape3D? GetShape(string name)
+    {
+        var result = Shape3DTech.GetShapeByName(name);
+        if (result.IsError())
+            return null;
+        return result.AsShape3D();
+    }
+    
     private async Task ExecuteTest(Func<string> testAction, string failureContext)
     {
         try
@@ -69,7 +80,7 @@ public partial class QuickTestPanel : ComponentBase
     private async Task Test_CreateTestBox() => await ExecuteTest(() =>
     {
         // Check if TestBox1 already exists
-        var existing = Shape3DTech.GetShapeByName("TestBox1");
+        var existing = GetShape("TestBox1");
         if (existing != null)
         {            // Reset to red color and origin position
             Shape3DTech.ChangeColor("TestBox1", "red");
@@ -114,7 +125,7 @@ public partial class QuickTestPanel : ComponentBase
         currentGeometryType = newType;
         
         // Check if TestBox1 exists
-        var existing = Shape3DTech.GetShapeByName("TestBox1");
+        var existing = GetShape("TestBox1");
         if (existing != null)
         {
             // Delete old shape and create new one with same color and position
@@ -126,7 +137,7 @@ public partial class QuickTestPanel : ComponentBase
             var result = Shape3DTech.AddShape("TestBox1", currentColor, newType);
             
             // Restore position and rotation
-            var newShape = Shape3DTech.GetShapeByName("TestBox1");
+            var newShape = GetShape("TestBox1");
             if (newShape != null)
             {
                 newShape.Transform.Position = currentPosition;
@@ -145,7 +156,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_MakeTaller() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) return "TestBox1 not found";
         
         var newHeight = box.Height * 2.0;
@@ -155,7 +166,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_MakeWider() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) return "TestBox1 not found";
         
         var newWidth = box.Width * 2.0;
@@ -165,7 +176,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_MakeDeeper() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) return "TestBox1 not found";
         
         var newDepth = box.Depth * 2.0;
@@ -175,7 +186,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_MakeLarger() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) return "TestBox1 not found";
         
         var newWidth = box.Width * 1.5;
@@ -187,7 +198,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_MakeSmaller() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) return "TestBox1 not found";
         
         var newWidth = box.Width * 0.5;
@@ -204,18 +215,18 @@ public partial class QuickTestPanel : ComponentBase
     private async Task Test_CreateLinkShape() => await ExecuteTest(() =>
     {
         // Create two body shapes if they don't exist
-        var body1 = Shape3DTech.GetShapeByName("Body1");
+        var body1 = GetShape("Body1");
         if (body1 == null)
         {
             Shape3DTech.AddShape("Body1", "cyan", "sphere", -3, 0, 0);
-            body1 = Shape3DTech.GetShapeByName("Body1");
+            body1 = GetShape("Body1");
         }
         
-        var body2 = Shape3DTech.GetShapeByName("Body2");
+        var body2 = GetShape("Body2");
         if (body2 == null)
         {
             Shape3DTech.AddShape("Body2", "magenta", "sphere", 3, 0, 0);
-            body2 = Shape3DTech.GetShapeByName("Body2");
+            body2 = GetShape("Body2");
         }
         
         // Create a link with current geometry type
@@ -232,18 +243,18 @@ public partial class QuickTestPanel : ComponentBase
     private async Task Test_CreatePipeLink() => await ExecuteTest(() =>
     {
         // Create two body shapes if they don't exist
-        var body1 = Shape3DTech.GetShapeByName("Body1");
+        var body1 = GetShape("Body1");
         if (body1 == null)
         {
             Shape3DTech.AddShape("Body1", "cyan", "sphere", -3, 0, 0);
-            body1 = Shape3DTech.GetShapeByName("Body1");
+            body1 = GetShape("Body1");
         }
         
-        var body2 = Shape3DTech.GetShapeByName("Body2");
+        var body2 = GetShape("Body2");
         if (body2 == null)
         {
             Shape3DTech.AddShape("Body2", "magenta", "sphere", 3, 0, 0);
-            body2 = Shape3DTech.GetShapeByName("Body2");
+            body2 = GetShape("Body2");
         }
         
         // Create a pipe link connecting them
@@ -254,18 +265,18 @@ public partial class QuickTestPanel : ComponentBase
     private async Task Test_CreatePathwayLink() => await ExecuteTest(() =>
     {
         // Create two body shapes if they don't exist
-        var body1 = Shape3DTech.GetShapeByName("Body1");
+        var body1 = GetShape("Body1");
         if (body1 == null)
         {
             Shape3DTech.AddShape("Body1", "cyan", "sphere", -3, 0, 0);
-            body1 = Shape3DTech.GetShapeByName("Body1");
+            body1 = GetShape("Body1");
         }
         
-        var body2 = Shape3DTech.GetShapeByName("Body2");
+        var body2 = GetShape("Body2");
         if (body2 == null)
         {
             Shape3DTech.AddShape("Body2", "magenta", "sphere", 3, 0, 0);
-            body2 = Shape3DTech.GetShapeByName("Body2");
+            body2 = GetShape("Body2");
         }
         
         // Create a pathway link
@@ -285,7 +296,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_MoveRight() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) throw new Exception("TestBox1 not found");
         box.Transform.MoveBy(1.0, 0, 0);
         return $"Moved TestBox1 right (+1.0 on X-axis)";
@@ -293,7 +304,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_MoveUp() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) throw new Exception("TestBox1 not found");
         box.Transform.MoveBy(0, 1.0, 0);
         return $"Moved TestBox1 up (+1.0 on Y-axis)";
@@ -301,7 +312,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_MoveForward() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) throw new Exception("TestBox1 not found");
         box.Transform.MoveBy(0, 0, 1.0);
         return $"Moved TestBox1 forward (+1.0 on Z-axis)";
@@ -319,7 +330,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_RotateX45() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) throw new Exception("TestBox1 not found");
         box.Transform.RotateBy(45, 0, 0, AngleUnit.Degrees);
         return $"Rotated TestBox1 +45° around X-axis (cumulative)";
@@ -327,7 +338,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_RotateY45() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) throw new Exception("TestBox1 not found");
         box.Transform.RotateBy(0, 45, 0, AngleUnit.Degrees);
         return $"Rotated TestBox1 +45° around Y-axis (cumulative)";
@@ -335,7 +346,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_RotateZ45() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) throw new Exception("TestBox1 not found");
         box.Transform.RotateBy(0, 0, 45, AngleUnit.Degrees);
         return $"Rotated TestBox1 +45° around Z-axis (cumulative)";
@@ -347,7 +358,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_SwitchToTechnicalView() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) throw new Exception("TestBox1 not found");
         
         // Dynamically switch to technical formatter at runtime!
@@ -358,7 +369,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_SwitchToSpatialView() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) throw new Exception("TestBox1 not found");
         
         // Switch back to spatial formatter
@@ -369,7 +380,7 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_CustomFormatterDemo() => await ExecuteTest(() =>
     {
-        var box = Shape3DTech.GetShapeByName("TestBox1");
+        var box = GetShape("TestBox1");
         if (box == null) throw new Exception("TestBox1 not found");
         
         // Create a custom formatter on the fly!
@@ -405,8 +416,8 @@ public partial class QuickTestPanel : ComponentBase
     private async Task Test_MoveBodiesApart() => await ExecuteTest(() =>
     {
         // Move Body1 and Body2 apart on the X-axis so the link stretches
-        var body1 = Shape3DTech.GetShapeByName("Body1");
-        var body2 = Shape3DTech.GetShapeByName("Body2");
+        var body1 = GetShape("Body1");
+        var body2 = GetShape("Body2");
         
         if (body1 == null) throw new Exception("Body1 not found. Create a link first!");
         if (body2 == null) throw new Exception("Body2 not found. Create a link first!");
@@ -421,8 +432,8 @@ public partial class QuickTestPanel : ComponentBase
     private async Task Test_MoveBodiesApartAnimated() => await ExecuteTestAsync(async () =>
     {
         // Move Body1 and Body2 apart on the X-axis with animation
-        var body1 = Shape3DTech.GetShapeByName("Body1");
-        var body2 = Shape3DTech.GetShapeByName("Body2");
+        var body1 = GetShape("Body1");
+        var body2 = GetShape("Body2");
         
         if (body1 == null) throw new Exception("Body1 not found. Create a link first!");
         if (body2 == null) throw new Exception("Body2 not found. Create a link first!");
@@ -443,7 +454,7 @@ public partial class QuickTestPanel : ComponentBase
     private async Task Test_CreateAudioPanel() => await ExecuteTest(() =>
     {
         // Check if AudioPanel already exists
-        var existing = Shape3DTech.GetShapeByName("AudioPanel");
+        var existing = GetShape("AudioPanel");
         if (existing != null)
         {
             Shape3DTech.DeleteShape("AudioPanel");
@@ -451,9 +462,9 @@ public partial class QuickTestPanel : ComponentBase
         
         // Create the audio panel
         var audioPanel = new AudioPanelShape("AudioPanel", panelWidth: 16.0, panelHeight: 4.0);
-        Shape3DTech.EstablishGeometryStage();
-        // TODO: Need to add AddShape method that takes FoShape3D to IShape3DTech
-        var stage = Shape3DTech.EstablishGeometryStage();
+        var stageResult = Shape3DTech.EstablishGeometryStage();
+        if (stageResult.IsError()) throw new Exception($"Failed to establish stage: {stageResult.Display()}");
+        var stage = stageResult.AsStage3D();
         stage.AddShape(audioPanel);
         Shape3DTech.RefreshUI();
         
@@ -463,7 +474,7 @@ public partial class QuickTestPanel : ComponentBase
     private async Task Test_CreateMobileRouter() => await ExecuteTest(() =>
     {
         // Check if MobileRouter already exists
-        var existing = Shape3DTech.GetShapeByName("MobileRouter");
+        var existing = GetShape("MobileRouter");
         if (existing != null)
         {
             Shape3DTech.DeleteShape("MobileRouter");
@@ -471,8 +482,9 @@ public partial class QuickTestPanel : ComponentBase
         
         // Create the mobile router (wider, flatter to match reference)
         var router = new MobileRouterShape("MobileRouter", width: 16.0, height: 3.0, depth: 1.5);
-        Shape3DTech.EstablishGeometryStage();
-        var stage = Shape3DTech.EstablishGeometryStage();
+        var stageResult = Shape3DTech.EstablishGeometryStage();
+        if (stageResult.IsError()) throw new Exception($"Failed to establish stage: {stageResult.Display()}");
+        var stage = stageResult.AsStage3D();
         stage.AddShape(router);
         Shape3DTech.RefreshUI();
         
@@ -485,14 +497,16 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_CreateMFCabinet1() => await ExecuteTest(() =>
     {
-        var existing = Shape3DTech.GetShapeByName("MF_Cabinet_1");
+        var existing = GetShape("MF_Cabinet_1");
         if (existing != null)
         {
             Shape3DTech.DeleteShape("MF_Cabinet_1");
         }
         
         var cabinet = MFCabinetFactory.CreateMFCabinet1();
-        var stage = Shape3DTech.EstablishGeometryStage();
+        var stageResult = Shape3DTech.EstablishGeometryStage();
+        if (stageResult.IsError()) throw new Exception($"Failed to establish stage: {stageResult.Display()}");
+        var stage = stageResult.AsStage3D();
         stage.AddShape(cabinet);
         Shape3DTech.RefreshUI();
         
@@ -503,14 +517,16 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_CreateMFCabinet2() => await ExecuteTest(() =>
     {
-        var existing = Shape3DTech.GetShapeByName("MF_Cabinet_2");
+        var existing = GetShape("MF_Cabinet_2");
         if (existing != null)
         {
             Shape3DTech.DeleteShape("MF_Cabinet_2");
         }
         
         var cabinet = MFCabinetFactory.CreateMFCabinet2();
-        var stage = Shape3DTech.EstablishGeometryStage();
+        var stageResult = Shape3DTech.EstablishGeometryStage();
+        if (stageResult.IsError()) throw new Exception($"Failed to establish stage: {stageResult.Display()}");
+        var stage = stageResult.AsStage3D();
         stage.AddShape(cabinet);
         Shape3DTech.RefreshUI();
         
@@ -521,14 +537,16 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_CreateMFCabinet3() => await ExecuteTest(() =>
     {
-        var existing = Shape3DTech.GetShapeByName("MF_Cabinet_3");
+        var existing = GetShape("MF_Cabinet_3");
         if (existing != null)
         {
             Shape3DTech.DeleteShape("MF_Cabinet_3");
         }
         
         var cabinet = MFCabinetFactory.CreateMFCabinet3();
-        var stage = Shape3DTech.EstablishGeometryStage();
+        var stageResult = Shape3DTech.EstablishGeometryStage();
+        if (stageResult.IsError()) throw new Exception($"Failed to establish stage: {stageResult.Display()}");
+        var stage = stageResult.AsStage3D();
         stage.AddShape(cabinet);
         Shape3DTech.RefreshUI();
         
@@ -539,14 +557,16 @@ public partial class QuickTestPanel : ComponentBase
     
     private async Task Test_CreateMFCabinet4() => await ExecuteTest(() =>
     {
-        var existing = Shape3DTech.GetShapeByName("MF_Cabinet_4");
+        var existing = GetShape("MF_Cabinet_4");
         if (existing != null)
         {
             Shape3DTech.DeleteShape("MF_Cabinet_4");
         }
         
         var cabinet = MFCabinetFactory.CreateMFCabinet4();
-        var stage = Shape3DTech.EstablishGeometryStage();
+        var stageResult = Shape3DTech.EstablishGeometryStage();
+        if (stageResult.IsError()) throw new Exception($"Failed to establish stage: {stageResult.Display()}");
+        var stage = stageResult.AsStage3D();
         stage.AddShape(cabinet);
         Shape3DTech.RefreshUI();
         
@@ -561,7 +581,7 @@ public partial class QuickTestPanel : ComponentBase
         var cabinetNames = new[] { "MF_Cabinet_1", "MF_Cabinet_2", "MF_Cabinet_3", "MF_Cabinet_4" };
         foreach (var name in cabinetNames)
         {
-            var existing = Shape3DTech.GetShapeByName(name);
+            var existing = GetShape(name);
             if (existing != null)
             {
                 Shape3DTech.DeleteShape(name);
@@ -569,7 +589,9 @@ public partial class QuickTestPanel : ComponentBase
         }
         
         var cabinets = MFCabinetFactory.CreateAllMFCabinets(spacing: 25.0);
-        var stage = Shape3DTech.EstablishGeometryStage();
+        var stageResult = Shape3DTech.EstablishGeometryStage();
+        if (stageResult.IsError()) throw new Exception($"Failed to establish stage: {stageResult.Display()}");
+        var stage = stageResult.AsStage3D();
         foreach (var cabinet in cabinets)
         {
             stage.AddShape(cabinet);
