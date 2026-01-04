@@ -172,7 +172,7 @@ public class TrisocTech : ITrisocTech
         var s = 100.0;
         var y = 0.0;
 
-
+        // Create model - technician creates the shape object but delegates to stage for registration
         CurrentModel = new FoModel3D("TRISOC")
         {
             Url = url,
@@ -186,6 +186,7 @@ public class TrisocTech : ITrisocTech
 
         CreateTextLabel3D(CurrentModel, "xxx", "Test", Text3DAlign.Left, 1.5);
 
+        // Delegate to stage for shape registration (stage comes from arena)
         var stage = GetStage();
         stage.AddShape(CurrentModel);
         return CurrentModel;
@@ -196,7 +197,7 @@ public class TrisocTech : ITrisocTech
         var s = 1.0;
         var y = 0.0;
 
-
+        // Create model - technician creates the shape object but delegates to stage for registration
         var model = new FoModel3D("Model"+name)
         {
             Url = url,
@@ -209,6 +210,7 @@ public class TrisocTech : ITrisocTech
 
         CreateTextLabel3D(model, name, name, Text3DAlign.Left, 1.5);
 
+        // Delegate to stage for shape registration (stage comes from arena via GetStage)
         var stage = GetStage();
         stage.AddShape(model);
         return model;

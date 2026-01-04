@@ -932,11 +932,237 @@ Specialized agent using geometry tools.
 
 ---
 
+## CRITICAL: OPResult Return Pattern
+
+**All technician methods MUST return `OPResult`** - this is a fundamental architectural requirement.
+
+### Why OPResult?
+
+When Microsoft.Extensions.AI executes a tool, it **JSON-serializes the return value** before sending it back to the LLM. If your method returns raw objects (FoShape3D, string, etc.), the LLM receives cryptic serialized metadata instead of meaningful feedback.
+
+### The Problem (Before)
+
+```csharp
+// ❌ WRONG - Returns raw object
+[Description("Change the color of a shape")]
+public FoShape3D ChangeColor(string name, string color)
+{
+    var shape = FindShape(name);
+    shape.Color = color;
+    return shape;  // LLM sees: {"operatorToken": {"text": "...", ...}}
+}
+```
+
+The LLM receives meaningless JSON and can't confirm the operation succeeded.
+
+### The Solution (After)
+
+```csharp
+// ✅ CORRECT - Returns OPResult
+[Description("Change the color of a shape")]
+public OPResult ChangeColor(string name, string color)
+{
+    var shape = FindShape(name);
+    if (shape == null)
+        return OPResult.Error($"Shape '{name}' not found");
+    
+    shape.Color = color;
+    return OPResult.Success($"Changed color of '{name}' to '{color}'");
+}
+```
+
+The LLM receives:
+```json
+{
+  "ResultType": "Success",
+  "HasError": false,
+  "ResultMessage": "Changed color of 'cube1' to 'green'"
+}
+```
+
+### OPResult Factory Methods
+
+| Method | Usage | Example |
+|--------|-------|---------|
+| `OPResult.Success(message)` | Operation completed successfully | `OPResult.Success("Deleted shape 'Box1'")` |
+| `OPResult.Error(message)` | Operation failed | `OPResult.Error("Shape not found")` |
+| `OPResult.Object(value)` | Return an object with success | `OPResult.Object(newShape)` |
+| `OPResult.Collection(list)` | Return a list of items | `OPResult.Collection(shapes)` |
+
+### OPResult Public Properties (for JSON Serialization)
+
+OPResult exposes these properties for LLM consumption:
+
+```csharp
+public string ResultType { get; }      // "Success", "Error", "Shape3D", "Collection"
+public bool HasError { get; }          // true if error occurred
+public string ResultMessage { get; }   // Human-readable description
+```
+
+### Interface Contract
+
+Update your interface to match:
+
+```csharp
+public interface IShape3DTech : ITechnician
+{
+    // ALL methods return OPResult - no exceptions!
+    OPResult AddShape(string name, string color, string shapeType);
+    OPResult ChangeColor(string name, string color);
+    OPResult DeleteShape(string name);
+    OPResult GetShapes();
+    // ... etc
+}
+```
+
+---
+
+## CRITICAL: Agent System Prompt Guidelines
+
+The LLM's behavior is entirely controlled by its system prompt. Ambiguous prompts lead to incorrect tool selection.
+
+### The Verification Problem
+
+**Problematic Prompt:**
+```
+❌ DON'T: Assume shape names - call GetShapes() to confirm what exists
+```
+
+This makes the LLM call `GetShapes()` before EVERY operation, even when the user explicitly names the shape: "Make cube1 green" → LLM calls GetShapes() instead of ChangeColor().
+
+**Fixed Prompt:**
+```
+✅ DO: When user provides EXPLICIT name like "cube1" → CALL THE TOOL DIRECTLY!
+❌ DON'T: Call GetShapes() before ChangeColor when user says "Make cube1 green"
+```
+
+### Prompt Pattern: Explicit Names vs Ambiguous References
+
+**ALWAYS include this in agent system prompts:**
+
+```markdown
+## CRITICAL: Explicit Names vs Ambiguous References
+
+**Step 0: Check if the user provided an EXPLICIT SHAPE NAME**
+- If user says "Make cube1 green" → The name IS "cube1" - CALL ChangeColor('cube1', 'green') IMMEDIATELY
+- If user says "Move Box1 up" → The name IS "Box1" - CALL RepositionShape('Box1', 0, 5, 0) IMMEDIATELY
+- DO NOT call GetShapes() when an explicit name is provided!
+
+**Only call GetShapes() for AMBIGUOUS references:**
+- "Move it" → Who is "it"? Check history or call GetShapes()
+- "Make the box red" → Which box? May need GetShapes()
+- "Delete that" → What is "that"? Check context
+
+## CRITICAL EXAMPLES:
+"Make cube1 green" → DIRECTLY call ChangeColor('cube1', 'green') - NO GetShapes() needed!
+"Move Box1 up" → DIRECTLY call RepositionShape('Box1', 0, 5, 0) - NO GetShapes() needed!
+"Make it blue" → ONLY NOW check history or call GetShapes() to find what "it" refers to
+```
+
+### Verification Tools Should Be Rare
+
+If your LLM is calling `GetShapes()` for every request, your prompt is too cautious. The pattern should be:
+
+1. **User provides explicit name** → Execute directly
+2. **User uses pronoun ("it", "that")** → Check conversation history first
+3. **Still ambiguous** → Then call GetShapes()
+
+---
+
+## Editor Pattern: Tool → Editor → Model
+
+Editors provide the implementation layer between tools and the model. They:
+
+1. **Manage state** - Know which stage/page is active
+2. **Execute operations** - Create, modify, delete shapes
+3. **Return OPResult** - Consistent return type for all operations
+
+### Editor Responsibilities
+
+```csharp
+public interface IShape3DEditor
+{
+    // State management
+    void ConnectStage(FoStage3D stage);
+    FoStage3D? GetActiveStage();
+    
+    // Shape operations - ALL return OPResult
+    OPResult CreateShape(string name, string shapeType, string color, 
+                         double width, double height, double depth);
+    OPResult ChangeColor(string name, string color);
+    OPResult FindShape(string name);  // Returns OPResult.Object(shape) or OPResult.Error()
+    OPResult DeleteShape(string name);
+    OPResult GetAllShapes();
+}
+```
+
+### Tool → Editor → Model Flow
+
+```
+User: "Make cube1 green"
+        │
+        ▼
+┌─────────────────────────┐
+│  Shape3DTech (Tool)     │  ← Receives LLM tool call
+│  ChangeColor(name,color)│
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│  Shape3DEditor          │  ← Executes business logic
+│  - Finds shape by name  │
+│  - Validates operation  │
+│  - Updates color        │
+│  - Returns OPResult     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│  FoStage3D / FoShape3D  │  ← Model layer
+│  (Actual shape objects) │
+└─────────────────────────┘
+```
+
+---
+
+## Debugging Checklist
+
+When tools aren't working correctly:
+
+### 1. Check Tool Discovery
+```
+✅ [14:00:12] 📋 Found 8 ITechnician interfaces
+✅ [14:00:12] ✓ IShape3DTech -> Shape3DTech: 27 tools
+```
+
+### 2. Check Tool Execution
+```
+✅ [14:00:24] 🔧 Executing tool: ChangeColor
+```
+
+### 3. Check OPResult Serialization
+```
+✅ Tool result value: {
+     "ResultType": "Success",
+     "HasError": false,
+     "ResultMessage": "Changed color of 'cube1' to 'red'"
+   }
+```
+
+### 4. Check Tool Selection
+If the LLM calls the **wrong tool** (e.g., GetShapes instead of ChangeColor):
+- Review the system prompt for ambiguous instructions
+- Add explicit examples showing when to use each tool
+- Make the "explicit name = direct action" rule clearer
+
+---
+
 ## Revision History
 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | Dec 26, 2025 | Initial guide based on proven Three2025 patterns |
+| 1.1 | Jan 4, 2026 | Added OPResult pattern, agent prompt guidelines, editor pattern, debugging checklist |
 
 ---
 
@@ -945,7 +1171,10 @@ Specialized agent using geometry tools.
 ✅ **Use Scoped services** to match Blazor/web request lifecycle  
 ✅ **[Description] is the gate** - only marked methods become tools  
 ✅ **Describe parameters** to guide LLM on proper usage  
-✅ **Return useful state** so agents can verify operations  
+✅ **ALL technician methods return OPResult** - enables meaningful LLM feedback  
+✅ **OPResult has public properties** - ResultType, HasError, ResultMessage for JSON serialization  
+✅ **Agent prompts must distinguish explicit names from ambiguous references**  
+✅ **Explicit name = direct action** - don't verify what the user told you  
 ✅ **Connect context in page lifecycle** (SetStage, etc.)  
 ✅ **Tools are discovered once** and shared across agents  
 ✅ **Log everything** for debugging tool discovery issues  

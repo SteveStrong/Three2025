@@ -2,7 +2,6 @@ using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.PubSub;
 using FoundryRulesAndUnits.Extensions;
-using Three2025.Models.Apprentice;
 
 #nullable enable
 

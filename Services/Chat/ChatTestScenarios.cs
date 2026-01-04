@@ -81,7 +81,6 @@ public class ChatTestScenarios3D : ChatTestScenariosBase
         "Create a white cube named cube1 with sides of length 3",
         "Make cube1 red",
         "Make cube1 orange",
-        "Make cube1 yellow",
         "Make cube1 green",
         "Make cube1 blue",
         "Make cube1 purple"

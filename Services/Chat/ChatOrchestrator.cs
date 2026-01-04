@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.AI;
 using Three2025.Services.Agents;
+using Three2025.Apprentice;
 
 namespace Three2025.Services.Chat;
 
@@ -52,11 +53,17 @@ public class ChatOrchestrator : IChatOrchestrator
         RegisterAgent(generalAgent);
         
         // 3D Modeling Agent - Specialized for geometry creation and manipulation
-        var modelingAgent = _agentFactory.Create3DModelingAgent(_technicianTools);
+        // Get only Shape3DTech tools (filtering out Shape2DTech and ModelTech)
+        var shape3DTools = _toolProvider.GetToolsFor<IShape3DTech>();
+        _logger.LogInformation($"🎯 Shape3D Technician: Filtered to {shape3DTools.Count()} Shape3DTech tools");
+        var modelingAgent = _agentFactory.Create3DModelingAgent(shape3DTools);
         RegisterAgent(modelingAgent);
         
         // Knowledge Modeling Agent - Specialized for conceptual design and ModelTech tools
-        var knowledgeAgent = _agentFactory.CreateKnowledgeModelingAgent(_technicianTools);
+        // Get only ModelTech tools
+        var modelTools = _toolProvider.GetToolsFor<IModelTech>();
+        _logger.LogInformation($"🎯 Knowledge Modeling Agent: Filtered to {modelTools.Count()} ModelTech tools");
+        var knowledgeAgent = _agentFactory.CreateKnowledgeModelingAgent(modelTools);
         RegisterAgent(knowledgeAgent);
         
         // FUTURE AGENTS - Commented out until we establish the right pattern

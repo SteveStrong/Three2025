@@ -4,6 +4,7 @@ using FoundryMentorModeler.Model;
 using FoundryMentorModeler.Evaluator;
 using FoundryMentorModeler.Persistence;
 using FoundryWorldsAndDrawings.PubSub;
+using FoundryWorldsAndDrawings.Solutions;
 using Three2025.Apprentice.RackEquipment;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryCore;
@@ -117,8 +118,12 @@ public partial class RackKnowledgeModel : ComponentBase
         {
             await Task.Delay(50);
 
-            // Generate FO geometry from knowledge model
-            _generatedStage = RackKnowledgeToFoFactory.GenerateDataCenter(_dataCenterModel);
+            // Get stage from arena (delegate to modeling layer)
+            var arena = MentorServices.EstablishArena();
+            _generatedStage = arena.EstablishStage<FoStage3D>("DataCenter");
+            
+            // Generate FO geometry into provided stage (technician operates on stage, doesn't create it)
+            RackKnowledgeToFoFactory.GenerateDataCenter(_dataCenterModel, _generatedStage);
 
             var shapeCount = _generatedStage.GetMembers<RackCabinetShape>().Count();
             _statusMessage = $"✅ Generated {shapeCount} FO shapes from knowledge model";

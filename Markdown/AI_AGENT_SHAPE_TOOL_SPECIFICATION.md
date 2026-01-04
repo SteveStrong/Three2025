@@ -1,7 +1,7 @@
 # AI Agent Shape Tool Specification
 
-**Version:** 1.0  
-**Date:** December 26, 2025  
+**Version:** 1.1  
+**Date:** January 4, 2026  
 **Purpose:** Dual-purpose guide for building AI-accessible shape manipulation tools and for AI agents using them
 
 ---
@@ -267,10 +267,18 @@ public class ShapeInfo
    - What each parameter means
    - Valid values/ranges when applicable
 
-2. **Return State Snapshots**: Return `List<ShapeInfo>` showing current scene state after operations
-   - Provides immediate feedback
-   - Agents can verify changes
-   - Enables chained operations
+2. **Return OPResult**: ALL technician methods MUST return `OPResult`
+   - Microsoft.Extensions.AI JSON-serializes tool returns for LLM consumption
+   - Raw objects (FoShape3D, List<T>) serialize to cryptic metadata
+   - OPResult provides ResultType, HasError, ResultMessage properties the LLM can understand
+   
+   ```csharp
+   // ❌ WRONG - LLM sees meaningless JSON
+   public FoShape3D ChangeColor(string name, string color) { ... }
+   
+   // ✅ CORRECT - LLM sees: { "ResultType": "Success", "ResultMessage": "Changed color of 'cube1' to 'green'" }
+   public OPResult ChangeColor(string name, string color) { ... }
+   ```
 
 3. **Consistent Naming**: Use clear, action-oriented method names
    - `AddShape` not `CreateShape` (create implies construction only)
@@ -282,13 +290,16 @@ public class ShapeInfo
    - `isOn = true` - shapes usually visible
    - Agents can omit optional parameters
 
-5. **Error Handling**: Return meaningful error information
+5. **Error Handling**: Return meaningful error information via OPResult
    ```csharp
    if (!ShapeExists(name))
    {
-       Console.WriteLine($"❌ Shape '{name}' not found");
-       return GetShapes(); // Return current state even on error
+       return OPResult.Error($"Shape '{name}' not found");
    }
+   
+   // Success case
+   shape.Color = color;
+   return OPResult.Success($"Changed color of '{name}' to '{color}'");
    ```
 
 ### 1.5 Integration with AI Tool Discovery
@@ -889,6 +900,7 @@ foreach (var shape in shapes)
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | Dec 26, 2025 | Initial specification based on GeometryTech implementation |
+| 1.1 | Jan 4, 2026 | Updated return type guidance: ALL methods return OPResult for proper LLM serialization |
 
 ---
 

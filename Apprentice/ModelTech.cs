@@ -5,7 +5,6 @@ using FoundryWorldsAndDrawings.Solutions;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 using Three2025.Components.Pages;
-using Three2025.Models.Apprentice;
 using Three2025.Services.Agents;
 using FoundryMentorModeler.Evaluator;
 

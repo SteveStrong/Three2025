@@ -1,7 +1,7 @@
 # Multi-Agent Chatbot Infrastructure Specification
 
 **Project**: Three2025 Framework  
-**Date**: December 26, 2025  
+**Date**: January 4, 2026 (Updated)  
 **Purpose**: Design and implement reusable multi-agent chatbot infrastructure for integration across Razor pages
 
 ---
@@ -1515,6 +1515,56 @@ See individual agent implementation files for complete system prompts.
 3. Context awareness instructions
 4. Code example expectations
 5. Response format guidelines
+
+---
+
+## Appendix C: Tool Integration Critical Patterns
+
+### OPResult Return Type (MANDATORY)
+
+**All technician methods MUST return `OPResult`**. Microsoft.Extensions.AI JSON-serializes tool return values for LLM consumption. Raw objects result in cryptic metadata the LLM cannot interpret.
+
+```csharp
+// ❌ WRONG - LLM receives meaningless serialized metadata
+public FoShape3D ChangeColor(string name, string color) { ... }
+
+// ✅ CORRECT - LLM receives structured feedback
+public OPResult ChangeColor(string name, string color) { ... }
+```
+
+**LLM receives:**
+```json
+{
+  "ResultType": "Success",
+  "HasError": false,
+  "ResultMessage": "Changed color of 'cube1' to 'green'"
+}
+```
+
+### Agent System Prompt Guidelines
+
+**Critical Pattern: Explicit Names vs Ambiguous References**
+
+Agent prompts must distinguish between when the user provides explicit entity names versus when they use ambiguous references:
+
+```
+## CRITICAL: When to verify vs when to act directly
+
+✅ User says "Make cube1 green" → CALL ChangeColor('cube1', 'green') IMMEDIATELY
+✅ User says "Delete Box1" → CALL DeleteShape('Box1') IMMEDIATELY
+✅ User says "Move sphere1 up" → CALL RepositionShape('sphere1', ...) IMMEDIATELY
+
+❌ Do NOT call GetShapes() when user provides explicit name!
+
+ONLY verify for AMBIGUOUS references:
+- "Make it blue" → Who is "it"? Check conversation history first
+- "Move that one" → What is "that"? May need GetShapes()
+```
+
+**Why This Matters:**
+Without this guidance, LLMs will call verification tools (GetShapes) before every operation, even when the user tells them exactly what to operate on.
+
+See [AI_TOOL_INTEGRATION_GUIDE.md](AI_TOOL_INTEGRATION_GUIDE.md) for complete tool integration patterns.
 
 ---
 

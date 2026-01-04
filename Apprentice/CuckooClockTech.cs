@@ -214,6 +214,7 @@ public class CuckooClockTech : ICuckooClockTech
         // Phase 3: Add T-Rex model inside housing (hidden behind doors) - only if URL provided
         if (!string.IsNullOrEmpty(tRexUrl))
         {
+            // Create model - technician creates the shape object but relies on arena/stage for persistence
             _tRexModel = new FoModel3D("TRexCuckoo")
             {
                 Url = tRexUrl,

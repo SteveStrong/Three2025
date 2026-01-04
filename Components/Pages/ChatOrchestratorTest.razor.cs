@@ -52,34 +52,8 @@ public partial class ChatOrchestratorTest
         toolCount = allTools.Count;
         availableAgents = new List<string> { "3D Modeling Assistant" };
 
-        // Wire up chat service logging to activity log
-        ChatService.OnLog += (message) =>
-        {
-            // Track tool executions
-            if (message.Contains("▶️ Executing tool:"))
-            {
-                var toolName = message.Replace("▶️ Executing tool:", "").Trim();
-                toolsExecutedInCurrentTurn.Add(toolName);
-            }
-            
-            // Parse log messages and add them to activity log
-            if (message.Contains("Tool call detected:") || message.Contains("Executing tool:"))
-            {
-                AddLog(ActivityLogType.ToolExecution, message);
-            }
-            else if (message.Contains("executed successfully"))
-            {
-                AddLog(ActivityLogType.Response, message);
-            }
-            else if (message.Contains("ERROR") || message.Contains("failed"))
-            {
-                AddLog(ActivityLogType.Error, message);
-            }
-            else
-            {
-                AddLog(ActivityLogType.System, message);
-            }
-        };
+        // TODO: Re-implement activity log tracking using ILogger if needed for testing
+        // Previously used ChatService.OnLog event which has been removed in favor of ILogger
 
         // Initialize providers with GitHub as default
         AvailableProviders = ChatService.AvailableProviders.ToList();

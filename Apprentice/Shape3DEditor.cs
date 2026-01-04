@@ -41,11 +41,13 @@ public class Shape3DEditor : IShape3DEditor
       if (result.IsError()) 
          return result;
 
-
       var shape = result.AsShape3D();
+      if (shape == null || shape.Key == "Error")
+         return OPResult.Error($"Could not retrieve shape '{shapeName}'");
+         
       shape.Color = color;
       ShapeChanged();
-      return result;
+      return OPResult.Success($"Changed color of '{shapeName}' to '{color}'");
    }
 
    public OPResult SetPosition(string shapeName, Vector3 position)
@@ -58,7 +60,7 @@ public class Shape3DEditor : IShape3DEditor
       EnsureTransform(shape, shapeName);
       shape.Transform!.Position = position;
       ShapeChanged();
-      return result;
+      return OPResult.Success($"Moved '{shapeName}' to position ({position.X}, {position.Y}, {position.Z})");
    }
 
    public OPResult MoveBy(string shapeName, double deltaX, double deltaY, double deltaZ)
@@ -71,7 +73,7 @@ public class Shape3DEditor : IShape3DEditor
       EnsureTransform(shape, shapeName);
       shape.Transform!.MoveBy(deltaX, deltaY, deltaZ);
       ShapeChanged();
-      return result;
+      return OPResult.Success($"Moved '{shapeName}' by ({deltaX}, {deltaY}, {deltaZ})");
    }
 
    public OPResult SetRotation(string shapeName, Euler rotation)
@@ -84,7 +86,7 @@ public class Shape3DEditor : IShape3DEditor
       EnsureTransform(shape, shapeName);
       shape.Transform!.Rotation = rotation;
       ShapeChanged();
-      return result;
+      return OPResult.Success($"Set rotation of '{shapeName}' to ({rotation.X}, {rotation.Y}, {rotation.Z})");
    }
 
    public OPResult RotateBy(string shapeName, double xDegrees, double yDegrees, double zDegrees)
@@ -345,8 +347,34 @@ public class Shape3DEditor : IShape3DEditor
          return new OPResult("GetAllShapes", ResultStatus.Error, "No stage connected");
       }
 
-      var shapes = _stage.Members<FoGlyph3D>().OfType<FoShape3D>().ToList();
-      $"📋 Retrieved {shapes.Count} shapes from stage".WriteInfo();
+      $"🔍 GetAllShapes: Stage '{_stage.GetName()}' HashCode={_stage.GetHashCode()}".WriteInfo();
+      
+      // FIX: Use AllBodies() + AllLinks() instead of Members<FoGlyph3D>()
+      // Members<FoGlyph3D>() only returns items from Slot<FoGlyph3D>(),
+      // but AddShape stores in type-specific slots via DynamicSlot(type)
+      var allBodies = _stage.AllBodies();
+      var allLinks = _stage.AllLinks();
+      var allGlyphs = allBodies.Concat(allLinks).ToList();
+      
+      $"🔍 GetAllShapes: AllBodies()={allBodies.Count}, AllLinks()={allLinks.Count}, Total={allGlyphs.Count} glyphs".WriteInfo();
+      
+      var shapes = allGlyphs.OfType<FoShape3D>().ToList();
+      
+      $"📋 Stage '{_stage.GetName()}' has {allGlyphs.Count} glyphs total, {shapes.Count} are FoShape3D".WriteInfo();
+      
+      // Debug: Show what's in the stage
+      if (allGlyphs.Any())
+      {
+         "🔍 Glyphs in stage:".WriteInfo();
+         foreach (var glyph in allGlyphs)
+         {
+            var glyphName = glyph.GetName() ?? "<null>";
+            var glyphKey = glyph.Key ?? "<null>";
+            var glyphUuid = glyph.GetGlyphId() ?? "<null>";
+            var glyphType = glyph.GetType().Name;
+            $"   - Type={glyphType}, Name='{glyphName}', Key='{glyphKey}', UUID={glyphUuid}".WriteInfo();
+         }
+      }
       
       // Return as collection - consumer can filter, query, count, etc.
       return OPResult.Collection(shapes);
@@ -360,7 +388,13 @@ public class Shape3DEditor : IShape3DEditor
          return new OPResult("AddShape", ResultStatus.Error, "No stage connected");
       }
 
+      $"🔷 AddShape: Adding '{shape.GetName()}' (GlyphId={shape.GetGlyphId()}) to stage '{_stage.GetName()}' (HashCode={_stage.GetHashCode()})".WriteSuccess();
       _stage.AddShape(shape);
+      
+      // Verify it was added
+      var verifyCount = _stage.Members<FoGlyph3D>().Count;
+      $"🔷 AddShape: Stage now has {verifyCount} glyphs after add".WriteSuccess();
+      
       ShapeChanged();
       $"✅ Added shape '{shape.GetName()}' to stage".WriteSuccess();
       return new OPResult("AddShape", ResultStatus.Shape3D, shape);
@@ -371,13 +405,19 @@ public class Shape3DEditor : IShape3DEditor
       if (_stage == null)
          return new OPResult("FindShape", ResultStatus.Error, "No stage connected");
       
-      // Use Stage API - searches in FoGlyph3D slot where shapes are stored
+      $"🔍 FindShape: Searching for '{shapeName}' in stage '{_stage.GetName()}' HashCode={_stage.GetHashCode()}".WriteInfo();
+      
+      // Use Stage API - FindMember searches the Bodies/Links collections
       var (success, found) = _stage.FindMember<FoGlyph3D>(shapeName);
       var shape = found as FoShape3D;
       
       if (shape == null)
+      {
+         $"❌ FindShape: '{shapeName}' not found (success={success}, found={found?.GetType().Name ?? "null"})".WriteWarning();
          return new OPResult("FindShape", ResultStatus.Error, $"Shape '{shapeName}' not found");
+      }
       
+      $"✅ FindShape: Found '{shapeName}' → Name='{shape.GetName()}', Key='{shape.Key}'".WriteSuccess();
       return new OPResult("FindShape", ResultStatus.Shape3D, shape);
    }
 
