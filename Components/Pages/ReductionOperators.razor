@@ -27,10 +27,7 @@
                         <h5 class="mb-0">📊 Test Components with Success Indicators</h5>
                     </div>
                     <div style="flex: 1; overflow: auto; padding: 8px;">
-                        @if (_model != null)
-                        {
-                            <SuccessTreeView RootItems="@_model.GetTreeChildren()" OnSelect="@HandleItemSelected" />
-                        }
+                        <MentorTreeView/>
                     </div>
                 </div>
             </RadzenSplitterPane>

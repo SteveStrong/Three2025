@@ -1,0 +1,112 @@
+@page "/rackviewer"
+@namespace Three2025.Components.Pages
+@rendermode InteractiveServer
+@using FoundryMentorModeler.Model
+@using FoundryWorldsAndDrawings.Shared
+@using FoundryWorldsAndDrawings.Shape
+@using Plugin_710.Model
+@inherits RackViewerBase
+
+<PageTitle>Rack Viewer</PageTitle>
+
+<style>
+    .canvas3d-fill {
+        width: 100% !important;
+        height: 600px !important;
+    }
+    .canvas3d-fill canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+</style>
+
+<div class="container-fluid p-3" style="height: 100vh; display: flex; flex-direction: column;">
+    
+    <!-- Header -->
+    <div class="card mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="card-body p-3">
+            <h3 class="mb-2">🏗️ Rack Viewer - 3D Interactive</h3>
+            <p class="mb-0 small">Plugin710 Rack_710 models with interactive component tree</p>
+        </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="card mb-3">
+        <div class="card-body p-2">
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-primary" @onclick="CreateRackModel" disabled="@_isLoading">
+                    @if (_isLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                    🧠 Create Rack Model
+                </button>
+                <button class="btn btn-success" @onclick="AddEquipment" disabled="@(_model == null || _isLoading)">
+                    ➕ Add Equipment
+                </button>
+                <button class="btn btn-warning" @onclick="ClearModel" disabled="@(_model == null || _isLoading)">
+                    🗑️ Clear
+                </button>
+                <span class="ms-3">Components: @ComponentCount</span>
+            </div>
+        </div>
+    </div>
+
+    @if (_statusMessage != null)
+    {
+        <div class="alert @(_isError ? "alert-danger" : "alert-success") alert-dismissible fade show" role="alert">
+            @_statusMessage
+            <button type="button" class="btn-close" @onclick="() => _statusMessage = null"></button>
+        </div>
+    }
+
+    <div style="height: calc(100vh - 280px); overflow: hidden;">
+        <RadzenSplitter Orientation="Orientation.Horizontal" style="height: 100%;">
+            
+            <!-- Left Side: 3D Canvas -->
+            <RadzenSplitterPane Size="65%" Min="50%" Max="80%">
+                <div style="display: flex; flex-direction: column; height: 100%; background: #2c3e50;">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">🎨 3D View</h5>
+                    </div>
+                    <div class="canvas3d-fill" style="flex: 1;">
+                        <Canvas3DComponent 
+                            SceneName="RackViewer" 
+                            @ref="Canvas3DRef" 
+                            CanvasWidth="@CanvasWidth" 
+                            CanvasHeight="@CanvasHeight" />
+                    </div>
+                </div>
+            </RadzenSplitterPane>
+
+            <!-- Right Side: Model Tree -->
+            <RadzenSplitterPane Size="35%" Min="20%" Max="50%">
+                <div style="display: flex; flex-direction: column; height: 100%; background: white;">
+                    <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <h5 class="mb-0">📊 Rack Components</h5>
+                    </div>
+                    <!-- Tree Tab Selection -->
+                    <div class="d-flex border-bottom">
+                        <button class="btn btn-sm @(_activeTreeTab == "model" ? "btn-primary" : "btn-outline-secondary") flex-fill" 
+                                @onclick='() => _activeTreeTab = "model"'>
+                            🧠 Model
+                        </button>
+                        <button class="btn btn-sm @(_activeTreeTab == "shapes" ? "btn-primary" : "btn-outline-secondary") flex-fill" 
+                                @onclick='() => _activeTreeTab = "shapes"'>
+                            📦 Shapes
+                        </button>
+                    </div>
+                    <div style="flex: 1; overflow: auto; padding: 8px;">
+                        @if (_activeTreeTab == "model")
+                        {
+                            <MentorTreeView/>
+                        }
+                        else
+                        {
+                            <ShapeTreeView/>
+                        }
+                    </div>
+                </div>
+            </RadzenSplitterPane>
+            
+        </RadzenSplitter>
+    </div>
+
+</div>
