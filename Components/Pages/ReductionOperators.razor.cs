@@ -1,3 +1,5 @@
+#nullable enable
+
 using Microsoft.AspNetCore.Components;
 using BlazorComponentBus;
 using FoundryMentorModeler.Model;
@@ -13,9 +15,9 @@ namespace Three2025.Components.Pages;
 
 public partial class ReductionOperators : ComponentBase
 {
-    [Inject] public IMentorServices MentorServices { get; set; }
-    [Inject] public IModelEditor ModelEditor { get; set; }
-    [Inject] public ComponentBus PubSub { get; set; }
+    [Inject] public required IMentorServices MentorServices { get; set; }
+    [Inject] public required IModelEditor ModelEditor { get; set; }
+    [Inject] public required ComponentBus PubSub { get; set; }
 
     private KnModel _model = null!;
     private ITreeNode? _selectedItem = null;
