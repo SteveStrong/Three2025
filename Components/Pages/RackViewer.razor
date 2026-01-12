@@ -50,6 +50,9 @@
                 <button class="btn btn-secondary" @onclick="AddTestShape" disabled="@(_stage == null)">
                     🔷 Add Test Shape (Direct)
                 </button>
+                <button class="btn btn-primary" @onclick="CreateComponentShowcase" disabled="@(_model == null || _isLoading)">
+                    🎭 Component Showcase
+                </button>
                 <button class="btn btn-warning" @onclick="ClearModel" disabled="@(_model == null || _isLoading)">
                     🗑️ Clear
                 </button>

@@ -1,0 +1,116 @@
+@page "/diagramviewer"
+@namespace Three2025.Components.Pages
+@rendermode InteractiveServer
+@using FoundryMentorModeler.Model
+@using FoundryMentorModeler.Diagram
+@using Plugin_710.Model
+@inherits DiagramViewerBase
+
+<PageTitle>Diagram Viewer</PageTitle>
+
+<style>
+    .diagram-container {
+        width: 100%;
+        height: 100%;
+        border: 1px solid #ccc;
+        background: white;
+    }
+</style>
+
+<div class="container-fluid p-3" style="height: 100vh; display: flex; flex-direction: column;">
+    
+    <!-- Header -->
+    <div class="card mb-3" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+        <div class="card-body p-3">
+            <h3 class="mb-2">📐 Diagram Viewer - 2D Interactive</h3>
+            <p class="mb-0 small">Plugin710 component diagrams with Blazor Diagrams</p>
+        </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="card mb-3">
+        <div class="card-body p-2">
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-primary" @onclick="CreateSystemDiagram" disabled="@_isLoading">
+                    @if (_isLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                    🔷 Create System Diagram
+                </button>
+                <button class="btn btn-success" @onclick="CreateCircuitDiagram" disabled="@_isLoading">
+                    ⚡ Create Circuit Diagram
+                </button>
+                <button class="btn btn-info" @onclick="AddSystemBlock" disabled="@(_model == null || _diagram == null)">
+                    ➕ Add System Block
+                </button>
+                <button class="btn btn-warning" @onclick="AddCircuitBlock" disabled="@(_model == null || _diagram == null)">
+                    🔌 Add Circuit Block
+                </button>
+                <button class="btn btn-danger" @onclick="ClearDiagram" disabled="@(_diagram == null)">
+                    🗑️ Clear
+                </button>
+                <span class="ms-3">Nodes: @_nodeCount | Links: @_linkCount</span>
+            </div>
+        </div>
+    </div>
+
+    @if (_statusMessage != null)
+    {
+        <div class="alert @(_isError ? "alert-danger" : "alert-success") alert-dismissible fade show" role="alert">
+            @_statusMessage
+            <button type="button" class="btn-close" @onclick="() => _statusMessage = null"></button>
+        </div>
+    }
+
+    <div style="height: calc(100vh - 280px); overflow: hidden;">
+        <RadzenSplitter Orientation="Orientation.Horizontal" style="height: 100%;">
+            
+            <!-- Left Side: Diagram Canvas -->
+            <RadzenSplitterPane Size="70%" Min="50%" Max="85%">
+                <div style="display: flex; flex-direction: column; height: 100%; background: #ecf0f1;">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">📊 Diagram Canvas</h5>
+                    </div>
+                    <div class="diagram-container" style="flex: 1;">
+                        @if (_diagram != null)
+                        {
+                            <CascadingValue Value="_diagram">
+                                <DiagramCanvas></DiagramCanvas>
+                            </CascadingValue>
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                <div class="text-center">
+                                    <i class="bi bi-diagram-3" style="font-size: 4rem;"></i>
+                                    <p class="mt-3">Click "Create System Diagram" or "Create Circuit Diagram" to begin</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </RadzenSplitterPane>
+            
+            <!-- Right Side: Model Tree -->
+            <RadzenSplitterPane Size="30%" Min="15%" Max="50%">
+                <div style="display: flex; flex-direction: column; height: 100%; background: white;">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">📦 Diagram Components</h5>
+                        <button class="btn btn-sm btn-light" @onclick="RefreshTree">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                    <div style="flex: 1; overflow-y: auto; padding: 10px;">
+                        @if (_model != null)
+                        {
+                            <MentorTreeView Model="_model" OnItemSelected="HandleItemSelected" />
+                        }
+                        else
+                        {
+                            <p class="text-muted text-center mt-4">No model created yet</p>
+                        }
+                    </div>
+                </div>
+            </RadzenSplitterPane>
+            
+        </RadzenSplitter>
+    </div>
+</div>
