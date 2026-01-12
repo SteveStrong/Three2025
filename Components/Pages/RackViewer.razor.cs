@@ -168,12 +168,14 @@ public class RackViewerBase : ComponentBase, IDisposable
             "RackViewer: Rack_710 created via service".WriteSuccess();
             
             // NEW PATTERN: Add rack directly to model (not to solution)
-            _model.AddChildComponent(_mainRack);
+            // CRITICAL: Must use AddChildComponent<KnComponent> so it stores in Members<KnComponent>()
+            // Model_710.RenderGeometry3D reads Members<KnComponent>(), not Members<Rack_710>()
+            _model.AddChildComponent<KnComponent>(_mainRack);
             "RackViewer: Rack added directly to Model".WriteSuccess();
             
             // DEBUG: Check if rack was added to model
-            var rackCount = _model.Members<Rack_710>().Count;
-            $"RackViewer: Model has {rackCount} racks after AddChildComponent".WriteInfo();
+            var componentCount = _model.Members<KnComponent>().Count;
+            $"RackViewer: Model has {componentCount} components (KnComponent) after AddChildComponent".WriteInfo();
 
             // Set rack parameters
             _mainRack.Calculations([
@@ -249,12 +251,14 @@ public class RackViewerBase : ComponentBase, IDisposable
 
         try
         {
+            "\n========== 🚀 MODEL-DRIVEN RENDER START ==========".WriteWarning();
             "RackViewer: Creating RenderContext3D from stage".WriteInfo();
             
             // Create render context from our stage
             var ctx = RenderContext3D.CreateFromStage(_stage, deep: true);
             
             "RackViewer: Calling RenderGeometry3D on model (model-down tree walk)".WriteInfo();
+            $"RackViewer: Model has {_model.Members<KnComponent>().Count} direct children".WriteInfo();
             
             // Render from model - the canonical framework pattern
             // Model → Solution → Rack → Equipment
@@ -262,7 +266,7 @@ public class RackViewerBase : ComponentBase, IDisposable
             // Then Base_710.Subcomponents walks HasSub.Members for child components
             _model.RenderGeometry3D(ctx);
             
-            "RackViewer: Render complete".WriteSuccess();
+            "========== ✅ MODEL-DRIVEN RENDER COMPLETE ==========\n".WriteSuccess();
             StateHasChanged();
         }
         catch (Exception ex)
@@ -430,13 +434,153 @@ public class RackViewerBase : ComponentBase, IDisposable
 
         try
         {
+            "\n========== 🎯 DIRECT RENDER START ==========".WriteWarning();
+            $"RackViewer: Rendering equipment {equipment.Name} DIRECTLY (bypassing tree walk)".WriteInfo();
+            
             var ctx = RenderContext3D.CreateFromStage(_stage, deep: false);
             equipment.RenderGeometry3D(ctx);
+            
             $"RackViewer: Rendered standalone equipment {equipment.Name}".WriteSuccess();
+            "========== ✅ DIRECT RENDER COMPLETE ==========\n".WriteSuccess();
         }
         catch (Exception ex)
         {
             $"RackViewer: Failed to render standalone equipment - {ex.Message}".WriteError();
+        }
+    }
+
+    /// <summary>
+    /// Create a showcase/gallery of different Plugin710 component types.
+    /// Demonstrates that the platform can render various component types correctly.
+    /// Arranges components spatially for visual inspection.
+    /// </summary>
+    protected async Task CreateComponentShowcase()
+    {
+        if (_stage == null || _model == null)
+        {
+            _statusMessage = "⚠️ Stage or model not ready";
+            _isError = true;
+            StateHasChanged();
+            return;
+        }
+
+        _isLoading = true;
+        _statusMessage = "🎭 Creating component showcase...";
+        StateHasChanged();
+
+        try
+        {
+            await Task.Delay(50);
+
+            var solution = _model.EstablishSolution();
+            var lookup = solution.GetLookup();
+
+            var showcaseComponents = new List<Base_710>();
+            var spacing = 3.0; // meters between components
+            var currentX = -9.0; // start position
+
+            // 1. Rack with Equipment
+            var rackComp = Common_710.New_DT_Component("ShowcaseRack");
+            rackComp.MarkAsRack();
+            var rack = solution.Build<Rack_710>(rackComp, 1, lookup);
+            rack.Calculations([
+                $"X|m: {currentX}",
+                "Y|m: 0",
+                "Z|m: 0",
+                "Width|m: 0.8",
+                "Height|m: 2.0",
+                "Depth|m: 0.6",
+                "PivotY|m: -1.0"
+            ]);
+            _model.AddChildComponent<KnComponent>(rack);
+            showcaseComponents.Add(rack);
+
+            // Add equipment to rack
+            var equipInRackComp = Common_710.New_DT_Component("RackServer");
+            equipInRackComp.MarkAsEquipment();
+            var equipInRack = solution.Build<Equipment_710>(equipInRackComp, 1, lookup);
+            equipInRack.Calculations([
+                "X|m: 0",
+                "Y|m: 0.5",
+                "Z|m: 0",
+                "Width|m: 0.7",
+                "Height|m: 0.4",
+                "Depth|m: 0.5",
+                "PivotY|m: -0.2"
+            ]);
+            rack.AddChild(equipInRack);
+            currentX += spacing;
+
+            // 2. Standalone Equipment (different colors/sizes)
+            var equipTypes = new[]
+            {
+                ("Server", 0.7, 0.4, 0.5, "DarkGray"),
+                ("Storage", 0.8, 0.6, 0.6, "Navy"),
+                ("Network", 0.5, 0.3, 0.4, "DarkGreen"),
+                ("Power", 0.4, 0.5, 0.4, "DarkRed")
+            };
+
+            foreach (var (name, width, height, depth, color) in equipTypes)
+            {
+                var equipComp = Common_710.New_DT_Component($"Showcase_{name}");
+                equipComp.MarkAsEquipment();
+                equipComp.MetaData().SetValue("Color", color);
+                
+                var equipment = solution.Build<Equipment_710>(equipComp, showcaseComponents.Count + 1, lookup);
+                equipment.Calculations([
+                    $"X|m: {currentX}",
+                    "Y|m: 0",
+                    "Z|m: 0",
+                    $"Width|m: {width}",
+                    $"Height|m: {height}",
+                    $"Depth|m: {depth}",
+                    $"PivotY|m: {-height / 2}"
+                ]);
+                _model.AddChildComponent<KnComponent>(equipment);
+                showcaseComponents.Add(equipment);
+                currentX += spacing;
+            }
+
+            // 3. Cable (if we can create one)
+            try
+            {
+                var cableComp = Common_710.New_DT_Component("ShowcaseCable");
+                cableComp.MarkAsCable();
+                var cable = solution.Build<Cable_710>(cableComp, showcaseComponents.Count + 1, lookup);
+                cable.Calculations([
+                    $"X|m: {currentX}",
+                    "Y|m: 0.5",
+                    "Z|m: 0"
+                ]);
+                _model.AddChildComponent<KnComponent>(cable);
+                showcaseComponents.Add(cable);
+                currentX += spacing;
+            }
+            catch (Exception ex)
+            {
+                $"Showcase: Cable creation skipped - {ex.Message}".WriteWarning();
+            }
+
+            // Render all components
+            RenderToStage();
+
+            ComponentCount = showcaseComponents.Count;
+            _statusMessage = $"✅ Component showcase created with {ComponentCount} components";
+            _isError = false;
+
+            // Signal tree to refresh
+            await Task.Run(() => PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.Refresh(null)));
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"❌ Error creating showcase: {ex.Message}";
+            _isError = true;
+            $"CreateComponentShowcase ERROR: {ex}".WriteError();
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
         }
     }
 
