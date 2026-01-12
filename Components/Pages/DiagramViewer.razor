@@ -1,9 +1,10 @@
-@page "/diagramviewer"
+@page "/diagram-viewer"
 @namespace Three2025.Components.Pages
 @rendermode InteractiveServer
 @using FoundryMentorModeler.Model
 @using FoundryMentorModeler.Diagram
 @using Plugin_710.Model
+@using Blazor.Diagrams.Components
 @inherits DiagramViewerBase
 
 <PageTitle>Diagram Viewer</PageTitle>
@@ -72,9 +73,11 @@
                     <div class="diagram-container" style="flex: 1;">
                         @if (_diagram != null)
                         {
-                            <CascadingValue Value="_diagram">
-                                <DiagramCanvas></DiagramCanvas>
-                            </CascadingValue>
+                            <CascadingBlazonDiagram Diagram="_diagram">
+                                <div class="diagram-canvas-wrapper" style="width: 100%; height: 100%;">
+                                    <!-- Diagram renders here -->
+                                </div>
+                            </CascadingBlazonDiagram>
                         }
                         else
                         {

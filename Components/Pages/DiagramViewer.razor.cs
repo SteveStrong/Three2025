@@ -1,9 +1,12 @@
+#nullable enable
+
 using Microsoft.AspNetCore.Components;
 using FoundryMentorModeler.Model;
 using FoundryMentorModeler.Diagram;
-using FoundryMentorModeler.Services;
+using FoundryWorldsAndDrawings.Solutions;
 using FoundryRulesAndUnits.Extensions;
-using FoundryBlazor.Shape;
+using FoundryRulesAndUnits.Models;
+using FoundryAppStore.Extensions;
 using Plugin_710.Model;
 using Blazor.Diagrams.Core.Geometry;
 using BlazorComponentBus;
@@ -66,7 +69,7 @@ public class DiagramViewerBase : ComponentBase, IDisposable
             foreach (var name in blockNames)
             {
                 var blockComp = Common_710.New_DT_Component(name);
-                blockComp.MarkAsSystemBlock();
+                blockComp.MarkAsBlock("");
                 var block = solution.Build<SystemBlock_710>(blockComp, 1, lookup);
                 
                 block.Calculations([
@@ -194,7 +197,7 @@ public class DiagramViewerBase : ComponentBase, IDisposable
 
             var blockName = $"System_{DateTime.Now.Ticks % 10000}";
             var blockComp = Common_710.New_DT_Component(blockName);
-            blockComp.MarkAsSystemBlock();
+            blockComp.MarkAsBlock("");
             var block = solution.Build<SystemBlock_710>(blockComp, _nodeCount + 1, lookup);
             
             block.Calculations([

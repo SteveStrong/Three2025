@@ -6,6 +6,7 @@ using FoundryMentorModeler.Model;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.Shared;
+using FoundryWorldsAndDrawings.Extensions;
 using FoundryWorldsAndDrawings.PubSub;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryRulesAndUnits.Extensions;

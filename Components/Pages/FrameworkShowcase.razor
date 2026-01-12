@@ -224,6 +224,14 @@
                             <div class="card-status badge-ready">✅ Ready</div>
                         </div>
 
+                        <div class="demo-card" @onclick="@(() => Nav("/diagram-viewer"))">
+                            <div class="card-icon">📊</div>
+                            <div class="card-title">Diagram Viewer</div>
+                            <div class="card-description">Interactive model diagram visualization with tree navigation. View and interact with model hierarchies using Blazor.Diagrams.</div>
+                            <div class="card-route">/diagram-viewer</div>
+                            <div class="card-status badge-ready">✅ Ready</div>
+                        </div>
+
                         <div class="demo-card" @onclick="@(() => Nav("/matrixtest"))">
                             <div class="card-icon">🔢</div>
                             <div class="card-title">Matrix Test</div>
