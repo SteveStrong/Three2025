@@ -39,7 +39,16 @@
                     🧠 Create Rack Model
                 </button>
                 <button class="btn btn-success" @onclick="AddEquipment" disabled="@(_model == null || _isLoading)">
-                    ➕ Add Equipment
+                    ➕ Add Equipment (to Rack)
+                </button>
+                <button class="btn btn-info" @onclick="AddStandaloneEquipment" disabled="@(_model == null || _isLoading)">
+                    📦 Add Standalone Equipment
+                </button>
+                <button class="btn btn-warning" @onclick="AddTestRackDirect" disabled="@(_mainRack == null)">
+                    🧪 TEST: Render Rack Direct
+                </button>
+                <button class="btn btn-secondary" @onclick="AddTestShape" disabled="@(_stage == null)">
+                    🔷 Add Test Shape (Direct)
                 </button>
                 <button class="btn btn-warning" @onclick="ClearModel" disabled="@(_model == null || _isLoading)">
                     🗑️ Clear
