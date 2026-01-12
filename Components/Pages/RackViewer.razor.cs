@@ -7,6 +7,7 @@ using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.Shared;
 using FoundryWorldsAndDrawings.PubSub;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
 using FoundryAppStore.Extensions;
@@ -30,12 +31,13 @@ public class RackViewerBase : ComponentBase, IDisposable
     
     protected Model_710? _model = null;
     protected Rack_710? _mainRack = null;
+    protected List<Equipment_710> _standaloneEquipment = new();
     protected ITreeNode? _selectedItem = null;
     protected bool _isLoading = false;
     protected string? _statusMessage = null;
     protected bool _isError = false;
 
-    private FoStage3D? _stage;
+    protected FoStage3D? _stage;
 
     protected override void OnInitialized()
     {
@@ -78,6 +80,59 @@ public class RackViewerBase : ComponentBase, IDisposable
         await base.OnAfterRenderAsync(firstRender);
     }
 
+    /// <summary>
+    /// Add a simple test shape directly to the stage - bypasses model entirely.
+    /// Proves the 3D rendering pipeline works independently.
+    /// </summary>
+    protected void AddTestShape()
+    {
+        if (_stage == null)
+        {
+            _statusMessage = "⚠️ Stage not ready";
+            _isError = true;
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            var random = new Random();
+            var xPos = -3.0 + (random.NextDouble() * 2.0);  // -3 to -1m (left of rack)
+            var zPos = -1.0 + (random.NextDouble() * 2.0);  // -1 to 1m
+            
+            var shapeName = $"TestShape_{DateTime.Now.Ticks % 10000}";
+            
+            // Create transform
+            var transform = new Transform3($"{shapeName}Transform");
+            transform.MoveTo(xPos, 0.5, zPos);
+            
+            // Create shape directly (no model involvement)
+            var testShape = new FoShape3D(shapeName, "Cyan")
+            {
+                GlyphId = Guid.NewGuid().ToString(),
+                Width = 0.5,
+                Height = 0.5,
+                Depth = 0.5,
+                Transform = transform
+            }.CreateBox(shapeName, 0.5, 0.5, 0.5);
+
+            // Add directly to stage
+            _stage.AddShape(testShape);
+            
+            $"RackViewer: Added test shape '{shapeName}' directly to stage at ({xPos:F2}, 0.5, {zPos:F2})".WriteSuccess();
+            
+            _statusMessage = $"✅ Added test shape '{shapeName}' (direct to stage)";
+            _isError = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"❌ Error adding test shape: {ex.Message}";
+            _isError = true;
+            $"RackViewer ERROR: {ex}".WriteError();
+        }
+    }
+
     protected async Task CreateRackModel()
     {
         if (_stage == null)
@@ -101,16 +156,24 @@ public class RackViewerBase : ComponentBase, IDisposable
             _model.SetExpanded(true);
             "RackViewer: Model_710 created".WriteSuccess();
 
-            // Get solution and build Rack_710
-            var solution = _model.EstablishSolution();
-            var lookup = solution.GetLookup();
+            // Get solution SERVICE (not a tree node anymore!)
+            var solutionService = _model.GetSolutionService();
+            var lookup = solutionService.GetLookup();
 
             var rackComp = Common_710.New_DT_Component("MainRack");
             rackComp.MarkAsRack();
 
-            _mainRack = solution.Build<Rack_710>(rackComp, 1, lookup);
+            _mainRack = solutionService.Build<Rack_710>(rackComp, 1, lookup);
             _mainRack.SetExpanded(true);
-            "RackViewer: Rack_710 created".WriteSuccess();
+            "RackViewer: Rack_710 created via service".WriteSuccess();
+            
+            // NEW PATTERN: Add rack directly to model (not to solution)
+            _model.AddChildComponent(_mainRack);
+            "RackViewer: Rack added directly to Model".WriteSuccess();
+            
+            // DEBUG: Check if rack was added to model
+            var rackCount = _model.Members<Rack_710>().Count;
+            $"RackViewer: Model has {rackCount} racks after AddChildComponent".WriteInfo();
 
             // Set rack parameters
             _mainRack.Calculations([
@@ -171,15 +234,16 @@ public class RackViewerBase : ComponentBase, IDisposable
             "PivotY|m: -0.2"
         ]);
 
-        _mainRack.Add(equipment1);
+        // Use AddChild - the canonical API for Base_710 child management
+        _mainRack.AddChild(equipment1);
         "RackViewer: Added Server_01".WriteSuccess();
     }
 
     private void RenderToStage()
     {
-        if (_stage == null || _mainRack == null)
+        if (_stage == null || _model == null)
         {
-            "RackViewer: Cannot render - stage or rack is null".WriteWarning();
+            "RackViewer: Cannot render - stage or model is null".WriteWarning();
             return;
         }
 
@@ -190,10 +254,13 @@ public class RackViewerBase : ComponentBase, IDisposable
             // Create render context from our stage
             var ctx = RenderContext3D.CreateFromStage(_stage, deep: true);
             
-            "RackViewer: Calling RenderGeometry3D on rack".WriteInfo();
+            "RackViewer: Calling RenderGeometry3D on model (model-down tree walk)".WriteInfo();
             
-            // Render rack (will render all child equipment too)
-            _mainRack.RenderGeometry3D(ctx);
+            // Render from model - the canonical framework pattern
+            // Model → Solution → Rack → Equipment
+            // This uses KnModel.RenderGeometry3D which walks Members<KnComponent>
+            // Then Base_710.Subcomponents walks HasSub.Members for child components
+            _model.RenderGeometry3D(ctx);
             
             "RackViewer: Render complete".WriteSuccess();
             StateHasChanged();
@@ -223,14 +290,14 @@ public class RackViewerBase : ComponentBase, IDisposable
 
         try
         {
-            var solution = _model.EstablishSolution();
-            var lookup = solution.GetLookup();
+            var solutionService = _model.GetSolutionService();
+            var lookup = solutionService.GetLookup();
 
             var equipmentName = $"Equipment_{DateTime.Now.Ticks % 10000}";
             var equipComp = Common_710.New_DT_Component(equipmentName);
             equipComp.MarkAsEquipment();
 
-            var equipment = solution.Build<Equipment_710>(equipComp, 1, lookup);
+            var equipment = solutionService.Build<Equipment_710>(equipComp, 1, lookup);
 
             var random = new Random();
             var yPos = -0.5 + (random.NextDouble() * 1.0);
@@ -245,13 +312,14 @@ public class RackViewerBase : ComponentBase, IDisposable
                 "PivotY|m: -0.15"
             ]);
 
-            _mainRack.Add(equipment);
+            // Use AddChild - the canonical API for Base_710 child management
+            _mainRack.AddChild(equipment);
 
             // Re-render
             RenderToStage();
 
-            ComponentCount = 1 + (_mainRack.ModelComponents<Equipment_710>()?.Count() ?? 0);
-            _statusMessage = $"✅ Added {equipmentName}";
+            ComponentCount = 1 + (_mainRack.ModelComponents<Equipment_710>()?.Count() ?? 0) + _standaloneEquipment.Count;
+            _statusMessage = $"✅ Added {equipmentName} to rack";
             _isError = false;
 
             PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.Refresh(null));
@@ -264,10 +332,119 @@ public class RackViewerBase : ComponentBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Add standalone equipment directly on the floor (not inside a rack)
+    /// </summary>
+    protected void AddStandaloneEquipment()
+    {
+        if (_stage == null || _model == null)
+        {
+            _statusMessage = "⚠️ Create rack model first";
+            _isError = true;
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            var solutionService = _model.GetSolutionService();
+            var lookup = solutionService.GetLookup();
+
+            var equipmentName = $"FloorUnit_{DateTime.Now.Ticks % 10000}";
+            var equipComp = Common_710.New_DT_Component(equipmentName);
+            equipComp.MarkAsEquipment();
+
+            var equipment = solutionService.Build<Equipment_710>(equipComp, 1, lookup);
+
+            // Position on floor, offset from rack
+            var random = new Random();
+            var xPos = 2.0 + (random.NextDouble() * 2.0); // 2-4m to the right of rack
+
+            equipment.Calculations([
+                $"X|m: {xPos:F2}",
+                "Y|m: 0",  // On the floor
+                "Z|m: 0",
+                "Width|m: 0.5",
+                "Height|m: 0.8",
+                "Depth|m: 0.4",
+                "PivotY|m: -0.4"  // Pivot at bottom so it sits on floor
+            ]);
+
+            // Add standalone equipment as direct child of model
+            _model.AddChildComponent(equipment);
+            _standaloneEquipment.Add(equipment);
+
+            // Render standalone equipment directly
+            RenderStandaloneEquipment(equipment);
+
+            ComponentCount = 1 + (_mainRack?.ModelComponents<Equipment_710>()?.Count() ?? 0) + _standaloneEquipment.Count;
+            _statusMessage = $"✅ Added standalone {equipmentName} on floor";
+            _isError = false;
+
+            PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.Refresh(null));
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"❌ Error adding standalone equipment: {ex.Message}";
+            _isError = true;
+            $"RackViewer ERROR: {ex}".WriteError();
+        }
+    }
+
+    /// <summary>
+    /// TEST: Add rack directly (bypassing model-down rendering) to prove rack geometry works
+    /// </summary>
+    protected void AddTestRackDirect()
+    {
+        if (_stage == null || _mainRack == null)
+        {
+            _statusMessage = "⚠️ Create rack model first";
+            _isError = true;
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            "TEST: Rendering rack directly to stage (bypass model)".WriteWarning();
+            
+            var ctx = RenderContext3D.CreateFromStage(_stage, deep: true);
+            _mainRack.RenderGeometry3D(ctx);
+            
+            _statusMessage = $"✅ TEST: Rendered rack directly (bypassing model tree walk)";
+            _isError = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"❌ Error rendering rack directly: {ex.Message}";
+            _isError = true;
+            $"RackViewer ERROR: {ex}".WriteError();
+        }
+    }
+
+    private void RenderStandaloneEquipment(Equipment_710 equipment)
+    {
+        if (_stage == null) return;
+
+        try
+        {
+            var ctx = RenderContext3D.CreateFromStage(_stage, deep: false);
+            equipment.RenderGeometry3D(ctx);
+            $"RackViewer: Rendered standalone equipment {equipment.Name}".WriteSuccess();
+        }
+        catch (Exception ex)
+        {
+            $"RackViewer: Failed to render standalone equipment - {ex.Message}".WriteError();
+        }
+    }
+
     protected void ClearModel()
     {
         _model = null;
         _mainRack = null;
+        _standaloneEquipment.Clear();
         _selectedItem = null;
         ComponentCount = 0;
         _statusMessage = "🗑️ Model cleared";
