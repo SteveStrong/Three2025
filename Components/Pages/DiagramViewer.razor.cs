@@ -36,68 +36,48 @@ public class DiagramViewerBase : ComponentBase, IDisposable
     }
 
     /// <summary>
-    /// Create a system-level diagram with SystemBlock nodes and SystemLink connections.
+    /// Create a simple test diagram with basic nodes.
     /// </summary>
     protected async Task CreateSystemDiagram()
     {
         _isLoading = true;
-        _statusMessage = "📐 Creating system diagram...";
+        _statusMessage = "📐 Creating simple test diagram...";
         StateHasChanged();
 
         try
         {
             await Task.Delay(50);
 
-            // Create model
-            _model = MentorServices.EstablishModel<Model_710>("DiagramViewerModel");
-            _model.SetExpanded(true);
-            "DiagramViewer: Model_710 created".WriteSuccess();
-
-            // Create solution
-            var solution = _model.EstablishSolution();
-            var lookup = solution.GetLookup();
-
-            // Create diagram via Model_710's RenderDiagram
-            _diagram = _model.RenderDiagram("SystemView", clear: true, () => { });
+            // Create diagram directly
+            _diagram = MentorServices.EstablishDiagram<MentorDiagram>("TestView");
+            _diagram.ClearAll();
             "DiagramViewer: Diagram created".WriteSuccess();
 
-            // Create some system blocks
-            var blockNames = new[] { "PowerSystem", "NetworkSystem", "StorageSystem" };
-            var xPos = 100.0;
-            var yPos = 100.0;
+            // Create simple test nodes directly
+            var node1 = _diagram.CreateNode<DiagramNode>(
+                new KnComponent("TestNode1"), 
+                new Blazor.Diagrams.Core.Geometry.Point(100, 100));
+            node1.Size = new Blazor.Diagrams.Core.Geometry.Size(150, 75);
+            node1.Title = "Simple Node 1";
             
-            foreach (var name in blockNames)
-            {
-                var blockComp = Common_710.New_DT_Component(name);
-                blockComp.MarkAsBlock("");
-                var block = solution.Build<SystemBlock_710>(blockComp, 1, lookup);
-                
-                block.Calculations([
-                    $"sPinX: {xPos}",
-                    $"sPinY: {yPos}",
-                    "sWidth: 200",
-                    "sHeight: 100"
-                ]);
-                
-                _model.AddChildComponent<KnComponent>(block);
-                
-                xPos += 250;
-                if (xPos > 700)
-                {
-                    xPos = 100;
-                    yPos += 150;
-                }
-            }
+            var node2 = _diagram.CreateNode<DiagramNode>(
+                new KnComponent("TestNode2"), 
+                new Blazor.Diagrams.Core.Geometry.Point(300, 100));
+            node2.Size = new Blazor.Diagrams.Core.Geometry.Size(150, 75);
+            node2.Title = "Simple Node 2";
+            
+            var node3 = _diagram.CreateNode<DiagramNode>(
+                new KnComponent("TestNode3"), 
+                new Blazor.Diagrams.Core.Geometry.Point(500, 100));
+            node3.Size = new Blazor.Diagrams.Core.Geometry.Size(150, 75);
+            node3.Title = "Simple Node 3";
 
-            // Render blocks to diagram
-            _diagram = _model.RenderDiagram("SystemView", clear: false, () => { });
+            $"Created 3 simple nodes".WriteSuccess();
 
             UpdateCounts();
             
-            _statusMessage = $"✅ System diagram created with {_nodeCount} blocks";
+            _statusMessage = $"✅ Simple diagram created with {_nodeCount} nodes";
             _isError = false;
-
-            await Task.Run(() => PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.Refresh(null)));
         }
         catch (Exception ex)
         {
@@ -163,8 +143,9 @@ public class DiagramViewerBase : ComponentBase, IDisposable
                 rack.AddChild(equipment);
             }
 
-            // Render to diagram
-            _diagram = _model.RenderDiagram("CircuitView", clear: false, () => { });
+            // Render using context pattern
+            var ctx = RenderContextEditor.Create(_diagram, "CircuitView", deep: true);
+            solution.RenderEditor(ctx);
 
             UpdateCounts();
 
@@ -209,8 +190,10 @@ public class DiagramViewerBase : ComponentBase, IDisposable
             
             _model.AddChildComponent<KnComponent>(block);
 
-            // Re-render diagram
-            _diagram = _model.RenderDiagram("SystemView", clear: false, () => { });
+            // Re-render using context pattern
+            solution = _model.EstablishSolution();
+            var ctx = RenderContextEditor.Create(_diagram, "SystemView", deep: true);
+            solution.RenderEditor(ctx);
             
             UpdateCounts();
             _statusMessage = $"✅ Added {blockName}";
@@ -246,8 +229,10 @@ public class DiagramViewerBase : ComponentBase, IDisposable
             
             _model.AddChildComponent<KnComponent>(equipment);
 
-            // Re-render diagram
-            _diagram = _model.RenderDiagram("CircuitView", clear: false, () => { });
+            // Re-render using context pattern
+            solution = _model.EstablishSolution();
+            var ctx = RenderContextEditor.Create(_diagram, "CircuitView", deep: true);
+            solution.RenderEditor(ctx);
             
             UpdateCounts();
             _statusMessage = $"✅ Added {equipName}";

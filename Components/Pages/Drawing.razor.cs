@@ -10,7 +10,7 @@ using FoundryRulesAndUnits.Extensions;
 using FoundryWorldsAndDrawings.PubSub;
 using FoundryRulesAndUnits.Models;
 
-using Three2025.Apprentice;
+using Plugin710.Apprentice;
 
 using FoundryWorldsAndDrawings.ThreeD.Viewers;
 using FoundryWorldsAndDrawings.ThreeD.Objects;
@@ -279,13 +279,13 @@ public partial class DrawingBase : ComponentBase, IDisposable
         }
     }
 
-    public Node3D AddBox(string name, double x=0, double z=0)
+    public FoShape3D AddBox(string name, double x=0, double z=0)
     {
         var color = DataGenerator.GenerateColor();
         var label = $"{name} {color}";
 
         var height = DataGenerator.GenerateDouble(1, 10);
-        var box = new Node3D(label,color)
+        var box = new FoShape3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
             Transform = new Transform3("BoxTransform")
@@ -327,7 +327,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         if (_drawingStage == null) _drawingStage = Canvas3DReference?.Stage;
 
-        var box = AddBox(name,x,z);
+        var box = AddBox(name,x,z) as Plugin710.Apprentice.Node3D;
         _drawingStage?.AddShape(box);
     }
 

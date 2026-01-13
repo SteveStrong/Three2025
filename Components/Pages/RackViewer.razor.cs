@@ -22,6 +22,7 @@ public class RackViewerBase : ComponentBase, IDisposable
     [Inject] protected IMentorServices MentorServices { get; set; } = null!;
     [Inject] protected IModelEditor ModelEditor { get; set; } = null!;
     [Inject] public ComponentBus PubSub { get; set; } = null!;
+    [Inject] public ICageTech CageTech { get; set; } = null!;
 
     protected Canvas3DComponent? Canvas3DRef;
     protected int CanvasWidth { get; set; } = 800;
@@ -219,13 +220,13 @@ public class RackViewerBase : ComponentBase, IDisposable
     {
         if (_mainRack == null || _model == null) return;
 
-        var solution = _model.EstablishSolution();
-        var lookup = solution.GetLookup();
+        var solutionService = _model.GetSolutionService();
+        var lookup = solutionService.GetLookup();
 
         // Add Server
         var equipComp1 = Common_710.New_DT_Component("Server_01");
         equipComp1.MarkAsEquipment();
-        var equipment1 = solution.Build<Equipment_710>(equipComp1, 1, lookup);
+        var equipment1 = solutionService.Build<Equipment_710>(equipComp1, 1, lookup);
 
         equipment1.Calculations([
             "X|m: 0",
@@ -473,8 +474,8 @@ public class RackViewerBase : ComponentBase, IDisposable
         {
             await Task.Delay(50);
 
-            var solution = _model.EstablishSolution();
-            var lookup = solution.GetLookup();
+            var solutionService = _model.GetSolutionService();
+            var lookup = solutionService.GetLookup();
 
             var showcaseComponents = new List<Base_710>();
             var spacing = 3.0; // meters between components
@@ -483,7 +484,7 @@ public class RackViewerBase : ComponentBase, IDisposable
             // 1. Rack with Equipment
             var rackComp = Common_710.New_DT_Component("ShowcaseRack");
             rackComp.MarkAsRack();
-            var rack = solution.Build<Rack_710>(rackComp, 1, lookup);
+            var rack = solutionService.Build<Rack_710>(rackComp, 1, lookup);
             rack.Calculations([
                 $"X|m: {currentX}",
                 "Y|m: 0",
@@ -499,7 +500,7 @@ public class RackViewerBase : ComponentBase, IDisposable
             // Add equipment to rack
             var equipInRackComp = Common_710.New_DT_Component("RackServer");
             equipInRackComp.MarkAsEquipment();
-            var equipInRack = solution.Build<Equipment_710>(equipInRackComp, 1, lookup);
+            var equipInRack = solutionService.Build<Equipment_710>(equipInRackComp, 1, lookup);
             equipInRack.Calculations([
                 "X|m: 0",
                 "Y|m: 0.5",
@@ -527,7 +528,7 @@ public class RackViewerBase : ComponentBase, IDisposable
                 equipComp.MarkAsEquipment();
                 equipComp.MetaData().SetValue("Color", color);
                 
-                var equipment = solution.Build<Equipment_710>(equipComp, showcaseComponents.Count + 1, lookup);
+                var equipment = solutionService.Build<Equipment_710>(equipComp, showcaseComponents.Count + 1, lookup);
                 equipment.Calculations([
                     $"X|m: {currentX}",
                     "Y|m: 0",
@@ -547,7 +548,7 @@ public class RackViewerBase : ComponentBase, IDisposable
             {
                 var cableComp = Common_710.New_DT_Component("ShowcaseCable");
                 cableComp.MarkAsCable();
-                var cable = solution.Build<Cable_710>(cableComp, showcaseComponents.Count + 1, lookup);
+                var cable = solutionService.Build<Cable_710>(cableComp, showcaseComponents.Count + 1, lookup);
                 cable.Calculations([
                     $"X|m: {currentX}",
                     "Y|m: 0.5",
@@ -600,6 +601,44 @@ public class RackViewerBase : ComponentBase, IDisposable
             var shapes = _stage.ClearAll();
         }
 
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Create routing cage visualization around all racks in the scene.
+    /// This creates nodes at connector points and links between them for cable routing.
+    /// </summary>
+    protected void CreateRoutingCage()
+    {
+        if (_stage == null || _mainRack == null)
+        {
+            _statusMessage = "⚠️ Create rack model first";
+            _isError = true;
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            "RackViewer: Creating routing cage from model components (model-driven)".WriteInfo();
+            
+            // Model-driven approach: CageTech works with FoRack shapes from the stage
+            // It will find racks automatically from the stage
+            CageTech.CreateRoutingCage();
+            
+            var (nodes, links) = CageTech.GetNodesAndLinks();
+            _statusMessage = $"✅ Routing cage created: {nodes.Count} nodes, {links.Count} links";
+            _isError = false;
+            
+            "RackViewer: Routing cage created successfully".WriteSuccess();
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"❌ Error creating routing cage: {ex.Message}";
+            _isError = true;
+            $"CreateRoutingCage ERROR: {ex}".WriteError();
+        }
+        
         StateHasChanged();
     }
 
