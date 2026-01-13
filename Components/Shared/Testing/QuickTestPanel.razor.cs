@@ -31,6 +31,7 @@ public partial class QuickTestPanel : ComponentBase
     /// <summary>
     /// Helper to extract FoShape3D from OPResult (since all technician methods return OPResult)
     /// </summary>
+#nullable enable
     private FoundryWorldsAndDrawings.Shape.FoShape3D? GetShape(string name)
     {
         var result = Shape3DTech.GetShapeByName(name);

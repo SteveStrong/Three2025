@@ -13,8 +13,6 @@ using FoundryWorldsAndDrawings.ThreeD.Core;
 using FoundryWorldsAndDrawings.Shared;
 
 
-
-
 namespace Three2025.Components.Pages;
 
 
@@ -152,19 +150,11 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void DoAddRacksArena()
     {
-
-        var height = 10;
-
-
-        var r1 = RackTech.CreateRack("rack1", -3, 5, height, 0);
-        var r2 = RackTech.CreateRack("rack2",  3, 5, height, 0);
-
-        // var r3 = Technician.CreateRack("rack3", -2, 5, height, 0);
-        // var r4 = Technician.CreateRack("rack4", 3, 5, height, 0);
-
-        // var r5 = Technician.CreateRack("rack5", 13, 10, height, -Math.PI/2);
-        // var r6 = Technician.CreateRack("rack6", 13, 15, height, -Math.PI/2);
-
+        // TODO: This method uses old RackTech.CreateRack which doesn't exist.
+        // Use RackTech.AddRack() from Plugin710 instead
+        // var height = 10;
+        // var r1 = RackTech.AddRack("rack1");
+        // var r2 = RackTech.AddRack("rack2");
     }
 
     public string GeneratePath()
@@ -190,13 +180,12 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void TryAddRoutesArena()
     {
-        if (_homeStage == null) _homeStage = Canvas3DReference?.Stage;
-        if (_homeStage == null) return;
-
-        var (success, pipe) = RackTech.TryCreatePipe(GeneratePath(), GeneratePath());
-        
-        if ( success ) 
-            _homeStage.AddShape(pipe);
+        // TODO: This method uses old RackTech.TryCreatePipe which doesn't exist in IRackTech interface.
+        // if (_homeStage == null) _homeStage = Canvas3DReference?.Stage;
+        // if (_homeStage == null) return;
+        // var (success, pipe) = RackTech.TryCreatePipe(GeneratePath(), GeneratePath());
+        // if ( success ) 
+        //     _homeStage.AddShape(pipe);
 
     }
 
@@ -234,34 +223,27 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void TryAddWiresArena()
     {
-        var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
-        if ( !found ) return;
-
-        if (_homeStage == null) _homeStage = Canvas3DReference?.Stage;
-    
-        
-        var (s1, cn1, v1) = RackTech.TryFindHitPosition<FoGlyph3D>(GeneratePath());
-        var (s2, cn2, v2) = RackTech.TryFindHitPosition<FoGlyph3D>(GeneratePath());
-
-        if (!s1 || !s2) return;
-
-        
-        var capsuleRadius = 0.15f;
-        var capsulePositions = new List<Vector3>() { v1, v2 };
-
-
-        var mesh = new Mesh3D
-        {            Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
-            Material = new MeshStandardMaterial("yellow", 1.0)
-        };
-        scene.AddChild(mesh);
-
-
+        // TODO: This method uses old RackTech.TryFindHitPosition which doesn't exist in IRackTech interface.
+        // var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
+        // if ( !found ) return;
+        // if (_homeStage == null) _homeStage = Canvas3DReference?.Stage;
+        // var (s1, cn1, v1) = RackTech.TryFindHitPosition<FoGlyph3D>(GeneratePath());
+        // var (s2, cn2, v2) = RackTech.TryFindHitPosition<FoGlyph3D>(GeneratePath());
+        // if (!s1 || !s2) return;
+        // var capsuleRadius = 0.15f;
+        // var capsulePositions = new List<Vector3>() { v1, v2 };
+        // var mesh = new Mesh3D
+        // {  Geometry = new TubeGeometry(tubularSegments: 10, radialSegments: 8, radius: capsuleRadius, path: capsulePositions),
+        //     Material = new MeshStandardMaterial("yellow", 1.0)
+        // };
+        // scene.AddChild(mesh);
     }
 
     public void DoAddEquipmentArena()
     {
-        RackTech.DoAddEquipmentArena();
+        // TODO: This method uses old RackTech.DoAddEquipmentArena which doesn't exist.
+        // Use RackTech.AddEquipmentToRack() from Plugin710 instead
+        // RackTech.AddEquipmentToRack("equipmentName", "rackName");
     }
 
 
@@ -330,13 +312,13 @@ public partial class HomeBase : ComponentBase, IDisposable
         _homeStage?.AddShape(shape);
     }
 
-    public Node3D AddBox(string name, double x=0, double z=0)
+    public FoShape3D AddBox(string name, double x=0, double z=0)
     {
         var color = DataGenerator.GenerateColor();
         var label = $"{name} {color}";
 
         var height = DataGenerator.GenerateDouble(1, 10);
-        var box = new Node3D(label,color)
+        var box = new FoShape3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
             Transform = new Transform3("BoxTransform")
@@ -351,13 +333,13 @@ public partial class HomeBase : ComponentBase, IDisposable
         return box;
     }
 
-    public Node3D AddCone(string name, double x=0, double z=0)
+    public FoShape3D AddCone(string name, double x=0, double z=0)
     {
         var color = DataGenerator.GenerateColor();
         var label = $"{name} {color}";
 
         var height = DataGenerator.GenerateDouble(1, 10);
-        var box = new Node3D(label,color)
+        var box = new FoShape3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
             Transform = new Transform3("ConeTransform")
