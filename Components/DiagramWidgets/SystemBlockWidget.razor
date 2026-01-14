@@ -1,0 +1,89 @@
+@namespace Three2025.Components.DiagramWidgets
+@using Plugin_710.Model
+@using FoundryMentorModeler.Diagram
+@using Blazor.Diagrams.Components.Renderers
+@rendermode @(new InteractiveServerRenderMode(false))
+
+<style>
+    .system-block-node {
+        border: 2px solid #667eea;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-align: center;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        min-width: 180px;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .system-block-node.selected {
+        border-color: #ffd700;
+        box-shadow: 0 4px 16px rgba(255,215,0,0.4);
+        transform: scale(1.02);
+    }
+
+    .node-title {
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-bottom: 8px;
+    }
+
+    .node-info {
+        font-size: 0.85em;
+        opacity: 0.9;
+    }
+</style>
+
+<div class="system-block-node @(Node.IsSelected ? "selected" : "")">
+    <div class="node-title">@Node.Title</div>
+    
+    @if (HasSubcomponents())
+    {
+        <div class="node-info">
+            📦 @GetSubcomponentCount() items
+        </div>
+    }
+    
+    @if (GetBlock()?.IsVisible == false)
+    {
+        <div class="node-info">
+            🔒 Hidden
+        </div>
+    }
+
+    <!-- Render ports for connections -->
+    @foreach (var port in PortList())
+    {
+        <PortRenderer Port="@port" Class="@port.Alignment.ToString().ToLower()" />
+    }
+</div>
+
+@code {
+    #nullable enable
+    [Parameter] public SystemBlockEditor Node { get; set; } = null!;
+
+    public SystemBlock_710? GetBlock()
+    {
+        return Node?.GetSystemBlock();
+    }
+
+    public bool HasSubcomponents()
+    {
+        return Node?.HasSubcomponents() ?? false;
+    }
+
+    public int GetSubcomponentCount()
+    {
+        return GetBlock()?.ModelComponents<SystemBlock_710>().Count() ?? 0;
+    }
+
+    public List<DiagramPort> PortList()
+    {
+        return Node?.Ports.Cast<DiagramPort>().ToList() ?? new List<DiagramPort>();
+    }
+}

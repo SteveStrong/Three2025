@@ -68,6 +68,13 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
     private void OnAnimationFrame(AnimationEvent animEvent)
     {
         _frameCount++;
+        
+        // 🔍 DIAGNOSTIC: Log first 5 frames to confirm we're receiving events
+        if (_frameCount <= 5)
+        {
+            $"🎬 TugOfWar OnAnimationFrame: tick={animEvent.tick}, fps={animEvent.fps:F1}, domain={animEvent.domain}".WriteInfo();
+        }
+        
         if (_frameCount >= FPS_UPDATE_INTERVAL)
         {
             _currentFps = animEvent.fps;
@@ -313,6 +320,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
     public async void StartTugOfWar3D(bool startPaused = false)
     {
+        $"🚀 StartTugOfWar3D called - startPaused={startPaused}".WriteSuccess();
+        
         if (startPaused)
         {
             AnimationFrameBus.PauseAllAnimations();
@@ -325,7 +334,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         {
             _stepCount = 0;
             _debugMode = false;  // Use normal 5s animation
-            $"Starting 3D Tug of War Animation".WriteInfo();
+            $"🎬 Starting 3D Tug of War Animation (NORMAL mode, 5s duration)".WriteSuccess();
         }
         
         var arena = Workspace.GetArena();
@@ -355,11 +364,20 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                 {
                     if (fps <= 0 || tick == 0) return;  // Skip manual renders with invalid FPS
                     
-                    $"📦 Box1 callback invoked: tick={tick}, fps={fps:F1}".WriteInfo();
+                    // 🔍 DIAGNOSTIC: Log first 10 callbacks
+                    if (tick <= 10)
+                    {
+                        $"📦 Box1 BeforeAnimationRefresh: tick={tick}, fps={fps:F1}, animTime={_animationTime:F2}".WriteSuccess();
+                    }
                     
                     _animationTime += 1.0 / fps;
                     var duration = _debugMode ? DEBUG_ANIMATION_DURATION : ANIMATION_DURATION;
                     var progress = Math.Min(_animationTime / duration, 1.0);
+                    
+                    if (tick <= 10)
+                    {
+                        $"   Progress: {progress:F3}, Duration: {duration:F1}s".WriteInfo();
+                    }
                     
                     if (progress < 1.0)
                     {
@@ -368,6 +386,11 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                         shape.SetTransformStale();  // ← CRITICAL: Must mark stale after changing position!
                         _tube_3D?.SetGeometryStale();
                         _distanceText?.SetGeometryStale();
+                        
+                        if (tick <= 10)
+                        {
+                            $"   New position: ({x:F2}, 0.5, {x:F2})".WriteInfo();
+                        }
                         $"📦 Box1 moved to x={x:F2}, progress={progress:F2}".WriteInfo();
                     }
                     else if (progress >= 1.0)
@@ -394,8 +417,11 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                 {
                     if (fps <= 0 || tick == 0) return;  // Skip manual renders with invalid FPS
                     
-                    if (tick == 1)  // Only log at start
-                        $"📦 Box2 animation started".WriteSuccess();
+                    // 🔍 DIAGNOSTIC: Log first 10 callbacks
+                    if (tick <= 10)
+                    {
+                        $"📦 Box2 BeforeAnimationRefresh: tick={tick}, fps={fps:F1}".WriteSuccess();
+                    }
                     
                     _animationTime += 1.0 / fps;
                     var duration = _debugMode ? DEBUG_ANIMATION_DURATION : ANIMATION_DURATION;
@@ -447,17 +473,19 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         };
 
         // ✅ Phase 0.5: Add all shapes to this page's stage
+        $"🎯 Adding shapes to TugOfWarStage...".WriteInfo();
+        
         _tugOfWarStage.AddShape(_box1_3D);
-        $"Added Box1 to TugOfWarStage at {_box1_3D.Transform.Position}".WriteSuccess();
+        $"✅ Added Box1 to TugOfWarStage at {_box1_3D.Transform.Position}".WriteSuccess();
         
         _tugOfWarStage.AddShape(_box2_3D);
-        $"Added Box2 to TugOfWarStage at {_box2_3D.Transform.Position}".WriteSuccess();
+        $"✅ Added Box2 to TugOfWarStage at {_box2_3D.Transform.Position}".WriteSuccess();
         
         _tugOfWarStage.AddShape(_tube_3D);
-        $"Added connecting tube to TugOfWarStage (Type={_tube_3D.GetType().Name}, IsIBodyLink3D={_tube_3D is IBodyLink3D})".WriteSuccess();
+        $"✅ Added connecting tube to TugOfWarStage (Type={_tube_3D.GetType().Name}, IsIBodyLink3D={_tube_3D is IBodyLink3D})".WriteSuccess();
         
         _tugOfWarStage.AddShape(_distanceText);
-        $"Added distance text to TugOfWarStage at {_distanceText.Transform.Position}".WriteSuccess();
+        $"✅ Added distance text to TugOfWarStage at {_distanceText.Transform.Position}".WriteSuccess();
         
         // DIAGNOSTIC: Verify stage collections after adding
         $"STAGE DIAGNOSTIC: Bodies={_tugOfWarStage.AllBodies().Count()}, Links={_tugOfWarStage.AllLinks().Count()}".WriteInfo();
@@ -486,12 +514,20 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                     {
                         if (fps <= 0 || tick == 0) return;  // Skip manual renders with invalid FPS
                         
-                        if (tick == 1)  // Only log at start
-                            $"🔴 GrowingPipe animation started".WriteSuccess();
+                        // 🔍 DIAGNOSTIC: Log first 10 callbacks
+                        if (tick <= 10)
+                        {
+                            $"🔴 GrowingPipe BeforeAnimationRefresh: tick={tick}, fps={fps:F1}".WriteSuccess();
+                        }
                         
                         _animationTime += 1.0 / fps;
                         var duration = _debugMode ? DEBUG_ANIMATION_DURATION : ANIMATION_DURATION;
                         var progress = Math.Min(_animationTime / duration, 1.0);
+                        
+                        if (tick <= 10)
+                        {
+                            $"   Pipe Progress: {progress:F3}".WriteInfo();
+                        }
                         
                         if (progress < 1.0)
                         {
@@ -519,17 +555,20 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         // If starting paused, run for 2 frames to create and render geometry, then auto-pause
         if (startPaused)
         {
-            $"Running 2 frames to create and render geometry, then auto-pause".WriteInfo();
+            $"🔄 Running 2 frames to create and render geometry, then auto-pause".WriteInfo();
             AnimationFrameBus.RunForFrames(2);
             _stepCount = 2; // Will have run 2 frames
-            $"Geometry will be created and rendered - will auto-pause after 2 frames".WriteSuccess();
+            $"✅ Geometry will be created and rendered - will auto-pause after 2 frames".WriteSuccess();
         }
         else
         {
             // CRITICAL: Push all shapes to JavaScript immediately so they appear
-            $"Pushing initial geometry to JavaScript...".WriteInfo();
+            $"📤 Pushing initial geometry to JavaScript...".WriteInfo();
             await arena.RenderArena(0, 0);
-            $"3D Tug of War started - all objects animating".WriteSuccess();
+            $"🎬 3D Tug of War started - all objects should be animating now!".WriteSuccess();
+            $"   Animation state: {AnimationFrameBus.GetAnimationState()}".WriteInfo();
+            $"   Is paused? {AnimationFrameBus.IsGloballyPaused()}".WriteInfo();
+            $"   Current tick: {AnimationFrameBus.GetCurrentTick()}".WriteInfo();
         }
     }
 
