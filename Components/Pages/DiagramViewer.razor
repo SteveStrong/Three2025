@@ -4,7 +4,10 @@
 @using FoundryMentorModeler.Model
 @using FoundryMentorModeler.Diagram
 @using Plugin_710.Model
+@using Blazor.Diagrams
 @using Blazor.Diagrams.Components
+@using Blazor.Diagrams.Components.Widgets
+@using Radzen.Blazor
 @inherits DiagramViewerBase
 
 <PageTitle>Diagram Viewer</PageTitle>
@@ -15,16 +18,34 @@
         height: 100%;
         border: 1px solid #ccc;
         background: white;
+        position: relative;
+    }
+    
+    .canvas-loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+    
+    .loading-content {
+        text-align: center;
     }
 </style>
 
 <div class="container-fluid p-3" style="height: 100vh; display: flex; flex-direction: column;">
     
     <!-- Header -->
-    <div class="card mb-3" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+    <div class="card mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
         <div class="card-body p-3">
-            <h3 class="mb-2">📐 Diagram Viewer - 2D Interactive</h3>
-            <p class="mb-0 small">Plugin710 component diagrams with Blazor Diagrams</p>
+            <h3 class="mb-2">📐 Diagram Viewer - Modern Implementation</h3>
+            <p class="mb-0 small">Following Scenario Chat diagram pattern with proper RenderEditor flow</p>
         </div>
     </div>
 
@@ -39,13 +60,13 @@
                 <button class="btn btn-success" @onclick="CreateCircuitDiagram" disabled="@_isLoading">
                     ⚡ Create Circuit Diagram
                 </button>
-                <button class="btn btn-info" @onclick="AddSystemBlock" disabled="@(_model == null || _diagram == null)">
+                <button class="btn btn-info" @onclick="AddSystemBlock" disabled="@(_model == null || _diagram == null || _isLoading)">
                     ➕ Add System Block
                 </button>
-                <button class="btn btn-warning" @onclick="AddCircuitBlock" disabled="@(_model == null || _diagram == null)">
-                    🔌 Add Circuit Block
+                <button class="btn btn-warning" @onclick="AddCircuitNode" disabled="@(_model == null || _diagram == null || _isLoading)">
+                    🔌 Add Circuit Node
                 </button>
-                <button class="btn btn-danger" @onclick="ClearDiagram" disabled="@(_diagram == null)">
+                <button class="btn btn-danger" @onclick="ClearDiagram" disabled="@(_diagram == null || _isLoading)">
                     🗑️ Clear
                 </button>
                 <span class="ms-3">Nodes: @_nodeCount | Links: @_linkCount</span>
@@ -71,13 +92,35 @@
                         <h5 class="mb-0">📊 Diagram Canvas</h5>
                     </div>
                     <div class="diagram-container" style="flex: 1;">
+                        @if (_isLoading)
+                        {
+                            <!-- Loading overlay with progress indicator -->
+                            <div class="canvas-loading-overlay">
+                                <div class="loading-content">
+                                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <h4>@_loadingMessage</h4>
+                                </div>
+                            </div>
+                        }
+                        
                         @if (_diagram != null)
                         {
-                            <CascadingValue Value="_diagram">
-                                <DiagramCanvas></DiagramCanvas>
+                            <!-- CascadingValue with IsFixed for performance -->
+                            <CascadingValue Value="_diagram" IsFixed="true">
+                                <DiagramCanvas>
+                                    <Widgets>
+                                        <SelectionBoxWidget />
+                                        <GridWidget Size="50" Mode="GridMode.Line" BackgroundColor="white" />
+                                        <NavigatorWidget Width="200" Height="120" 
+                                            Class="border border-dark bg-white position-absolute"
+                                            Style="bottom: 15px; right: 15px; z-index: 10;" />
+                                    </Widgets>
+                                </DiagramCanvas>
                             </CascadingValue>
                         }
-                        else
+                        else if (!_isLoading)
                         {
                             <div class="d-flex align-items-center justify-content-center h-100 text-muted">
                                 <div class="text-center">
@@ -94,7 +137,7 @@
             <RadzenSplitterPane Size="30%" Min="15%" Max="50%">
                 <div style="display: flex; flex-direction: column; height: 100%; background: white;">
                     <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">📦 Diagram Components</h5>
+                        <h5 class="mb-0">📦 Model Components</h5>
                         <button class="btn btn-sm btn-light" @onclick="RefreshTree">
                             <i class="bi bi-arrow-clockwise"></i> Refresh
                         </button>

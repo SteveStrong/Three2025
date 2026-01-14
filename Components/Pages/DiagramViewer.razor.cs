@@ -10,6 +10,7 @@ using FoundryAppStore.Extensions;
 using Plugin_710.Model;
 using Blazor.Diagrams.Core.Geometry;
 using BlazorComponentBus;
+using Three2025.Components.DiagramWidgets;
 
 namespace Three2025.Components.Pages;
 
@@ -25,59 +26,94 @@ public class DiagramViewerBase : ComponentBase, IDisposable
     protected string? _statusMessage;
     protected bool _isError;
     protected bool _isLoading;
+    protected string _loadingMessage = "Initializing...";
     
     protected int _nodeCount;
     protected int _linkCount;
 
-    protected override async Task OnInitializedAsync()
+    // ============================================
+    // CORE DIAGRAM PATTERN - INITIALIZATION
+    // ============================================
+    protected override void OnInitialized()
     {
         "DiagramViewer: Initializing".WriteInfo();
-        await base.OnInitializedAsync();
+        
+        // STEP 1: Establish the diagram (BEFORE any rendering!)
+        _diagram = MentorServices.EstablishDiagram<MentorDiagram>("DiagramViewerCanvas");
+        
+        // STEP 2: Register node-widget mappings (CRITICAL!)
+        // Register all node types with their default rendering
+        _diagram.Register<SystemBlockEditor, SystemBlockWidget>(true);
+        _diagram.Register<CircuitNodeEditor, CircuitNodeWidget>(true);
+        _diagram.Register<CircuitGroupEditor, CircuitGroupWidget>(true);
+        
+        "DiagramViewer: Diagram established and widgets registered".WriteSuccess();
+        
+        base.OnInitialized();
     }
 
     /// <summary>
-    /// Create a simple test diagram with basic nodes.
+    /// Create a system-level diagram using the proper model rendering pattern.
     /// </summary>
     protected async Task CreateSystemDiagram()
     {
         _isLoading = true;
-        _statusMessage = "📐 Creating simple test diagram...";
+        _loadingMessage = "📐 Building system model...";
+        _statusMessage = "Creating system diagram...";
         StateHasChanged();
 
         try
         {
             await Task.Delay(50);
 
-            // Create diagram directly
-            _diagram = MentorServices.EstablishDiagram<MentorDiagram>("TestView");
-            _diagram.ClearAll();
-            "DiagramViewer: Diagram created".WriteSuccess();
+            // STEP 1: Create the model
+            _model = MentorServices.EstablishModel<Model_710>("DiagramViewerModel");
+            _model.SetExpanded(true);
 
-            // Create simple test nodes directly
-            var node1 = _diagram.CreateNode<DiagramNode>(
-                new KnComponent("TestNode1"), 
-                new Blazor.Diagrams.Core.Geometry.Point(100, 100));
-            node1.Size = new Blazor.Diagrams.Core.Geometry.Size(150, 75);
-            node1.Title = "Simple Node 1";
-            
-            var node2 = _diagram.CreateNode<DiagramNode>(
-                new KnComponent("TestNode2"), 
-                new Blazor.Diagrams.Core.Geometry.Point(300, 100));
-            node2.Size = new Blazor.Diagrams.Core.Geometry.Size(150, 75);
-            node2.Title = "Simple Node 2";
-            
-            var node3 = _diagram.CreateNode<DiagramNode>(
-                new KnComponent("TestNode3"), 
-                new Blazor.Diagrams.Core.Geometry.Point(500, 100));
-            node3.Size = new Blazor.Diagrams.Core.Geometry.Size(150, 75);
-            node3.Title = "Simple Node 3";
+            var solution = _model.EstablishSolution();
+            var lookup = solution.GetLookup();
 
-            $"Created 3 simple nodes".WriteSuccess();
+            // STEP 2: Build domain model with system blocks
+            var blockNames = new[] { "MainSystem", "SubSystem1", "SubSystem2" };
+            SystemBlock_710? parentBlock = null;
+            
+            foreach (var (name, index) in blockNames.Select((n, i) => (n, i)))
+            {
+                var blockComp = Common_710.New_DT_Component(name);
+                blockComp.MarkAsBlock("");
+                var block = solution.Build<SystemBlock_710>(blockComp, index + 1, lookup);
+                
+                block.Calculations([
+                    $"sPinX: {150 + (index * 200)}",
+                    $"sPinY: {200}",
+                    "sWidth: 180",
+                    "sHeight: 120"
+                ]);
+                
+                if (parentBlock == null)
+                {
+                    _model.AddChildComponent<KnComponent>(block);
+                    parentBlock = block;
+                }
+                else
+                {
+                    parentBlock.AddChild(block);
+                }
+            }
+
+            // STEP 3: Render model to diagram using RenderEditor pattern
+            _diagram!.ClearAll();
+            _model.RenderDiagram("SystemView", clear: true, () => 
+            {
+                "System diagram rendering complete".WriteSuccess();
+            });
 
             UpdateCounts();
             
-            _statusMessage = $"✅ Simple diagram created with {_nodeCount} nodes";
+            _statusMessage = $"✅ System diagram created with {_nodeCount} nodes";
             _isError = false;
+            
+            await RefreshTree();
         }
         catch (Exception ex)
         {
@@ -93,66 +129,62 @@ public class DiagramViewerBase : ComponentBase, IDisposable
     }
 
     /// <summary>
-    /// Create a circuit-level diagram with Equipment, Racks, and Cables.
+    /// Create a circuit-level diagram with circuit nodes and connections.
     /// </summary>
     protected async Task CreateCircuitDiagram()
     {
         _isLoading = true;
-        _statusMessage = "⚡ Creating circuit diagram...";
+        _loadingMessage = "⚡ Building circuit model...";
+        _statusMessage = "Creating circuit diagram...";
         StateHasChanged();
 
         try
         {
             await Task.Delay(50);
 
-            // Create model
+            // STEP 1: Create model
             _model = MentorServices.EstablishModel<Model_710>("DiagramViewerModel");
             _model.SetExpanded(true);
 
             var solution = _model.EstablishSolution();
             var lookup = solution.GetLookup();
 
-            // Create diagram
-            _diagram = _model.RenderDiagram("CircuitView", clear: true, () => { });
-
-            // Create a rack
-            var rackComp = Common_710.New_DT_Component("MainRack");
-            rackComp.MarkAsRack();
-            var rack = solution.Build<Rack_710>(rackComp, 1, lookup);
-            rack.Calculations([
-                "sPinX: 150",
-                "sPinY: 150",
-                "sWidth: 120",
-                "sHeight: 200"
-            ]);
-            _model.AddChildComponent<KnComponent>(rack);
-
-            // Create equipment inside rack
-            var equipNames = new[] { "Server1", "Server2", "Storage1" };
-            foreach (var (name, index) in equipNames.Select((n, i) => (n, i)))
+            // STEP 2: Build circuit nodes in domain model
+            var nodeNames = new[] { "Node_A", "Node_B", "Node_C", "Node_D" };
+            var nodes = new List<CircuitNode_710>();
+            
+            foreach (var (name, index) in nodeNames.Select((n, i) => (n, i)))
             {
-                var equipComp = Common_710.New_DT_Component(name);
-                equipComp.MarkAsEquipment();
-                var equipment = solution.Build<Equipment_710>(equipComp, index + 1, lookup);
-                equipment.Calculations([
-                    $"sPinX: {200 + index * 150}",
-                    $"sPinY: {300}",
-                    "sWidth: 100",
+                var nodeComp = Common_710.New_DT_Component(name);
+                // CircuitNode_710 doesn't need marking
+                var node = solution.Build<CircuitNode_710>(nodeComp, index + 1, lookup);
+                
+                // Position nodes in a grid pattern
+                var col = index % 2;
+                var row = index / 2;
+                node.Calculations([
+                    $"sPinX: {200 + (col * 250)}",
+                    $"sPinY: {200 + (row * 200)}",
+                    "sWidth: 120",
                     "sHeight: 80"
                 ]);
-                rack.AddChild(equipment);
+                
+                _model.AddChildComponent<KnComponent>(node);
+                nodes.Add(node);
             }
 
-            // Render using context pattern
-            var ctx = RenderContextEditor.Create(_diagram, "CircuitView", deep: true);
-            solution.RenderEditor(ctx);
+            // STEP 3: Render model to diagram
+            _diagram!.ClearAll();
+            _model.RenderDiagram("CircuitView", clear: true, () => 
+            {
+                "Circuit diagram rendering complete".WriteSuccess();
+            });
 
             UpdateCounts();
-
-            _statusMessage = $"✅ Circuit diagram created with {_nodeCount} components";
+            _statusMessage = $"✅ Circuit diagram created with {_nodeCount} nodes";
             _isError = false;
 
-            await Task.Run(() => PubSub.Publish<RefreshRenderMessage>(RefreshRenderMessage.Refresh(null)));
+            await RefreshTree();
         }
         catch (Exception ex)
         {
@@ -181,22 +213,22 @@ public class DiagramViewerBase : ComponentBase, IDisposable
             blockComp.MarkAsBlock("");
             var block = solution.Build<SystemBlock_710>(blockComp, _nodeCount + 1, lookup);
             
+            // Position with offset from previous nodes
             block.Calculations([
-                $"sPinX: {100 + (_nodeCount * 30)}",
-                $"sPinY: {100 + (_nodeCount * 30)}",
-                "sWidth: 200",
-                "sHeight: 100"
+                $"sPinX: {100 + (_nodeCount * 30) % 600}",
+                $"sPinY: {100 + ((_nodeCount * 30) / 600) * 150}",
+                "sWidth: 180",
+                "sHeight: 120"
             ]);
             
             _model.AddChildComponent<KnComponent>(block);
 
-            // Re-render using context pattern
-            solution = _model.EstablishSolution();
-            var ctx = RenderContextEditor.Create(_diagram, "SystemView", deep: true);
-            solution.RenderEditor(ctx);
+            // Re-render entire diagram following the guide pattern
+            _model.RenderDiagram("SystemView", clear: true, () => { });
             
             UpdateCounts();
             _statusMessage = $"✅ Added {blockName}";
+            await RefreshTree();
             StateHasChanged();
         }
         catch (Exception ex)
@@ -206,7 +238,7 @@ public class DiagramViewerBase : ComponentBase, IDisposable
         }
     }
 
-    protected async Task AddCircuitBlock()
+    protected async Task AddCircuitNode()
     {
         if (_model == null || _diagram == null) return;
 
@@ -215,27 +247,27 @@ public class DiagramViewerBase : ComponentBase, IDisposable
             var solution = _model.EstablishSolution();
             var lookup = solution.GetLookup();
 
-            var equipName = $"Equipment_{DateTime.Now.Ticks % 10000}";
-            var equipComp = Common_710.New_DT_Component(equipName);
-            equipComp.MarkAsEquipment();
-            var equipment = solution.Build<Equipment_710>(equipComp, _nodeCount + 1, lookup);
+            var nodeName = $"Node_{DateTime.Now.Ticks % 10000}";
+            var nodeComp = Common_710.New_DT_Component(nodeName);
+            // CircuitNode_710 doesn't need marking
+            var node = solution.Build<CircuitNode_710>(nodeComp, _nodeCount + 1, lookup);
             
-            equipment.Calculations([
-                $"sPinX: {150 + (_nodeCount * 30)}",
-                $"sPinY: {150 + (_nodeCount * 30)}",
-                "sWidth: 100",
+            // Position with offset
+            node.Calculations([
+                $"sPinX: {150 + (_nodeCount * 30) % 600}",
+                $"sPinY: {150 + ((_nodeCount * 30) / 600) * 150}",
+                "sWidth: 120",
                 "sHeight: 80"
             ]);
             
-            _model.AddChildComponent<KnComponent>(equipment);
+            _model.AddChildComponent<KnComponent>(node);
 
-            // Re-render using context pattern
-            solution = _model.EstablishSolution();
-            var ctx = RenderContextEditor.Create(_diagram, "CircuitView", deep: true);
-            solution.RenderEditor(ctx);
+            // Re-render entire diagram
+            _model.RenderDiagram("CircuitView", clear: true, () => { });
             
             UpdateCounts();
-            _statusMessage = $"✅ Added {equipName}";
+            _statusMessage = $"✅ Added {nodeName}";
+            await RefreshTree();
             StateHasChanged();
         }
         catch (Exception ex)

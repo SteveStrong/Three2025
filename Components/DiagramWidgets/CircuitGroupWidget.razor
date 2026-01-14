@@ -1,0 +1,91 @@
+@namespace Three2025.Components.DiagramWidgets
+@using Plugin_710.Model
+@using FoundryMentorModeler.Diagram
+@using Blazor.Diagrams.Components.Renderers
+@rendermode @(new InteractiveServerRenderMode(false))
+
+<style>
+    .circuit-group {
+        border: 3px dashed #17a2b8;
+        background: rgba(23, 162, 184, 0.05);
+        text-align: center;
+        padding: 15px;
+        border-radius: 10px;
+        min-width: 200px;
+        min-height: 150px;
+        position: relative;
+        transition: all 0.2s;
+    }
+
+    .circuit-group.selected {
+        border-color: #ffd700;
+        background: rgba(255, 215, 0, 0.1);
+        box-shadow: 0 4px 16px rgba(255,215,0,0.3);
+    }
+
+    .group-header {
+        position: absolute;
+        top: 5px;
+        left: 10px;
+        font-weight: bold;
+        color: #17a2b8;
+        background: white;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-size: 0.9em;
+    }
+
+    .group-content {
+        margin-top: 25px;
+        color: #666;
+        font-size: 0.85em;
+    }
+</style>
+
+<div class="circuit-group @(Node.Selected ? "selected" : "")">
+    <div class="group-header">
+        📦 @Node.Title
+    </div>
+    
+    <div class="group-content">
+        @if (HasChildren())
+        {
+            <span>Contains @GetChildCount() components</span>
+        }
+        else
+        {
+            <span>Empty group - drag items here</span>
+        }
+    </div>
+
+    <!-- Render ports for connections -->
+    @foreach (var port in PortList())
+    {
+        <PortRenderer Port="@port" Class="@port.Alignment.ToString().ToLower()" />
+    }
+</div>
+
+@code {
+    #nullable enable
+    [Parameter] public CircuitGroupEditor Node { get; set; } = null!;
+
+    public CircuitBlock_710? GetBlock()
+    {
+        return Node?.GetCircuitBlock();
+    }
+
+    public bool HasChildren()
+    {
+        return GetBlock()?.ModelComponents<Base_710>().Any() ?? false;
+    }
+
+    public int GetChildCount()
+    {
+        return GetBlock()?.ModelComponents<Base_710>().Count() ?? 0;
+    }
+
+    public List<DiagramPort> PortList()
+    {
+        return Node?.Ports.Cast<DiagramPort>().ToList() ?? new List<DiagramPort>();
+    }
+}
