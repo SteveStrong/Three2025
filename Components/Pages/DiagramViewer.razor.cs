@@ -1,6 +1,7 @@
 #nullable enable
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using FoundryMentorModeler.Model;
 using FoundryMentorModeler.Diagram;
 using FoundryWorldsAndDrawings.Solutions;
@@ -55,6 +56,55 @@ public class DiagramViewerBase : ComponentBase, IDisposable
     /// <summary>
     /// Create a system-level diagram using the proper model rendering pattern.
     /// </summary>
+    /// <summary>
+    /// Apply automatic tree layout to the current diagram.
+    /// </summary>
+    protected void ApplyLayout(LayoutType_710 layoutType)
+    {
+        if (_model == null || _diagram == null)
+        {
+            _statusMessage = "⚠️ No diagram to layout";
+            _isError = true;
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            var solution = _model.EstablishSolution();
+            var rootBlock = solution?.CurrentSystemBlock;
+            
+            if (rootBlock == null)
+            {
+                _statusMessage = "⚠️ No root block found for layout";
+                _isError = true;
+                StateHasChanged();
+                return;
+            }
+
+            // Apply the layout algorithm
+            solution.LayoutDiagramTreeFromRoot(rootBlock, layoutType, clear: false);
+            
+            var layoutName = layoutType switch
+            {
+                LayoutType_710.Horizontal => "Horizontal",
+                LayoutType_710.Vertical => "Vertical",
+                _ => "Reset"
+            };
+            
+            _statusMessage = $"✅ {layoutName} layout applied successfully";
+            _isError = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"❌ Layout error: {ex.Message}";
+            _isError = true;
+            $"ApplyLayout ERROR: {ex}".WriteError();
+            StateHasChanged();
+        }
+    }
+
     protected async Task CreateSystemDiagram()
     {
         _isLoading = true;
@@ -76,6 +126,7 @@ public class DiagramViewerBase : ComponentBase, IDisposable
             // STEP 2: Build domain model with system blocks
             var blockNames = new[] { "MainSystem", "SubSystem1", "SubSystem2" };
             SystemBlock_710? parentBlock = null;
+            var childBlocks = new List<SystemBlock_710>();
             
             foreach (var (name, index) in blockNames.Select((n, i) => (n, i)))
             {
@@ -90,15 +141,34 @@ public class DiagramViewerBase : ComponentBase, IDisposable
                     "sHeight: 120"
                 ]);
                 
+                // Add all blocks to solution (this establishes parent-child hierarchy)
+                solution.AddChildComponent<SystemBlock_710>(block);
+                
                 if (parentBlock == null)
                 {
-                    _model.AddChildComponent<KnComponent>(block);
                     parentBlock = block;
                 }
                 else
                 {
+                    // Also add as child of parent block for tree structure
                     parentBlock.AddChild(block);
+                    childBlocks.Add(block);
                 }
+            }
+
+            // STEP 3: Create links (1D shapes) between parent and children
+            foreach (var (child, index) in childBlocks.Select((c, i) => (c, i)))
+            {
+                var linkComp = Common_710.New_DT_Component($"Link_To_{child.Name}");
+                var link = solution.Build<SystemLink_710>(linkComp, 100 + index, lookup);
+                
+                // Set link endpoints
+                link.From = parentBlock;
+                link.To = child;
+                link.LayoutType = LayoutType_710.Horizontal;
+                
+                // Add link to solution
+                solution.AddChildComponent<SystemLink_710>(link);
             }
 
             // STEP 3: Render model to diagram using RenderEditor pattern
@@ -110,7 +180,7 @@ public class DiagramViewerBase : ComponentBase, IDisposable
 
             UpdateCounts();
             
-            _statusMessage = $"✅ System diagram created with {_nodeCount} nodes";
+            _statusMessage = $"✅ System diagram created with {_nodeCount} nodes and {_linkCount} links";
             _isError = false;
             
             await RefreshTree();
@@ -324,6 +394,23 @@ public class DiagramViewerBase : ComponentBase, IDisposable
     public void Dispose()
     {
         "DiagramViewer: Disposing".WriteInfo();
+        
+        try
+        {
+            // Clear diagram nodes before disposal to avoid JS interop on disconnected circuit
+            _diagram?.ClearAll();
+        }
+        catch (JSDisconnectedException)
+        {
+            // Expected during circuit disposal - suppress
+            "DiagramViewer: JS circuit already disconnected during disposal (expected)".WriteInfo();
+        }
+        catch (Exception ex)
+        {
+            // Log other exceptions but don't throw
+            $"DiagramViewer: Disposal exception (non-critical): {ex.Message}".WriteWarning();
+        }
+        
         _diagram = null;
         _model = null;
     }

@@ -74,6 +74,27 @@
         </div>
     </div>
 
+    <!-- Layout Control Panel -->
+    <div class="card mb-3">
+        <div class="card-body p-2">
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+                <span class="fw-bold">🗂️ Layout:</span>
+                <button class="btn btn-sm btn-outline-primary" @onclick="() => ApplyLayout(Plugin_710.Model.LayoutType_710.Horizontal)" 
+                    disabled="@(_model == null || _diagram == null || _isLoading)">
+                    ↔️ Horizontal Tree
+                </button>
+                <button class="btn btn-sm btn-outline-success" @onclick="() => ApplyLayout(Plugin_710.Model.LayoutType_710.Vertical)" 
+                    disabled="@(_model == null || _diagram == null || _isLoading)">
+                    ↕️ Vertical Tree
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="() => ApplyLayout(Plugin_710.Model.LayoutType_710.None)" 
+                    disabled="@(_model == null || _diagram == null || _isLoading)">
+                    🔄 Reset Layout
+                </button>
+            </div>
+        </div>
+    </div>
+
     @if (_statusMessage != null)
     {
         <div class="alert @(_isError ? "alert-danger" : "alert-success") alert-dismissible fade show" role="alert">
