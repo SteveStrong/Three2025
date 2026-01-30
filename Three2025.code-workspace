@@ -16,7 +16,10 @@
 			"path": "../FoundryMentorModeler.Tests"
 		},
 		{
-			"path": "../Plugin710"
+			"path": "../FoundryMicroCore/FoundryMicroCore.Library"
+		},
+		{
+			"path": "../FoundryMicroCore/FoundryMicroCore.Blazor.Controls"
 		}
 	],
 	"settings": {}

@@ -7,7 +7,7 @@ using FoundryMentorModeler.Diagram;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
-using FoundryAppStore.Extensions;
+
 using Plugin_710.Model;
 using Blazor.Diagrams.Core.Geometry;
 using BlazorComponentBus;
