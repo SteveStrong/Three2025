@@ -1,4 +1,5 @@
 #nullable enable
+using FoundryMicroCore.Core.Extensions;
 
 using System.ComponentModel;
 using FoundryWorldsAndDrawings.Shape;
@@ -125,7 +126,7 @@ public class Shape3DTech : IShape3DTech
    [Description("Generate a Random Color")]
    public OPResult PickARandomColor()
    {
-      var color = DataGenerator.GenerateColor();
+      var color = DataGenerator.RandomColor();
       return new OPResult("PickARandomColor", ResultStatus.String, color);
    }
 
@@ -174,7 +175,7 @@ public class Shape3DTech : IShape3DTech
       var shape = factory(name, width, height, depth);
       
       // Set the spatial formatter (same as GeometryShape.DefaultFormatter)
-      shape.ComputeTreeNodeTitle = TreeNodeFormatters.Spatial;
+      shape.MxObject.SetCustomTreeViewNodeTitleFunction(this, TreeNodeFormatters.Spatial);
       
       // Add the text tag (same as GeometryShape)
       var tag = new FoText3D("tag")

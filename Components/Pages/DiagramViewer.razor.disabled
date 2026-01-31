@@ -3,7 +3,7 @@
 @rendermode InteractiveServer
 @using FoundryMentorModeler.Model
 @using FoundryMentorModeler.Diagram
-@using Plugin_710.Model
+@// DISABLED: using Plugin_710.Model
 @using Blazor.Diagrams
 @using Blazor.Diagrams.Components
 @using Blazor.Diagrams.Components.Widgets

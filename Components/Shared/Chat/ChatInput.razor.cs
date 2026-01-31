@@ -45,7 +45,7 @@ public partial class ChatInput
 
     private async Task HandleKeyPress(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter" && !e.ShiftKey)
+        if (e.Code == "Enter" && !e.ShiftKey)
         {
             await HandleSend();
         }

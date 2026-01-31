@@ -1,14 +1,25 @@
 using Microsoft.AspNetCore.Components;
+using FoundryMicroCore.Core;
 using BlazorComponentBus;
+using FoundryMicroCore.Core;
 using FoundryMentorModeler.Model;
+using FoundryMicroCore.Core;
 using FoundryMentorModeler.Evaluator;
+using FoundryMicroCore.Core;
 using FoundryMentorModeler.Persistence;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings.PubSub;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings.Solutions;
+using FoundryMicroCore.Core;
 using Three2025.Apprentice.RackEquipment;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings.Shape;
+using FoundryMicroCore.Core;
 using FoundryCore;
+using FoundryMicroCore.Core;
 using FoundryRulesAndUnits.Models;
+using FoundryMicroCore.Core;
 
 namespace Three2025.Components.Pages;
 
@@ -125,7 +136,6 @@ public partial class RackKnowledgeModel : ComponentBase
             // Generate FO geometry into provided stage (technician operates on stage, doesn't create it)
             RackKnowledgeToFoFactory.GenerateDataCenter(_dataCenterModel, _generatedStage);
 
-            var shapeCount = _generatedStage.GetMembers<RackCabinetShape>().Count();
             _statusMessage = $"✅ Generated {shapeCount} FO shapes from knowledge model";
             _isError = false;
         }

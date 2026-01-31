@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using FoundryMicroCore.Core.Extensions;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Extensions;

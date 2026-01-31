@@ -1,7 +1,12 @@
 using FoundryWorldsAndDrawings.Solutions;
+using FoundryMicroCore.Core.Extensions;
+using FoundryMicroCore.Core;
 using FoundryMentorModeler.Model;
+using FoundryMicroCore.Core;
 using FoundryRulesAndUnits.Extensions;
+using FoundryMicroCore.Core;
 using FoundryRulesAndUnits.Models;
+using FoundryMicroCore.Core;
 
 #nullable enable
 
@@ -62,9 +67,9 @@ public class AnimatedKnModel : PartModel
     }
 
     /// <summary>
-    /// Override to properly return KnComponent children.
+    /// Returns KnComponent children for tree view navigation.
     /// </summary>
-    public override IEnumerable<ITreeNode> GetTreeChildren()
+    public virtual IEnumerable<ITreeNode> GetTreeChildren()
     {
         var list = new List<ITreeNode>();
         EstablishFolderIfNotEmpty<KnParameter>(list);

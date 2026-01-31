@@ -1,4 +1,5 @@
 using FoundryRulesAndUnits.Extensions;
+using FoundryMicroCore.Core.Extensions;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 

@@ -1,13 +1,17 @@
 
 using FoundryWorldsAndDrawings.Shape;
+using FoundryMicroCore.Core;
 using FoundryRulesAndUnits.Units;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryMicroCore.Core;
 
 
 namespace Three2025.Model;
 
-public class TriSocGeometry : FoComponent
+public class TriSocGeometry : MxComponent
 {
 
 

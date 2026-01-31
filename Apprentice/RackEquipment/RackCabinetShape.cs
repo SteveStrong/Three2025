@@ -1,6 +1,9 @@
 using FoundryWorldsAndDrawings.Shape;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings;
+using FoundryMicroCore.Core;
 
 namespace Three2025.Apprentice.RackEquipment;
 
@@ -27,21 +30,21 @@ public class RackCabinetShape : FoShape3D
     /// <summary>
     /// Formatter showing cabinet name and capacity
     /// </summary>
-    public static new readonly Func<FoBase, string> DefaultFormatter = g => 
+    public static new readonly Func<MxObject, string> DefaultFormatter = g => 
     {
         if (g is RackCabinetShape cabinet)
         {
             var pduStatus = cabinet.HasPDU ? "with PDU" : "no PDU";
             var equipCount = cabinet.GetEquipment().Count;
-            return $"{cabinet.Key} [{TOTAL_RACK_UNITS}U, {equipCount} devices, {pduStatus}]";
+            return $"{cabinet.Name} [{TOTAL_RACK_UNITS}U, {equipCount} devices, {pduStatus}]";
         }
-        return g.Key;
+        return g.Name;
     };
     
     public RackCabinetShape(string name, bool hasPDU = false) : base(name)
     {
         HasPDU = hasPDU;
-        ComputeTreeNodeTitle = DefaultFormatter;
+        MxObject.SetCustomTreeViewNodeTitleFunction(this, DefaultFormatter);
         
         // Create cabinet frame (rails only, not solid box)
         CreateCabinetFrame();
@@ -122,7 +125,7 @@ public class RackCabinetShape : FoShape3D
         // Calculate Y position (cabinet bottom is at Y=0)
         double yPos = RackEquipmentShape.CalculateYPosition(startRU, equipment.HeightInRU);
         
-        equipment.Transform = new Transform3($"{equipment.Key}_Transform")
+        equipment.Transform = new Transform3($"{equipment.Name}_Transform")
         {
             Position = new Vector3(0, yPos, 0)
         };

@@ -1,4 +1,5 @@
 #nullable enable
+using FoundryMicroCore.Core.Extensions;
 
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.Solutions;
@@ -194,7 +195,9 @@ public class Shape2DEditor : IShape2DEditor
          return result;
 
       var parentShape = result.AsShape2D();
-      var children = parentShape.GetMembers<FoGlyph2D>();
+      // TODO: Replace with new collection API
+      // var children = parentShape.GetMembers<FoGlyph2D>();
+      var children = new List<FoGlyph2D>(); // Temporary placeholder
       
       // Return empty collection if no children (not an error - makes consumer code simpler)
       if (children == null || children.Count == 0)
@@ -214,7 +217,9 @@ public class Shape2DEditor : IShape2DEditor
 
       var parentShape = result.AsShape2D();
       
-      var child = parentShape.GetMembers<FoGlyph2D>()?.FirstOrDefault(c => c.GetName() == childShapeName);
+      // TODO: Replace with new collection API
+      // var child = parentShape.GetMembers<FoGlyph2D>()?.FirstOrDefault(c => c.GetName() == childShapeName);
+      var child = null as FoGlyph2D; // Temporary placeholder
       if (child == null)
       {
          return new OPResult("RemoveChildShape", ResultStatus.Error, $"Child shape '{childShapeName}' not found in parent '{parentShapeName}'");
@@ -243,7 +248,7 @@ public class Shape2DEditor : IShape2DEditor
          return new OPResult("GetAllShapes", ResultStatus.Error, "No page connected");
       }
 
-      var shapes = _page.GetMembers<FoGlyph2D>() ?? new List<FoGlyph2D>();
+      // TODO: Replace with new collection API\n      // var shapes = _page.GetMembers<FoGlyph2D>() ?? new List<FoGlyph2D>();\n      var shapes = new List<FoGlyph2D>(); // Temporary placeholder
       $"📋 Retrieved {shapes.Count} shapes from page".WriteInfo();
       
       // Return as collection - consumer can filter, query, count, etc.
@@ -262,7 +267,9 @@ public class Shape2DEditor : IShape2DEditor
          return new OPResult("DeleteShape", ResultStatus.Error, "No page connected");
       }
 
-      var shape = _page.GetMembers<FoGlyph2D>()?.FirstOrDefault(s => s.GetName() == name);
+      // TODO: Replace with new collection API
+      // var shape = _page.GetMembers<FoGlyph2D>()?.FirstOrDefault(s => s.GetName() == name);
+      var shape = null as FoGlyph2D; // Temporary placeholder
 
       if (shape != null)
       {
@@ -291,7 +298,6 @@ public class Shape2DEditor : IShape2DEditor
 
       foreach (var name in names)
       {
-         var shape = _page.GetMembers<FoGlyph2D>()?.FirstOrDefault(s => s.GetName() == name);
          if (shape != null)
          {
             shape.Delete();
@@ -360,7 +366,6 @@ public class Shape2DEditor : IShape2DEditor
          return new OPResult("FindShape", ResultStatus.Error, "No page connected");
       
       // Search in FoGlyph2D collection where shapes are stored
-      var shape = _page.GetMembers<FoGlyph2D>()?.FirstOrDefault(s => s.GetName() == shapeName);
       
       if (shape == null)
          return new OPResult("FindShape", ResultStatus.Error, $"Shape '{shapeName}' not found");

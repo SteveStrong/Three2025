@@ -1,4 +1,5 @@
 ﻿using FoundryWorldsAndDrawings.Solutions;
+using FoundryMicroCore.Core.Extensions;
 using Microsoft.AspNetCore.Components;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Extensions;
@@ -27,8 +28,9 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     [Inject] public IWorkspace Workspace { get; init; }
     [Inject] public IFoundryService FoundryService { get; init; }
-    [Inject] public IRackTech RackTech { get; init; }
-    [Inject] public ICageTech CageTech { get; init; }
+    // RETIRED: Plugin710 dependencies - will restore in future implementation
+    // [Inject] public IRackTech RackTech { get; init; }
+    // [Inject] public ICageTech CageTech { get; init; }
 
     [Parameter] public int CanvasWidth { get; set; } = 1000;
     [Parameter] public int CanvasHeight { get; set; } = 800;
@@ -74,17 +76,17 @@ public partial class HomeBase : ComponentBase, IDisposable
         var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if ( !found ) return;
 
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(10, 20);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var y = DataGenerator.RandomDouble(10, 20);
+        var z = DataGenerator.RandomDouble(-10, 10);
 
-        var ax = DataGenerator.GenerateDouble(-Math.PI, Math.PI);
-        var ay = DataGenerator.GenerateDouble(-Math.PI, Math.PI);
-        var az = DataGenerator.GenerateDouble(-Math.PI, Math.PI);
+        var ax = DataGenerator.RandomDouble(-Math.PI, Math.PI);
+        var ay = DataGenerator.RandomDouble(-Math.PI, Math.PI);
+        var az = DataGenerator.RandomDouble(-Math.PI, Math.PI);
 
 
-        //var text = DataGenerator.GenerateText();
-        var color = DataGenerator.GenerateColor();
+        //var text = DataGenerator.RandomSentence();
+        var color = DataGenerator.RandomColor();
 
         var shape = new FoPipe3D("Tube", color)
         {
@@ -111,17 +113,17 @@ public partial class HomeBase : ComponentBase, IDisposable
         var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if ( !found ) return;
 
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var y = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
 
         //var Uuid = Guid.NewGuid().ToString();
-        //var text = DataGenerator.GenerateText();
-        var color = DataGenerator.GenerateColor();
+        //var text = DataGenerator.RandomSentence();
+        var color = DataGenerator.RandomColor();
 
 
         var mesh = new Mesh3D
-        {            Name = DataGenerator.GenerateWord(),
+        {            Name = DataGenerator.RandomWord(),
             Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
             Transform = new Transform3("ConeTransform")
             {
@@ -159,9 +161,9 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public string GeneratePath()
     {
-        var rack = $"rack{DataGenerator.GenerateInt(0, 7)}";
-        var box = $"box{DataGenerator.GenerateInt(0, 7)}";
-        var cn = $"cn{DataGenerator.GenerateInt(0, 7)}";
+        var rack = $"rack{DataGenerator.RandomInt(0, 7)}";
+        var box = $"box{DataGenerator.RandomInt(0, 7)}";
+        var cn = $"cn{DataGenerator.RandomInt(0, 7)}";
         return $"{rack}.{box}.{cn}";
     }
 
@@ -250,13 +252,13 @@ public partial class HomeBase : ComponentBase, IDisposable
     
     public void DoAddGeomToArena()
     {
-        var name = DataGenerator.GenerateName();
-        var color = DataGenerator.GenerateColor();
+        var name = DataGenerator.RandomFullName();
+        var color = DataGenerator.RandomColor();
         var label = $"{name} {color}";
 
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var y = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
 
         var shape = new FoShape3D(name,color)
         {
@@ -266,10 +268,10 @@ public partial class HomeBase : ComponentBase, IDisposable
             }
         };
 
-        var w = DataGenerator.GenerateDouble(1, 10);
-        var h = DataGenerator.GenerateDouble(1, 10);
-        var d = DataGenerator.GenerateDouble(1, 10);
-        var index = DataGenerator.GenerateInt(0, 10);
+        var w = DataGenerator.RandomDouble(1, 10);
+        var h = DataGenerator.RandomDouble(1, 10);
+        var d = DataGenerator.RandomDouble(1, 10);
+        var index = DataGenerator.RandomInt(0, 10);
 
         shape = index switch
         {
@@ -292,15 +294,15 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void OnAddText()
     {
-        var name = DataGenerator.GenerateWord();
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
-        var color = DataGenerator.GenerateColor();
+        var name = DataGenerator.RandomWord();
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var y = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
+        var color = DataGenerator.RandomColor();
 
         var shape = new FoText3D(name,color)
         {
-            Text = DataGenerator.GenerateText(),
+            Text = DataGenerator.RandomSentence(),
             Transform = new Transform3("TextTransform")
             {
                 Position = new Vector3(x, y, z),
@@ -314,10 +316,10 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public FoShape3D AddBox(string name, double x=0, double z=0)
     {
-        var color = DataGenerator.GenerateColor();
+        var color = DataGenerator.RandomColor();
         var label = $"{name} {color}";
 
-        var height = DataGenerator.GenerateDouble(1, 10);
+        var height = DataGenerator.RandomDouble(1, 10);
         var box = new FoShape3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
@@ -335,10 +337,10 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public FoShape3D AddCone(string name, double x=0, double z=0)
     {
-        var color = DataGenerator.GenerateColor();
+        var color = DataGenerator.RandomColor();
         var label = $"{name} {color}";
 
-        var height = DataGenerator.GenerateDouble(1, 10);
+        var height = DataGenerator.RandomDouble(1, 10);
         var box = new FoShape3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
@@ -356,9 +358,9 @@ public partial class HomeBase : ComponentBase, IDisposable
 
     public void AddBoxToStage()
     {
-        var name = DataGenerator.GenerateName();
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var name = DataGenerator.RandomFullName();
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
 
         if (_homeStage == null) _homeStage = Canvas3DReference?.Stage;
 
@@ -399,14 +401,14 @@ public partial class HomeBase : ComponentBase, IDisposable
         var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if (!found) return;
 
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var y = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
 
 
         var text3d = new Text3D()
-        {            Text = DataGenerator.GenerateText(),
-            Color = DataGenerator.GenerateColor(),
+        {            Text = DataGenerator.RandomSentence(),
+            Color = DataGenerator.RandomColor(),
             Transform = new Transform3("Text3DTransform")
             {
                 Position = new Vector3(x, y, z),
@@ -421,13 +423,13 @@ public partial class HomeBase : ComponentBase, IDisposable
         var (found, scene) = Canvas3DReference?.GetActiveScene() ?? (false, null);
         if (!found) return;
 
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var y = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
 
         var model = new Model3D()
         {
-            Name = $"JET:{DataGenerator.GenerateWord()}",            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
+            Name = $"JET:{DataGenerator.RandomWord()}",            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
             Transform = new Transform3("JetTransform")
             {

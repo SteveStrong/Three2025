@@ -4,7 +4,7 @@
 @using FoundryMentorModeler.Model
 @using FoundryWorldsAndDrawings.Shared
 @using FoundryWorldsAndDrawings.Shape
-@using Plugin_710.Model
+@// DISABLED: using Plugin_710.Model
 @inherits RackViewerBase
 
 <PageTitle>Rack Viewer</PageTitle>

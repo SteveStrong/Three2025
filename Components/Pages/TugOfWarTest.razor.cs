@@ -1,4 +1,5 @@
 #nullable enable
+using FoundryMicroCore.Core.Extensions;
 using Microsoft.AspNetCore.Components;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.Shared;

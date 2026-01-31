@@ -1,4 +1,5 @@
 ﻿
+using FoundryMicroCore.Core.Extensions;
 
 
 using FoundryWorldsAndDrawings.Solutions;
@@ -151,13 +152,13 @@ public class IndexBase : ComponentBase, IDisposable
             scene.RemoveChild(TestText);
         }
         
-        TestText = new Text3D(DataGenerator.GenerateText())  
+        TestText = new Text3D(DataGenerator.RandomSentence())  
         { 
             Transform = new Transform3("Text")
             {   
                 Position = new Vector3(3, 2, 3), 
             },
-            Color = DataGenerator.GenerateColor(),  //"#33333a"        
+            Color = DataGenerator.RandomColor(),  //"#33333a"        
         };
 
         scene.AddChild(TestText);
@@ -174,7 +175,7 @@ public class IndexBase : ComponentBase, IDisposable
         if (TestText != null) 
         {
             TestText.Text = newText;
-            TestText.Color = DataGenerator.GenerateColor();
+            TestText.Color = DataGenerator.RandomColor();
         }
 
         var scene = GetCurrentScene();
@@ -187,7 +188,7 @@ public class IndexBase : ComponentBase, IDisposable
 
         for (int i = 0; i < 10; i++)
         {
-            textLines.Add(DataGenerator.GenerateText());
+            textLines.Add(DataGenerator.RandomSentence());
         }
         var panelPos = new Vector3(-1, 2, -2);
         var panelRot = new Euler(-30 * Matrix3.DEG_TO_RAD, 0, 0);
@@ -470,7 +471,7 @@ public class IndexBase : ComponentBase, IDisposable
         var list = new List<Mesh3D>
         {
             new Mesh3D
-            {                Name = DataGenerator.GenerateWord(),
+            {                Name = DataGenerator.RandomWord(),
                 Geometry = new BoxGeometry(width: 1.2f, height: 0.5f),
                 Transform = new Transform3("Box3")
                 {
@@ -481,7 +482,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("magenta", 1.0)
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new CircleGeometry(radius: 0.75f, segments: 12),
                 Transform = new Transform3("Circle")
                 {
@@ -492,7 +493,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("#98AFC7", 1.0)
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new CapsuleGeometry(radius: 0.5f, length: 2),
                 Transform = new Transform3("Capsule")
                 {
@@ -503,7 +504,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("darkgreen", 1.0)
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new ConeGeometry(radius: 0.5f, height: 2, radialSegments: 16),
                 Transform = new Transform3("Cone")
                 {
@@ -520,7 +521,7 @@ public class IndexBase : ComponentBase, IDisposable
                 }
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new CylinderGeometry(radiusTop: 0.5f, height: 1.2f, radialSegments: 16),
                 Transform = new Transform3("Cylinder")
                 {
@@ -535,7 +536,7 @@ public class IndexBase : ComponentBase, IDisposable
                 }
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new DodecahedronGeometry(radius: 0.8f),
                 Transform = new Transform3("Dodecahedron")
                 {
@@ -550,7 +551,7 @@ public class IndexBase : ComponentBase, IDisposable
                 }
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new IcosahedronGeometry(radius: 0.8f),
                 Transform = new Transform3("Icosahedron")
                 {
@@ -561,7 +562,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("violet", 1.0)
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new OctahedronGeometry(radius: 0.75f),
                 Transform = new Transform3("Octahedron")
                 {
@@ -573,7 +574,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("aqua", 1.0)
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new PlaneGeometry(width: 0.5f, height: 2),
                 Transform = new Transform3("Plane")
                 {
@@ -584,7 +585,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("purple", 1.0)
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new RingGeometry(innerRadius: 0.6f, outerRadius: 0.7f),
                  Transform = new Transform3("Ring")
                 {
@@ -595,7 +596,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("DodgerBlue", 1.0)
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new SphereGeometry(radius: 0.6f),
                 Transform = new Transform3("Sphere")
                 {
@@ -606,7 +607,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("darkgreen", 1.0)
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new TetrahedronGeometry(radius: 0.75f),
                 Transform = new Transform3("Tetrahedron")
                 {
@@ -617,7 +618,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("lightblue", 1.0)
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new TorusGeometry(radius: 0.6f, tube: 0.4f, radialSegments: 12, tubularSegments: 12),
                 Transform = new Transform3("Torus")
                 {
@@ -628,7 +629,7 @@ public class IndexBase : ComponentBase, IDisposable
                 Material = new MeshStandardMaterial("lightgreen", 1.0)
             },
             new Mesh3D
-            {                 Name = DataGenerator.GenerateWord(),
+            {                 Name = DataGenerator.RandomWord(),
                 Geometry = new TorusKnotGeometry(radius: 0.6f, tube: 0.1f),
                 Transform = new Transform3("TorusKnot")
                 {

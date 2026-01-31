@@ -1,4 +1,5 @@
 using FoundryWorldsAndDrawings.Shape;
+using FoundryMicroCore.Core.Extensions;
 using Microsoft.AspNetCore.Components;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.PubSub;

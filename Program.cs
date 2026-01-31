@@ -75,8 +75,8 @@ var provider = new FileExtensionContentTypeProvider();
 builder.Services.Configure<StaticFileOptions>(options =>
 {
     foreach (var item in FileExtensionHelpers.MIMETypeData())
-        if ( !provider.Mappings.ContainsKey(item.Key))
-            provider.Mappings.Add(item.Key,item.Value);
+        if ( !provider.Mappings.ContainsKey(item.Name))
+            provider.Mappings.Add(item.Name,item.Value);
     
     options.ContentTypeProvider = provider;
 });

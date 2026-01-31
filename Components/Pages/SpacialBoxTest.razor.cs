@@ -1,4 +1,5 @@
 
+using FoundryMicroCore.Core.Extensions;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Extensions; // ✅ Phase 0.5: For WriteSuccess extension
 using Microsoft.AspNetCore.Components;

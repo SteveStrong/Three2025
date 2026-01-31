@@ -1,4 +1,5 @@
 using FoundryMentorModeler.Model;
+using FoundryMicroCore.Core.Extensions;
 using FoundryMentorModeler.Evaluator;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.Solutions;

@@ -1,7 +1,12 @@
 using FoundryWorldsAndDrawings.Shape;
+using FoundryMicroCore.Core.Extensions;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings;
+using FoundryMicroCore.Core;
 using FoundryRulesAndUnits.Extensions;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryMicroCore.Core;
 
 namespace Three2025.Apprentice;
 
@@ -14,20 +19,20 @@ public class AudioPanelShape : FoShape3D
    /// <summary>
    /// Default formatter for audio equipment - shows name, feature count, and position
    /// </summary>
-   public static new readonly Func<FoBase, string> DefaultFormatter = g => 
+   public static new readonly Func<MxObject, string> DefaultFormatter = g => 
    {
       if (g is FoShape3D shape && shape.Transform?.Position != null)
       {
          var pos = shape.Transform.Position;
-         return $"{g.Key} AudioPanel [10 connectors] @ {pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0}";
+         return $"{g.Name} AudioPanel [10 connectors] @ {pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0}";
       }
-      return $"{g.Key} AudioPanel";
+      return $"{g.Name} AudioPanel";
    };
 
    public AudioPanelShape(string name, double panelWidth = 16.0, double panelHeight = 4.0) : base(name)
    {
       // Set the formatter to use our static equipment formatter
-      ComputeTreeNodeTitle = DefaultFormatter;
+      MxObject.SetCustomTreeViewNodeTitleFunction(this, DefaultFormatter);
       
       // Create the main panel body
       CreateBox(name, panelWidth, panelHeight, 1.0);
@@ -65,7 +70,7 @@ public class AudioPanelShape : FoShape3D
       // Position 10: Final connector (right side)
       AddConnector("Port_10", "ComboJack", startX + (spacing * 10), 0, 0.6, "red");
       
-      GetTreeNodeTitle().WriteSuccess();
+      GetTreeViewNodeTitle().WriteSuccess();
    }
    
    private void AddConnector(string name, string connectorType, double xPos, double yPos, double zPos, string color, double scale = 0.4)

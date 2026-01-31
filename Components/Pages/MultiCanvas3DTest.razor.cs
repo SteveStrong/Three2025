@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using FoundryMicroCore.Core.Extensions;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.ThreeD.Viewers;
@@ -53,7 +54,6 @@ public partial class MultiCanvas3DTest : IDisposable
         
         stage.AddShape(_cubeA);
 
-        $"Scene A setup complete - stage has {stage.Members<FoShape3D>().Count()} shapes".WriteSuccess();
     }
 
     private void SetupSceneB()
@@ -94,7 +94,6 @@ public partial class MultiCanvas3DTest : IDisposable
         });
         stage.AddShape(_sphereB3);
 
-        $"Scene B setup complete - stage has {stage.Members<FoShape3D>().Count()} shapes".WriteSuccess();
     }
 
     private void SetupSceneC()
@@ -128,7 +127,6 @@ public partial class MultiCanvas3DTest : IDisposable
         });
         stage.AddShape(_coneC);
 
-        $"Scene C setup complete - stage has {stage.Members<FoShape3D>().Count()} shapes".WriteSuccess();
     }
 
     protected override void OnAfterRender(bool firstRender)
