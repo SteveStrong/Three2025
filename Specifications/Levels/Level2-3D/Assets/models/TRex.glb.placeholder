@@ -1,0 +1,35 @@
+# Asset Placeholder - TRex Model
+
+This file represents where the TRex.glb model should be placed.
+
+## Model Requirements:
+- **Format**: GLTF Binary (.glb)
+- **Target Size**: < 5MB for web performance
+- **Content**: Dinosaur/T-Rex model (low-poly preferred)
+- **License**: Ensure appropriate licensing for your use case
+
+## Free Sources:
+- Sketchfab (search "T-Rex" with CC license filter)
+- Poly Haven models section
+- Quaternius low-poly animals pack
+- Kenney animal assets
+
+## Fallback Option:
+If no model is available, the generated code can use a primitive shape:
+```csharp
+var tRex = new FoShape3D("TRex") 
+{
+    Color = "Green",
+    Transform = new Transform3("TRexTransform")
+    {
+        Scale = new Vector3(2, 3, 1) // Dinosaur-like proportions
+    }
+};
+```
+
+## Usage in Code:
+```csharp
+Url = GetAssetPath("models/TRex.glb")
+```
+
+**Place actual TRex.glb file here and delete this placeholder.**

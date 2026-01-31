@@ -327,11 +327,11 @@ public partial class ShapeLifecycleTest : ComponentBase
     private int GetShapeCount()
     {
         if (_stage == null) return 0;
-                
-        var slots = _stage.AllSlotsOfType<FoGlyph3D>();
         
-        // DEBUG: Count shapes in slots
-        var totalShapes = slots.Sum(s => s.Count());
+        // TODO: Replace with new collection API
+        // var slots = _stage.AllSlotsOfType<FoGlyph3D>();
+        // var totalShapes = slots.Sum(s => s.Count());
+        var totalShapes = 0; // Temporary placeholder
 
         return totalShapes;
     }

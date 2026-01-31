@@ -1,0 +1,35 @@
+# Asset Placeholder - Submarine Model
+
+This file represents where the submarine.glb model should be placed.
+
+## Model Requirements:
+- **Format**: GLTF Binary (.glb)
+- **Target Size**: < 2MB for web performance
+- **Content**: Submarine/underwater vehicle model
+- **License**: Ensure appropriate licensing for your use case
+
+## Free Sources:
+- Sketchfab (search "submarine" with CC license filter)
+- Poly Haven models section
+- Quaternius vehicle packs
+- Kenney vehicle assets
+
+## Fallback Option:
+If no model is available, the generated code can use a primitive shape:
+```csharp
+var submarine = new FoShape3D("Submarine") 
+{
+    Color = "Yellow",
+    Transform = new Transform3("SubmarineTransform")
+    {
+        Scale = new Vector3(3, 1, 1) // Sub-like proportions
+    }
+};
+```
+
+## Usage in Code:
+```csharp
+Url = GetAssetPath("models/submarine.glb")
+```
+
+**Place actual submarine.glb file here and delete this placeholder.**

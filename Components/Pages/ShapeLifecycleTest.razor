@@ -135,7 +135,7 @@
                         <tbody>
                             <tr>
                                 <th>Stage:</th>
-                                <td>@(_stage != null ? $"✅ {_stage.Key}" : "❌ Not created")</td>
+                                <td>@(_stage != null ? $"✅ {_stage.Name}" : "❌ Not created")</td>
                             </tr>
                             <tr>
                                 <th>Current Component:</th>
@@ -185,30 +185,29 @@
                         }
                         else if (_activeTab == "shape")
                         {
-                            <ShapeTreeView/>
+                            @* TODO: Restore ShapeTreeView component *@
+                            <div class="text-muted">ShapeTreeView component temporarily disabled</div>
                         }
                         else
                         {
                             <div style="font-family: monospace; font-size: 0.85rem; background: #f8f9fa; padding: 1rem;">
                                 @if (_stage != null)
                                 {
-                                    <div><strong>Stage: @_stage.Key</strong></div>
+                                    <div><strong>Stage: @_stage.Name</strong></div>
+                                    @* TODO: Replace AllSlotsOfType with new collection API
                                     @foreach (var slot in _stage.AllSlotsOfType<FoGlyph3D>())
                                     {
-                                        <div style="margin-left: 1rem; border-left: 2px solid #dee2e6; padding-left: 0.5rem;">
+                                        <div style=\"margin-left: 1rem; border-left: 2px solid #dee2e6; padding-left: 0.5rem;\">
                                             <div><strong>Slot:</strong> @slot.GetName()</div>
                                             <div><strong>Count:</strong> @slot.Count()</div>
                                             @foreach (var shape in slot.ValuesOfType<FoGlyph3D>())
                                             {
-                                                <div style="margin-left: 1rem; border-left: 2px solid #adb5bd; padding-left: 0.5rem; margin-top: 0.5rem;">
-                                                    <div>📦 <strong>@shape.Name</strong></div>
-                                                    <div style="font-size: 0.75rem; color: #6c757d;">GlyphId: @shape.GlyphId[..8]...</div>
-                                                    <div style="font-size: 0.75rem; color: #6c757d;">Key: @shape.Key</div>
-                                                    <div style="font-size: 0.75rem; color: #6c757d;">OnDelete: @(shape.OnDelete != null ? "✅ SET" : "NULL")</div>
-                                                </div>
+                                                <div>Shape info would go here</div>
                                             }
                                         </div>
                                     }
+                                    *@
+                                    <div class=\"text-muted\">Shape slots temporarily disabled during API migration</div>
                                 }
                                 else
                                 {

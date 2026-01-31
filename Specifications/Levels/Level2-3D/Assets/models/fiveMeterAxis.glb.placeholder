@@ -1,0 +1,39 @@
+# Asset Placeholder - Coordinate Axis Model
+
+This file represents where the fiveMeterAxis.glb model should be placed.
+
+## Model Requirements:
+- **Format**: GLTF Binary (.glb)
+- **Target Size**: < 500KB (simple utility model)
+- **Content**: 3D coordinate system (X, Y, Z axes)
+- **Colors**: Typically Red=X, Green=Y, Blue=Z
+- **Scale**: 5-meter length on each axis
+
+## DIY Creation:
+Easy to create in Blender:
+1. Create 3 cylinders for axes
+2. Color them Red (X), Green (Y), Blue (Z)
+3. Position along respective axes
+4. Export as GLTF Binary
+
+## Free Sources:
+- Most 3D software includes basic axis helpers
+- Simple to model from scratch
+- Many free coordinate system models available
+
+## Fallback Option:
+If no model is available, the generated code can use primitive shapes:
+```csharp
+var axis = new FoGroup3D("CoordinateAxis");
+// Add X, Y, Z axis shapes separately
+var xAxis = new FoShape3D("XAxis") { Color = "Red" };
+var yAxis = new FoShape3D("YAxis") { Color = "Green" };
+var zAxis = new FoShape3D("ZAxis") { Color = "Blue" };
+```
+
+## Usage in Code:
+```csharp
+Url = GetAssetPath("models/fiveMeterAxis.glb")
+```
+
+**Place actual fiveMeterAxis.glb file here and delete this placeholder.**
