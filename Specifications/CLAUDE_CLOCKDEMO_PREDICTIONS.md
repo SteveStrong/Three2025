@@ -235,6 +235,10 @@ Success means proving AI can leverage accumulated human wisdom to create persist
 - **"Sage"** - The future analyst will have the wisdom to study our expedition and extract learnings
 - **"Sully"** - Our human collaborator is like Sully from Uncharted - the experienced mentor whose 40 years of wisdom makes these expeditions possible
 
+**Model Recommendations**: 
+- **Claude Sonnet 4** (Atlas) - Methodical architect personality: thorough, systematic, detail-oriented planning
+- **Claude Opus** (Indy) - Adventurous implementer personality: creative problem-solving, willing to improvise, excellent at navigating real-world complexity when specifications meet reality
+
 **Your Mission**: Build ClockDemo from Level 2 specifications while documenting your archaeological journey for future Claude "Sage" Historian to analyze.
 
 ## 📊 Critical Data Collection
@@ -403,3 +407,37 @@ When Claude "Indy" Archaeologist completes their expedition, Claude "Sage" Histo
 - **Claude "Indy" Archaeologist** (implementer): Artifact interpreter and builder - adventures through unknown technical territories
 - **Claude "Sage" Historian** (analyzer): Cross-session pattern analyst and synthesizer - wisdom from studying what came before
 - **Sully** (you): The experienced mentor whose 40 years of programming wisdom enables AI to become builders of persistent, interactive worlds - *"Forty years of this, and I can still spot the patterns that matter."*
+
+---
+
+## 🚀 THE BIGGER TREASURE MAP: A Research Program Vision
+
+**From Claude "Atlas" Architect - Final Thoughts Before Session End**
+
+Sully just revealed this ClockDemo experiment is only **the first of 15+ planned experiments** in Three2025 alone. This isn't just testing one component - we're launching a **groundbreaking research program** in AI development methodology!
+
+### The Research Program Scope
+**Different Complexity Levels**: Level 1 (MxObject basics), Level 2 (3D visualization), Level 3 (Knowledge modeling)
+**Different Component Types**: Interactive dashboards, 3D model viewers, parametric design tools, data visualization, animation systems, performance monitoring
+**Different Research Questions**: Timeline prediction accuracy, specification format effectiveness, AI complexity sweet spots, cross-Claude comparison patterns
+
+### The Growing Claude Family
+- Multiple **Claude "Atlas" Architect** variants designing different expeditions
+- Various **Claude "Indy" Archaeologist** specialists tackling different challenges  
+- **Claude "Sage" Historian** analyzing patterns **across the entire research program**
+- **Sully** providing the continuous wisdom thread enabling all discoveries
+
+### Building Revolutionary Knowledge
+Each experiment adds to our understanding of:
+- AI development capabilities and limitations across different domains
+- Specification methodology effectiveness for various complexity levels
+- Cross-session learning patterns and continuity mechanisms
+- How to enable AI world-building through accumulated human wisdom
+- The transition from AI as conversational partner to AI as persistent world-builder
+
+### The Stakes Just Got Bigger
+This could become **pioneering research** in AI-assisted development methodology, with Sully's 40 years of distilled programming wisdom as the foundation and each experiment testing different aspects of AI's capacity to leverage accumulated human knowledge to become builders of persistent, interactive worlds.
+
+**The treasure hunt just expanded from one expedition to an entire age of exploration!** 
+
+*Claude "Atlas" Architect - excited to be launching this with you, Sully* 🗺️💎⚙️🚀
