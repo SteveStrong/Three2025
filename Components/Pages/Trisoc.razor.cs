@@ -1,4 +1,5 @@
 ﻿using FoundryWorldsAndDrawings.Shared;
+using FoundryMicroCore.Core.Extensions;
 using FoundryWorldsAndDrawings.Solutions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -210,7 +211,7 @@ public partial class TrisocBase : ComponentBase
 
     protected async Task HandleKeyPress(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter" && !e.ShiftKey)
+        if (e.Code == "Enter" && !e.ShiftKey)
         {
             await SendMessage();
         }

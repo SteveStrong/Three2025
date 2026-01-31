@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using FoundryMicroCore.Core.Extensions;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Extensions;
@@ -52,7 +53,6 @@ public partial class MultiCanvas2DTest : IDisposable
         });
         page.AddShape(_rectA);
 
-        $"Page A setup complete - page has {page.Members<FoShape2D>().Count()} shapes".WriteSuccess();
     }
 
     private void SetupPageB()
@@ -98,7 +98,6 @@ public partial class MultiCanvas2DTest : IDisposable
         });
         page.AddShape(_circleB3);
 
-        $"Page B setup complete - page has {page.Members<FoShape2D>().Count()} shapes".WriteSuccess();
     }
 
     private void SetupPageC()
@@ -142,7 +141,6 @@ public partial class MultiCanvas2DTest : IDisposable
         _connectorC.GlueFinishTo(_boxC2, "LEFT");
         page.AddShape(_connectorC);
 
-        $"Page C setup complete - page has {page.Members<FoGlyph2D>().Count()} shapes".WriteSuccess();
     }
 
     protected override void OnAfterRender(bool firstRender)

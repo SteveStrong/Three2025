@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using FoundryMicroCore.Core.Extensions;
 using BlazorComponentBus;
 using FoundryRulesAndUnits.Extensions;
 using FoundryWorldsAndDrawings;
@@ -104,7 +105,7 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
             _testStage = Canvas3DReference?.Stage;
             if (_testStage != null && MentorServices != null)
             {
-                AddLog("INIT", $"Stage acquired: {_testStage.Key}");
+                AddLog("INIT", $"Stage acquired: {_testStage.Name}");
                 
                 // Establish initial geometry so we have something to render
                 if (_testComponent != null)
@@ -226,7 +227,6 @@ public partial class GeometryDebugTest : ComponentBase, IDisposable
         if (_testStage != null)
         {
             await _testStage.ClearAll();
-            AddLog("CLEAR", $"Stage cleared - now has {_testStage.Members<FoShape3D>().Count} shapes");
         }
         
         await InvokeAsync(StateHasChanged);

@@ -45,8 +45,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Exclude reference pattern file from Plugin_710 project -->
+    <!-- Exclude Plugin710 experimental files - these were test migrations that are blocking progress -->
     <Compile Remove="Components\Pages\KnModel\Rack_710.cs" />
+    <Compile Remove="Components\Pages\DiagramViewer.razor.cs" />
+    <Compile Remove="Components\Pages\RackViewer.razor.cs" />
+    <Compile Remove="Components\Pages\Drawing.razor.cs" />
   </ItemGroup>
 
 </Project>

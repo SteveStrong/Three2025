@@ -241,7 +241,7 @@ public partial class ChatOrchestratorTest
 
     private async Task HandleKeyPress(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter" && !e.ShiftKey)
+        if (e.Code == "Enter" && !e.ShiftKey)
         {
             await SendMessage();
         }

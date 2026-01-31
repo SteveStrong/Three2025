@@ -1,4 +1,5 @@
 using FoundryWorldsAndDrawings.Solutions;
+using FoundryMicroCore.Core.Extensions;
 using Microsoft.AspNetCore.Components;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryRulesAndUnits.Extensions;

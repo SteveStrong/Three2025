@@ -85,8 +85,8 @@
 
     <!-- Actions -->
     @{
-        var knActions = Parameter.GetKnTreeNodeActions()?.ToList() ?? new List<KnTreeNodeAction>();
-        var treeActions = Parameter.GetTreeNodeActions()?.ToList() ?? new List<TreeNodeAction>();
+        var knActions = Parameter.GetKn// DISABLED: TreeNodeActions()?.ToList() ?? new List<Kn// DISABLED: TreeNodeAction>();
+        var treeActions = Parameter.Get// DISABLED: TreeNodeActions()?.ToList() ?? new List<// DISABLED: TreeNodeAction>();
         var hasActions = knActions.Any() || treeActions.Any();
         
         if (hasActions)

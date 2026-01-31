@@ -1,7 +1,11 @@
 using FoundryWorldsAndDrawings.Shape;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryMicroCore.Core;
 using FoundryRulesAndUnits.Models;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings;
+using FoundryMicroCore.Core;
 
 namespace Three2025.Apprentice.RackEquipment;
 
@@ -35,20 +39,20 @@ public abstract class RackEquipmentShape : FoShape3D
     /// <summary>
     /// Formatter showing equipment name, RU size, and position
     /// </summary>
-    public static new readonly Func<FoBase, string> DefaultFormatter = g => 
+    public static new readonly Func<MxObject, string> DefaultFormatter = g => 
     {
         if (g is RackEquipmentShape equip)
         {
-            return $"{equip.Key} ({equip.HeightInRU}U) @ RU {equip.StartRU}-{equip.EndRU}";
+            return $"{equip.Name} ({equip.HeightInRU}U) @ RU {equip.StartRU}-{equip.EndRU}";
         }
-        return g.Key;
+        return g.Name;
     };
     
     protected RackEquipmentShape(string name, double heightInRU, string color = "gray") : base(name)
     {
         HeightInRU = heightInRU;
         Color = color;
-        ComputeTreeNodeTitle = DefaultFormatter;
+        MxObject.SetCustomTreeViewNodeTitleFunction(this, DefaultFormatter);
     }
     
     /// <summary>

@@ -1,5 +1,5 @@
 @namespace Three2025.Components.DiagramWidgets
-@using Plugin_710.Model
+@// DISABLED: using Plugin_710.Model
 @using FoundryMentorModeler.Diagram
 @using Blazor.Diagrams.Components.Renderers
 @rendermode @(new InteractiveServerRenderMode(false))

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using FoundryMicroCore.Core.Extensions;
 using Microsoft.JSInterop;
 using FoundryRulesAndUnits.Extensions;
 using FoundryWorldsAndDrawings.Solutions;
@@ -107,7 +108,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                 
                 // Canvas already linked stage ↔ scene - just verify
                 var linkedScene = _tugOfWarStage?.GetAssociatedScene();
-                $"TugOfWar: Retrieved TugOfWarStage '{_tugOfWarStage?.Key}' linked to scene '{linkedScene?.Title ?? "null"}'".WriteSuccess();
+                $"TugOfWar: Retrieved TugOfWarStage '{_tugOfWarStage?.Name}' linked to scene '{linkedScene?.Title ?? "null"}'".WriteSuccess();
             }
             else
             {
@@ -247,7 +248,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         // Check if stage is linked to scene
         var linkedScene = _tugOfWarStage.GetAssociatedScene();
         var isSceneActive = linkedScene?.IsActive ?? false;
-        $"Stage '{_tugOfWarStage.Key}' linked to scene: {linkedScene?.Title ?? "NULL"}, Scene.IsActive={isSceneActive}".WriteInfo();
+        $"Stage '{_tugOfWarStage.Name}' linked to scene: {linkedScene?.Title ?? "NULL"}, Scene.IsActive={isSceneActive}".WriteInfo();
 
         // DON'T clear - let boxes accumulate to test coexistence
         var existingCount = _tugOfWarStage.AllBodies().Count + _tugOfWarStage.AllLinks().Count;
@@ -280,11 +281,11 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         
         foreach (var body in bodies)
         {
-            $"  Body: {body.Key}, Stale={body.IsStale()}, Type={body.GetType().Name}".WriteInfo();
+            $"  Body: {body.Name}, Stale={body.IsStale()}, Type={body.GetType().Name}".WriteInfo();
         }
         foreach (var link in links)
         {
-            $"  Link: {link.Key}, Stale={link.IsStale()}, Type={link.GetType().Name}".WriteInfo();
+            $"  Link: {link.Name}, Stale={link.IsStale()}, Type={link.GetType().Name}".WriteInfo();
         }
          
         // CRITICAL: Trigger immediate render - don't wait for animation loop
@@ -491,11 +492,11 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         $"STAGE DIAGNOSTIC: Bodies={_tugOfWarStage.AllBodies().Count()}, Links={_tugOfWarStage.AllLinks().Count()}".WriteInfo();
         foreach (var body in _tugOfWarStage.AllBodies())
         {
-            $"  Body: {body.Key} (Type={body.GetType().Name})".WriteInfo();
+            $"  Body: {body.Name} (Type={body.GetType().Name})".WriteInfo();
         }
         foreach (var link in _tugOfWarStage.AllLinks())
         {
-            $"  Link: {link.Key} (Type={link.GetType().Name})".WriteInfo();
+            $"  Link: {link.Name} (Type={link.GetType().Name})".WriteInfo();
         }
 
         // ULTRA SIMPLIFIED TEST: Just a pipe with animated path

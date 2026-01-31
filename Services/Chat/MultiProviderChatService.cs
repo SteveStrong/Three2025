@@ -212,7 +212,7 @@ public class MultiProviderChatService : IMultiProviderChatService
         }
     }
 
-    public IReadOnlyList<string> AvailableProviders => _providers.Keys.ToList();
+    public IReadOnlyList<string> AvailableProviders => _providers.Names.ToList();
 
     public string CurrentProvider => _currentProvider?.ProviderName ?? "None";
 

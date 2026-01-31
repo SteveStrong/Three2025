@@ -1,4 +1,5 @@
 
+using FoundryMicroCore.Core.Extensions;
 
 using Microsoft.AspNetCore.Components;
 using FoundryRulesAndUnits.Models;
@@ -127,7 +128,7 @@ public partial class ShapeLifecycleTest : ComponentBase
             _stage = _canvasRef?.Stage;
             if (_stage != null && MentorServices != null)
             {
-                $"✅ Stage acquired from canvas: {_stage.Key}".WriteInfo();
+                $"✅ Stage acquired from canvas: {_stage.Name}".WriteInfo();
                 
                 // Update UI to reflect the initialized stage
                 await InvokeAsync(StateHasChanged);

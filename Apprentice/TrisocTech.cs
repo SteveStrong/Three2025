@@ -1,4 +1,5 @@
 using System.Drawing;
+using FoundryMicroCore.Core.Extensions;
 using Blazor.Extensions.Canvas.Canvas2D;
 
 using FoundryWorldsAndDrawings.Solutions;
@@ -107,7 +108,7 @@ public class TrisocTech : ITrisocTech
 
             if ( GlobalPipe != null )
             
-                GlobalPipe.Color = DataGenerator.GenerateColor();
+                GlobalPipe.Color = DataGenerator.RandomColor();
         }
     }
 
@@ -126,12 +127,12 @@ public class TrisocTech : ITrisocTech
         {
             var (shape, label) = item.Value;
 
-            var temp = DataGenerator.GenerateInt(-20, 100);
+            var temp = DataGenerator.RandomInt(-20, 100);
             label.Text = $"{temp} C";
 
 
             var color = GetColorForTemperature(temp);
-            shape.Color = DataGenerator.GenerateColor();
+            shape.Color = DataGenerator.RandomColor();
 
             //$"Updating {label.Text} {shape.Color} {color}".WriteInfo();
         }

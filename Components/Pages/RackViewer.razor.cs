@@ -1,4 +1,5 @@
 #nullable enable
+using FoundryMicroCore.Core.Extensions;
 
 using Microsoft.AspNetCore.Components;
 using BlazorComponentBus;
@@ -11,8 +12,9 @@ using FoundryWorldsAndDrawings.PubSub;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryRulesAndUnits.Extensions;
 using FoundryRulesAndUnits.Models;
+using FoundryMicroCore.Core;
 
-using Plugin_710.Model;
+// DISABLED: using Plugin_710.Model;
 
 namespace Three2025.Components.Pages;
 
@@ -176,7 +178,7 @@ public class RackViewerBase : ComponentBase, IDisposable
             "RackViewer: Rack added directly to Model".WriteSuccess();
             
             // DEBUG: Check if rack was added to model
-            var componentCount = _model.Members<KnComponent>().Count;
+            var componentCount = _0 /* TODO: model.Members<KnComponent>() */.Count;
             $"RackViewer: Model has {componentCount} components (KnComponent) after AddChildComponent".WriteInfo();
 
             // Set rack parameters
@@ -260,7 +262,7 @@ public class RackViewerBase : ComponentBase, IDisposable
             var ctx = RenderContext3D.CreateFromStage(_stage, deep: true);
             
             "RackViewer: Calling RenderGeometry3D on model (model-down tree walk)".WriteInfo();
-            $"RackViewer: Model has {_model.Members<KnComponent>().Count} direct children".WriteInfo();
+            $"RackViewer: Model has {_0 /* TODO: model.Members<KnComponent>() */.Count} direct children".WriteInfo();
             
             // Render from model - the canonical framework pattern
             // Model → Solution → Rack → Equipment
@@ -280,7 +282,7 @@ public class RackViewerBase : ComponentBase, IDisposable
     protected void HandleItemSelected(ITreeNode item)
     {
         _selectedItem = item;
-        $"RackViewer: Selected - {item.GetTreeNodeTitle()}".WriteInfo();
+        $"RackViewer: Selected - {item.GetTreeViewNodeTitle()}".WriteInfo();
         StateHasChanged();
     }
 

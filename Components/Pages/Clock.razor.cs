@@ -1,4 +1,5 @@
 ﻿using FoundryWorldsAndDrawings.Shared;
+using FoundryMicroCore.Core.Extensions;
 using FoundryWorldsAndDrawings.Solutions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -112,7 +113,7 @@ public partial class ClockBase : ComponentBase, IDisposable
                     _clockStage = Canvas3DReference.Stage;
                     
                     // Stage already linked to scene by Canvas - no need to link again
-                    $"Clock: Retrieved ClockStage '{_clockStage?.Key}' from Canvas".WriteSuccess();
+                    $"Clock: Retrieved ClockStage '{_clockStage?.Name}' from Canvas".WriteSuccess();
                     
                     // Try to add a simple object to test rendering
                     // try
@@ -151,9 +152,9 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public void DoAddTRISOCToArena()
     {
-        var name = DataGenerator.GenerateWord();
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var name = DataGenerator.RandomWord();
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
         var s = 50.0;
 
 
@@ -219,16 +220,16 @@ public partial class ClockBase : ComponentBase, IDisposable
     public void DoAddTextToArena()
     {
         var delta = 0.5;
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var y = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
 
 
         var text3d = new FoText3D()
         {
-            Text = DataGenerator.GenerateText(),
-            Color = DataGenerator.GenerateColor(),
-            FontSize = DataGenerator.GenerateDouble(2.5, 5.0),
+            Text = DataGenerator.RandomSentence(),
+            Color = DataGenerator.RandomColor(),
+            FontSize = DataGenerator.RandomDouble(2.5, 5.0),
             Transform = new Transform3("Text3DTransform")
             {
                 Position = new Vector3(x, y, z),
@@ -272,9 +273,9 @@ public partial class ClockBase : ComponentBase, IDisposable
 
     public void DoAddBoxGLBToArena()
     {
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var y = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
 
         var angle = 0.0;
         var delta = 0.5;
@@ -328,9 +329,9 @@ public partial class ClockBase : ComponentBase, IDisposable
     //     var (found, scene) = GetCurrentScene();
     //     if (!found) return;
 
-    //     var x = DataGenerator.GenerateDouble(-10, 10);
-    //     var y = DataGenerator.GenerateDouble(-10, 10);
-    //     var z = DataGenerator.GenerateDouble(-10, 10);
+    //     var x = DataGenerator.RandomDouble(-10, 10);
+    //     var y = DataGenerator.RandomDouble(-10, 10);
+    //     var z = DataGenerator.RandomDouble(-10, 10);
 
     //     var angle = 0.0;
     //     var delta = 0.5;

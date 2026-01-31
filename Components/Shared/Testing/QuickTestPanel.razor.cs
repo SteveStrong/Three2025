@@ -363,7 +363,7 @@ public partial class QuickTestPanel : ComponentBase
         if (box == null) throw new Exception("TestBox1 not found");
         
         // Dynamically switch to technical formatter at runtime!
-        box.ComputeTreeNodeTitle = TreeNodeFormatters.Technical;
+        box.MxObject.SetCustomTreeViewNodeTitleFunction(this, TreeNodeFormatters.Technical);
         
         return $"Switched TestBox1 to technical view formatter - check tree display!";
     }, "Formatter switch failed");
@@ -374,7 +374,7 @@ public partial class QuickTestPanel : ComponentBase
         if (box == null) throw new Exception("TestBox1 not found");
         
         // Switch back to spatial formatter
-        box.ComputeTreeNodeTitle = TreeNodeFormatters.Spatial;
+        box.MxObject.SetCustomTreeViewNodeTitleFunction(this, TreeNodeFormatters.Spatial);
         
         return $"Switched TestBox1 to spatial view formatter - check tree display!";
     }, "Formatter switch failed");
@@ -385,7 +385,7 @@ public partial class QuickTestPanel : ComponentBase
         if (box == null) throw new Exception("TestBox1 not found");
         
         // Create a custom formatter on the fly!
-        box.ComputeTreeNodeTitle = shape => $"🎯 CUSTOM: {shape.Key} is a {box.GeomType} shape!";
+        box.GetTreeViewNodeTitle = shape => $"🎯 CUSTOM: {shape.Name} is a {box.GeomType} shape!";
         
         return $"Applied custom formatter to TestBox1 - check tree display!";
     }, "Custom formatter failed");

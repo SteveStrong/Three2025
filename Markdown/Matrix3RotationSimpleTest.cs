@@ -1,4 +1,5 @@
 
+using FoundryMicroCore.Core.Extensions;
 // -----------------------------------------------------------------------------
 // Matrix3RotationSimpleTest.cs
 //

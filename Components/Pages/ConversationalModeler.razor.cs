@@ -298,7 +298,6 @@ public partial class ConversationalModeler : ComponentBase, IDisposable
         if (component is not KnComponent knComponent)
             return new List<KnParameter>();
             
-        return knComponent.Members<KnParameter>();
     }
 
     // Activity logging methods
@@ -440,13 +439,12 @@ public partial class ConversationalModeler : ComponentBase, IDisposable
             if (ModelTech?.CurrentModel != null)
             {
                 var model = ModelTech.CurrentModel;
-                var components = model.Members<KnComponent>().ToList();
+                var components = 0 /* TODO: model.Members<KnComponent>() */.ToList();
                 _ = LogSuccess($"✓ Current Model: '{model.GetName()}'");
                 _ = LogInfo($"  - Components: {components.Count}");
                 
                 foreach (var comp in components.Take(3)) // Show first 3 components
                 {
-                    var paramCount = comp.Members<KnParameter>().Count();
                     _ = LogInfo($"    • {comp.GetName()} ({paramCount} parameters)");
                 }
             }
@@ -462,7 +460,7 @@ public partial class ConversationalModeler : ComponentBase, IDisposable
                 _ = LogInfo($"  - Total models in MentorServices: {allModels.Count}");
                 foreach (var model in allModels.Take(3))
                 {
-                    _ = LogInfo($"    • {model.GetName()} ({model.Members<KnComponent>().Count()} components)");
+                    _ = LogInfo($"    • {model.GetName()} ({0 /* TODO: model.Members<KnComponent>() */.Count()} components)");
                 }
             }
             

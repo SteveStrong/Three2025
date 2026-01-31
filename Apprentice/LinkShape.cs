@@ -1,7 +1,12 @@
 using FoundryWorldsAndDrawings.Shape;
+using FoundryMicroCore.Core.Extensions;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings;
+using FoundryMicroCore.Core;
 using FoundryRulesAndUnits.Extensions;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryMicroCore.Core;
 
 namespace Three2025.Apprentice;
 
@@ -14,21 +19,21 @@ public class LinkShape : FoPipe3D
     /// <summary>
     /// Default formatter for link shapes - shows name, geometry type, color, and connection info
     /// </summary>
-    public static new readonly Func<FoBase, string> DefaultFormatter = g => 
+    public static new readonly Func<MxObject, string> DefaultFormatter = g => 
     {
         if (g is LinkShape link)
         {
             var fromName = link.FromShape3D?.Name ?? "none";
             var toName = link.ToShape3D?.Name ?? "none";
-            return $"{g.Key} [{link.GeomType}] {link.Color}: {fromName} → {toName}";
+            return $"{g.Name} [{link.GeomType}] {link.Color}: {fromName} → {toName}";
         }
-        return $"{g.Key} Link";
+        return $"{g.Name} Link";
     };
 
     public LinkShape(string name, string color = "yellow", string geomType = "Pipe") : base(name, color)
     {
         // Set the formatter for link display
-        ComputeTreeNodeTitle = DefaultFormatter;
+        MxObject.SetCustomTreeViewNodeTitleFunction(this, DefaultFormatter);
         
         SetLinkGeometry(geomType);
     }

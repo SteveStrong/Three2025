@@ -1,4 +1,5 @@
 ﻿using FoundryWorldsAndDrawings.Shared;
+using FoundryMicroCore.Core.Extensions;
 using FoundryWorldsAndDrawings.Solutions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -115,7 +116,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         world.AddAction("Box", "btn-info", () => 
         {
-            var box = AddBox(DataGenerator.GenerateName());
+            var box = AddBox(DataGenerator.RandomFullName());
             if (_drawingStage == null) _drawingStage = Canvas3DReference?.Stage;
             _drawingStage?.AddShape(box);
         });
@@ -162,9 +163,9 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
     public void OnAddTRex()
     {
-        var name = DataGenerator.GenerateWord();
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var name = DataGenerator.RandomWord();
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
 
         var shape = new FoModel3D("T-Rex " + name)
         {
@@ -182,13 +183,13 @@ public partial class DrawingBase : ComponentBase, IDisposable
     
     public void OnAddGeom()
     {
-        var name = DataGenerator.GenerateName();
-        var color = DataGenerator.GenerateColor();
+        var name = DataGenerator.RandomFullName();
+        var color = DataGenerator.RandomColor();
         var label = $"{name} {color}";
 
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var y = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
 
         var shape = new FoShape3D(name,color)
         {
@@ -198,10 +199,10 @@ public partial class DrawingBase : ComponentBase, IDisposable
             }
         };
 
-        var w = DataGenerator.GenerateDouble(1, 10);
-        var h = DataGenerator.GenerateDouble(1, 10);
-        var d = DataGenerator.GenerateDouble(1, 10);
-        var index = DataGenerator.GenerateInt(0, 10);
+        var w = DataGenerator.RandomDouble(1, 10);
+        var h = DataGenerator.RandomDouble(1, 10);
+        var d = DataGenerator.RandomDouble(1, 10);
+        var index = DataGenerator.RandomInt(0, 10);
 
         shape = index switch
         {
@@ -224,15 +225,15 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
     public void OnAddText()
     {
-        var name = DataGenerator.GenerateWord();
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var y = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
-        var color = DataGenerator.GenerateColor();
+        var name = DataGenerator.RandomWord();
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var y = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
+        var color = DataGenerator.RandomColor();
 
         var shape = new FoText3D(name,color)
         {
-            Text = DataGenerator.GenerateText(),
+            Text = DataGenerator.RandomSentence(),
             Transform = new Transform3("TextTransform")
             {
                 Position = new Vector3(x, y, z),
@@ -281,10 +282,10 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
     public FoShape3D AddBox(string name, double x=0, double z=0)
     {
-        var color = DataGenerator.GenerateColor();
+        var color = DataGenerator.RandomColor();
         var label = $"{name} {color}";
 
-        var height = DataGenerator.GenerateDouble(1, 10);
+        var height = DataGenerator.RandomDouble(1, 10);
         var box = new FoShape3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
@@ -301,10 +302,10 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
     public Node3D AddCone(string name, double x=0, double z=0)
     {
-        var color = DataGenerator.GenerateColor();
+        var color = DataGenerator.RandomColor();
         var label = $"{name} {color}";
 
-        var height = DataGenerator.GenerateDouble(1, 10);
+        var height = DataGenerator.RandomDouble(1, 10);
         var box = new Node3D(label,color)
         {
             GlyphId = Guid.NewGuid().ToString(),
@@ -321,9 +322,9 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
     public void AddBoxToStage()
     {
-        var name = DataGenerator.GenerateName();
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var name = DataGenerator.RandomFullName();
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
 
         if (_drawingStage == null) _drawingStage = Canvas3DReference?.Stage;
 
@@ -334,9 +335,9 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
     public void AddConeToArena()
     {
-        var name = DataGenerator.GenerateName();
-        var x = DataGenerator.GenerateDouble(-10, 10);
-        var z = DataGenerator.GenerateDouble(-10, 10);
+        var name = DataGenerator.RandomFullName();
+        var x = DataGenerator.RandomDouble(-10, 10);
+        var z = DataGenerator.RandomDouble(-10, 10);
 
         var box = AddCone(name,x,z);
         if (_drawingStage == null) _drawingStage = Canvas3DReference?.Stage;
@@ -383,7 +384,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
 
         var model = new Model3D()
         {
-            Name = $"Axis:{DataGenerator.GenerateWord()}",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
+            Name = $"Axis:{DataGenerator.RandomWord()}",            Url = GetReferenceTo(@"storage/StaticFiles/fiveMeterAxis.glb"),
             Format = Model3DFormats.Gltf,
         };
 
@@ -403,7 +404,7 @@ public partial class DrawingBase : ComponentBase, IDisposable
     {
         var model = new Model3D()
         {
-            Name = $"JET:{DataGenerator.GenerateWord()}",            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
+            Name = $"JET:{DataGenerator.RandomWord()}",            Url =  GetReferenceTo(@"storage/StaticFiles/jet.glb"),
             Format = Model3DFormats.Gltf,
         };
 

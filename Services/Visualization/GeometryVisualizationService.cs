@@ -1,4 +1,5 @@
 
+using FoundryMicroCore.Core.Extensions;
 using FoundryWorldsAndDrawings.Shape;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shared;

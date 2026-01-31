@@ -1,7 +1,12 @@
 using FoundryWorldsAndDrawings.Shape;
+using FoundryMicroCore.Core.Extensions;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings;
+using FoundryMicroCore.Core;
 using FoundryRulesAndUnits.Extensions;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings.ThreeD.Maths;
+using FoundryMicroCore.Core;
 
 namespace Three2025.Apprentice;
 
@@ -14,20 +19,20 @@ public class MobileRouterShape : FoShape3D
    /// <summary>
    /// Default formatter for mobile router - shows name, feature count, and position
    /// </summary>
-   public static new readonly Func<FoBase, string> DefaultFormatter = g => 
+   public static new readonly Func<MxObject, string> DefaultFormatter = g => 
    {
       if (g is FoShape3D shape && shape.Transform?.Position != null)
       {
          var pos = shape.Transform.Position;
-         return $"{g.Key} MobileRouter [1 PWR, 1 SIM, 2 RJ45, 8 LEDs] @ {pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0}";
+         return $"{g.Name} MobileRouter [1 PWR, 1 SIM, 2 RJ45, 8 LEDs] @ {pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0}";
       }
-      return $"{g.Key} MobileRouter";
+      return $"{g.Name} MobileRouter";
    };
 
    public MobileRouterShape(string name, double width = 16.0, double height = 3.0, double depth = 1.5) : base(name)
    {
       // Set the formatter to use our static equipment formatter
-      ComputeTreeNodeTitle = DefaultFormatter;
+      MxObject.SetCustomTreeViewNodeTitleFunction(this, DefaultFormatter);
       
       // Create the main router chassis (wider, flatter)
       CreateBox(name, width, height, depth);
@@ -71,7 +76,7 @@ public class MobileRouterShape : FoShape3D
       AddScrewHole("Screw_BL", -halfWidth + 0.5, -halfHeight + 0.5, halfDepth);
       AddScrewHole("Screw_BR", halfWidth - 0.5, -halfHeight + 0.5, halfDepth);
       
-      GetTreeNodeTitle().WriteSuccess();
+      GetTreeViewNodeTitle().WriteSuccess();
    }
    
    private void AddSignalBar(string name, double xPos, double yPos, double zPos, double barHeight, string color)

@@ -1,4 +1,5 @@
 #nullable enable
+using FoundryMicroCore.Core.Extensions;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -6,8 +7,7 @@ using FoundryMentorModeler.Model;
 using FoundryMentorModeler.Diagram;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryRulesAndUnits.Extensions;
-using FoundryRulesAndUnits.Models;
-
+using FoundryRulesAndUnits.Models;using FoundryMicroCore.Core;
 using Plugin_710.Model;
 using Blazor.Diagrams.Core.Geometry;
 using BlazorComponentBus;
@@ -367,7 +367,7 @@ public class DiagramViewerBase : ComponentBase, IDisposable
     protected void HandleItemSelected(ITreeNode item)
     {
         _selectedItem = item;
-        $"DiagramViewer: Selected - {item.GetTreeNodeTitle()}".WriteInfo();
+        $"DiagramViewer: Selected - {item.GetTreeViewNodeTitle()}".WriteInfo();
         StateHasChanged();
     }
 

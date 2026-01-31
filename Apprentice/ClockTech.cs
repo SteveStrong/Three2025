@@ -1,4 +1,5 @@
 
+using FoundryMicroCore.Core.Extensions;
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -244,7 +245,7 @@ public class ClockTech : IClockTech
             GlobalText = new Text3D()
             {
                 Text = currentTime,
-                Color = DataGenerator.GenerateColor(),
+                Color = DataGenerator.RandomColor(),
                 FontSize = 3.0,
                 Transform = new Transform3("GlobalTextTransform")
                 {

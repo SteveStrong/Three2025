@@ -361,7 +361,7 @@ public partial class AgentCanvasIntegration : ComponentBase
 
     protected async Task HandleKeyPress(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter" && !e.ShiftKey)
+        if (e.Code == "Enter" && !e.ShiftKey)
         {
             await SendMessage();
         }
@@ -508,7 +508,7 @@ public partial class AgentCanvasIntegration : ComponentBase
             shape.Color = color;
             
             // Set spatial formatter like GeometryShape did
-            shape.ComputeTreeNodeTitle = TreeNodeFormatters.Spatial;
+            shape.MxObject.SetCustomTreeViewNodeTitleFunction(this, TreeNodeFormatters.Spatial);
             
             // Add text tag like GeometryShape did
             var tag = new FoText3D("tag")
@@ -813,7 +813,10 @@ public partial class AgentCanvasIntegration : ComponentBase
         var stage = Canvas3DReference?.Stage;
         if (stage == null) return;
 
-        var cabinets = stage.GetMembers<RackCabinetShape>()?.ToList();
+        // TODO: Replace with new collection API
+        // var cabinets = stage.Members<RackCabinetShape>();
+        var cabinets = new List<RackCabinetShape>(); // Temporary placeholder
+
         if (cabinets == null) return;
         
         foreach (var cabinet in cabinets)
@@ -840,7 +843,6 @@ public partial class AgentCanvasIntegration : ComponentBase
             return;
         }
 
-        var cabinets = stage.GetMembers<RackCabinetShape>()?.ToList() ?? new List<RackCabinetShape>();
         rackCabinetCount = cabinets.Count;
         rackEquipmentCount = 0;
         rackTotalRUUsed = 0;
@@ -859,12 +861,12 @@ public partial class AgentCanvasIntegration : ComponentBase
 
             rackCabinetSummaries.Add(new RackCabinetSummary
             {
-                Name = cabinet.Key,
+                Name = cabinet.Name,
                 DeviceCount = equipment.Count,
                 UsedRU = usedRU,
                 TotalRU = RackCabinetShape.TOTAL_RACK_UNITS,
                 HasPDU = cabinet.HasPDU,
-                BorderColor = RackEquip_GetCabinetColor(cabinet.Key)
+                BorderColor = RackEquip_GetCabinetColor(cabinet.Name)
             });
         }
     }

@@ -1,4 +1,5 @@
 using FoundryWorldsAndDrawings.Shared;
+using FoundryMicroCore.Core.Extensions;
 using FoundryWorldsAndDrawings.Solutions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -87,7 +88,7 @@ public partial class TRexCuckooClockBase : ComponentBase, IDisposable
                     // Get stage from Canvas (already created and linked by Canvas3DComponent)
                     _cuckooStage = Canvas3DReference.Stage;
                     
-                    $"TRexCuckooClock: Retrieved stage '{_cuckooStage?.Key}' from Canvas".WriteSuccess();
+                    $"TRexCuckooClock: Retrieved stage '{_cuckooStage?.Name}' from Canvas".WriteSuccess();
                     
                     // Auto-create the clock on startup
                     DoCreateCuckooClock();

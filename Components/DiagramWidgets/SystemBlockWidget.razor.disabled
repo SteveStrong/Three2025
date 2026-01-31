@@ -1,54 +1,58 @@
 @namespace Three2025.Components.DiagramWidgets
-@using Plugin_710.Model
+@// DISABLED: using Plugin_710.Model
 @using FoundryMentorModeler.Diagram
 @using Blazor.Diagrams.Components.Renderers
 @rendermode @(new InteractiveServerRenderMode(false))
 
 <style>
-    .circuit-node {
-        border: 2px solid #28a745;
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    .system-block-node {
+        border: 2px solid #667eea;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         text-align: center;
-        padding: 8px 12px;
-        border-radius: 6px;
+        padding: 10px;
+        border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        min-width: 120px;
-        min-height: 80px;
+        min-width: 180px;
+        min-height: 120px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         transition: all 0.2s;
     }
 
-    .circuit-node.selected {
+    .system-block-node.selected {
         border-color: #ffd700;
         box-shadow: 0 4px 16px rgba(255,215,0,0.4);
-        transform: scale(1.05);
+        transform: scale(1.02);
     }
 
     .node-title {
         font-weight: bold;
-        margin-bottom: 5px;
+        font-size: 1.1em;
+        margin-bottom: 8px;
     }
 
-    .node-badge {
-        font-size: 0.75em;
-        background: rgba(255,255,255,0.2);
-        padding: 2px 6px;
-        border-radius: 3px;
-        display: inline-block;
-        margin-top: 5px;
+    .node-info {
+        font-size: 0.85em;
+        opacity: 0.9;
     }
 </style>
 
-<div class="circuit-node @(Node.Selected ? "selected" : "")">
-    <div class="node-title">⚡ @Node.GetTitle()</div>
+<div class="system-block-node @(Node.IsSelected ? "selected" : "")">
+    <div class="node-title">@Node.Title</div>
     
     @if (HasSubcomponents())
     {
-        <div class="node-badge">
-            @GetSubcomponentCount() nodes
+        <div class="node-info">
+            📦 @GetSubcomponentCount() items
+        </div>
+    }
+    
+    @if (GetBlock()?.IsVisible == false)
+    {
+        <div class="node-info">
+            🔒 Hidden
         </div>
     }
 
@@ -61,11 +65,11 @@
 
 @code {
     #nullable enable
-    [Parameter] public CircuitNodeEditor Node { get; set; } = null!;
+    [Parameter] public SystemBlockEditor Node { get; set; } = null!;
 
-    public CircuitNode_710? GetNode()
+    public SystemBlock_710? GetBlock()
     {
-        return Node?.GetCircuitNode();
+        return Node?.GetSystemBlock();
     }
 
     public bool HasSubcomponents()
@@ -75,7 +79,7 @@
 
     public int GetSubcomponentCount()
     {
-        return GetNode()?.ModelComponents<CircuitNode_710>().Count() ?? 0;
+        return GetBlock()?.ModelComponents<SystemBlock_710>().Count() ?? 0;
     }
 
     public List<DiagramPort> PortList()
