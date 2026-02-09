@@ -63,7 +63,7 @@ public class FoClockFace3D : FoShape3D
         _centerPost.AddShape(_secondHand);
         
         // Set up animation to update every second
-        BeforeAnimationRefresh(UpdateClockAnimation);
+        OnBeforeRender(UpdateClockAnimation);
         
         return this;
     }

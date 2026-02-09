@@ -159,7 +159,7 @@ public partial class DualCanvas2D3DTest : ComponentBase, IDisposable
             if (shape2D != null && _currentShape2D != shape2D)
             {
                 _currentShape2D = shape2D;
-                _page.Add(shape2D);
+                _page.AddShape(shape2D);
                 
                 if (was2DUnknown)
                 {
@@ -240,7 +240,7 @@ public partial class DualCanvas2D3DTest : ComponentBase, IDisposable
         // Clear shapes
         if (_currentShape2D != null && _page != null)
         {
-            _page.Remove(_currentShape2D);
+            _page.RemoveShape(_currentShape2D);
         }
         if (_currentShape3D != null && _stage != null)
         {

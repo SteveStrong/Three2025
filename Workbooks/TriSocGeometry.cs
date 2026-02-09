@@ -15,7 +15,7 @@ public class TriSocGeometry : MxComponent
 {
 
 
-    public TriSocGeometry()
+    public TriSocGeometry() : base("TriSocGeometry")
     {
 
     }
@@ -47,7 +47,7 @@ public class TriSocGeometry : MxComponent
         GenerateText(root, box.RightBottomBack, "BottomRightBack");
 
 
-        return root.GetSlot<FoText3D>().Values();
+        return root.Labels()?.ToList() ?? new List<FoText3D>();
     }
 
     public FoText3D GenerateText(FoGroup3D group, Point3D point, string text)
@@ -61,7 +61,7 @@ public class TriSocGeometry : MxComponent
             },
             Text = text
         };
-        group.Add<FoText3D>(shape);
+        group.AddShape<FoText3D>(shape);
 
         return shape;
     }
@@ -77,7 +77,7 @@ public class TriSocGeometry : MxComponent
             }
         };
         shape.CreateSphere(text, .1, .1, .1);
-        group.Add<FoShape3D>(shape);
+        group.AddShape<FoShape3D>(shape);
 
         return shape;
     }
@@ -108,7 +108,7 @@ public class TriSocGeometry : MxComponent
         GenerateMarker(root, box.RightBottomBack, "BottomRightBack");
 
 
-        return (root, root.GetSlot<FoShape3D>().Values());
+        return (root, root.Bodies()?.ToList() ?? new List<FoShape3D>());
     }
 
 

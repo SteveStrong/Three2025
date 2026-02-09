@@ -230,7 +230,7 @@ public class Shape3DEditor : IShape3DEditor
          return new OPResult("RemoveChildShape", ResultStatus.Error, $"Child shape '{childShapeName}' not found in parent '{parentShapeName}'");
       }
       
-      parentShape.Remove<FoGlyph3D>(child);
+      parentShape.RemoveShape<FoGlyph3D>(child);
       ShapeChanged();
       
       return new OPResult("RemoveChildShape", ResultStatus.Shape3D, $"Removed child shape '{childShapeName}' from parent '{parentShapeName}'");
@@ -359,7 +359,7 @@ public class Shape3DEditor : IShape3DEditor
       var allLinks = _stage.AllLinks();
       var allGlyphs = allBodies.Concat(allLinks).ToList();
       
-      $"🔍 GetAllShapes: AllBodies()={allBodies.Count}, AllLinks()={allLinks.Count}, Total={allGlyphs.Count} glyphs".WriteInfo();
+      $"🔍 GetAllShapes: AllBodies()={allBodies.Count()}, AllLinks()={allLinks.Count()}, Total={allGlyphs.Count} glyphs".WriteInfo();
       
       var shapes = allGlyphs.OfType<FoShape3D>().ToList();
       

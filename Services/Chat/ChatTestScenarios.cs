@@ -440,8 +440,8 @@ public static class ChatTestScenarios
         return GetAllSequences()
             .Values
             .GroupBy(s => s.Category)
-            .OrderBy(g => g.Name)
-            .ToDictionary(g => g.Name, g => g.OrderBy(s => s.DisplayName).ToList());
+            .OrderBy(g => g.Key)
+            .ToDictionary(g => g.Key, g => g.OrderBy(s => s.DisplayName).ToList());
     }
 
     /// <summary>

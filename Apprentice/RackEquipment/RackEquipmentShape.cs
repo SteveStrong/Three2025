@@ -76,7 +76,7 @@ public abstract class RackEquipmentShape : FoShape3D
     protected void CreateEquipmentBox(double width = RACK_WIDTH_INCHES, double depth = STANDARD_DEPTH_INCHES)
     {
         double height = CalculateHeightInches();
-        CreateBox(Key, width, height, depth);
+        CreateBox(Name, width, height, depth);
     }
 }
 

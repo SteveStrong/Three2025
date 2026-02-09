@@ -39,7 +39,7 @@
                         <h5 class="mb-0">🔍 Parameter Details</h5>
                         @if (_selectedItem != null)
                         {
-                            <small>@_selectedItem.GetTreeNodeTitle()</small>
+                            <small>@_selectedItem.GetTreeViewNodeTitle()</small>
                         }
                     </div>
                     <div style="flex: 1; padding: 1rem;">
@@ -126,8 +126,8 @@
 
                             <!-- Actions -->
                             @{
-                                var knActions = param.GetKn// DISABLED: TreeNodeActions()?.ToList() ?? new List<Kn// DISABLED: TreeNodeAction>();
-                                var treeActions = param.Get// DISABLED: TreeNodeActions()?.ToList() ?? new List<// DISABLED: TreeNodeAction>();
+                                var knActions = new List<object>(); // TODO: TreeNodeActions removed
+                                var treeActions = new List<object>(); // TODO: TreeNodeActions removed
                                 var hasActions = knActions.Any() || treeActions.Any();
                                 
                                 if (hasActions)
@@ -138,13 +138,13 @@
                                             @foreach (var action in knActions)
                                             {
                                                 <button class="btn btn-sm btn-outline-secondary" @onclick="() => ExecuteAction(param, action)">
-                                                    @action.Name
+                                                    @action.ToString()
                                                 </button>
                                             }
                                             @foreach (var action in treeActions)
                                             {
                                                 <button class="btn btn-sm btn-outline-secondary" @onclick="() => ExecuteAction(param, action)">
-                                                    @action.Name
+                                                    @action.ToString()
                                                 </button>
                                             }
                                         </div>
@@ -156,7 +156,7 @@
                     else
                     {
                         <div class="component-details">
-                            <h4 class="mb-3">@_selectedItem.GetTreeNodeTitle()</h4>
+                            <h4 class="mb-3">@_selectedItem.GetTreeViewNodeTitle()</h4>
                             <div class="p-2 bg-light rounded">
                                 <small class="text-muted">Type: @_selectedItem.GetType().Name</small>
                             </div>

@@ -22,24 +22,24 @@ public static class VoltageCircuitTest
 
         // Create Specifications component
         var specs = new KnComponent("Specifications");
-        model.Add<KnComponent>(specs);
+        model.AddChildComponent<KnComponent>(specs);
         var inputVoltage = specs.Parameter("InputVoltage", 12.0, "V");
         var outputVoltage = specs.Parameter("OutputVoltage", 5.0, "V");
         var loadCurrent = specs.Parameter("LoadCurrent", 0.01, "A");
 
         // Create VoltageSource component
         var voltageSource = new KnComponent("VoltageSource");
-        model.Add<KnComponent>(voltageSource);
+        model.AddChildComponent<KnComponent>(voltageSource);
         var sourceVoltage = voltageSource.Parameter("Voltage", 12.0, "V");
 
         // Create Resistor1 component
         var resistor1 = new KnComponent("Resistor1");
-        model.Add<KnComponent>(resistor1);
+        model.AddChildComponent<KnComponent>(resistor1);
         var r1 = resistor1.Parameter("Resistance", 1000.0, ""); // Ohms
 
         // Create Resistor2 component
         var resistor2 = new KnComponent("Resistor2");
-        model.Add<KnComponent>(resistor2);
+        model.AddChildComponent<KnComponent>(resistor2);
         var r2 = resistor2.Parameter("Resistance", 714.0, ""); // Ohms
 
         Console.WriteLine("Model Structure Created:\n");

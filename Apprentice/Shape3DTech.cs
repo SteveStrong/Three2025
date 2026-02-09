@@ -1,4 +1,5 @@
 #nullable enable
+using FoundryMicroCore.Core;
 using FoundryMicroCore.Core.Extensions;
 
 using System.ComponentModel;
@@ -105,22 +106,22 @@ public class Shape3DTech : IShape3DTech
       // Use Value() method and cast to List<FoShape3D>
       var shapeList = result.Value() as List<FoShape3D> ?? new List<FoShape3D>();
       var shapes = shapeList.ToList(); // Now work with all FoShape3D objects
-      var data = CodingExtensions.DehydrateList<FoShape3D>(shapes, false);
-      FileHelpers.WriteData("Data", "shapes.json", data);
+      // TODO: Serialization APIs removed — CodingExtensions, FileHelpers no longer available
+      // var data = CodingExtensions.DehydrateList<FoShape3D>(shapes, false);
+      // FileHelpers.WriteData("Data", "shapes.json", data);
    }
 
    [Description("Restores shapes from a saved file")]
    public void RestoreShapes()
    {
-      var data = FileHelpers.ReadData("Data", "shapes.json");
-      var list = CodingExtensions.HydrateList<FoShape3D>(data, false);
-
-      ShapeEditor.ClearShapes();
-
-      foreach (var item in list)
-      {
-         ShapeEditor.AddShape(item);
-      }
+      // TODO: Serialization APIs removed — CodingExtensions, FileHelpers no longer available
+      // var data = FileHelpers.ReadData("Data", "shapes.json");
+      // var list = CodingExtensions.HydrateList<FoShape3D>(data, false);
+      // ShapeEditor.ClearShapes();
+      // foreach (var item in list)
+      // {
+      //    ShapeEditor.AddShape(item);
+      // }
    }
 
    [Description("Generate a Random Color")]
@@ -175,7 +176,7 @@ public class Shape3DTech : IShape3DTech
       var shape = factory(name, width, height, depth);
       
       // Set the spatial formatter (same as GeometryShape.DefaultFormatter)
-      shape.MxObject.SetCustomTreeViewNodeTitleFunction(this, TreeNodeFormatters.Spatial);
+      MxObject.SetCustomTreeViewNodeTitleFunction(shape, TreeNodeFormatters.Spatial);
       
       // Add the text tag (same as GeometryShape)
       var tag = new FoText3D("tag")

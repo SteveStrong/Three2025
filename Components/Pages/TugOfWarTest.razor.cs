@@ -65,13 +65,13 @@ public partial class TugOfWarTest : ComponentBase, IDisposable
         
         // Create rope component
         _ropeComponent = new RopeComponent("Rope", 0);
-        _model.Add<RopeComponent>(_ropeComponent);
+        _model.AddChildComponent<RopeComponent>(_ropeComponent);
         
         // Create team components
         _leftTeam = new TeamComponent("LeftTeam", "Red", _leftForce);
         _rightTeam = new TeamComponent("RightTeam", "Blue", _rightForce);
-        _model.Add<TeamComponent>(_leftTeam);
-        _model.Add<TeamComponent>(_rightTeam);
+        _model.AddChildComponent<TeamComponent>(_leftTeam);
+        _model.AddChildComponent<TeamComponent>(_rightTeam);
     }
     
     private void OnPage2DReady(FoPage2D page)

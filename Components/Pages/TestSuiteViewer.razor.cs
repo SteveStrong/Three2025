@@ -21,8 +21,8 @@ public partial class TestSuiteViewer
         // Group by category
         testsByCategory = allTests.Values
             .GroupBy(t => t.Category)
-            .OrderBy(g => g.Name)
-            .ToDictionary(g => g.Name, g => g.OrderBy(t => t.DisplayName).ToList());
+            .OrderBy(g => g.Key)
+            .ToDictionary(g => g.Key, g => g.OrderBy(t => t.DisplayName).ToList());
     }
 
     private void RunTest(TestSequenceMetadata test)

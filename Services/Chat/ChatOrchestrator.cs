@@ -82,7 +82,7 @@ public class ChatOrchestrator : IChatOrchestrator
         // var clockAgent = _agentFactory.CreateClockAgent(_technicianTools);
         // RegisterAgent(clockAgent);
         
-        _logger.LogInformation($"✅ Initialized {_agents.Count} agent(s): {string.Join(", ", _agents.Names)}");
+        _logger.LogInformation($"✅ Initialized {_agents.Count} agent(s): {string.Join(", ", _agents.Keys)}");
     }
     
     public void RegisterAgent(ISpecializedAgent agent)

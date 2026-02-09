@@ -80,7 +80,7 @@ public class DebugGeometryComponent : PartComponent
         if (enabled)
         {
             // Set up PreAnimationRefresh callback when animation is enabled
-            PreAnimationRefresh((comp, evt) =>
+            OnBeforeRender((comp, evt) =>
             {
                 if (!_animationEnabled) return; // No-op pattern
                 
@@ -98,7 +98,7 @@ public class DebugGeometryComponent : PartComponent
         else
         {
             // Disable by clearing the callback (no-op)
-            PreAnimationRefreshNOOP(null!);
+            OnBeforeRenderOff(null!);
             Log("ANIM", "Animation DISABLED");
         }
     }
@@ -209,7 +209,7 @@ public class DebugGeometryComponent : PartComponent
     /// </summary>
     public (KnGeometry?, KnParameter?) GetGeometry3D(string view)
     {
-        var geom = Members<KnGeometry>().FirstOrDefault(x => x.IsNamed(view));
+        var geom = GetCollection<KnGeometry>().FirstOrDefault(x => x.IsNamed(view));
         return (geom, geom?.GetBodyParameter());
     }
 

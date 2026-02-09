@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using FoundryMicroCore.Core;
 using FoundryWorldsAndDrawings.Shared;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shape;
@@ -508,7 +509,7 @@ public partial class AgentCanvasIntegration : ComponentBase
             shape.Color = color;
             
             // Set spatial formatter like GeometryShape did
-            shape.MxObject.SetCustomTreeViewNodeTitleFunction(this, TreeNodeFormatters.Spatial);
+            MxObject.SetCustomTreeViewNodeTitleFunction(shape, TreeNodeFormatters.Spatial);
             
             // Add text tag like GeometryShape did
             var tag = new FoText3D("tag")
@@ -573,7 +574,7 @@ public partial class AgentCanvasIntegration : ComponentBase
             {
                 Name = testName
             };
-            shape.ShapeDraw = shape.DrawCircle;
+            shape.OnDraw = shape.DrawCircle;
             
             // Random position within canvas bounds (assuming 1800x1200 canvas)
             var x = random.Next(radius + 50, 1800 - radius - 50);
@@ -815,7 +816,7 @@ public partial class AgentCanvasIntegration : ComponentBase
 
         // TODO: Replace with new collection API
         // var cabinets = stage.Members<RackCabinetShape>();
-        var cabinets = new List<RackCabinetShape>(); // Temporary placeholder
+        var cabinets = stage.AllBodies().OfType<RackCabinetShape>().ToList();
 
         if (cabinets == null) return;
         
@@ -843,6 +844,7 @@ public partial class AgentCanvasIntegration : ComponentBase
             return;
         }
 
+        var cabinets = stage.AllBodies().OfType<RackCabinetShape>().ToList();
         rackCabinetCount = cabinets.Count;
         rackEquipmentCount = 0;
         rackTotalRUUsed = 0;

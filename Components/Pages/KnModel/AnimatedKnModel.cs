@@ -37,7 +37,7 @@ public class AnimatedKnModel : PartModel
 
         EnsureAnimationSetup();
         
-        $"AnimatedKnModel: PreAnimationRefresh set up, PreContextLink is {(PreContextLink != null ? "SET" : "NULL")}".WriteInfo();
+        $"AnimatedKnModel: OnBeforeRender set up".WriteInfo();
     }
     
     /// <summary>
@@ -52,7 +52,7 @@ public class AnimatedKnModel : PartModel
         var param = this.EstablishParameter("Param1");
         
         // Update param with tick count and refresh tree
-        PreAnimationRefresh((comp, evt) =>
+        OnBeforeRender((comp, evt) =>
         {
             if (evt.tick % 120 == 0)
             {

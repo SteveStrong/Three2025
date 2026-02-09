@@ -99,14 +99,15 @@ public partial class ReductionOperators : ComponentBase
 
     private void ExecuteAction(KnParameter param, dynamic action)
     {
-        if (action is KnTreeNodeAction knAction)
-        {
-            knAction.Action.Invoke(MentorServices);
-        }
-        else if (action is TreeNodeAction treeAction)
-        {
-            treeAction.Action.Invoke();
-        }
+        // TODO: KnTreeNodeAction and TreeNodeAction types no longer exist
+        // if (action is KnTreeNodeAction knAction)
+        // {
+        //     knAction.Action.Invoke(MentorServices);
+        // }
+        // else if (action is TreeNodeAction treeAction)
+        // {
+        //     treeAction.Action.Invoke();
+        // }
         StateHasChanged();
     }
 

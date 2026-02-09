@@ -29,7 +29,7 @@ public static class RackKnowledgeToFoFactory
             // Position cabinet along X axis
             cabinetShape.Transform.Position.X = i * spacing;
             
-            stage.Add(cabinetShape);
+            stage.AddShape(cabinetShape);
         }
         
         return stage;

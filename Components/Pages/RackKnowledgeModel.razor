@@ -69,7 +69,7 @@
                         <h5 class="mb-0">🔍 Component Details</h5>
                         @if (_selectedItem != null)
                         {
-                            <small>@_selectedItem.GetTreeNodeTitle()</small>
+                            <small>@_selectedItem.GetTreeViewNodeTitle()</small>
                         }
                     </div>
                     <div style="flex: 1; overflow: auto; padding: 1rem;">
@@ -99,7 +99,7 @@
                         else
                         {
                             <div class="component-details">
-                                <h4 class="mb-3">@_selectedItem.GetTreeNodeTitle()</h4>
+                                <h4 class="mb-3">@_selectedItem.GetTreeViewNodeTitle()</h4>
                                 <div class="p-2 bg-light rounded">
                                     <small class="text-muted">Type: @_selectedItem.GetType().Name</small>
                                 </div>
@@ -118,7 +118,7 @@
                     <div style="flex: 1; overflow: auto; padding: 1rem; background: #2c3e50; color: white;">
                         @if (_generatedStage != null)
                         {
-                            var cabinetShapes = _generatedStage.GetMembers<RackCabinetShape>();
+                            var cabinetShapes = _generatedStage.AllBodies().OfType<RackCabinetShape>();
                             
                             <div class="mb-3">
                                 <h6 class="text-white-50">Generated FO Stage</h6>

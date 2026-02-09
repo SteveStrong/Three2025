@@ -215,7 +215,7 @@ public class ClockTech : IClockTech
    public void UpdateSceneClock(object state)
     {
         // Get scene from the Clock shape's stage
-        var parentStage = Clock?.GetParentOfType<FoStage3D>();
+        var parentStage = Clock?.Parent as FoStage3D;
         var scene = parentStage?.GetAssociatedScene();
         if (scene == null) return;
 

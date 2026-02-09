@@ -252,7 +252,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         $"Clock: Added text to ClockStage".WriteInfo();
 
         // Animation using MoveBy for proper dirty flag handling
-        text3d.BeforeAnimationRefresh((self, tick, fps) =>
+        text3d.OnBeforeRender((self, tick, fps) =>
         {
             bool move = tick % 10 == 0;
             if (!move) return;
@@ -305,7 +305,7 @@ public partial class ClockBase : ComponentBase, IDisposable
         _clockStage?.AddShape(model3d);
         $"Clock: Added BoxAnimated to ClockStage".WriteInfo();
 
-        model3d.BeforeAnimationRefresh((self, tick, fps) =>
+        model3d.OnBeforeRender((self, tick, fps) =>
         {
             bool move = tick % 10 == 0;
             if (!move) return;
@@ -404,7 +404,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
         };
 
-        model.BeforeAnimationRefresh((self, tick, fps) =>
+        model.OnBeforeRender((self, tick, fps) =>
         {
             // Move every frame to make it obvious
             var delta = state[0];
@@ -459,7 +459,7 @@ public partial class ClockBase : ComponentBase, IDisposable
             },
         };
 
-        model.BeforeAnimationRefresh((self, tick, fps) =>
+        model.OnBeforeRender((self, tick, fps) =>
         {
             // Update angle using array reference
             state[0] += Math.PI / 120;

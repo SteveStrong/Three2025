@@ -170,7 +170,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         var wire = new FoShape1D("Arrow", "Cyan")
         {
             Height = 50,
-            ShapeDraw = async (ctx, obj) => await DrawArrowAsync(ctx, obj.Width, obj.Height, obj.Color)
+            OnDraw = (ctx, obj) => DrawArrowAsync(ctx, obj.Width, obj.Height, obj.Color).GetAwaiter().GetResult()
         };
         wire.GlueStartTo(s1, "RIGHT");
         wire.GlueFinishTo(s2, "LEFT");
@@ -208,7 +208,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         $"2D scene reset".WriteInfo();
     }
 
-    private static async Task DrawArrowAsync(Blazor.Extensions.Canvas.Canvas2D.Canvas2DContext ctx, int width, int height, string color)
+    private static async Task DrawArrowAsync(FoundryWorldsAndDrawings.Canvas.Canvas2D.Canvas2DContext ctx, int width, int height, string color)
     {
         var headWidth = 40;
         var bodyHeight = height / 4;
@@ -251,8 +251,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         $"Stage '{_tugOfWarStage.Name}' linked to scene: {linkedScene?.Title ?? "NULL"}, Scene.IsActive={isSceneActive}".WriteInfo();
 
         // DON'T clear - let boxes accumulate to test coexistence
-        var existingCount = _tugOfWarStage.AllBodies().Count + _tugOfWarStage.AllLinks().Count;
-        $"Before adding: Stage has {existingCount} shapes ({_tugOfWarStage.AllBodies().Count} bodies, {_tugOfWarStage.AllLinks().Count} links)".WriteInfo();
+        var existingCount = _tugOfWarStage.AllBodies().Count() + _tugOfWarStage.AllLinks().Count();
+        $"Before adding: Stage has {existingCount} shapes ({_tugOfWarStage.AllBodies().Count()} bodies, {_tugOfWarStage.AllLinks().Count()} links)".WriteInfo();
 
         // Create 3 boxes - NO animation, just static shapes
         var box1 = new FoShape3D("Box1", "blue");
@@ -275,8 +275,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         _tugOfWarStage.AddShape(box3);
         
         // DIAGNOSTIC: Verify shapes are in the stage collections (not slots!)
-        var bodies = _tugOfWarStage.AllBodies();
-        var links = _tugOfWarStage.AllLinks();
+        var bodies = _tugOfWarStage.AllBodies().ToList();
+        var links = _tugOfWarStage.AllLinks().ToList();
         $"After adding: Stage has {bodies.Count} bodies, {links.Count} links".WriteInfo();
         
         foreach (var body in bodies)
@@ -346,8 +346,8 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         }
 
         // DON'T clear - let objects accumulate to test multiple animations
-        var currentBodies = _tugOfWarStage?.AllBodies().Count ?? 0;
-        var currentLinks = _tugOfWarStage?.AllLinks().Count ?? 0;
+        var currentBodies = _tugOfWarStage?.AllBodies().Count() ?? 0;
+        var currentLinks = _tugOfWarStage?.AllLinks().Count() ?? 0;
         $"Before animation: Stage has {currentBodies} bodies, {currentLinks} links".WriteInfo();
 
         // Complex tug-of-war test with two boxes and connecting pipe
@@ -361,7 +361,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
         _box1_3D.CreateBox("Box1", 1.0, 1.0, 1.0)
                 .SetRecomputeBoundary()  // ← Opt-in IMMEDIATELY, not during animation
-                .BeforeAnimationRefresh((shape, tick, fps) =>
+                .OnBeforeRender((shape, tick, fps) =>
                 {
                     if (fps <= 0 || tick == 0) return;  // Skip manual renders with invalid FPS
                     
@@ -397,9 +397,9 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                     else if (progress >= 1.0)
                     {
                         // Animation complete - stop all animations
-                        _box1_3D?.ClearAnimationRefresh();
-                        _box2_3D?.ClearAnimationRefresh();
-                        _growingPipe?.ClearAnimationRefresh();
+                        _box1_3D?.ClearBeforeRender();
+                        _box2_3D?.ClearBeforeRender();
+                        _growingPipe?.ClearBeforeRender();
                         $"All 3D animations completed".WriteSuccess();
                     }
                 });
@@ -414,7 +414,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
         _box2_3D.CreateBox("Box2", 1.0, 1.0, 1.0)
                 .SetRecomputeBoundary()  // ← Opt-in IMMEDIATELY, not during animation
-                .BeforeAnimationRefresh((shape, tick, fps) =>
+                .OnBeforeRender((shape, tick, fps) =>
                 {
                     if (fps <= 0 || tick == 0) return;  // Skip manual renders with invalid FPS
                     
@@ -458,7 +458,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
                 Position = new Vector3(0, 2, 0)
             }
         };
-        _distanceText.PreComputeMesh = (shape) =>
+        _distanceText.OnPreComputeMesh((shape) =>
         {
             // Update distance text EVERY frame
             var (success1, pos1) = _box1_3D.GetWorldPosition();
@@ -471,7 +471,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
             
             shape.Color = success ? "green" : "red";
             _distanceText.Text = $"length: {distance:F2} {success}";
-        };
+        });
 
         // ✅ Phase 0.5: Add all shapes to this page's stage
         $"🎯 Adding shapes to TugOfWarStage...".WriteInfo();
@@ -511,7 +511,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         };
         
         _growingPipe.CreateTube("GrowingPipe", 0.25, initialPath)
-                    .BeforeAnimationRefresh((self, tick, fps) =>
+                    .OnBeforeRender((self, tick, fps) =>
                     {
                         if (fps <= 0 || tick == 0) return;  // Skip manual renders with invalid FPS
                         
@@ -592,15 +592,15 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         // Stop animations first
         if (_growingPipe != null)
         {
-            _growingPipe.ClearAnimationRefresh();
+            _growingPipe.ClearBeforeRender();
         }
         if (_box1_3D != null)
         {
-            _box1_3D.ClearAnimationRefresh();
+            _box1_3D.ClearBeforeRender();
         }
         if (_box2_3D != null)
         {
-            _box2_3D.ClearAnimationRefresh();
+            _box2_3D.ClearBeforeRender();
         }
         
         _animationTime = 0;
@@ -630,7 +630,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
         if (_tugOfWarStage != null)
             await _tugOfWarStage.ClearAll();
         
-        var remaining = (_tugOfWarStage?.AllBodies().Count ?? 0) + (_tugOfWarStage?.AllLinks().Count ?? 0);
+        var remaining = (_tugOfWarStage?.AllBodies().Count() ?? 0) + (_tugOfWarStage?.AllLinks().Count() ?? 0);
         $"3D scene cleared - stage now has {remaining} shapes".WriteSuccess();
         StateHasChanged();
     }
@@ -671,7 +671,7 @@ public partial class TugOfWarBase : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        _growingPipe?.ClearAnimationRefresh();
+        _growingPipe?.ClearBeforeRender();
         AnimationFrameBus.UnSubscribeFromAnimation(OnAnimationFrame);
         $"TugOfWar Page Disposed".WriteInfo();
     }
