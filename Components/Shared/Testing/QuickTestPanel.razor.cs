@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using FoundryMicroCore.Core;
 using Three2025.Apprentice;
 using Three2025.Apprentice.RackEquipment;
 using System;
@@ -363,7 +364,7 @@ public partial class QuickTestPanel : ComponentBase
         if (box == null) throw new Exception("TestBox1 not found");
         
         // Dynamically switch to technical formatter at runtime!
-        box.MxObject.SetCustomTreeViewNodeTitleFunction(this, TreeNodeFormatters.Technical);
+        MxObject.SetCustomTreeViewNodeTitleFunction(box, TreeNodeFormatters.Technical);
         
         return $"Switched TestBox1 to technical view formatter - check tree display!";
     }, "Formatter switch failed");
@@ -374,7 +375,7 @@ public partial class QuickTestPanel : ComponentBase
         if (box == null) throw new Exception("TestBox1 not found");
         
         // Switch back to spatial formatter
-        box.MxObject.SetCustomTreeViewNodeTitleFunction(this, TreeNodeFormatters.Spatial);
+        MxObject.SetCustomTreeViewNodeTitleFunction(box, TreeNodeFormatters.Spatial);
         
         return $"Switched TestBox1 to spatial view formatter - check tree display!";
     }, "Formatter switch failed");
@@ -385,7 +386,7 @@ public partial class QuickTestPanel : ComponentBase
         if (box == null) throw new Exception("TestBox1 not found");
         
         // Create a custom formatter on the fly!
-        box.GetTreeViewNodeTitle = shape => $"🎯 CUSTOM: {shape.Name} is a {box.GeomType} shape!";
+        MxObject.SetCustomTreeViewNodeTitleFunction(box, (shape) => $"🎯 CUSTOM: {shape.Name} is a {box.GeomType} shape!");
         
         return $"Applied custom formatter to TestBox1 - check tree display!";
     }, "Custom formatter failed");

@@ -274,7 +274,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
         var glyph = _baseBox as FoGlyph3D;
         if (glyph != null)
         {
-            glyph.BeforeAnimationRefresh((shape, tick, fps) =>
+            glyph.OnBeforeRender((shape, tick, fps) =>
             {
                 if (!_isAnimating) return;
 
@@ -315,7 +315,7 @@ public partial class GlueTest3DBase : ComponentBase, IDisposable
         var glyph = _baseBox as FoGlyph3D;
         if (glyph != null)
         {
-            glyph.ClearAnimationRefresh();
+            glyph.ClearBeforeRender();
         }
         $"Animation stopped".WriteInfo();
     }

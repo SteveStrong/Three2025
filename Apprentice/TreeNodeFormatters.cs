@@ -51,7 +51,7 @@ public static class TreeNodeFormatters
         if (g is FoShape3D shape && shape.Transform?.Position != null)
         {
             var pos = shape.Transform.Position;
-            return $"{g.Name} Equipment [{featureCount} features] @ {pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0}";
+            return $"{g.Name} Equipment @ ({pos.X:0.0}, {pos.Y:0.0}, {pos.Z:0.0})";
         }
         return $"{g.Name} Equipment";
     };

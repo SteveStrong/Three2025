@@ -202,7 +202,7 @@ _ = LogSuccess($"✅ Connected Shape2DTech to page '{canvasPage.Name}'");
             {
                 Name = testName
             };
-            shape.ShapeDraw = shape.DrawCircle;
+            shape.OnDraw = shape.DrawCircle;
             
             // Random position within canvas bounds
             var x = random.Next(radius + 50, 800 - radius - 50);

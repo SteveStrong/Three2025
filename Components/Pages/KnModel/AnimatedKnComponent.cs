@@ -55,7 +55,7 @@ public class AnimatedKnComponent : PartComponent
         ]);
 
         // KN layer animation callback - updates parameters for clock animation
-        PreAnimationRefresh((comp, evt) =>
+        OnBeforeRender((comp, evt) =>
         {
             if (!_clockAnimationEnabled) return;
             
@@ -183,7 +183,7 @@ public class AnimatedKnComponent : PartComponent
             };
             
             // Animate label to show tick
-            label3D.BeforeAnimationRefresh((self, tick, fps) =>
+            label3D.OnBeforeRender((self, tick, fps) =>
             {
                 if (self is FoText3D textShape)
                 {
@@ -202,7 +202,7 @@ public class AnimatedKnComponent : PartComponent
             // Animation callback captures base position (set by Body later)
             // and applies oscillation directly
             var capturedBaseY = 0.0;  // Will be updated by first Body evaluation
-            shape.BeforeAnimationRefresh((self, tick, fps) =>
+            shape.OnBeforeRender((self, tick, fps) =>
             {
                 if (self is FoShape3D s && s.Transform != null)
                 {

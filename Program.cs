@@ -74,9 +74,10 @@ builder.Services.AddScoped<CircuitHandler, CustomCircuitHandler>();
 var provider = new FileExtensionContentTypeProvider();
 builder.Services.Configure<StaticFileOptions>(options =>
 {
-    foreach (var item in FileExtensionHelpers.MIMETypeData())
-        if ( !provider.Mappings.ContainsKey(item.Name))
-            provider.Mappings.Add(item.Name,item.Value);
+    // TODO: FileExtensionHelpers.MIMETypeData() no longer exists
+    // foreach (var item in FileExtensionHelpers.MIMETypeData())
+    //     if ( !provider.Mappings.ContainsKey(item.Name))
+    //         provider.Mappings.Add(item.Name,item.Value);
     
     options.ContentTypeProvider = provider;
 });
@@ -85,8 +86,9 @@ var envConfig = new EnvConfig("./.env");
 builder.Services.AddFoundryWorldsAndDrawingsServices(envConfig);
 builder.Services.AddFoundryMentorModelerServices();
 
-builder.Services.AddScoped<IRackTech, RackTech>();
-builder.Services.AddScoped<ICageTech, CageTech>();
+// TODO: IRackTech/RackTech and ICageTech/CageTech no longer exist
+// builder.Services.AddScoped<IRackTech, RackTech>();
+// builder.Services.AddScoped<ICageTech, CageTech>();
 builder.Services.AddScoped<IClockTech, ClockTech>();
 builder.Services.AddScoped<ICuckooClockTech, CuckooClockTech>();
 builder.Services.AddScoped<ITrisocTech, TrisocTech>();

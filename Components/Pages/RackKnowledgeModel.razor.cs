@@ -136,7 +136,7 @@ public partial class RackKnowledgeModel : ComponentBase
             // Generate FO geometry into provided stage (technician operates on stage, doesn't create it)
             RackKnowledgeToFoFactory.GenerateDataCenter(_dataCenterModel, _generatedStage);
 
-            _statusMessage = $"✅ Generated {shapeCount} FO shapes from knowledge model";
+            _statusMessage = $"✅ Generated {_generatedStage?.AllBodies().Count() ?? 0} FO shapes from knowledge model";
             _isError = false;
         }
         catch (Exception ex)

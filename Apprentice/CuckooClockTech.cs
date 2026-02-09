@@ -231,7 +231,7 @@ public class CuckooClockTech : ICuckooClockTech
         }
         
         // Set up animation callback using separate function (easier to swap/disable)
-        housing.BeforeAnimationRefresh(UpdateClockAnimation);
+        housing.OnBeforeRender(UpdateClockAnimation);
         
         $"CuckooClockTech: Housing created successfully".WriteSuccess();
         

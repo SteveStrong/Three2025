@@ -20,6 +20,9 @@
 		},
 		{
 			"path": "../FoundryMicroCore/FoundryMicroCore.Blazor.Controls"
+		},
+		{
+			"path": "../FoundryMicroCore/FoundryMicroCore.Demos"
 		}
 	],
 	"settings": {}

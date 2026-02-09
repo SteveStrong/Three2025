@@ -85,8 +85,8 @@
 
     <!-- Actions -->
     @{
-        var knActions = Parameter.GetKn// DISABLED: TreeNodeActions()?.ToList() ?? new List<Kn// DISABLED: TreeNodeAction>();
-        var treeActions = Parameter.Get// DISABLED: TreeNodeActions()?.ToList() ?? new List<// DISABLED: TreeNodeAction>();
+        var knActions = new List<object>(); // TODO: TreeNodeActions removed
+        var treeActions = new List<object>(); // TODO: TreeNodeActions removed
         var hasActions = knActions.Any() || treeActions.Any();
         
         if (hasActions)
@@ -100,13 +100,13 @@
                         @foreach (var action in knActions)
                         {
                             <button class="btn btn-sm btn-outline-secondary">
-                                @action.Name
+                                @action.ToString()
                             </button>
                         }
                         @foreach (var action in treeActions)
                         {
                             <button class="btn btn-sm btn-outline-secondary">
-                                @action.Name
+                                @action.ToString()
                             </button>
                         }
                     </div>

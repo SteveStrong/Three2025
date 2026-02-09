@@ -101,7 +101,10 @@ public partial class MatrixTest : ComponentBase, IDisposable
             //we should test by drawing the axis and then drawing the box
             //then we can see where the box is in relation to the axis
 
-            var boxShape = FoRack.CreateRack(new FoSpec3D { Name = "Rack", X = 0, Y = 0, Z = 0, W = 0.8, H = 10, D = 0.6 });
+            // TODO: FoRack.CreateRack() no longer exists
+            // var boxShape = FoRack.CreateRack(new FoSpec3D { Name = "Rack", X = 0, Y = 0, Z = 0, W = 0.8, H = 10, D = 0.6 });
+            var boxShape = new FoShape3D("Rack");
+            boxShape.CreateBox("Rack", 0.8, 10, 0.6);
             boxShape.Transform = new Transform3("RackTransform")
             {
                 Position = new Vector3(0, 0, 0),

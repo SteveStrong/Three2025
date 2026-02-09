@@ -66,7 +66,7 @@ public partial class TechnicianTestPanel
             {
                 _groupedMethods = _toolMethods
                     .GroupBy(m => m.Category)
-                    .ToDictionary(g => g.Name, g => g.ToList());
+                    .ToDictionary(g => g.Key, g => g.ToList());
             }
 
             // Initialize Shape3DTech stage if this is a geometry technician

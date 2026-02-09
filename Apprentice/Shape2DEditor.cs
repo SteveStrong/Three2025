@@ -120,7 +120,7 @@ public class Shape2DEditor : IShape2DEditor
       {
          Name = name
       };
-      shape.ShapeDraw = shape.DrawCircle;
+      shape.OnDraw = shape.DrawCircle;
       
       shape.MoveTo((int)x, (int)y);
       _page.AddShape(shape);
@@ -225,7 +225,7 @@ public class Shape2DEditor : IShape2DEditor
          return new OPResult("RemoveChildShape", ResultStatus.Error, $"Child shape '{childShapeName}' not found in parent '{parentShapeName}'");
       }
       
-      parentShape.Remove<FoGlyph2D>(child);
+      parentShape.RemoveShape<FoGlyph2D>(child);
       ShapeChanged();
       
       return new OPResult("RemoveChildShape", ResultStatus.String, $"Removed child shape '{childShapeName}' from parent '{parentShapeName}'");
@@ -248,7 +248,7 @@ public class Shape2DEditor : IShape2DEditor
          return new OPResult("GetAllShapes", ResultStatus.Error, "No page connected");
       }
 
-      // TODO: Replace with new collection API\n      // var shapes = _page.GetMembers<FoGlyph2D>() ?? new List<FoGlyph2D>();\n      var shapes = new List<FoGlyph2D>(); // Temporary placeholder
+      var shapes = _page.AllShapes2D().Concat(_page.AllShapes1D()).ToList();
       $"📋 Retrieved {shapes.Count} shapes from page".WriteInfo();
       
       // Return as collection - consumer can filter, query, count, etc.
@@ -298,6 +298,7 @@ public class Shape2DEditor : IShape2DEditor
 
       foreach (var name in names)
       {
+         var shape = _page.FindShapes(name).FirstOrDefault();
          if (shape != null)
          {
             shape.Delete();
@@ -366,7 +367,7 @@ public class Shape2DEditor : IShape2DEditor
          return new OPResult("FindShape", ResultStatus.Error, "No page connected");
       
       // Search in FoGlyph2D collection where shapes are stored
-      
+      var shape = _page.FindShapes(shapeName).FirstOrDefault();
       if (shape == null)
          return new OPResult("FindShape", ResultStatus.Error, $"Shape '{shapeName}' not found");
       

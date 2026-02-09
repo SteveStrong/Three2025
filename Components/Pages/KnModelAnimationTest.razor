@@ -136,7 +136,7 @@
                 {
                     <div style="padding: 10px; background-color: #e8f5e9; border-radius: 5px; border: 1px solid #4caf50;">
                         <strong>Live Parameters:</strong>
-                        @foreach (var param in _knModel.Members<FoundryMentorModeler.Model.KnParameter>())
+                        @foreach (var param in _knModel.GetCollection<FoundryMentorModeler.Model.KnParameter>())
                         {
                             <div style="font-family: monospace; margin-top: 5px;">
                                 @param.Name: <span style="color: #1976d2; font-weight: bold;">@param.GetValue()</span>

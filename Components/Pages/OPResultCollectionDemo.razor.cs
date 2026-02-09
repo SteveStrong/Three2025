@@ -252,7 +252,7 @@ public partial class OPResultCollectionDemo : ComponentBase
         Log($"Total shapes: {extracted.Count}\n");
         foreach (var group in grouped)
         {
-            Log($"✓ {group.Name}: {group.Count()} shapes");
+            Log($"✓ {group.Key}: {group.Count()} shapes");
         }
     }
 

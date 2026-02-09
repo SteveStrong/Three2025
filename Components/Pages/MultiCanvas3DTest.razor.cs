@@ -44,7 +44,7 @@ public partial class MultiCanvas3DTest : IDisposable
         _cubeA.Transform.Position.Y = 0;
         
         // Animation via BeforeAnimationRefresh - invoked automatically during RenderStage
-        _cubeA.BeforeAnimationRefresh((shape, tick, fps) => {
+        _cubeA.OnBeforeRender((shape, tick, fps) => {
             var deltaTime = 1.0 / Math.Max(fps, 1);
             _rotationA += deltaTime * 1.0; // 1 radian per second
             _rotationA %= (2 * Math.PI);
@@ -70,7 +70,7 @@ public partial class MultiCanvas3DTest : IDisposable
         // Create three spheres with animation callbacks
         _sphereB1 = new FoShape3D("SphereRed", "red").CreateSphere("SphereRed", 1, 1, 1);
         _sphereB1.Transform.Position.Set(-3, 0, 0);
-        _sphereB1.BeforeAnimationRefresh((shape, tick, fps) => {
+        _sphereB1.OnBeforeRender((shape, tick, fps) => {
             var deltaTime = 1.0 / Math.Max(fps, 1);
             _timeB += deltaTime;
             var pos = shape.Transform.Position;
@@ -80,7 +80,7 @@ public partial class MultiCanvas3DTest : IDisposable
 
         _sphereB2 = new FoShape3D("SphereGreen", "green").CreateSphere("SphereGreen", 1, 1, 1);
         _sphereB2.Transform.Position.Set(0, 0, 0);
-        _sphereB2.BeforeAnimationRefresh((shape, tick, fps) => {
+        _sphereB2.OnBeforeRender((shape, tick, fps) => {
             var pos = shape.Transform.Position;
             shape.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos.X, Math.Sin(_timeB * 2 + Math.PI * 2/3) * 2, pos.Z);
         });
@@ -88,7 +88,7 @@ public partial class MultiCanvas3DTest : IDisposable
 
         _sphereB3 = new FoShape3D("SphereBlue", "blue").CreateSphere("SphereBlue", 1, 1, 1);
         _sphereB3.Transform.Position.Set(3, 0, 0);
-        _sphereB3.BeforeAnimationRefresh((shape, tick, fps) => {
+        _sphereB3.OnBeforeRender((shape, tick, fps) => {
             var pos = shape.Transform.Position;
             shape.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos.X, Math.Sin(_timeB * 2 + Math.PI * 4/3) * 2, pos.Z);
         });
@@ -110,7 +110,7 @@ public partial class MultiCanvas3DTest : IDisposable
         // Create shapes with animation callbacks
         _cylinderC = new FoShape3D("Cylinder", "orange").CreateCylinder("Cylinder", 1, 3, 1);
         _cylinderC.Transform.Position.Set(-2, 0, 0);
-        _cylinderC.BeforeAnimationRefresh((shape, tick, fps) => {
+        _cylinderC.OnBeforeRender((shape, tick, fps) => {
             var deltaTime = 1.0 / Math.Max(fps, 1);
             _timeC += deltaTime * 0.5;
             _timeC %= (2 * Math.PI);
@@ -121,7 +121,7 @@ public partial class MultiCanvas3DTest : IDisposable
 
         _coneC = new FoShape3D("Cone", "purple").CreateCone("Cone", 1.5, 3, 1.5);
         _coneC.Transform.Position.Set(2, 0, 0);
-        _coneC.BeforeAnimationRefresh((shape, tick, fps) => {
+        _coneC.OnBeforeRender((shape, tick, fps) => {
             var rot = shape.Transform.Rotation;
             shape.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rot.X, -_timeC, rot.Z);
         });

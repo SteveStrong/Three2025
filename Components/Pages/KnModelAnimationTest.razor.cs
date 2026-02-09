@@ -137,12 +137,14 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
         {
             if (_clockAnimationEnabled)
             {
-                firstComponent.EnableClockAnimation();
+                // TODO: EnableClockAnimation() no longer exists
+                // firstComponent.EnableClockAnimation();
                 AddLog("Control", $"Clock animation ENABLED on {firstComponent.Name}");
             }
             else
             {
-                firstComponent.DisableClockAnimation();
+                // TODO: DisableClockAnimation() no longer exists
+                // firstComponent.DisableClockAnimation();
                 AddLog("Control", $"Clock animation DISABLED on {firstComponent.Name}");
             }
         }
@@ -157,7 +159,8 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     protected void ResetTest()
     {
         // Clear components from model but keep the model
-        _knModel.GetSlot<AnimatedKnComponent>()?.Clear();
+        // TODO: GetSlot<AnimatedKnComponent>() no longer exists
+        // _knModel.GetSlot<AnimatedKnComponent>()?.Clear();
         
         _testStage?.ClearAll();
         _eventLogs.Clear();
@@ -235,6 +238,7 @@ public partial class KnModelAnimationTest : ComponentBase, IDisposable
     {
         var colors = new[] { "Blue", "Green", "Red", "Purple", "Orange", "Cyan" };
         var components = new List<DebugGeometryComponent>();
+        var existingCount = _knModel?.GetCollection<KnComponent>().Count() ?? 0;
         
         for (int i = 0; i < count; i++)
         {

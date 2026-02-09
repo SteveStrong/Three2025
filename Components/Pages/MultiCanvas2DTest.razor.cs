@@ -44,7 +44,7 @@ public partial class MultiCanvas2DTest : IDisposable
         // Create a rotating rectangle with animation callback
         _rectA = new FoShape2D(100, 100, "DarkBlue");
         _rectA.MoveTo(400, 300);
-        _rectA.BeforeShapeRefresh((shape, tick) => {
+        _rectA.OnBeforeRender((shape, tick) => {
             var fps = AnimationFrameBus.GetCurrentFps();
             var deltaTime = 1.0 / Math.Max(fps, 1);
             _rotationA += deltaTime * 45.0; // 45 degrees per second
@@ -70,7 +70,7 @@ public partial class MultiCanvas2DTest : IDisposable
         // Create three circles with animation callbacks
         _circleB1 = new FoShape2D(60, 60, "red");
         _circleB1.MoveTo(200, 300);
-        _circleB1.BeforeShapeRefresh((shape, tick) => {
+        _circleB1.OnBeforeRender((shape, tick) => {
             var fps = AnimationFrameBus.GetCurrentFps();
             var deltaTime = 1.0 / Math.Max(fps, 1);
             _timeB += deltaTime;
@@ -82,7 +82,7 @@ public partial class MultiCanvas2DTest : IDisposable
 
         _circleB2 = new FoShape2D(60, 60, "green");
         _circleB2.MoveTo(400, 300);
-        _circleB2.BeforeShapeRefresh((shape, tick) => {
+        _circleB2.OnBeforeRender((shape, tick) => {
             var baseY = 300;
             var amplitude = 100;
             shape.PinY = baseY + (int)(Math.Sin(_timeB * 2 + Math.PI * 2/3) * amplitude);
@@ -91,7 +91,7 @@ public partial class MultiCanvas2DTest : IDisposable
 
         _circleB3 = new FoShape2D(60, 60, "blue");
         _circleB3.MoveTo(600, 300);
-        _circleB3.BeforeShapeRefresh((shape, tick) => {
+        _circleB3.OnBeforeRender((shape, tick) => {
             var baseY = 300;
             var amplitude = 100;
             shape.PinY = baseY + (int)(Math.Sin(_timeB * 2 + Math.PI * 4/3) * amplitude);
@@ -115,7 +115,7 @@ public partial class MultiCanvas2DTest : IDisposable
         // Create two boxes with animation callbacks
         _boxC1 = new FoShape2D(80, 80, "orange");
         _boxC1.MoveTo(200, 300);
-        _boxC1.BeforeShapeRefresh((shape, tick) => {
+        _boxC1.OnBeforeRender((shape, tick) => {
             var fps = AnimationFrameBus.GetCurrentFps();
             var deltaTime = 1.0 / Math.Max(fps, 1);
             _positionC += deltaTime * 50; // 50 pixels per second
@@ -127,7 +127,7 @@ public partial class MultiCanvas2DTest : IDisposable
 
         _boxC2 = new FoShape2D(80, 80, "purple");
         _boxC2.MoveTo(600, 300);
-        _boxC2.BeforeShapeRefresh((shape, tick) => {
+        _boxC2.OnBeforeRender((shape, tick) => {
             var baseX2 = 600;
             var offset = (int)(Math.Sin(_positionC * 0.02) * 50);
             shape.PinX = baseX2 - offset;
