@@ -57,17 +57,78 @@ Success means proving AI can leverage accumulated human wisdom to create [featur
 
 ## Phase 1: Research (Before Writing Specs)
 
-### 1.1 Study Existing Patterns (Budget: 30 minutes)
+### 1.1 Project Convention Scan (Budget: 5 minutes — ALWAYS DO FIRST)
+
+**Atlas: Go wide before going deep.** This is YOUR research step, not Indy's. Before you study any framework internals, scan the project's file structure to discover conventions that your spec must follow. If you skip this, you risk writing a spec that contradicts project conventions — and Indy will follow your spec over visible evidence.
+
+- [ ] **List all files in the target directory** (e.g., `Models/`, `Components/Pages/`)
+  - Run `ls Models/` or equivalent — takes 5 seconds
+  - Count how many existing pages/components follow each pattern
+  - If 11/11 pages have a Model class, the 12th needs one too
+
+- [ ] **Identify mandatory project conventions**
+  - Does every page have a corresponding Model class?
+  - Does every page use a specific injection pattern (`private = null!` vs `public required`)?
+  - Does every page follow a specific namespace convention?
+  - What base classes do peer pages use?
+
+- [ ] **List sibling files for the new component**
+  - What files exist alongside where this new component will live?
+  - What naming patterns do they follow?
+  - What structural patterns are universal (not just common)?
+
+- [ ] **Document what you found**
+
+**Documentation Template:**
+```markdown
+## Project Convention Scan
+Directory: [path/to/Models/]
+Files found: [count]
+
+Universal Patterns (all files follow):
+- Every page has a Model class in Models/ (11/11)
+- Every model inherits MxComponent
+- Every code-behind uses `private IFoundryService _foundry = null!`
+
+This spec MUST follow:
+- [ ] Include Model class definition
+- [ ] Use established injection pattern
+- [ ] Match namespace conventions
+```
+
+**Why This Matters (MultiCanvas3D lesson):**
+Atlas studied the Three.js rendering pipeline in extraordinary depth but never typed `ls Models/`. The spec said "No separate Tech class" — not as a deliberate architectural decision, but as a blind spot. Indy followed the directive because the spec was well-written, and well-written specs create implied authority even where they're wrong. Sully caught the missing model after implementation. This 5-minute scan would have prevented the most expensive post-compilation fix.
+
+> **The rule: Go wide first (5 minutes scanning project structure), then go deep (thorough framework analysis). Wide-then-deep, not one-or-the-other.**
+
+---
+
+### 1.2 Study Existing Patterns (Budget: 30 minutes)
+
+> **⚠️ CRITICAL WARNING: Legacy Code Is Not a Reference Implementation**
+>
+> Atlas's primary job is to review **legacy applications** that worked under earlier versions of MxMicroCore and write specs that modernize them using the current architecture — where a **central Model class drives the UI**. This means the code you're studying is likely full of **outdated patterns**: logic tangled into code-behind, missing Model classes, direct manipulation instead of editor patterns, ad-hoc state management instead of MxComponent-based models.
+>
+> **Do NOT treat the legacy code as an example of how to build.** It shows you *what* the application does — its intent, its features, its user-facing behavior. It does NOT show you *how* to build it under the modern architecture.
+>
+> Your job is **translation, not transcription:**
+> - **Capture the essence** — What does this application demonstrate? What is it trying to do?
+> - **Ignore the implementation** — How it did it under the old architecture is irrelevant to your spec
+> - **Spec the modern way** — Use the Model-behind pattern, the editor pattern, and the conventions you found in Phase 1.1
+>
+> If the legacy code doesn't have a Model class, that doesn't mean your spec shouldn't. If the legacy code stuffs everything into the code-behind, that's the problem you're fixing, not the pattern you're following.
 
 - [ ] **Find 2-3 similar components** in the codebase
   - Search for components that implement similar features
   - Look for Test/Demo/Example files that show patterns in action
   - Document which files you examined
+  - **Distinguish modern examples (Model-behind) from legacy examples (monolithic code-behind)**
 
 - [ ] **Identify the dominant architecture pattern**
   - Is it Model-first? Component-first? Tech-first?
   - What base classes are used? (ComponentBase, MxComponent, etc.)
   - How are lifecycle hooks managed? (OnInitialized, OnAfterRender, etc.)
+  - **If the code you're studying doesn't match the conventions from Phase 1.1, it's legacy — study it for intent, not for structure**
 
 - [ ] **Map the infrastructure layer**
   - How are stages created and managed?
@@ -75,12 +136,21 @@ Success means proving AI can leverage accumulated human wisdom to create [featur
   - How are shapes added to scenes?
   - How are collections and editors used?
 
+- [ ] **Separate WHAT from HOW**
+  - **WHAT** (capture this): features, user interactions, visual behavior, domain logic
+  - **HOW** (ignore this): old architecture, missing models, monolithic structure, outdated patterns
+  - **SPEC THIS**: the modern way to achieve the WHAT, using conventions from Phase 1.1
+
 **Documentation Template:**
 ```markdown
 ## Architecture Analysis
 Based on: [path/to/ReferenceFile1.cs], [path/to/ReferenceFile2.cs]
 
-Current Pattern: [Pattern name, e.g., "Model-first with Editor pattern"]
+Legacy or Modern?: [Legacy — this code predates the Model-behind pattern]
+Intent to preserve: [What the application does, its features, its purpose]
+Patterns to NOT carry forward: [What the legacy code does wrong by modern standards]
+
+Current Pattern (for the spec): [Pattern name, e.g., "Model-first with Editor pattern"]
 
 Key Characteristics:
 - Base class: [class name]
@@ -89,11 +159,11 @@ Key Characteristics:
 - Animation hookup: [how it works]
 
 Files to study as reference:
-1. [file1] - demonstrates [feature]
-2. [file2] - demonstrates [feature]
+1. [file1] - demonstrates [feature] — [Legacy/Modern]
+2. [file2] - demonstrates [feature] — [Legacy/Modern]
 ```
 
-### 1.2 Read API References (Budget: 15 minutes)
+### 1.3 Read API References (Budget: 15 minutes)
 
 - [ ] **Locate relevant API documentation files**
   - `FOUNDRY_WORLDS_AND_DRAWINGS_API_REFERENCE.md`
@@ -121,7 +191,7 @@ Method Verification:
 - ✅ `AnotherMethod()` - verified in [API doc section]
 ```
 
-### 1.3 Review Code Smell Documentation (Budget: 10 minutes)
+### 1.4 Review Code Smell Documentation (Budget: 10 minutes)
 
 - [ ] **Read relevant code smell documents**
   - `FoundryMicroCore.Library/Core/docs/CODE_SMELLS_ANALYSIS.md`
@@ -143,16 +213,20 @@ Method Verification:
 
 Every specification must include:
 
-- [ ] **1. Architecture Analysis** (from Phase 1.1)
-- [ ] **2. Verified Against** (from Phase 1.2)
-- [ ] **3. Reference Implementation Strategy**
-- [ ] **4. Infrastructure Assumptions**
-- [ ] **5. Code Path Traces** (for non-trivial mechanisms)
-- [ ] **6. Code Smells to Avoid** (from Phase 1.3)
-- [ ] **7. Known Gotchas**
-- [ ] **8. Troubleshooting Guide**
-- [ ] **9. Implementation Steps**
-- [ ] **10. Success Criteria**
+- [ ] **1. Project Convention Scan** (from Phase 1.1 — MUST be first)
+- [ ] **2. Architecture Analysis** (from Phase 1.2)
+- [ ] **3. Verified Against** (from Phase 1.3)
+- [ ] **4. Reference Implementation Strategy**
+- [ ] **5. Infrastructure Assumptions**
+- [ ] **6. Code Path Traces** (for non-trivial mechanisms)
+- [ ] **7. Code Smells to Avoid** (from Phase 1.4)
+- [ ] **8. Known Gotchas**
+- [ ] **9. Troubleshooting Guide**
+- [ ] **10. Implementation Steps**
+- [ ] **11. Success Criteria**
+- [ ] **12. Project Convention Compliance** (from Phase 1.1)
+- [ ] **13. Visual Expectations** (what the page should look like)
+- [ ] **14. Model/Domain Section** (mandatory for page specs)
 
 ### 2.2 Reference Implementation Strategy
 
@@ -756,6 +830,20 @@ AnimationFrameBus.SubscribeToPreAnimation(OnAnimationFrame);
   - Added new "Common Mistakes" entries from TugOfWar experience
   - See TUGOFWAR_PREDICTIONS.md scorecard for full data
 
+- **v1.2** - February 10, 2026 - Updated with MultiCanvas3D AAR + Sage analysis
+  - **Added Phase 1.1: Project Convention Scan** — "Go wide before going deep" (R1)
+  - Renumbered Phase 1 sections (old 1.1→1.2, 1.2→1.3, 1.3→1.4)
+  - Updated Phase 2.1 required sections list (14 items, was 10)
+  - **Added prediction budget guidance** to Phase 2.12 (R4)
+  - **Added Phase 2.13: Project Convention Compliance** — verify all conventions (R1)
+  - **Added Phase 2.14: Visual Expectations** — describe what the page should look like (R3)
+  - **Added Phase 2.15: Model/Domain Section** — mandatory for page specs (R6)
+  - **Added Phase 3.8: Console Output Verification** — 30 seconds clean (R2)
+  - **Added Phase 3.9: "Explain Why Not" Audit** — no bare prohibitions (R5)
+  - Added new "Common Mistakes" entries from MultiCanvas3D experience
+  - Informed by Learning Journal 035 (spec authority bias)
+  - See MULTICANVAS3D_AFTER_ACTION_REVIEW.md for full data
+
 ---
 
 ## Indy's Notes to Atlas (from Tug of War, February 9, 2026)
@@ -823,7 +911,20 @@ Atlas's predictions focused on what the *framework* might break. The actual fail
 
 - [ ] **Predict framework risks** (API drift, naming changes, version sensitivity)
 - [ ] **Predict implementer habits** (over-guarding, defensive coding, unnecessary features)
+- [ ] **Predict project convention adherence** (will Indy follow conventions the spec omits?)
 - [ ] **List specific things NOT to do** (more valuable than what TO do)
+
+**Prediction Budget Guidance (MultiCanvas3D lesson):**
+
+| Category | Old Budget | Recommended Budget | Rationale |
+|---|---|---|---|
+| Framework risks | 40% | 10% | Sully's infrastructure is battle-tested |
+| Implementer behavior | 30% | 40% | The implementer is the largest variable |
+| Project convention adherence | 0% | 30% | The blind spot that consumed the most post-compilation effort |
+| Runtime behavior / environment | 20% | 10% | Console output, timing, disposal |
+| Meta-outcomes | 10% | 10% | Speed, difficulty, overall trajectory |
+
+> Zero predictions in MultiCanvas3D covered **project convention adherence** — the issue that consumed the most post-compilation effort. The real emerging category is project pattern compliance.
 
 **Template:**
 ```markdown
@@ -850,6 +951,109 @@ Atlas's predictions focused on what the *framework* might break. The actual fail
 
 ---
 
+### NEW — Phase 2.13: Project Convention Compliance
+
+Before writing "Component Structure," verify the spec follows every project convention discovered in Phase 1.1.
+
+- [ ] **Listed all files in Models/ directory** — does the pattern require a model?
+- [ ] **Listed all files in Components/Pages/** — does the new page match sibling structure?
+- [ ] **Checked injection patterns** (`private = null!` vs `public required`) against existing pages
+- [ ] **Checked namespace conventions** against existing pages
+- [ ] **If spec says "Don't do X" — explained WHY NOT** (see Phase 3.9)
+
+**Documentation Template:**
+```markdown
+## Project Convention Compliance
+
+### Convention: Model-Behind Pattern
+Evidence: 11/11 existing pages in Models/ have a dedicated Model class
+This spec: ✅ Includes [ModelClassName] inheriting MxComponent
+
+### Convention: Injection Pattern  
+Evidence: All pages use `private IFoundryService _foundry = null!`
+This spec: ✅ Matches established pattern
+
+### Convention: Namespace
+Evidence: All pages use `FoundryWorldsAndDrawings.Components.Pages`
+This spec: ✅ Matches
+```
+
+**Why This Matters (MultiCanvas3D lesson):**
+The spec explicitly stated "No separate Tech class — this is a straightforward page component." This wasn't a deliberate architectural decision — it was a blind spot. Atlas studied the rendering framework deeply but didn't study the project structure broadly. Every page in the project had a Model class. The spec told Indy to skip it. Indy followed the spec because it was well-written. **Good code in the wrong place is harder to catch than bad code anywhere. A good spec that's wrong about one thing is harder to question than a bad spec that's wrong about everything.**
+
+---
+
+### NEW — Phase 2.14: Visual Expectations
+
+Every spec for a component with visual output MUST include a brief description of what the page should look like.
+
+- [ ] **Described expected visual layout** (canvas sizing, spacing, borders)
+- [ ] **Noted CSS requirements** beyond component defaults
+- [ ] **Specified edge-to-edge vs. padded behavior**
+- [ ] **Included sizing strategy** (fixed pixels vs. fill container)
+
+**Documentation Template:**
+```markdown
+## Visual Expectations
+
+The page should display three canvases in a 1×3 horizontal grid.
+- Canvases fill their grid cells edge-to-edge (no white space inside borders)
+- Colored borders (red, green, blue) flush with canvas edges
+- Grid gaps of 8px between cells
+- Responsive: canvases stretch to fill available width
+
+CSS Required:
+- Grid container with `grid-template-columns: 1fr 1fr 1fr`
+- Canvas elements with `width: 100%; height: 100%`
+- No fixed pixel dimensions on Canvas3D (use CSS to fill)
+```
+
+**Why This Matters (MultiCanvas3D lesson):**
+The spec used `CanvasWidth=600 CanvasHeight=400` (fixed pixels), which left white space inside bordered containers. A single sentence — "canvases should fill their grid cells edge-to-edge" — would have prevented CSS debugging that Indy had to discover empirically.
+
+---
+
+### NEW — Phase 2.15: Model/Domain Section (Mandatory for Page Specs)
+
+Every spec for a new page in this project MUST include a Model section. This is not optional — it's a universal project convention.
+
+- [ ] **Model class name defined** (e.g., `MultiCanvas3DTestModel`)
+- [ ] **Base class specified** (typically `MxComponent`)
+- [ ] **Constructor parameters listed**
+- [ ] **Public methods the code-behind will call**
+- [ ] **Clear separation**: what stays in code-behind (Blazor refs, UI state) vs. what goes to model (domain logic, shape creation, animation)
+
+**Documentation Template:**
+```markdown
+## Model Definition
+
+### MultiCanvas3DTestModel : MxComponent
+
+**Constructor:**
+```csharp
+public MultiCanvas3DTestModel(IFoundryService foundry, IWorkspace workspace)
+```
+
+**Responsibilities:**
+- Scene setup (stage creation, shape building)
+- Animation logic (rotation calculations)
+- Domain state (shape references, angle tracking)
+
+**Code-behind keeps:**
+- `Canvas3DComponent` references (Blazor component refs)
+- `OnAfterRenderAsync` lifecycle (Blazor-specific)
+- UI event handlers
+
+**Code-behind delegates to model:**
+- `model.SetupScenes()` — creates stages and shapes
+- `model.OnAnimationFrame()` — updates rotations
+- `model.Dispose()` — cleans up subscriptions
+```
+
+> **The rule:** If 11/11 existing pages have a Model class, page 12 gets a Model class. No exceptions without explicit justification.
+
+---
+
 ### NEW — Phase 3.7: Silent Failure Audit
 
 Before handoff, audit the spec for APIs that fail silently:
@@ -870,6 +1074,52 @@ Before handoff, audit the spec for APIs that fail silently:
   - `AddShape()` may log but won't throw if categorization fails
 
 **The rule:** For every API the spec tells Indy to call, ask: "What happens if this silently fails? How would Indy know?" If the answer is "they wouldn't," add a verification step.
+
+---
+
+### NEW — Phase 3.8: Console Output Verification
+
+"Verified working code" must mean **zero unexpected warnings for 30 seconds of runtime**. Not just "renders visually."
+
+- [ ] **Run the reference implementation for 30 seconds**
+- [ ] **Monitor browser console output** (not just the visual result)
+- [ ] **Document expected console output** — what messages are normal?
+- [ ] **Document unexpected console output** — any warnings, errors, spam?
+- [ ] **If animation produces console noise, fix it before putting it in the spec**
+
+**The rule:** If you can't show 30 seconds of clean console output, the code isn't "verified" — it's "visually plausible." Include a "Console Output" section in the spec showing what clean operation looks like.
+
+**Why This Matters (MultiCanvas3D lesson):**
+Atlas claimed the Appendix A code was "verified, running code." It produced hundreds of Euler overflow warnings per second within 6 seconds of loading. The shapes rotated correctly — the *visual* was fine. But the console was screaming. Both ClockDemo and Multi-Canvas had this same blind spot: visual verification without console verification.
+
+---
+
+### NEW — Phase 3.9: "Explain Why Not" Audit
+
+Before handoff, search the spec for every directive that tells Indy NOT to do something. Each one must include a reason.
+
+- [ ] **Search spec for "No," "Don't," "Do not," "Skip," "Not needed"**
+- [ ] **For each prohibition, verify a reason is given**
+- [ ] **Reason must be evaluable** — Indy should be able to look at evidence and agree or disagree
+
+**❌ Don't: Bare assertion**
+```markdown
+No separate Tech class — this is a straightforward page component.
+```
+*Indy can't evaluate this. "Straightforward" is subjective. Indy follows it because the spec is authoritative.*
+
+**✅ Do: Evaluable reasoning**
+```markdown
+No separate Tech class — unlike the 11 existing pages that have complex domain logic 
+and multiple shape collections, this page only creates 3 static shapes with simple 
+rotation. The logic fits in ~40 lines, below the threshold where a model adds clarity. 
+If you find the code-behind exceeding 80 lines, extract a model following the 
+Test3DBasicShapesModel pattern.
+```
+*Indy can count lines, check complexity, and push back if the reasoning doesn't hold.*
+
+**Why This Matters (MultiCanvas3D + Learning Journal 035):**
+Spec authority bias: when a detailed, well-reasoned spec makes an explicit "don't" statement, an AI implementer follows it even when visible evidence contradicts it. Indy saw 11 model files and still didn't push back on "No separate Tech class" because the spec was well-written — and **quality in one area creates implied authority in all areas.** The fix isn't "be less compliant" — it's "never issue bare prohibitions." If Atlas can't articulate why not, Atlas probably has a blind spot, not a decision.
 
 ---
 
@@ -933,6 +1183,62 @@ var box = new FoShape3D($"Box1_{counter}", "blue");
 // - Indy will use time-based animation instead of frame-based (instinct to be "correct")
 // - Indy will call SetRecomputeBoundary without needing it (completeness instinct)
 // - Indy will use hyphens in names (readable naming instinct)
+```
+
+---
+
+### NEW — Appendix Additions: Common Mistakes from MultiCanvas3D
+
+### ❌ Don't: Skip the project convention scan
+```
+// Atlas wrote a 2000-word spec with code path traces, infrastructure assumptions,
+// and a complete Appendix A — but never typed `ls Models/`.
+// Result: Spec explicitly said "No separate Tech class" when 11/11 existing
+// pages all have a Model class. Indy followed the spec. Sully caught it.
+// Cost: Post-compilation refactoring that a 5-second directory listing would have prevented.
+```
+
+### ✅ Do: Scan project structure before writing the spec
+```
+// Atlas Phase 1.1 should produce:
+// "Models/ contains 11 files. All pages have a Model class inheriting MxComponent.
+//  This spec MUST include a Model class definition."
+// Time cost: 5 minutes. Savings: hours of post-build refactoring.
+```
+
+---
+
+### ❌ Don't: Issue bare prohibitions
+```markdown
+// DON'T — "No separate Tech class — this is a straightforward page component."
+// Indy can't evaluate "straightforward." Indy follows it because the spec is authoritative.
+// A well-written spec that's wrong about one thing gets inherited trust it didn't earn.
+```
+
+### ✅ Do: Explain WHY NOT with evaluable criteria
+```markdown
+// DO — "No separate Tech class — unlike the 11 existing pages that have complex
+// domain logic, this page only creates 3 static shapes with simple rotation.
+// The logic fits in ~40 lines. If you find the code-behind exceeding 80 lines,
+// extract a model following the Test3DBasicShapesModel pattern."
+// Indy can count lines and push back if the reasoning doesn't hold.
+```
+
+---
+
+### ❌ Don't: Verify code visually only
+```
+// Atlas ran the Appendix A code. Shapes rotated. Looked great.
+// Console: hundreds of Euler overflow warnings per second.
+// "Verified" meant "renders visually" — not "runs cleanly."
+```
+
+### ✅ Do: Verify code visually AND in console for 30 seconds
+```
+// Run the code. Watch the browser for 30 seconds.
+// ALSO watch the console for 30 seconds.
+// If the console is clean: "Verified — 30s clean console."
+// If it's not: fix it before putting it in the spec.
 ```
 
 ---
