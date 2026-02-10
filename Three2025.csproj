@@ -41,6 +41,7 @@
     <ProjectReference Include="..\FoundryRulesAndUnits\FoundryRulesAndUnits.csproj" />
    <ProjectReference Include="..\FoundryMentorModeler\FoundryMentorModeler.csproj" />
    <ProjectReference Include="..\FoundryWorldsAndDrawings\FoundryWorldsAndDrawings.csproj" />
+   <ProjectReference Include="..\FoundryMicroCore\FoundryMicroCore.Blazor.Controls\FoundryMicroCore.Blazor.Controls.csproj" />
   <!-- <ProjectReference Include="..\Plugin710\Plugin710.csproj" /> -->
   </ItemGroup>
 

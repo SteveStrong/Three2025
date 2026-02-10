@@ -26,27 +26,12 @@
 
 ## Integration Seam Predictions
 
-### Prediction 1: SceneTreePanel Will NOT Resolve — Three2025 Doesn't Reference FoundryMicroCore.Blazor.Controls
+### ~~Prediction 1: SceneTreePanel Will NOT Resolve~~ — RESOLVED PRE-BUILD
 
-**Confidence:** 🟢 High (90%)  
-**Category:** Integration seam  
-**Cost if it hits:** 15-30 minutes (Sully decision + project reference + @using)
+**Confidence:** ~~🟢 High (90%)~~ → **RESOLVED**
+**Category:** Integration seam
 
-**The integration seam:** The spec tells Indy to replace `<ShapeTreeView/>` with `<SceneTreePanel>` from `FoundryMicroCore.Blazor.Controls`. But `Three2025.csproj` does NOT have a `<ProjectReference>` to `FoundryMicroCore.Blazor.Controls`. The project only references `FoundryRulesAndUnits`, `FoundryMentorModeler`, and `FoundryWorldsAndDrawings`.
-
-**What I checked:**
-- `Three2025.csproj` — no reference to `FoundryMicroCore.Blazor.Controls` or any `FoundryMicroCore` project
-- `_Imports.razor` — no `@using FoundryMicroCore.Blazor.Controls.*` anywhere
-- Workspace-wide search — `SceneTreePanel` has never been used in any Three2025 razor file
-- `SceneTreePanel.razor.cs` exists at `FoundryMicroCore.Blazor.Controls/Components/TreeView/SceneTreePanel.razor.cs` — the component is real, just not referenced
-
-**What I predict:** Indy will follow the spec, add `<SceneTreePanel>`, and get a compile error: "The type or namespace 'SceneTreePanel' could not be found." Indy will then need to either:
-1. Add `<ProjectReference Include="..\FoundryMicroCore\FoundryMicroCore.Blazor.Controls\FoundryMicroCore.Blazor.Controls.csproj" />` to `Three2025.csproj` AND add `@using FoundryMicroCore.Blazor.Controls.Components.TreeView` to `_Imports.razor` or the page
-2. Or ask Sully whether to add this dependency
-
-**What would prove me wrong:** The project already has a transitive reference through one of the existing project references (e.g., `FoundryWorldsAndDrawings` → `FoundryMicroCore.Blazor.Controls`). But I checked the typical dependency chain and this seems unlikely — Blazor Controls is a UI library, not a domain library.
-
-**Evidence:** This is the exact type of integration seam the prediction checklist says is always the hardest problem — "where new code meets existing framework in a way that hasn't been tested." SceneTreePanel has literally never been used from Three2025.
+**Resolution:** Sully approved adding `FoundryMicroCore.Blazor.Controls` project reference to `Three2025.csproj` and `@using` directives to `_Imports.razor` BEFORE handoff to Indy. This prediction is now moot — SceneTreePanel will resolve.
 
 ---
 
