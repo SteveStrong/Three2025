@@ -189,7 +189,7 @@ Same general guidance as SpacialBoxTest spec — see that document for full list
 ## Known Gotchas
 
 ### RadzenShapeTreeView Doesn't Exist
-Same issue as SpacialBoxTest. `<RadzenShapeTreeView/>` at line 144 of the razor file does not exist anywhere in the workspace. Follow whatever decision was made for SpacialBoxTest.
+Same issue as SpacialBoxTest. `<RadzenShapeTreeView/>` at line 144 of the razor file does not exist anywhere in the workspace. **Resolved:** Replace with `<SceneTreePanel Stage="@_model?.Stage" />` — the project reference and @using are already in place.
 
 ### Scale Controls Are Intentionally Commented Out
 Lines ~103-119 of the razor file have Scale X/Y/Z inputs wrapped in `@* ... *@`. Do NOT uncomment them. The model should still have ScaleX/Y/Z properties (they're used in CreateSpacialFrame), but the UI for them stays disabled.
@@ -198,7 +198,7 @@ Lines ~103-119 of the razor file have Scale X/Y/Z inputs wrapped in `@* ... *@`.
 The input fields show degrees. `CreateSpacialFrame()` passes them to `new Euler(RotationX, RotationY, RotationZ, AngleUnit.Degrees)` which handles conversion. Do not manually convert — the Euler constructor does it.
 
 ### Transform3 Project Reference Blocker
-Same as SpacialBoxTest: `Three2025.csproj` does NOT reference `FoundryMicroCore.Blazor.Controls`. If SpacialBoxTest resolved this already, follow that decision.
+**RESOLVED:** `Three2025.csproj` now references `FoundryMicroCore.Blazor.Controls`. No action needed.
 
 ---
 
@@ -479,7 +479,10 @@ public partial class SpacialFrameTest : ComponentBase, IDisposable
 @* Panel removed — tree view requires FoundryMicroCore.Blazor.Controls reference *@
 ```
 
-**⚠️ Same blocker as SpacialBoxTest:** `Three2025.csproj` does NOT reference `FoundryMicroCore.Blazor.Controls`. If the SpacialBoxTest spec resolved this (by adding the reference or removing the panel), follow the same decision here.
+**✅ RESOLVED:** `Three2025.csproj` now references `FoundryMicroCore.Blazor.Controls` and `_Imports.razor` includes the `@using` directives. SceneTreePanel is available. Just use it:
+```razor
+<SceneTreePanel Stage="@_model?.Stage" Title="SpacialFrame Scene" DefaultTab="shapes" />
+```
 
 **2. Bind inputs to model properties:**
 ```razor

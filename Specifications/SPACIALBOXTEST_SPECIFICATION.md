@@ -249,9 +249,7 @@ var item = editor.FindByName("foo"); // O(1) dictionary lookup
 
 ### ShapeTreeView Doesn't Exist
 - The current razor file references `<ShapeTreeView/>` — this component does not exist anywhere in the workspace
-- **SpacialFrameTest** has the same problem with `<RadzenShapeTreeView/>`
-- **Solution:** Replace with `<SceneTreePanel Stage="@_spacialBoxStage" />` or remove the third panel
-- **Risk:** The project may not yet have the `@using` for `FoundryMicroCore.Blazor.Controls.Components.TreeView` in `_Imports.razor`. Check and add if needed.
+- **Resolved:** Replace with `<SceneTreePanel Stage="@_model?.Stage" />` — the project reference and @using are already in place (added to `Three2025.csproj` and `_Imports.razor`).
 
 ### Tweener Not Being Pumped
 - Every animation method creates `new Tweener()` as a local variable
@@ -491,12 +489,10 @@ public partial class SpacialBoxTest : ComponentBase, IDisposable
 <SceneTreePanel Stage="@_model?.Stage" Title="SpacialBox Scene" EmptyMessage="Create a box to see shapes." DefaultTab="shapes" />
 ```
 
-**⚠️ CRITICAL (Found During Prediction Review):** `Three2025.csproj` does NOT reference `FoundryMicroCore.Blazor.Controls`. SceneTreePanel will NOT resolve without:
-1. Adding `<ProjectReference Include="..\FoundryMicroCore\FoundryMicroCore.Blazor.Controls\FoundryMicroCore.Blazor.Controls.csproj" />` to `Three2025.csproj`
-2. Adding `@using FoundryMicroCore.Blazor.Controls.Components.TreeView` to `_Imports.razor` or the page
-
-**If Sully approves the dependency:** Add both the project reference and the @using.  
-**If Sully declines:** Remove the `<ShapeTreeView/>` panel entirely — the page works fine without a tree view. Do not build a custom replacement.
+**⚠️ RESOLVED:** `Three2025.csproj` now references `FoundryMicroCore.Blazor.Controls` and `_Imports.razor` includes the `@using` directives. SceneTreePanel is available. Just use it:
+```razor
+<SceneTreePanel Stage="@_model?.Stage" Title="SpacialBox Scene" EmptyMessage="Create a box to see shapes." DefaultTab="shapes" />
+```
 
 2. **Wire button handlers through model** — existing `@onclick` bindings stay the same since code-behind methods still exist as one-line delegates.
 
