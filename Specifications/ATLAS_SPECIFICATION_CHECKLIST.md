@@ -166,10 +166,21 @@ Files to study as reference:
 ### 1.3 Read API References (Budget: 15 minutes)
 
 - [ ] **Locate relevant API documentation files**
-  - `FOUNDRY_WORLDS_AND_DRAWINGS_API_REFERENCE.md`
-  - `FOUNDRY_MENTORMODELER_API_REFERENCE.md`
-  - `FOUNDRY_MICROCORE_BLAZOR_CONTROLS_API_REFERENCE.md`
+  - `FOUNDRY_WORLDS_AND_DRAWINGS_API_REFERENCE.md` — shapes, stages, Canvas3DComponent, Transform3, animation
+  - `FOUNDRY_3D_API_REFERENCE.md` — authoritative 3D reference (FoShape3D, FoGlyph3D, stale flags, factory methods, hallucinated API list)
+  - `FOUNDRY_MENTORMODELER_API_REFERENCE.md` — mentor services, model editing
+  - `FOUNDRY_MICROCORE_BLAZOR_CONTROLS_API_REFERENCE.md` — **shared UI components** (see below)
   - Component-specific API docs in `/Docs` folders
+
+- [ ] **Check Blazor Controls for shared components** (Budget: 5 minutes)
+  - `FOUNDRY_MICROCORE_BLAZOR_CONTROLS_API_REFERENCE.md` defines the **real, available** Blazor components:
+    - `SceneTreePanel` — tabbed tree view (Model/Shapes/Scene tabs) with `Stage` and `Model` parameters
+    - `UnifiedTreeView` — universal `ITreeNode` tree display
+    - `CommandPanel` / `CommandButtonGroup` / `CommandStepsPanel` — command UI
+    - `ToastService` / `ToastContainer` — notifications
+  - **If your spec references a Blazor component, verify it exists:** `file_search("**/ComponentName*")`
+  - Components that do NOT exist: `ShapeTreeView`, `RadzenShapeTreeView`, `TreeGrid`, `CommandDialog`
+  - **The rule:** If `file_search` returns nothing, the component doesn't exist. Use what's in the Blazor Controls API reference.
 
 - [ ] **Verify every method you plan to use**
   - Look up exact method names (don't assume!)
@@ -720,6 +731,7 @@ For each major section, rate your confidence:
 - [ ] **No assumed method names**
 - [ ] **Troubleshooting guide covers likely failures**
 - [ ] **Success criteria are testable**
+- [ ] **Every Blazor component in the spec verified via `file_search`** — if it doesn't exist, don't spec it
 
 ---
 
@@ -760,7 +772,33 @@ Include at the top of your specification:
 - [ ] **High uncertainty areas called out**
 - [ ] **Quick verification checklist included**
 
-### 4.2 Final Questions
+### 4.2 Build Journal Requirement
+
+Every spec MUST include a Build Journal section instructing Indy to maintain a timestamped journal during implementation. This journal is a **required input for Sage's After-Action Review**.
+
+- [ ] **Build Journal template included in spec**
+- [ ] **Instructs Indy to log as they go** (not after the fact)
+- [ ] **Template includes After-Action Questions for Sage**
+
+Without the build journal, Sage has only the code to analyze — no timing data, no decision rationale, no record of what surprised Indy or where the spec misled. The learning cycle breaks.
+
+**Template to include in every spec:**
+```markdown
+### Build Journal Requirement
+
+Maintain `BUILD_JOURNAL_[FEATURE].md` in the project root. Log as you go:
+- Phase start/end times
+- Decisions that differed from spec (and why)
+- Surprises (APIs that didn't work as described)
+- Console output observations
+- Where the spec helped vs. where it misled
+
+Include After-Action Questions at the end for Sage.
+```
+
+---
+
+### 4.3 Final Questions
 
 Before handoff, answer these:
 
