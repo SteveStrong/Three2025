@@ -1,164 +1,203 @@
 using Microsoft.AspNetCore.Components;
+using FoundryMicroCore.Core;
 using FoundryMicroCore.Core.Extensions;
 using FoundryWorldsAndDrawings.Solutions;
 using FoundryWorldsAndDrawings.Shape;
-using FoundryWorldsAndDrawings.ThreeD.Viewers;
+using FoundryWorldsAndDrawings.Shared;
+using FoundryWorldsAndDrawings.ThreeD.Maths;
 using FoundryRulesAndUnits.Extensions;
 
 namespace Three2025.Components.Pages;
 
-public partial class MultiCanvas3DTest : IDisposable
+/// <summary>
+/// Demonstrates three independent Canvas3DComponents on a single page,
+/// each with its own scene/stage, plus a unified tree view of the arena hierarchy.
+/// </summary>
+public partial class MultiCanvas3DTest : ComponentBase, IDisposable
 {
-    [Inject] public required IFoundryService Foundry { get; set; }
+    [Inject] public required IWorkspace Workspace { get; set; }
 
-    private IArena arena => Foundry.Arena();
+    // Canvas references — each creates its own Stage/Scene pair via SceneName
+    private Canvas3DComponent _canvasA = null!;
+    private Canvas3DComponent _canvasB = null!;
+    private Canvas3DComponent _canvasC = null!;
 
-    private FoShape3D _cubeA;
-    private FoShape3D _sphereB1, _sphereB2, _sphereB3;
-    private FoShape3D _cylinderC, _coneC;
+    // Arena tree root for the UnifiedTreeView
+    private ITreeNode? _arenaNode;
 
-    // Animation state - captured in closures
-    private double _rotationA = 0;
-    private double _timeB = 0;
-    private double _timeC = 0;
+    // UI counters
+    private int _sceneCount;
+    private int _shapeCount;
+    private bool _shapesAdded;
 
-    protected override async Task OnInitializedAsync()
-    {
-        "MultiCanvas3DTest: Initializing".WriteInfo();
-        "MultiCanvas3DTest: Initialized - scenes will be setup after render".WriteSuccess();
-    }
-
-    private void SetupSceneA()
-    {
-        "SetupSceneA: Starting".WriteInfo();
-        if (arena == null)
-        {
-            "SetupSceneA: Arena is NULL!".WriteError();
-            return;
-        }
-        
-        var stage = arena.EstablishStage<FoStage3D>("SceneA");
-
-        // Create a rotating cube - add DIRECTLY to this specific stage
-        _cubeA = new FoShape3D("RotatingCube", "red").CreateBox("RotatingCube", 2, 2, 2);
-        _cubeA.Transform.Position.Y = 0;
-        
-        // Animation via BeforeAnimationRefresh - invoked automatically during RenderStage
-        _cubeA.OnBeforeRender((shape, tick, fps) => {
-            var deltaTime = 1.0 / Math.Max(fps, 1);
-            _rotationA += deltaTime * 1.0; // 1 radian per second
-            _rotationA %= (2 * Math.PI);
-            var rot = shape.Transform.Rotation;
-            shape.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rot.X, _rotationA, rot.Z);
-        });
-        
-        stage.AddShape(_cubeA);
-
-    }
-
-    private void SetupSceneB()
-    {
-        "SetupSceneB: Starting".WriteInfo();
-        if (arena == null)
-        {
-            "SetupSceneB: Arena is NULL!".WriteError();
-            return;
-        }
-        
-        var stage = arena.EstablishStage<FoStage3D>("SceneB");
-
-        // Create three spheres with animation callbacks
-        _sphereB1 = new FoShape3D("SphereRed", "red").CreateSphere("SphereRed", 1, 1, 1);
-        _sphereB1.Transform.Position.Set(-3, 0, 0);
-        _sphereB1.OnBeforeRender((shape, tick, fps) => {
-            var deltaTime = 1.0 / Math.Max(fps, 1);
-            _timeB += deltaTime;
-            var pos = shape.Transform.Position;
-            shape.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos.X, Math.Sin(_timeB * 2) * 2, pos.Z);
-        });
-        stage.AddShape(_sphereB1);
-
-        _sphereB2 = new FoShape3D("SphereGreen", "green").CreateSphere("SphereGreen", 1, 1, 1);
-        _sphereB2.Transform.Position.Set(0, 0, 0);
-        _sphereB2.OnBeforeRender((shape, tick, fps) => {
-            var pos = shape.Transform.Position;
-            shape.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos.X, Math.Sin(_timeB * 2 + Math.PI * 2/3) * 2, pos.Z);
-        });
-        stage.AddShape(_sphereB2);
-
-        _sphereB3 = new FoShape3D("SphereBlue", "blue").CreateSphere("SphereBlue", 1, 1, 1);
-        _sphereB3.Transform.Position.Set(3, 0, 0);
-        _sphereB3.OnBeforeRender((shape, tick, fps) => {
-            var pos = shape.Transform.Position;
-            shape.Transform.Position = new FoundryWorldsAndDrawings.ThreeD.Maths.Vector3(pos.X, Math.Sin(_timeB * 2 + Math.PI * 4/3) * 2, pos.Z);
-        });
-        stage.AddShape(_sphereB3);
-
-    }
-
-    private void SetupSceneC()
-    {
-        "SetupSceneC: Starting".WriteInfo();
-        if (arena == null)
-        {
-            "SetupSceneC: Arena is NULL!".WriteError();
-            return;
-        }
-        
-        var stage = arena.EstablishStage<FoStage3D>("SceneC");
-
-        // Create shapes with animation callbacks
-        _cylinderC = new FoShape3D("Cylinder", "orange").CreateCylinder("Cylinder", 1, 3, 1);
-        _cylinderC.Transform.Position.Set(-2, 0, 0);
-        _cylinderC.OnBeforeRender((shape, tick, fps) => {
-            var deltaTime = 1.0 / Math.Max(fps, 1);
-            _timeC += deltaTime * 0.5;
-            _timeC %= (2 * Math.PI);
-            var rot = shape.Transform.Rotation;
-            shape.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rot.X, _timeC, rot.Z);
-        });
-        stage.AddShape(_cylinderC);
-
-        _coneC = new FoShape3D("Cone", "purple").CreateCone("Cone", 1.5, 3, 1.5);
-        _coneC.Transform.Position.Set(2, 0, 0);
-        _coneC.OnBeforeRender((shape, tick, fps) => {
-            var rot = shape.Transform.Rotation;
-            shape.Transform.Rotation = new FoundryWorldsAndDrawings.ThreeD.Maths.Euler(rot.X, -_timeC, rot.Z);
-        });
-        stage.AddShape(_coneC);
-
-    }
-
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
-        "MultiCanvas3DTest: First render - delaying scene setup to ensure all canvases are ready".WriteInfo();
+        // Give all three Canvas3DComponents time to initialise their scenes/stages
+        await Task.Delay(500);
 
-        // Delay scene setup to ensure all Canvas3DComponents have completed their OnAfterRenderAsync
-        // This prevents the race condition where shapes are added before scenes exist
-        Task.Run(async () =>
+        var arena = Workspace.GetArena();
+        _arenaNode = arena as ITreeNode;
+
+        // Populate each scene with starter shapes
+        SetupSceneA();
+        SetupSceneB();
+        SetupSceneC();
+        _shapesAdded = true;
+
+        UpdateCounts();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // ── Scene A — a single rotating red cube ──────────────────────────────
+    private void SetupSceneA()
+    {
+        var stage = _canvasA?.Stage;
+        if (stage == null) { "MultiCanvas3D: Stage A not ready".WriteWarning(); return; }
+
+        var cube = new FoShape3D("RotatingCube", "red")
+            .CreateBox("RotatingCube", 2, 2, 2);
+
+        cube.OnBeforeRender((shape, tick, fps) =>
         {
-            await Task.Delay(100); // Small delay to let all canvases initialize
-
-            "MultiCanvas3DTest: Setting up scenes now".WriteInfo();
-
-            // Setup all three scenes - Canvas3DComponent already created matching stages and linked them
-            SetupSceneA();
-            SetupSceneB();
-            SetupSceneC();
-
-            // No event subscription needed - animation happens via BeforeAnimationRefresh callbacks
-            // which are invoked automatically during stage.RenderStage() → glyph.UpdateForAnimation()
-
-            "MultiCanvas3DTest: All scenes setup and connected".WriteSuccess();
+            var dt = 1.0 / Math.Max(fps, 1);
+            var rot = shape.Transform.Rotation;
+            var newY = rot.Y + dt * 1.0;        // 1 rad/s
+            shape.Transform.Rotation = new Euler(rot.X, newY, rot.Z);
         });
+
+        stage.AddShape(cube);
+        $"MultiCanvas3D: Scene A — added RotatingCube to stage '{stage.Name}'".WriteSuccess();
+    }
+
+    // ── Scene B — three bouncing spheres ──────────────────────────────────
+    private void SetupSceneB()
+    {
+        var stage = _canvasB?.Stage;
+        if (stage == null) { "MultiCanvas3D: Stage B not ready".WriteWarning(); return; }
+
+        var colors = new[] { "red", "green", "blue" };
+        var offsets = new[] { -3.0, 0.0, 3.0 };
+        var phaseOffset = new[] { 0.0, Math.PI * 2.0 / 3.0, Math.PI * 4.0 / 3.0 };
+
+        for (int i = 0; i < 3; i++)
+        {
+            var idx = i;                                       // capture for closure
+            var name = $"Sphere{colors[idx]}";
+            var sphere = new FoShape3D(name, colors[idx])
+                .CreateSphere(name, 1, 1, 1);
+            sphere.Transform.Position = new Vector3(offsets[idx], 0, 0);
+
+            sphere.OnBeforeRender((shape, tick, fps) =>
+            {
+                var t = tick / Math.Max(fps, 1);              // elapsed seconds
+                var y = Math.Sin(t * 2.0 + phaseOffset[idx]) * 2.0;
+                var pos = shape.Transform.Position;
+                shape.Transform.Position = new Vector3(pos.X, y, pos.Z);
+            });
+
+            stage.AddShape(sphere);
+        }
+
+        $"MultiCanvas3D: Scene B — added 3 spheres to stage '{stage.Name}'".WriteSuccess();
+    }
+
+    // ── Scene C — assorted shapes (cylinder, cone, torus, dodecahedron) ───
+    private void SetupSceneC()
+    {
+        var stage = _canvasC?.Stage;
+        if (stage == null) { "MultiCanvas3D: Stage C not ready".WriteWarning(); return; }
+
+        var cylinder = new FoShape3D("Cylinder", "orange")
+            .CreateCylinder("Cylinder", 1, 3, 1);
+        cylinder.Transform.Position = new Vector3(-4, 0, 0);
+        cylinder.OnBeforeRender((shape, tick, fps) =>
+        {
+            var dt = 1.0 / Math.Max(fps, 1);
+            var rot = shape.Transform.Rotation;
+            shape.Transform.Rotation = new Euler(rot.X, rot.Y + dt * 0.5, rot.Z);
+        });
+        stage.AddShape(cylinder);
+
+        var cone = new FoShape3D("Cone", "purple")
+            .CreateCone("Cone", 1.5, 3, 1.5);
+        cone.Transform.Position = new Vector3(0, 0, 0);
+        cone.OnBeforeRender((shape, tick, fps) =>
+        {
+            var dt = 1.0 / Math.Max(fps, 1);
+            var rot = shape.Transform.Rotation;
+            shape.Transform.Rotation = new Euler(rot.X, rot.Y - dt * 0.7, rot.Z);
+        });
+        stage.AddShape(cone);
+
+        var torus = new FoShape3D("Torus", "cyan")
+            .CreateTorus("Torus", 1.2, 0.4, 1.2);
+        torus.Transform.Position = new Vector3(4, 1, 0);
+        torus.OnBeforeRender((shape, tick, fps) =>
+        {
+            var dt = 1.0 / Math.Max(fps, 1);
+            var rot = shape.Transform.Rotation;
+            shape.Transform.Rotation = new Euler(rot.X + dt * 0.8, rot.Y + dt * 0.3, rot.Z);
+        });
+        stage.AddShape(torus);
+
+        var dodeca = new FoShape3D("Dodecahedron", "gold")
+            .CreateDodecahedron("Dodecahedron", 1.5, 1.5, 1.5);
+        dodeca.Transform.Position = new Vector3(8, 0, 0);
+        dodeca.OnBeforeRender((shape, tick, fps) =>
+        {
+            var dt = 1.0 / Math.Max(fps, 1);
+            var rot = shape.Transform.Rotation;
+            shape.Transform.Rotation = new Euler(rot.X + dt * 0.4, rot.Y + dt * 0.6, rot.Z + dt * 0.2);
+        });
+        stage.AddShape(dodeca);
+
+        $"MultiCanvas3D: Scene C — added 4 shapes to stage '{stage.Name}'".WriteSuccess();
+    }
+
+    // ── Button handlers ───────────────────────────────────────────────────
+    private void DoAddShapes()
+    {
+        if (_shapesAdded) return;
+        SetupSceneA();
+        SetupSceneB();
+        SetupSceneC();
+        _shapesAdded = true;
+        UpdateCounts();
+    }
+
+    private async Task DoClearAll()
+    {
+        var stageA = _canvasA?.Stage;
+        var stageB = _canvasB?.Stage;
+        var stageC = _canvasC?.Stage;
+
+        if (stageA != null) await stageA.ClearAll();
+        if (stageB != null) await stageB.ClearAll();
+        if (stageC != null) await stageC.ClearAll();
+
+        _shapesAdded = false;
+        UpdateCounts();
+        $"MultiCanvas3D: All stages cleared".WriteInfo();
+    }
+
+    private void DoRefreshTree()
+    {
+        UpdateCounts();
+        StateHasChanged();
+    }
+
+    private void UpdateCounts()
+    {
+        var arena = Workspace.GetArena();
+        if (arena == null) return;
+        _sceneCount = arena.GetAllStages().Count;
+        _shapeCount = arena.GetAllStages().Sum(s => s.AllBodies().Count() + s.AllLinks().Count());
     }
 
     public void Dispose()
     {
         "MultiCanvas3DTest: Disposing".WriteInfo();
-        // No event unsubscription needed - shapes clean up their own callbacks
-        "MultiCanvas3DTest: Disposed".WriteInfo();
     }
 }
