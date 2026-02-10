@@ -749,6 +749,192 @@ AnimationFrameBus.SubscribeToPreAnimation(OnAnimationFrame);
   - Four-phase structure: Research, Write, Review, Handoff
   - Comprehensive coverage of all AAR recommendations
 
+- **v1.1** - February 9, 2026 - Updated with Tug of War AAR (Indy's notes)
+  - Added Phase 2.11: Golden Pattern section requirement
+  - Added Phase 2.12: Implementer Behavior Predictions
+  - Added Phase 3.7: Silent Failure Audit
+  - Added new "Common Mistakes" entries from TugOfWar experience
+  - See TUGOFWAR_PREDICTIONS.md scorecard for full data
+
+---
+
+## Indy's Notes to Atlas (from Tug of War, February 9, 2026)
+
+### The Scorecard
+
+Atlas predicted 10 things. Final tally: **1 correct, 3 wrong, 3 partial, 3 N/A.**
+
+The biggest miss: Atlas had 80% confidence that 3D would work before 2D. The exact opposite happened. 2D worked first try. 3D took 3 days.
+
+**Why Atlas's predictions failed:** Atlas predicted *framework risks* — API drift, stale flags, pipe confusion, Task.Delay timing. The actual failure was an *implementer behavior* — I added unnecessary guards (`if (fps <= 0)`) to OnBeforeRender callbacks that silently killed every frame. Atlas predicted what the *library* might do wrong. The library was fine. **I** was the problem.
+
+### What Atlas Should Do Differently
+
+---
+
+### NEW — Phase 2.11: Golden Pattern (ALWAYS INCLUDE FOR ANIMATIONS)
+
+Every spec involving 3D animation MUST include a clearly marked **Golden Pattern** section. This is not architecture. This is not theory. This is the exact code to copy.
+
+**The rule:** If a working example exists in the codebase, extract the minimal working pattern and present it as:
+
+````markdown
+## 🏆 GOLDEN PATTERN — Copy This Exactly
+
+**Source:** `Animation3DPrimitivesModel.cs` line 423-440 (Oscillation example)
+
+```csharp
+double angle = 0.0;
+
+shape.OnBeforeRender((self, tick, fps) =>
+{
+    angle += Math.PI / 300;
+    var x = startX + distance * Math.Cos(angle);
+    self.Transform.Position = new Vector3(x, y, z);
+    self.SetTransformStale();
+});
+
+stage.AddShape(shape);
+```
+
+**CRITICAL RULES:**
+- ❌ Do NOT add `if (fps <= 0)` guards
+- ❌ Do NOT add `if (tick == 0)` guards  
+- ❌ Do NOT add `if (animationDone) return` — use `ClearBeforeRender()` instead
+- ❌ Do NOT use time-based `1.0 / fps` — use frame-based angle increments
+- ❌ Do NOT call `SetRecomputeBoundary()` unless you need Wave 2 world positions
+- ✅ Increment angle. Set position. Mark stale. That's it.
+````
+
+- [ ] **Golden Pattern extracted from working codebase example**
+- [ ] **Source file and line numbers cited**
+- [ ] **Anti-patterns listed with ❌ (things NOT to add)**
+- [ ] **Pattern is minimal — under 15 lines**
+- [ ] **No theory, no explanation of pipeline — just the code**
+
+**Why This Matters (Tug of War lesson):**
+I spent 3 days debugging because I "improved" the working pattern with defensive guards. The spec explained the pipeline beautifully — how UpdateForAnimation fires in Pass 1, how Bodies render before Links, how the collector batches changes. None of that mattered. What I needed was: "Here are 10 lines. Copy them. Don't add anything."
+
+---
+
+### NEW — Phase 2.12: Implementer Behavior Predictions
+
+Atlas's predictions focused on what the *framework* might break. The actual failure was what the *implementer* did wrong. Future specs should predict both.
+
+- [ ] **Predict framework risks** (API drift, naming changes, version sensitivity)
+- [ ] **Predict implementer habits** (over-guarding, defensive coding, unnecessary features)
+- [ ] **List specific things NOT to do** (more valuable than what TO do)
+
+**Template:**
+```markdown
+## Implementer Behavior Warnings
+
+### Things You Will Be Tempted To Do (DON'T)
+
+1. **Add null/guard checks to OnBeforeRender callbacks**
+   Why you'll want to: "What if fps is 0? What if the shape isn't ready?"
+   Why you shouldn't: The pipeline guarantees valid state. Guards silently kill callbacks.
+   
+2. **Use time-based animation (animTime += dt)**
+   Why you'll want to: "Real-time animation should be time-based for consistency"
+   Why you shouldn't: Every working 3D example uses frame-based angle increments. Match the pattern.
+
+3. **Call SetRecomputeBoundary() on animated shapes**
+   Why you'll want to: "I want accurate hit boundaries for the moving shapes"
+   Why you shouldn't: Wave 2 has a scene name mismatch bug. You'll get error spam with no benefit.
+
+4. **Use hyphens or special characters in shape names**
+   Why you'll want to: "Box1-abc12345 is descriptive and unique"
+   Why you shouldn't: ValidateIdentifier silently rejects them. Use underscores only.
+```
+
+---
+
+### NEW — Phase 3.7: Silent Failure Audit
+
+Before handoff, audit the spec for APIs that fail silently:
+
+- [ ] **Name validation** — Does the naming API throw or silently reject?
+  - `MxObject.Name` setter silently rejects invalid names (no exception, no log)
+  - Only letters, digits, underscores. No hyphens, spaces, or special chars.
+  
+- [ ] **Callback registration** — Does registering a callback confirm success?
+  - `OnBeforeRender()` replaces any existing callback (last-write-wins)
+  - No confirmation that the callback was registered
+  
+- [ ] **Flag setting** — Do flag methods have observable side effects?
+  - `SetRecomputeBoundary()` opts into Wave 2 which may be broken
+  - No visible error if the scene name mismatch prevents boundaries from arriving
+
+- [ ] **Collection adds** — Does Add confirm the item was stored?
+  - `AddShape()` may log but won't throw if categorization fails
+
+**The rule:** For every API the spec tells Indy to call, ask: "What happens if this silently fails? How would Indy know?" If the answer is "they wouldn't," add a verification step.
+
+---
+
+### NEW — Appendix Additions: Common Mistakes from Tug of War
+
+### ❌ Don't: Add defensive guards to OnBeforeRender
+```csharp
+// DON'T DO THIS — silently kills every callback
+shape.OnBeforeRender((self, tick, fps) =>
+{
+    if (fps <= 0) return;           // ← SILENT KILLER (fps may be 0 on first frame)
+    if (tick == 0) return;          // ← tick is global, already at 300+ when shapes are added
+    if (animationDone) return;      // ← use ClearBeforeRender() instead
+    // ... animation code never runs
+});
+```
+
+### ✅ Do: Match the proven working pattern exactly
+```csharp
+// DO THIS — every working Animation3DPrimitives example
+double angle = 0.0;
+shape.OnBeforeRender((self, tick, fps) =>
+{
+    angle += Math.PI / 300;
+    self.Transform.Position = new Vector3(x, y, z);
+    self.SetTransformStale();
+});
+```
+
+---
+
+### ❌ Don't: Use hyphens in shape names
+```csharp
+// DON'T — ValidateIdentifier silently rejects this, shape gets auto-named "FoShape3D_1"
+var box = new FoShape3D($"Box1-{guid}", "blue");
+```
+
+### ✅ Do: Use only letters, digits, underscores
+```csharp
+// DO THIS — valid identifier, name sticks
+var box = new FoShape3D("Box1", "blue");
+// or with uniqueness:
+var box = new FoShape3D($"Box1_{counter}", "blue");
+```
+
+---
+
+### ❌ Don't: Predict only framework risks
+```
+// Atlas's TugOfWar predictions focused on:
+// - API naming drift (didn't happen)
+// - Stale flag issues (shapes were auto-stale via IsNew)
+// - FoPipe3D complexity (pipe was trivial)
+// - Task.Delay timing (never used)
+```
+
+### ✅ Do: Predict implementer behavior risks
+```
+// What Atlas should have predicted:
+// - Indy will add guards to callbacks (defensive coding habit)
+// - Indy will use time-based animation instead of frame-based (instinct to be "correct")
+// - Indy will call SetRecomputeBoundary without needing it (completeness instinct)
+// - Indy will use hyphens in names (readable naming instinct)
+```
+
 ---
 
 *This checklist is a living document. Update as new patterns emerge.*

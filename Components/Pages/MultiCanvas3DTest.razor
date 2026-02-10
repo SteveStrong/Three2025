@@ -1,25 +1,22 @@
 @page "/multi-canvas-3d-test"
 @using FoundryWorldsAndDrawings.Shared
+@using FoundryMicroCore.Blazor.Controls.Components.TreeView
 @rendermode InteractiveServer
 
 <PageTitle>Multi-Canvas 3D Test</PageTitle>
 
-<style>
-    .viewer3dContainer {
-        width: 100% !important;
-        height: 100% !important;
-        position: absolute !important;
-        top: 0;
-        left: 0;
-    }
-    
-    .viewer3dContainer canvas {
-        width: 100% !important;
-        height: 100% !important;
-    }
-</style>
+<h2>Multi-Canvas 3D Test — Three Independent Scenes</h2>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; height: 100vh; gap: 10px; padding: 10px;">
+<div class="d-flex gap-2 mb-2">
+    <button class="btn btn-sm btn-primary" @onclick="DoAddShapes">Add Shapes to All Scenes</button>
+    <button class="btn btn-sm btn-danger" @onclick="DoClearAll">Clear All</button>
+    <button class="btn btn-sm btn-outline-secondary" @onclick="DoRefreshTree">🔄 Refresh Tree</button>
+    <span class="text-muted align-self-center" style="font-size: 0.85rem;">
+        Scenes: @_sceneCount &nbsp; | &nbsp; Shapes: @_shapeCount
+    </span>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; height: calc(100vh - 120px); gap: 10px; padding: 0 10px 10px 10px;">
     
     <!-- Top-Left: Scene A -->
     <div style="border: 2px solid #4CAF50; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
@@ -27,7 +24,7 @@
             Scene A - Rotating Cube
         </div>
         <div style="flex: 1; position: relative;">
-            <Canvas3DComponent SceneName="SceneA" />
+            <Canvas3DComponent SceneName="SceneA" @ref="_canvasA" CanvasWidth=600 CanvasHeight=400 />
         </div>
     </div>
 
@@ -37,27 +34,34 @@
             Scene B - Color Spheres
         </div>
         <div style="flex: 1; position: relative;">
-            <Canvas3DComponent SceneName="SceneB" />
+            <Canvas3DComponent SceneName="SceneB" @ref="_canvasB" CanvasWidth=600 CanvasHeight=400 />
         </div>
     </div>
 
     <!-- Bottom-Left: Scene C -->
     <div style="border: 2px solid #FF9800; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
         <div style="background: #FF9800; color: white; padding: 8px; font-weight: bold;">
-            Scene C - Animated Shapes
+            Scene C - Mixed Shapes
         </div>
         <div style="flex: 1; position: relative;">
-            <Canvas3DComponent SceneName="SceneC" />
+            <Canvas3DComponent SceneName="SceneC" @ref="_canvasC" CanvasWidth=600 CanvasHeight=400 />
         </div>
     </div>
 
     <!-- Bottom-Right: Tree View -->
     <div style="border: 2px solid #9C27B0; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
         <div style="background: #9C27B0; color: white; padding: 8px; font-weight: bold;">
-            Arena/Stage/Scene Hierarchy
+            Arena / Stage / Scene Hierarchy
         </div>
         <div style="flex: 1; overflow: auto; background: #f5f5f5; padding: 10px;">
-            <ShapeTreeView />
+            @if (_arenaNode != null)
+            {
+                <UnifiedTreeView RootNode="@_arenaNode" ShowTypeNames="true" ShowBadges="true" />
+            }
+            else
+            {
+                <p class="text-muted">Waiting for arena…</p>
+            }
         </div>
     </div>
 
