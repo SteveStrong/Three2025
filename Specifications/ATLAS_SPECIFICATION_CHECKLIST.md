@@ -66,6 +66,12 @@ Success means proving AI can leverage accumulated human wisdom to create [featur
   - Count how many existing pages/components follow each pattern
   - If 11/11 pages have a Model class, the 12th needs one too
 
+- [ ] **Verify target files exist** (v1.3 addition — SpacialFrameTest AAR R1)
+  - Run `file_search("**/TargetPage.razor*")` for every file the spec plans to modify
+  - If files DON'T exist: spec is greenfield, not refactor — include creation instructions
+  - If files DO exist: spec can reference line-by-line refactoring
+  - **Never assume files exist. Check.** (SpacialFrameTest: spec assumed existing files; they didn't exist. 200 lines of refactoring guidance was wasted.)
+
 - [ ] **Identify mandatory project conventions**
   - Does every page have a corresponding Model class?
   - Does every page use a specific injection pattern (`private = null!` vs `public required`)?
@@ -76,6 +82,12 @@ Success means proving AI can leverage accumulated human wisdom to create [featur
   - What files exist alongside where this new component will live?
   - What naming patterns do they follow?
   - What structural patterns are universal (not just common)?
+
+- [ ] **Read 3 nearest sibling model constructors** (v1.3 addition — SpacialBoxTest AAR)
+  - Open the 3 most similar existing model files
+  - List what each one injects: `IWorkspace`? `IFoundryService`? `NavigationManager`?
+  - Use **what siblings actually inject** as your starting point — not first-principle design
+  - (SpacialFrameTest: spec prescribed `IFoundryService`; every sibling uses `IWorkspace`. SpacialBoxTest: same error. This is now a 3x repeat.)
 
 - [ ] **Document what you found**
 
@@ -237,7 +249,7 @@ Every specification must include:
 - [ ] **11. Success Criteria**
 - [ ] **12. Project Convention Compliance** (from Phase 1.1)
 - [ ] **13. Visual Expectations** (what the page should look like)
-- [ ] **14. Model/Domain Section** (mandatory for page specs)
+- [ ] **14. Model/Domain Section** (mandatory for page specs)\n- [ ] **15. Service Integration Audit** (v1.3 \u2014 for any spec that delegates to services)\n- [ ] **16. UI Layout** (v1.3 \u2014 exact panel structure to preserve)
 
 ### 2.2 Reference Implementation Strategy
 
@@ -267,7 +279,35 @@ What's different for this component:
 - [ ] **Delta from reference clearly explained**
 - [ ] **No abstract pseudo-code without verification**
 
-### 2.3 Infrastructure Assumptions
+### 2.3 Service Integration Audit (v1.3 addition — SpacialFrameTest AAR R3)
+
+Before signing off on a spec that **delegates to a service** (e.g., `GeometryVisualizationService`, `CommandService`, `ToastService`), Atlas MUST open the service implementation — not just reference the interface.
+
+- [ ] **Read the service implementation** (not just the interface)
+  - Open the actual `.cs` file, not just the `I*Service` interface
+  - Search for hardcoded stage names, scene names, or arena routing
+  - Check: does the service route output to the **caller's stage** or **its own internal stage**?
+  
+- [ ] **Document service routing**
+  ```markdown
+  ### Service: GeometryVisualizationService
+  Implementation: [path/to/file.cs]
+  Routes output to: arena.EstablishStage<FoStage3D>("Visualization") ← HARDCODED
+  ⚠️ This means markers go to a "Visualization" stage, NOT the caller's stage.
+  Impact: If the page's Canvas doesn't render the "Visualization" stage, markers are invisible.
+  ```
+
+- [ ] **If the service has hardcoded routing, flag it as an integration seam risk**
+  - Either: document that the page's canvas must render that stage name
+  - Or: recommend writing the logic inline, routing to the page's own stage
+  - Or: recommend updating the service to accept a stage parameter
+
+**Why This Matters (SpacialFrameTest lesson):**
+ Atlas treated `GeometryVisualizationService` as a black box and wrote "battle-tested, no surprises, 90% confident." The service hardcodes `EstablishStage<FoStage3D>("Visualization")` — sending every marker to a ghost stage that no canvas renders. Shapes computed correctly, created correctly, placed correctly — and completely invisible. This was the showstopper bug, discoverable by reading 30 lines. **Atlas never read them because Atlas was confident.** High confidence + unread implementation = the most dangerous combination.
+
+---
+
+### 2.4 Infrastructure Assumptions (was 2.3)
 
 Make your assumptions explicit so Indy knows where to investigate if things break:
 
@@ -882,6 +922,18 @@ AnimationFrameBus.SubscribeToPreAnimation(OnAnimationFrame);
   - Informed by Learning Journal 035 (spec authority bias)
   - See MULTICANVAS3D_AFTER_ACTION_REVIEW.md for full data
 
+- **v1.3** - February 10, 2026 - Updated with SpacialFrameTest + SpacialBoxTest AARs
+  - **Added Phase 1.1: File Existence Verification** — check if target files exist before writing refactor instructions (R1)
+  - **Added Phase 1.1: Sibling Constructor Audit** — read 3 nearest models to get injection pattern right (R2, 3x repeat fix)
+  - **Added Phase 2.3: Service Integration Audit** — read service implementations, not just interfaces (R3, showstopper fix)
+  - **Updated Phase 2.1: Added "Service Integration Audit" to required sections**
+  - **Updated Phase 2.1: Added "UI Layout" to required sections**
+  - **Added Phase 2.16: UI Layout** — exact panel structure, widths, CSS classes to preserve
+  - **Added Appendix: Common Mistakes from SpacialFrameTest/SpacialBoxTest**
+  - Informed by Learning Journal entries 037 (error surface), 038 (identity), 039 (autopsy)
+  - Key insight: high confidence on unexamined code is the most dangerous prediction category
+  - See SPACIALFRAMETEST_AFTER_ACTION_REVIEW.md and SPACIALBOXTEST_AFTER_ACTION_REVIEW.md
+
 ---
 
 ## Indy's Notes to Atlas (from Tug of War, February 9, 2026)
@@ -1092,9 +1144,35 @@ public MultiCanvas3DTestModel(IFoundryService foundry, IWorkspace workspace)
 
 ---
 
-### NEW — Phase 3.7: Silent Failure Audit
+### NEW — Phase 2.16: UI Layout (v1.3 — Preserve Exactly)
 
-Before handoff, audit the spec for APIs that fail silently:
+Every spec for a page with a multi-panel layout MUST include an exact layout description. Not aspirational CSS — the actual structure that exists and must be preserved.
+
+- [ ] **ASCII wireframe of the panel layout** — show exact panel arrangement
+- [ ] **Exact inline styles and CSS classes** — widths, overflow, max-height
+- [ ] **What's in each panel** — button sections, tree views, transform inputs, status alerts
+- [ ] **What changes vs. what stays identical** — explicitly list both
+- [ ] **"CSS — No Changes" directive** — if CSS isn't changing, say so
+
+**Documentation Template:**
+```markdown
+## UI Layout (Preserve Exactly)
+
+Layout Structure (exact markup):
+<div class="d-flex">
+    <Canvas3DComponent .../>
+    <div class="controls-panel" style="margin-left: 10px; width: 300px; ...">
+    <div class="controls-panel" style="margin-left: 10px; width: 350px; ...">
+</div>
+
+What changes: @onclick targets, @bind targets, tree view component
+What stays: ALL CSS, HTML structure, class names, panel widths
+```
+
+**Why This Matters (SpacialFrameTest/SpacialBoxTest lesson):**
+Atlas's initial specs described layout aspirationally — "Left: canvas, Center: controls, Right: tree view." Indy had to discover the exact panel widths, CSS classes, and overflow styles by reading the existing page. The SpacialFrameTest build needed two layout iterations. Including the exact markup in the spec eliminates this entirely. Copy the layout, change the bindings, done.
+
+---
 
 - [ ] **Name validation** — Does the naming API throw or silently reject?
   - `MxObject.Name` setter silently rejects invalid names (no exception, no log)
@@ -1281,4 +1359,89 @@ var box = new FoShape3D($"Box1_{counter}", "blue");
 
 ---
 
+### NEW — Appendix Additions: Common Mistakes from SpacialFrameTest/SpacialBoxTest
+
+### ❌ Don't: Treat services as black boxes when predicting "no surprises"
+```
+// Atlas wrote "GeometryVisualizationService — battle-tested, no surprises, 90% confident"
+// Never read the implementation. 
+// The service hardcodes: arena.EstablishStage<FoStage3D>("Visualization")
+// Every marker went to a ghost stage no canvas renders. Perfectly computed, perfectly invisible.
+// 30 lines of source code would have revealed this. Atlas never read them.
+// Cost: showstopper bug, Indy had to rewrite all five viz methods inline.
+```
+
+### ✅ Do: Open every service your spec delegates to
+```
+// Before writing "this service will just work":
+// 1. Open the .cs file (not the interface)
+// 2. Search for hardcoded stage names, scene names, arena routing
+// 3. Ask: "Does output go to the CALLER'S stage or the SERVICE'S stage?"
+// 4. If the service routes internally: flag it as integration seam risk
+// Time: 5 minutes. Prevents: the single most expensive bug in the build.
+```
+
+---
+
+### ❌ Don't: Assume target files exist
+```
+// Atlas wrote 200 lines of "extract Method X from code-behind to model"
+// SpacialFrameTest.razor didn't exist. Neither did SpacialBoxTest.
+// All refactoring guidance was irrelevant — this was greenfield.
+// A 5-second file_search would have caught this.
+```
+
+### ✅ Do: Verify files exist, then branch your instructions
+```
+// Before writing refactoring steps:
+file_search("**/SpacialFrameTest.razor*")
+// If found: write refactoring instructions (extract, move, rewire)
+// If not found: write creation instructions (create from scratch, follow these patterns)
+// Include BOTH paths if uncertain: "If files exist, refactor. If not, create."
+```
+
+---
+
+### ❌ Don't: Design injection from first principles
+```
+// Atlas prescribed: IFoundryService, IGeometryVisualizationService, NavigationManager
+// Every sibling model uses: IWorkspace
+// IFoundryService was wrong. IGeometryVisualizationService wasn't in DI. NavigationManager wasn't needed.
+// This is the THIRD time Atlas got the injection pattern wrong by designing instead of reading.
+```
+
+### ✅ Do: Read 3 sibling constructors first
+```
+// Before writing any model constructor:
+// 1. Open ClockDemoModel.cs — what does it inject?
+// 2. Open MultiCanvas3DTestModel.cs — what does it inject?
+// 3. Open Animation3DPrimitivesModel.cs — what does it inject?
+// Answer: they all inject IWorkspace. Start there. Add more only if domain requires it.
+// Time: 2 minutes. Prevents: recurring injection mismatch (3x repeat).
+```
+
+---
+
+### ❌ Don't: Put 90% confidence on things you didn't examine
+```
+// "All APIs work first try — 90% confident" has been wrong TWICE.
+// SpacialFrameTest: 90% on the one that broke (viz stage routing)
+// SpacialBoxTest: 85% but Indy had to override to make it work
+// High confidence + unread implementation = most dangerous combination.
+// Confidence is inverse to scrutiny: the more certain you feel, the less you looked.
+```
+
+### ✅ Do: Replace confidence claims with verification statements
+```
+// Instead of: "All APIs work first try — 90% confident"
+// Write: "I verified these specific methods against source code:"
+// - ✅ GetVertices() — returns List<Point3D>, checked SpacialFrame3D.cs line 71
+// - ✅ CreateBox() — params (name, color, w, h, d), checked FoShape3D.cs
+// - ⚠️ ShowLabeledVertices() — DID NOT READ implementation, interface only
+// The ⚠️ is more valuable than any confidence percentage.
+```
+
+---
+
 *This checklist is a living document. Update as new patterns emerge.*
+*"Confidence is inverse to scrutiny. The most certain prediction got the least examination." — Sage, Entry 039*
