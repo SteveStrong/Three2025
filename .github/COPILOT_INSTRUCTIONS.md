@@ -98,6 +98,12 @@ Should we make the change, or is the current approach intentional?"
 3. **Frame Countdown**: RunForFrames() enables precise frame control for debugging
 4. **Debug Mode**: StartPaused uses shorter animation duration (0.5s vs 5s) for visible stepping
 
+### Learning Journal
+The collaborative learning journal lives at `FoundryMicroCore.Library/docs/learning-journal/`. Start with `NOTE_TO_NEXT_INSTANCE.md`. 44 entries spanning Jan 9 – Feb 13, 2026. Read before making architectural decisions.
+
+### Atlas/Indy/Sage Methodology
+Specification-driven development kickoff document: `Specifications/RUN_ATLAS_INDY_SAGE.md`. Three-persona methodology for AI-driven feature development. Six experiments with measured results in `Specifications/Experiments/`.
+
 ### Common Patterns
 - Objects mark dependent objects stale when they change
 - Scene3D processes stale objects in 3 waves

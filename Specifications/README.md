@@ -1,139 +1,93 @@
-# MxObject Migration Pattern Specifications
+# Atlas / Indy / Sage — Specification-Driven AI Development
 
-## Overview
-Specifications organized by **dependency complexity levels** for generating clean MxObject components. **Designed for LLM code generation - NOT for copying/fixing existing files.**
+## What This Is
 
-## Architecture Levels
+A three-persona methodology for AI-driven software development, tested across 6 experiments (Jan 31 – Feb 10, 2026). Three Claude instances collaborate with a human mentor (Sully) to architect, build, and learn from each iteration.
 
-### [Level 1: MxObject Foundation](Levels/Level1-MxObject/)
-**Dependencies**: FoundryMicroCore.Library only  
-**Use Cases**: Simple components, utilities, non-3D interfaces
+| Persona | Role | Artifact |
+|---------|------|----------|
+| **Atlas** | Architect — researches codebase, writes specifications and predictions | Spec + Predictions doc |
+| **Indy** | Builder — implements from specs, scores predictions, overrides when needed | Working code + scored predictions |
+| **Sage** | Historian — analyzes results, extracts meta-learnings, updates checklists | After-Action Review (AAR) |
 
-### [Level 2: 3D Visualization](Levels/Level2-3D/) ⭐  
-**Dependencies**: FoundryMicroCore.Library + FoundryWorldsAndDrawings  
-**Use Cases**: 3D scenes, interactive visualization (**ClockDemo fits here**)
+**Sully** (the human) operates across all phases as mentor and arbiter.
 
-### [Level 3: Knowledge Modeling](Levels/Level3-KnModel/)
-**Dependencies**: FoundryMicroCore.Library + FoundryWorldsAndDrawings + FoundryMentorModeler  
-**Use Cases**: Parametric modeling, rule-based design, mentor integration
+## The Evidence: 6 Experiments
 
-## 🎯 **Intended Workflow:**
-1. **Choose appropriate level** based on dependency requirements
-2. **Copy relevant level folder** to target Blazor app
-3. **Use LLM to generate fresh code** from level specifications  
-4. **Never copy existing broken files** - generate clean implementations
-5. **Validate against success criteria** in level documentation
-6. **Iterate specs and regenerate** as needed
+| # | Feature | Atlas Accuracy | Fix Rounds | Key Learning |
+|---|---------|---------------|------------|--------------|
+| 1 | ClockDemo | B+ | ~2 | Specs need verified APIs, not pseudo-code |
+| 2 | Tug of War | 10% | — | Predict implementer behavior, not framework risks |
+| 3 | MultiCanvas 3D | 50% | — | Go wide before deep (scan project structure first) |
+| 4 | MultiCanvas 2D | 40% | — | Verify components exist before referencing them |
+| 5 | SpacialFrameTest | 0% (57% partial) | 2 | Open service implementations; don't trust high confidence |
+| 6 | SpacialBoxTest | 17% (67% partial) | **0** | AAR loop works. Errors shifted from architectural → syntactic |
 
-## Available Specifications
+**The trajectory:** Errors got cheaper. Architectural misses became syntactic misses. Two-round bug fixes became zero-round builds.
 
-### Core Documentation
-- **[Levels/README.md](Levels/README.md)** - 📚 **Architecture levels overview**
-- **[CLOCKDEMO_COMPONENT_SPECIFICATION.md](CLOCKDEMO_COMPONENT_SPECIFICATION.md)** - 📋 **Comprehensive ClockDemo specification**  
-- **[LLM_Generation_Instructions.md](LLM_Generation_Instructions.md)** - 🚀 **Optimized for LLM code generation**
-- **[Skills/](Skills/)** - Individual reusable patterns and templates
+## Quick Start
 
-## Usage Guidelines
+**To run an Atlas/Indy/Sage cycle on a new feature:**
 
-### For LLM Code Generation (Recommended)
-1. **Choose your level**: Level1 (basic), Level2 (3D), or Level3 (KN modeling)
-2. **Copy appropriate level folder** to target project
-3. **Use level README and examples** as LLM input
-4. **Generate fresh code** - never copy existing broken files
-5. **Validate output** against level success criteria
-6. **Iterate and regenerate** until requirements met
+1. Hand your Claude session the kickoff document: [`RUN_ATLAS_INDY_SAGE.md`](RUN_ATLAS_INDY_SAGE.md)
+2. Tell it what feature you want to build
+3. Atlas phase runs: research → spec → predictions
+4. Indy phase runs: build → score predictions
+5. Sage phase runs: AAR → checklist updates
 
-### Level Selection Guide
-- **Level 1**: Simple UI, no 3D, learning MxObject patterns
-- **Level 2**: 3D visualization needed ✅ **Most projects start here**  
-- **Level 3**: Parametric modeling, rule-based design needed
+## Key Insights (Earned Across 6 Builds)
 
-### For Migration
-1. Choose components similar to existing skills
-2. Extract component to standalone project first
-3. Apply MxObject patterns incrementally
-4. Test thoroughly before integration
+1. **Predictions are self-defeating prophecies.** When Atlas predicts a risk and writes mitigations, that risk gets solved. The real problem comes from what Atlas didn't predict.
 
-### For Sharing
-1. Skills are designed to be self-contained
-2. Copy individual .md files for sharing  
-3. Include Prerequisites section for context
-4. Reference FoundryMicroCore documentation as needed
+2. **Confidence is inverse to scrutiny.** The 85-90% "no surprises" prediction had a **0% hit rate** across all experiments. High confidence means Atlas stopped looking.
 
-## Skill Template Format
+3. **The feedback loop closes tighter than expected.** Sage's AARs improve not just Atlas's next spec, but Indy's next build *directly*. Any persona can read and apply the AAR.
 
-Each skill follows this structure:
+4. **Sully's infrastructure works.** Stop predicting framework failures. Predict integration seams — where new code meets existing systems.
 
-```markdown
-# Skill Title
-
-## Skill Overview
-**Purpose**: What you'll accomplish
-**Difficulty**: Beginner/Intermediate/Advanced  
-**Prerequisites**: Required knowledge/components
-**Output**: What you'll have when done
-
-## What You'll Learn
-- Key patterns and concepts
-
-## Step-by-Step Implementation
-Detailed instructions with code examples
-
-## Key Patterns Demonstrated  
-Important patterns with explanations
-
-## Testing Checklist
-Validation steps
-
-## Common Issues & Solutions
-Troubleshooting guide
-
-## Next Steps
-How to extend and improve
-```
-
-## Contributing New Skills
-
-When creating new skills:
-
-1. **Follow the template format** for consistency
-2. **Include complete code examples** that can be copied
-3. **Add testing checklist** for validation
-4. **Document common issues** you encountered
-5. **Keep skills focused** on one specific pattern or component
+5. **Go wide before deep.** 5 minutes scanning project structure prevents more problems than 30 minutes of deep API analysis.
 
 ## Folder Structure
 
 ```
 Specifications/
-├── CLOCKDEMO_COMPONENT_SPECIFICATION.md  # Comprehensive detailed specification
-├── LLM_Generation_Instructions.md        # Optimized for LLM code generation  
-├── Skills/                              # Individual reusable patterns
-│   ├── Basic_Component_Template.md
-│   └── ...
-├── Levels/                              # Organized by dependency complexity
-│   ├── README.md                        # Architecture levels overview
-│   ├── Level1-MxObject/                 # FoundryMicroCore.Library only
-│   │   └── README.md
-│   ├── Level2-3D/                       # + FoundryWorldsAndDrawings
-│   │   ├── README.md  
-│   │   ├── Examples/
-│   │   │   └── ClockDemo/               # ⭐ ClockDemo reference
-│   │   │       ├── ClockDemo.razor.txt
-│   │   │       ├── ClockDemo.razor.cs.txt
-│   │   │       └── README.md
-│   │   └── Assets/
-│   │       └── models/                  # 3D model placeholders
-│   └── Level3-KnModel/                  # + FoundryMentorModeler
-│       └── README.md
-└── README.md                            # This file
+├── README.md                          ← You are here
+├── RUN_ATLAS_INDY_SAGE.md             ← Single-step kickoff document
+├── CHAT_ORCHESTRATOR_SYSTEM_SPEC.md   ← Standalone architecture doc
+├── CHAT_ORCHESTRATOR_HANDOFF_BRIEF.md ← Atlas's reliability annotations for the spec above
+│
+├── Methodology/                       ← The reusable process (portable)
+│   ├── SAGE_ROLE_DESCRIPTION.md       ← Sage's principles and AAR template
+│   ├── ATLAS_SPECIFICATION_CHECKLIST.md  ← Pre-flight checklist for specs
+│   ├── ATLAS_HANDOFF_BRIEF_CHECKLIST.md  ← How to annotate spec reliability (replaces predictions)
+│   └── ATLAS_PREDICTION_CHECKLIST.md  ← Historical: prediction-writing guide (superseded by Handoff Brief)
+│
+├── Experiments/                       ← Evidence from 6 builds (chronological)
+│   ├── 01-ClockDemo/                  ← Spec + Predictions + AAR + Parent-Child Guide
+│   ├── 02-TugOfWar/                   ← Spec + Predictions (unscored)
+│   ├── 03-MultiCanvas3D/              ← Spec + Predictions
+│   ├── 04-MultiCanvas2D/              ← Spec + Predictions
+│   ├── 05-SpacialFrameTest/           ← Spec + Predictions + AAR
+│   └── 06-SpacialBoxTest/             ← Spec + Predictions + AAR (zero fix rounds)
+│
+├── ShapeLifecycleTest/                ← Standalone reverse-engineered spec
+│
+└── Archive/                           ← Superseded by experiment-driven approach
+    ├── LLM_Generation_Instructions.md
+    ├── Levels/
+    └── Skills/
 ```
 
-This approach makes the specifications:
-- ✅ **LLM-Optimized** - Clear generation instructions and constraints
-- ✅ **Shareable** - Individual .md files can be copied/sent
-- ✅ **Focused** - Each skill teaches specific patterns  
-- ✅ **Reusable** - Apply to different components
-- ✅ **Testable** - Clear validation criteria
-- ✅ **Educational** - Step-by-step learning progression
-- ✅ **Clean** - No technical debt from broken legacy code
+## The Three Methodology Documents
+
+### [SAGE_ROLE_DESCRIPTION.md](Methodology/SAGE_ROLE_DESCRIPTION.md)
+Defines Sage's mission, process (5 steps), output format (AAR template), and principles. The best single document for understanding the methodology.
+
+### [ATLAS_SPECIFICATION_CHECKLIST.md](Methodology/ATLAS_SPECIFICATION_CHECKLIST.md)
+Living checklist accumulated across 6 builds. Covers research phases, required spec sections, service integration audits, and quality checks.
+
+### [ATLAS_HANDOFF_BRIEF_CHECKLIST.md](Methodology/ATLAS_HANDOFF_BRIEF_CHECKLIST.md)
+Replaces the prediction document. Instead of forecasting what will go wrong (10-50% accurate), Atlas honestly annotates each section of the spec as VERIFIED, ASSUMED, INFERRED, or UNREAD. Includes required sections: verification inventory, integration seam annotations, service implementation status, spec weakness confessions, and Indy's verification priority list.
+
+### [ATLAS_PREDICTION_CHECKLIST.md](Methodology/ATLAS_PREDICTION_CHECKLIST.md)
+Historical prediction-writing guide with empirical calibration data. Superseded by the Handoff Brief, but preserved as evidence of the methodology's evolution. Contains the insight that led to the switch: prediction accuracy was a vanity metric; honest verification reporting is what actually helped Indy.

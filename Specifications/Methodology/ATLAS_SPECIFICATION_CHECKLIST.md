@@ -11,9 +11,23 @@
 Every specification MUST begin with this preamble to set context for the implementer:
 
 - [ ] **Copy the preamble template into spec** - Must be Section 0 or immediately after title
+- [ ] **Point Indy to the Handoff Brief** - Include the brief filename and a 3-sentence explanation
 - [ ] **Customize feature name** - Replace `[FEATURE NAME]` placeholders
 - [ ] **Customize testing objectives** - Add 2-3 feature-specific goals
 - [ ] **Explain specific impact** - What this proves about persistent/interactive systems
+
+**Handoff Brief Pointer (REQUIRED — add immediately after title, before preamble):**
+````markdown
+## For Indy — Before You Start
+
+**Read the Handoff Brief first:** [`FEATURENAME_HANDOFF_BRIEF.md`](FEATURENAME_HANDOFF_BRIEF.md)
+
+This spec tells you *what to build*. The Handoff Brief tells you *how much to trust each part of this spec*. Every method, service, and component referenced here is annotated as VERIFIED (Atlas read the source), ASSUMED (Atlas didn't check), INFERRED (Atlas guessed from patterns), or UNREAD (Atlas never opened the file).
+
+**Your first 15 minutes:** Open the Handoff Brief's "Verification Priority" section. Check those items before writing code. The most expensive bugs come from ASSUMED and UNREAD areas.
+
+**When this spec disagrees with reality:** Trust reality. Note the override.
+````
 
 **Preamble Template:**
 ````markdown
